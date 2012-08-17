@@ -17,14 +17,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.src.ConsoleLogManager;
 import net.minecraft.src.IntHashMap;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet;
@@ -34,8 +37,8 @@ import net.minecraft.src.Timer;
 
 import com.mumfrey.liteloader.ChatFilter;
 import com.mumfrey.liteloader.ChatListener;
-import com.mumfrey.liteloader.LoginListener;
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.LoginListener;
 import com.mumfrey.liteloader.Tickable;
 
 /**
@@ -62,8 +65,6 @@ public final class LiteLoader implements FilenameFilter
 	 * Logger for LiteLoader events
 	 */
 	private static Logger logger = Logger.getLogger("liteloader");
-	
-	private File logFile;
 	
 	/**
 	 * "mods" folder which contains mods and config files
@@ -158,6 +159,20 @@ public final class LiteLoader implements FilenameFilter
 			// addURL method is used by the class loader to 
 			mAddUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
 			mAddUrl.setAccessible(true);
+
+			ConsoleLogManager.func_73699_a();
+			Formatter minecraftLogFormatter = ConsoleLogManager.loggerLogManager.getHandlers()[0].getFormatter();
+			
+			logger.setUseParentHandlers(false);
+			
+			StreamHandler consoleHandler = new ConsoleHandler();
+			consoleHandler.setFormatter(minecraftLogFormatter);
+			logger.addHandler(consoleHandler);
+			
+			FileHandler logFileHandler = new FileHandler(new File(Minecraft.getMinecraftDir(), "LiteLoader.txt").getAbsolutePath());
+			logFileHandler.setFormatter(minecraftLogFormatter);
+			logger.addHandler(logFileHandler);
+
 		}
 		catch (Exception ex)
 		{
@@ -165,7 +180,6 @@ public final class LiteLoader implements FilenameFilter
 			ex.printStackTrace();
 		}
 		
-		logger.addHandler(new StreamHandler(System.err, new SimpleFormatter()));
 	}
 	
 	/**
@@ -214,7 +228,8 @@ public final class LiteLoader implements FilenameFilter
 		{
 			logger.info("Loading mods from class path");
 			
-			String[] classPathEntries = System.getProperty("java.class.path").split(";");
+			String classPathSeparator = System.getProperty("path.separator");
+			String[] classPathEntries = System.getProperty("java.class.path").split(classPathSeparator);
 			modsToLoad = findModClasses(classPathEntries, modFiles);
 		}
 		catch (Exception ex)
