@@ -353,7 +353,7 @@ public final class LiteLoader implements FilenameFilter
 	{
 		if (modsToLoad == null) return;
 		
-		logger.info("Loading mods");
+		logger.info("Discovered " + modsToLoad.size() + " total mod(s)");
 		
 		for (Class mod : modsToLoad.values())
 		{
