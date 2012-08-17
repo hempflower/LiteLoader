@@ -301,7 +301,23 @@ public final class LiteLoader implements FilenameFilter
 		// To try to avoid loading the same mod multiple times if it appears in more than one entry in the class path, we index
 		// the mods by name and hopefully match only a single instance of a particular mod
 		HashMap<String, Class> modsToLoad = new HashMap<String, Class>();
-		
+
+		try
+		{
+			File packagePath = new File(LiteLoader.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+
+			LinkedList<Class> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			
+			for (Class mod : modClasses)
+			{
+				modsToLoad.put(mod.getSimpleName(), mod);
+			}
+		}
+		catch (Throwable th)
+		{
+			logger.warning("Error loading from local class path: " + th.getMessage());
+		}
+
 		// Search through the class path and find mod classes
 		for (String classPathPart : classPathEntries)
 		{
