@@ -8,15 +8,16 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
+import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
@@ -28,33 +29,39 @@ import java.util.zip.ZipInputStream;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.ConsoleLogManager;
-import net.minecraft.src.IntHashMap;
 import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet;
 import net.minecraft.src.Packet1Login;
 import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.Timer;
 
 import com.mumfrey.liteloader.ChatFilter;
 import com.mumfrey.liteloader.ChatListener;
+import com.mumfrey.liteloader.InitCompleteListener;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.LoginListener;
 import com.mumfrey.liteloader.Tickable;
+import com.mumfrey.liteloader.util.ModUtilities;
+import com.mumfrey.liteloader.util.PrivateFields;
 
 /**
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.3.2_01
+ * @version 1.3.2_02
  */
 public final class LiteLoader implements FilenameFilter
 {
 	/**
-	 * Minecraft version that we will load mods for, this will be compared
+	 * Liteloader version 
+	 */
+	private static final String LOADER_VERSION = "1.3.2_02";
+	
+	/**
+	 * Minecraft versions that we will load mods for, this will be compared
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String MINECRAFT_VERSION = "1.3.1";
+	private static final String[] SUPPORTED_VERSIONS = { "1.3.1", "1.3.2" };
 	
 	/**
 	 * LiteLoader is a singleton, this is the singleton instance
@@ -64,7 +71,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Logger for LiteLoader events
 	 */
-	private static Logger logger = Logger.getLogger("liteloader");
+	public static Logger logger = Logger.getLogger("liteloader");
 	
 	/**
 	 * "mods" folder which contains mods and config files
@@ -90,7 +97,12 @@ public final class LiteLoader implements FilenameFilter
 	 * List of mods which implement Tickable interface and will receive tick
 	 * events
 	 */
-	private LinkedList<Tickable> tickMods = new LinkedList<Tickable>();
+	private LinkedList<Tickable> tickListeners = new LinkedList<Tickable>();
+	
+	/**
+	 * 
+	 */
+	private LinkedList<InitCompleteListener> initListeners = new LinkedList<InitCompleteListener>();
 	
 	/**
 	 * List of mods which implement ChatListener interface and will receive chat
@@ -114,6 +126,8 @@ public final class LiteLoader implements FilenameFilter
 	 */
 	private Method mAddUrl;
 	
+	private boolean initDone = false;
+	
 	/**
 	 * Get the singleton instance of LiteLoader, initialises the loader if necessary
 	 * 
@@ -129,6 +143,11 @@ public final class LiteLoader implements FilenameFilter
 		return instance;
 	}
 	
+	public static final Logger getLogger()
+	{
+		return logger;
+	}
+	
 	/**
 	 * LiteLoader constructor
 	 */
@@ -137,7 +156,7 @@ public final class LiteLoader implements FilenameFilter
 		// Set up loader, initialises any reflection methods needed
 		prepareLoader();
 		
-		logger.info("Liteloader for " + MINECRAFT_VERSION + " starting up...");
+		logger.info("Liteloader " + LOADER_VERSION + " starting up...");
 
 		// Examines the class path and mods folder and locates loadable mods
 		prepareMods();
@@ -159,25 +178,37 @@ public final class LiteLoader implements FilenameFilter
 			// addURL method is used by the class loader to 
 			mAddUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
 			mAddUrl.setAccessible(true);
-
-			ConsoleLogManager.func_73699_a();
-			Formatter minecraftLogFormatter = ConsoleLogManager.loggerLogManager.getHandlers()[0].getFormatter();
+			
+			Formatter minecraftLogFormatter = null;
+			
+			try
+			{
+				Class formatterClass = Minecraft.class.getClassLoader().loadClass(ModUtilities.getObfuscatedFieldName("net.minecraft.src.ConsoleLogFormatter", "em"));
+				Constructor defaultConstructor = formatterClass.getDeclaredConstructor();
+				defaultConstructor.setAccessible(true);
+				minecraftLogFormatter = (Formatter)defaultConstructor.newInstance();
+			}
+			catch (Exception ex)
+			{
+				ConsoleLogManager.func_73699_a();
+				minecraftLogFormatter = ConsoleLogManager.loggerLogManager.getHandlers()[0].getFormatter();
+			}
 			
 			logger.setUseParentHandlers(false);
 			
 			StreamHandler consoleHandler = new ConsoleHandler();
-			consoleHandler.setFormatter(minecraftLogFormatter);
+			if (minecraftLogFormatter != null) consoleHandler.setFormatter(minecraftLogFormatter);
 			logger.addHandler(consoleHandler);
 			
 			FileHandler logFileHandler = new FileHandler(new File(Minecraft.getMinecraftDir(), "LiteLoader.txt").getAbsolutePath());
-			logFileHandler.setFormatter(minecraftLogFormatter);
+			if (minecraftLogFormatter != null) logFileHandler.setFormatter(minecraftLogFormatter);
 			logger.addHandler(logFileHandler);
 
 		}
 		catch (Exception ex)
 		{
-			// TODO Auto-generated catch block
-			ex.printStackTrace();
+			logger.severe(ex.toString());
+			logger.severe(ex.getStackTrace().toString());
 		}
 		
 	}
@@ -249,6 +280,8 @@ public final class LiteLoader implements FilenameFilter
 	 */
 	protected void findModFiles(File modFolder, LinkedList<File> modFiles)
 	{
+		List<String> supportedVerions = Arrays.asList(SUPPORTED_VERSIONS);
+		
 		for (File modFile : modFolder.listFiles(this))
 		{
 			try
@@ -266,7 +299,7 @@ public final class LiteLoader implements FilenameFilter
 					versionReader.close();
 					
 					// Only add the mod if the version matches and we were able to successfully add it to the class path
-					if (strVersion.equals(MINECRAFT_VERSION) && addURLToClassPath(modFile.toURI().toURL()))
+					if (supportedVerions.contains(strVersion) && addURLToClassPath(modFile.toURI().toURL()))
 					{
 						modFiles.add(modFile);
 					}
@@ -368,7 +401,8 @@ public final class LiteLoader implements FilenameFilter
 			}
 			catch (Throwable th)
 			{
-				logger.warning(th.getMessage());
+				logger.warning(th.toString());
+				th.printStackTrace();
 			}
 		}
 	}
@@ -384,11 +418,18 @@ public final class LiteLoader implements FilenameFilter
 			
 			try
 			{
+				logger.info("Initialising mod " + mod.getName() + " version " + mod.getVersion());
+				
 				mod.init();
 				
 				if (mod instanceof Tickable)
 				{
-					tickMods.add((Tickable)mod);
+					tickListeners.add((Tickable)mod);
+				}
+
+				if (mod instanceof InitCompleteListener)
+				{
+					initListeners.add((InitCompleteListener)mod);
 				}
 				
 				if (mod instanceof ChatFilter)
@@ -408,7 +449,8 @@ public final class LiteLoader implements FilenameFilter
 			}
 			catch (Throwable th)
 			{
-				logger.warning("Error initialising mod '" + mod.getName() + "': " + th.getMessage());
+				logger.warning("Error initialising mod '" + mod.getName() + "': " + th.toString());
+				th.printStackTrace();
 				iter.remove();
 			}
 		}
@@ -424,32 +466,24 @@ public final class LiteLoader implements FilenameFilter
 			// Chat hook
 			if (chatListeners.size() > 0 || chatFilters.size() > 0)
 			{
-				registerPacketOverride(3, HookChat.class);
-				HookChat.loader = this;
+				HookChat.Register();
+				HookChat.RegisterPacketHandler(this);
 			}
 			
 			// Login hook
 			if (loginListeners.size() > 0)
 			{
-				registerPacketOverride(1, HookLogin.class);
+				ModUtilities.registerPacketOverride(1, HookLogin.class);
 				HookLogin.loader = this;
 			}
 			
 			// Tick hook
-			if (tickMods.size() > 0)
-			{
-				Field modifiers = Field.class.getDeclaredField("modifiers");
-				modifiers.setAccessible(true);
-				
-				Field profiler = Minecraft.class.getDeclaredField(getObfuscatedFieldName("mcProfiler", "I"));
-				modifiers.setInt(profiler, profiler.getModifiers() & ~Modifier.FINAL);
-				profiler.setAccessible(true);
-				profiler.set(minecraft, new LiteLoaderHook(this, logger));
-			}
+			PrivateFields.minecraftProfiler.SetFinal(minecraft, new LiteLoaderHook(this, logger));
 		}
 		catch (Exception ex)
 		{
-			logger.warning("Error creating hooks: " + ex.getMessage());
+			logger.warning("Error creating hooks: " + ex.toString());
+			ex.printStackTrace();
 		}
 	}
 
@@ -477,7 +511,8 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning(th.getMessage());
+			logger.warning(th.toString());
+			th.printStackTrace();
 		}
 		
 		return classes;
@@ -591,47 +626,9 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning(th.getMessage());
+			logger.warning(th.toString());
+			th.printStackTrace();
 		}
-	}
-	
-	/**
-	 * Register a packet override
-	 * 
-	 * @param packetId
-	 * @param newPacket
-	 */
-	private static boolean registerPacketOverride(int packetId, Class newPacket)
-	{
-		try
-		{
-			IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-			Field fPacketClassToIdMap = Packet.class.getDeclaredField(getObfuscatedFieldName("packetClassToIdMap", "a"));
-			fPacketClassToIdMap.setAccessible(true);
-			Map packetClassToIdMap = (Map)fPacketClassToIdMap.get(null);
-			
-			packetIdToClassMap.removeObject(packetId);
-			packetIdToClassMap.addKey(packetId, newPacket);
-			packetClassToIdMap.put(newPacket, Integer.valueOf(packetId));
-			
-			return true;
-		}
-		catch (Exception ex)
-		{
-			logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
-			return false;
-		}
-	}
-	
-	/**
-	 * Abstraction helper function
-	 * 
-	 * @param fieldName Name of field to get, returned unmodified if in debug mode
-	 * @return Obfuscated field name if present
-	 */
-	private static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName)
-	{
-		return (!net.minecraft.src.Tessellator.instance.getClass().getSimpleName().equals("Tessellator")) ? obfuscatedFieldName : fieldName;
 	}
 	
 	/**
@@ -652,10 +649,35 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning("Error adding class path entry: " + th.getMessage());
+			logger.warning("Error adding class path entry: " + th.toString());
+			th.printStackTrace();
 		}
 		
 		return false;
+	}
+
+	/**
+	 * Late initialisation callback
+	 */
+	public void onInit()
+	{
+		if (!initDone)
+		{
+			initDone = true;
+			
+			for (InitCompleteListener initMod : initListeners)
+			{
+				try
+				{
+					logger.info("Calling late init for mod " + initMod.getName());
+					initMod.onInitCompleted(minecraft, this);
+				}
+				catch (Throwable th)
+				{
+					logger.warning("Error initialising mod " + initMod.getName() + ": " + th.getClass().getSimpleName() + " - " + th.getMessage());
+				}
+			}
+		}
 	}
 	
 	/**
@@ -670,14 +692,7 @@ public final class LiteLoader implements FilenameFilter
 		// Try to get the minecraft timer object and determine the value of the partialTicks
 		if (tick || minecraftTimer == null)
 		{
-			try
-			{
-				Field fTimer = Minecraft.class.getDeclaredField(getObfuscatedFieldName("Timer", "T"));
-				fTimer.setAccessible(true);
-				minecraftTimer = (Timer)fTimer.get(minecraft);
-				
-			}
-			catch (Exception ex) {}
+			minecraftTimer = PrivateFields.minecraftTimer.Get(minecraft);
 			
 			// Hooray, we got the timer reference
 			if (minecraftTimer != null)
@@ -690,7 +705,7 @@ public final class LiteLoader implements FilenameFilter
 		boolean inGame = minecraft.renderViewEntity != null && minecraft.renderViewEntity.worldObj != null;
 		
 		// Iterate tickable mods
-		for (Tickable tickable : tickMods)
+		for (Tickable tickable : tickListeners)
 		{
 			tickable.onTick(minecraft, partialTicks, inGame, tick);
 		}
