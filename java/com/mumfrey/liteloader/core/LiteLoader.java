@@ -13,6 +13,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
 import java.util.zip.ZipEntry;
@@ -31,6 +33,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.ConsoleLogManager;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet1Login;
+import net.minecraft.src.Packet250CustomPayload;
 import net.minecraft.src.Packet3Chat;
 import net.minecraft.src.Timer;
 
@@ -39,6 +42,7 @@ import com.mumfrey.liteloader.ChatListener;
 import com.mumfrey.liteloader.InitCompleteListener;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.LoginListener;
+import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
@@ -47,14 +51,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.3.2_02
+ * @version 1.3.2_03
  */
 public final class LiteLoader implements FilenameFilter
 {
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.3.2_02";
+	private static final String LOADER_VERSION = "1.3.2_03";
 	
 	/**
 	 * Minecraft versions that we will load mods for, this will be compared
@@ -122,6 +126,16 @@ public final class LiteLoader implements FilenameFilter
 	private LinkedList<LoginListener> loginListeners = new LinkedList<LoginListener>();
 	
 	/**
+	 * List of mods which implement PluginChannelListener interface
+	 */
+	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
+	
+	/**
+	 * Mapping of plugin channel names to listeners 
+	 */
+	private HashMap<String,LinkedList<PluginChannelListener>> pluginChannels = new HashMap<String, LinkedList<PluginChannelListener>>();
+	
+	/**
 	 * Reference to the addUrl method on URLClassLoader
 	 */
 	private Method mAddUrl;
@@ -171,6 +185,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Set up reflection methods required by the loader
 	 */
+	@SuppressWarnings("unchecked")
 	private void prepareLoader()
 	{
 		try
@@ -183,10 +198,10 @@ public final class LiteLoader implements FilenameFilter
 			
 			try
 			{
-				Class formatterClass = Minecraft.class.getClassLoader().loadClass(ModUtilities.getObfuscatedFieldName("net.minecraft.src.ConsoleLogFormatter", "em"));
-				Constructor defaultConstructor = formatterClass.getDeclaredConstructor();
+				Class<? extends Formatter> formatterClass = (Class<? extends Formatter>)Minecraft.class.getClassLoader().loadClass(ModUtilities.getObfuscatedFieldName("net.minecraft.src.ConsoleLogFormatter", "em"));
+				Constructor<? extends Formatter> defaultConstructor = formatterClass.getDeclaredConstructor();
 				defaultConstructor.setAccessible(true);
-				minecraftLogFormatter = (Formatter)defaultConstructor.newInstance();
+				minecraftLogFormatter = defaultConstructor.newInstance();
 			}
 			catch (Exception ex)
 			{
@@ -207,10 +222,8 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Exception ex)
 		{
-			logger.severe(ex.toString());
-			logger.severe(ex.getStackTrace().toString());
+			logger.log(Level.SEVERE, "Error initialising LiteLoader", ex);
 		}
-		
 	}
 	
 	/**
@@ -446,11 +459,15 @@ public final class LiteLoader implements FilenameFilter
 				{
 					loginListeners.add((LoginListener)mod);
 				}
+				
+				if (mod instanceof PluginChannelListener)
+				{
+					pluginChannelListeners.add((PluginChannelListener)mod);
+				}
 			}
 			catch (Throwable th)
 			{
-				logger.warning("Error initialising mod '" + mod.getName() + "': " + th.toString());
-				th.printStackTrace();
+				logger.log(Level.WARNING, "Error initialising mod '" + mod.getName(), th);
 				iter.remove();
 			}
 		}
@@ -477,12 +494,19 @@ public final class LiteLoader implements FilenameFilter
 				HookLogin.loader = this;
 			}
 			
+			// Plugin channels hook
+			if (pluginChannelListeners.size() > 0)
+			{
+				HookPluginChannels.Register();
+				HookPluginChannels.RegisterPacketHandler(this);
+			}
+			
 			// Tick hook
 			PrivateFields.minecraftProfiler.SetFinal(minecraft, new LiteLoaderHook(this, logger));
 		}
 		catch (Exception ex)
 		{
-			logger.warning("Error creating hooks: " + ex.toString());
+			logger.log(Level.WARNING, "Error creating hooks", ex);
 			ex.printStackTrace();
 		}
 	}
@@ -511,8 +535,7 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning(th.toString());
-			th.printStackTrace();
+			logger.log(Level.WARNING, "Enumeration error", th);
 		}
 		
 		return classes;
@@ -626,8 +649,7 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning(th.toString());
-			th.printStackTrace();
+			logger.log(Level.WARNING, "checkAndAddClass error", th);
 		}
 	}
 	
@@ -649,8 +671,7 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			logger.warning("Error adding class path entry: " + th.toString());
-			th.printStackTrace();
+			logger.log(Level.WARNING, "Error adding class path entry", th);
 		}
 		
 		return false;
@@ -674,7 +695,7 @@ public final class LiteLoader implements FilenameFilter
 				}
 				catch (Throwable th)
 				{
-					logger.warning("Error initialising mod " + initMod.getName() + ": " + th.getClass().getSimpleName() + " - " + th.getMessage());
+					logger.log(Level.WARNING, "Error initialising mod " + initMod.getName(), th);
 				}
 			}
 		}
@@ -741,5 +762,103 @@ public final class LiteLoader implements FilenameFilter
 	{
 		for (LoginListener loginListener : loginListeners)
 			loginListener.onLogin(netHandler, loginPacket);
+		
+		setupPluginChannels();
+	}
+	
+	/**
+	 * Callback for the plugin channel hook
+	 * 
+	 * @param hookPluginChannels
+	 */
+	public void onPluginChannelMessage(HookPluginChannels hookPluginChannels)
+	{
+		if (hookPluginChannels != null && hookPluginChannels.channel != null && pluginChannels.containsKey(hookPluginChannels.channel))
+		{
+			for (PluginChannelListener pluginChannelListener : pluginChannels.get(hookPluginChannels.channel))
+			{
+				try
+				{
+					pluginChannelListener.onCustomPayload(hookPluginChannels.channel, hookPluginChannels.length, hookPluginChannels.data);
+				}
+				catch (Exception ex) {}
+			}
+		}
+	}
+	
+	/**
+	 * Delegate to ModUtilities.sendPluginChannelMessage
+	 * 
+	 * @param channel Channel to send data to
+	 * @param data Data to send
+	 */
+	public void sendPluginChannelMessage(String channel, byte[] data)
+	{
+		ModUtilities.sendPluginChannelMessage(channel, data);
+	}
+	
+	/**
+	 * Query loaded mods for registered channels 
+	 */
+	protected void setupPluginChannels()
+	{
+		// Clear any channels from before
+		pluginChannels.clear();
+		
+		// Enumerate mods for plugin channels
+		for (PluginChannelListener pluginChannelListener : pluginChannelListeners)
+		{
+			List<String> channels = pluginChannelListener.getChannels();
+			
+			if (channels != null)
+			{
+				for (String channel : channels)
+				{
+					if (channel.length() > 16 || channel.toUpperCase().equals("REGISTER") || channel.toUpperCase().equals("UNREGISTER"))
+						continue;
+					
+					if (!pluginChannels.containsKey(channel))
+					{
+						pluginChannels.put(channel, new LinkedList<PluginChannelListener>());
+					}
+					
+					pluginChannels.get(channel).add(pluginChannelListener);
+				}
+			}
+		}
+
+		// If any mods have registered channels, send the REGISTER packet
+		if (pluginChannels.keySet().size() > 0)
+		{
+			StringBuilder channelList = new StringBuilder();
+			boolean separator = false;
+			
+			for (String channel : pluginChannels.keySet())
+			{
+				if (separator) channelList.append("\u0000");
+				channelList.append(channel);
+				separator = true;
+			}
+			
+	        byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
+        
+	        sendPluginChannelMessage("REGISTER", registrationData);
+		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

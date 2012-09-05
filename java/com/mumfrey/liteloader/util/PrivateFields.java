@@ -84,6 +84,7 @@ public class PrivateFields<P, T>
 	 * @param instance Class to get the value of
 	 * @return field value or null if errors occur
 	 */
+	@SuppressWarnings("unchecked")
 	public T Get(P instance)
 	{
 		try

@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.src.IntHashMap;
 import net.minecraft.src.KeyBinding;
 import net.minecraft.src.Packet;
+import net.minecraft.src.Packet250CustomPayload;
 import net.minecraft.src.Render;
 import net.minecraft.src.RenderManager;
 import net.minecraft.src.Tessellator;
@@ -55,6 +56,30 @@ public abstract class ModUtilities
 			LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
 			return false;
 		}
+	}
+	
+	/**
+	 * Send a plugin channel (custom payload) packet to the server
+	 * 
+	 * @param channel Channel to send the data
+	 * @param data
+	 */
+	public static void sendPluginChannelMessage(String channel, byte[] data)
+	{
+		if (channel == null || channel.length() > 16)
+			throw new RuntimeException("Invalid channel name specified"); 
+		
+		try
+		{
+			Minecraft minecraft = Minecraft.getMinecraft();
+			
+			if (minecraft.thePlayer != null)
+			{
+				Packet250CustomPayload payload = new Packet250CustomPayload(channel, data);
+				minecraft.thePlayer.sendQueue.addToSendQueue(payload);
+			}
+		}
+		catch (Exception ex) {}
 	}
 
 	/**
