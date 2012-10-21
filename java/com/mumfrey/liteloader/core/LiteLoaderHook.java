@@ -105,6 +105,7 @@ public class LiteLoaderHook extends Profiler
 			
 			if (config != null)
 			{
+				@SuppressWarnings("unchecked")
 				Method getVersion = config.getDeclaredMethod("getVersion");
 				
 				if (getVersion != null)

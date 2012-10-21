@@ -1,36 +1,11 @@
 package com.mumfrey.liteloader.util;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Properties;
-import java.util.zip.ZipFile;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.GuiButton;
-import net.minecraft.src.GuiIngame;
-import net.minecraft.src.GuiScreen;
-import net.minecraft.src.GuiSlot;
-import net.minecraft.src.GuiTexturePacks;
-import net.minecraft.src.NetClientHandler;
-import net.minecraft.src.NetworkManager;
-import net.minecraft.src.Packet;
-import net.minecraft.src.Profiler;
-import net.minecraft.src.RenderEngine;
-import net.minecraft.src.RenderGlobal;
-import net.minecraft.src.RenderManager;
-import net.minecraft.src.SoundManager;
-import net.minecraft.src.SoundPool;
-import net.minecraft.src.StringTranslate;
-import net.minecraft.src.TexturePackCustom;
-import net.minecraft.src.TexturePackImplementation;
-import net.minecraft.src.TexturePackList;
-import net.minecraft.src.TileEntity;
-import net.minecraft.src.Timer;
-import net.minecraft.src.WorldInfo;
-import net.minecraft.src.WorldRenderer;
-import net.minecraft.src.WorldType;
+import net.minecraft.src.*;
 
 /**
  * Wrapper for obf/mcp reflection-accessed private fields, mainly added to centralise the locations I have to update the obfuscated field names

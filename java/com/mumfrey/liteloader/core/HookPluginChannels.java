@@ -3,16 +3,11 @@ package com.mumfrey.liteloader.core;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.util.Map;
 
 import com.mumfrey.liteloader.util.PrivateFields;
 
-import net.minecraft.src.IntHashMap;
-import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet;
-import net.minecraft.src.Packet250CustomPayload;
-import net.minecraft.src.Packet3Chat;
+import net.minecraft.src.*;
 
 public class HookPluginChannels extends Packet250CustomPayload
 {

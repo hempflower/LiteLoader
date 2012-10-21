@@ -1,20 +1,13 @@
 package com.mumfrey.liteloader.util;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Map;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.src.IntHashMap;
-import net.minecraft.src.KeyBinding;
-import net.minecraft.src.Packet;
-import net.minecraft.src.Packet250CustomPayload;
-import net.minecraft.src.Render;
-import net.minecraft.src.RenderManager;
-import net.minecraft.src.Tessellator;
-
 import com.mumfrey.liteloader.core.LiteLoader;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.src.*;
 
 public abstract class ModUtilities
 {
@@ -24,9 +17,10 @@ public abstract class ModUtilities
      * @param entityClass
      * @param renderer
      */
-    public static void addRenderer(Class entityClass, Render renderer)
+    @SuppressWarnings("unchecked")
+	public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
     {
-    	Map entityRenderMap = PrivateFields.entityRenderMap.Get(RenderManager.instance);
+    	Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.Get(RenderManager.instance);
     	entityRenderMap.put(entityClass, renderer);
     	renderer.setRenderManager(RenderManager.instance);
     }
@@ -37,13 +31,14 @@ public abstract class ModUtilities
 	 * @param packetId
 	 * @param newPacket
 	 */
-	public static boolean registerPacketOverride(int packetId, Class newPacket)
+	@SuppressWarnings("unchecked")
+	public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
 	{
 		try
 		{
 	    	IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
 	    	PrivateFields.StaticFields.packetClassToIdMap.Get();
-			Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.Get();
+			Map<Class<? extends Packet>, Integer> packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.Get();
 			
 		    packetIdToClassMap.removeObject(packetId);
 		    packetIdToClassMap.addKey(packetId, newPacket);
@@ -111,6 +106,7 @@ public abstract class ModUtilities
 	    {
 	    	keyBindings.add(newBinding);
 	    	mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
+	    	mc.gameSettings.loadOptions();
 	    }
 	}
 
