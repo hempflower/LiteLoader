@@ -14,13 +14,6 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>jars</name>
-			<type>2</type>
-			<locationURI>MCP_LOC/jars</locationURI>
-		</link>
-	</linkedResources>
 	<variableList>
 		<variable>
 			<name>MCP_LOC</name>

@@ -1,6 +1,7 @@
 package net.minecraft.src;
 
 import java.util.Random;
+
 import org.lwjgl.opengl.GL11;
 
 import com.mumfrey.liteloader.core.LiteLoader;
@@ -12,8 +13,8 @@ public class RenderLightningBolt extends Render
 		// LiteLoader init
 		LiteLoader.getInstance();
 	}
-	
-    /**
+
+	/**
      * Actually renders the lightning bolt. This method is called through the doRender method.
      */
     public void doRenderLightningBolt(EntityLightningBolt par1EntityLightningBolt, double par2, double par4, double par6, float par8, float par9)

@@ -14,7 +14,7 @@ import net.minecraft.src.Profiler;
  *
  * @author Adam Mummery-Smith
  */
-public class LiteLoaderHook extends Profiler
+public class HookProfiler extends Profiler
 {
 	/**
 	 * Logger instance
@@ -24,12 +24,12 @@ public class LiteLoaderHook extends Profiler
 	/**
 	 * LiteLoader instance which will receive callbacks
 	 */
-	private LiteLoader core;
+	private LiteLoader loader;
 	
 	/**
 	 * Section list, used as a kind of stack to determine where we are in the profiler stack
 	 */
-	private LinkedList<String> sections = new LinkedList<String>();
+	private LinkedList<String> sectionStack = new LinkedList<String>();
 
 	/**
 	 * Initialisation done
@@ -57,9 +57,9 @@ public class LiteLoaderHook extends Profiler
 	 * @param core LiteLoader object which will get callbacks
 	 * @param logger Logger instance
 	 */
-	public LiteLoaderHook(LiteLoader core, Logger logger)
+	public HookProfiler(LiteLoader core, Logger logger)
 	{
-		this.core = core;
+		this.loader = core;
 		this.logger = logger;
 		
 		// Detect optifine (duh!)
@@ -128,13 +128,18 @@ public class LiteLoaderHook extends Profiler
 		if (!initDone)
 		{
 			initDone = true;
-			core.onInit();
+			loader.onInit();
 		}
 		
-		if (sectionName.equals("animateTick")) tick = true;
-		sections.add(sectionName);
+		if ("gameRenderer".equalsIgnoreCase(sectionName) && "root".equalsIgnoreCase(sectionStack.getLast()))
+		{
+			loader.onRender();
+		}
+			
+		if ("animateTick".equals(sectionName)) tick = true;
+		sectionStack.add(sectionName);
 		super.startSection(sectionName);
-		
+
 		if (ofProfiler != null)
 		{
 			try
@@ -160,13 +165,13 @@ public class LiteLoaderHook extends Profiler
 	{
 		super.endSection();
 		
-		String endingSection = sections.removeLast();
+		String endingSection = sectionStack.removeLast();
 
-		if (endingSection.equalsIgnoreCase("gameRenderer") && sections.getLast().equalsIgnoreCase("root"))
+		if ("gameRenderer".equalsIgnoreCase(endingSection) && "root".equalsIgnoreCase(sectionStack.getLast()))
 		{
 			super.startSection("litetick");
 
-			core.onTick(tick);
+			loader.onTick(this, tick);
 			tick = false;
 			
 			super.endSection();

@@ -16,7 +16,7 @@ class CallableJVMFlags implements Callable
     CallableJVMFlags(CrashReport par1CrashReport)
     {
         this.crashReportJVMFlags = par1CrashReport;
-        par1CrashReport.addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(par1CrashReport));
+        par1CrashReport.func_85056_g().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(par1CrashReport));
     }
 
     public String func_71487_a()

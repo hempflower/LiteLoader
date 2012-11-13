@@ -25,8 +25,11 @@ public class HookLogin extends Packet1Login
 	@Override
 	public void processPacket(NetHandler par1NetHandler)
 	{
-		super.processPacket(par1NetHandler);
-		
-		if (loader != null) loader.onConnectToServer(par1NetHandler, this);
+		if (loader == null || loader.onPreLogin(par1NetHandler, this))
+		{
+			super.processPacket(par1NetHandler);
+
+			if (loader != null) loader.onConnectToServer(par1NetHandler, this);
+		}
 	}
 }

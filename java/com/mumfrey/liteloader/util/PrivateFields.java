@@ -130,12 +130,12 @@ public class PrivateFields<P, T>
 		public T Get() { return Get(null); }
 		public void Set(T value) { Set(null, value); }
 		
-		public static final StaticFields<Packet, Map>           packetClassToIdMap = new StaticFields<Packet, Map>     (Packet.class,     "packetClassToIdMap", "a");
-		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a");
+		public static final StaticFields<Packet, Map>           packetClassToIdMap = new StaticFields<Packet, Map>     (Packet.class,     "packetClassToIdMap", "a"); // Packet/packetClassToIdMap
+		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "T");
-	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "o");
-	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "I");
+	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "T");  // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "I");  // Minecraft/mcProfiler
+	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "p");  // RenderManager/entityRenderMap
 }
 
