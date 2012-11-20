@@ -36,7 +36,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.4.4";
+	private static final String LOADER_VERSION = "1.4.5";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
@@ -48,7 +48,7 @@ public final class LiteLoader implements FilenameFilter
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String[] SUPPORTED_VERSIONS = { "1.4.4" };
+	private static final String[] SUPPORTED_VERSIONS = { "1.4.4", "1.4.5" };
 	
 	/**
 	 * LiteLoader is a singleton, this is the singleton instance
@@ -611,7 +611,7 @@ public final class LiteLoader implements FilenameFilter
 					addPluginChannelListener((PluginChannelListener)mod);
 				}
 				
-				loadedModsList += String.format("\n    - %s version %s", mod.getName(), mod.getVersion());
+				loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
 				loadedModsCount++;
 			}
 			catch (Throwable th)
