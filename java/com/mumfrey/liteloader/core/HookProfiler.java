@@ -5,7 +5,10 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import com.mumfrey.liteloader.util.ModUtilities;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.src.EntityPlayerSP;
 import net.minecraft.src.GameSettings;
 import net.minecraft.src.Profiler;
 
@@ -59,6 +62,8 @@ public class HookProfiler extends Profiler
 	 */
 	public HookProfiler(LiteLoader core, Logger logger)
 	{
+		this.mc = Minecraft.getMinecraft();
+
 		this.loader = core;
 		this.logger = logger;
 		
@@ -87,7 +92,6 @@ public class HookProfiler extends Profiler
 			if (ofProfiler != null)
 			{
 				logger.info(String.format("Optifine version %s detected, enabling compatibility check", GetOptifineVersion()));
-				mc = Minecraft.getMinecraft();
 			}
 		}
 	}
@@ -156,7 +160,7 @@ public class HookProfiler extends Profiler
 			}
 		}
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see net.minecraft.src.Profiler#endSection()
 	 */
@@ -165,9 +169,10 @@ public class HookProfiler extends Profiler
 	{
 		super.endSection();
 		
-		String endingSection = sectionStack.removeLast();
-
-		if ("gameRenderer".equalsIgnoreCase(endingSection) && "root".equalsIgnoreCase(sectionStack.getLast()))
+		String endingSection = sectionStack.size() > 0 ? sectionStack.removeLast() : null;
+		String nextSection = sectionStack.size() > 0 ? sectionStack.getLast() : null;
+		
+		if ("gameRenderer".equals(endingSection) && "root".equals(sectionStack.getLast()))
 		{
 			super.startSection("litetick");
 
@@ -175,6 +180,10 @@ public class HookProfiler extends Profiler
 			tick = false;
 			
 			super.endSection();
+		}
+		else if (("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (mc.skipRenderWorld || mc.theWorld == null)) || ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && mc.theWorld != null))
+		{
+			loader.onBeforeGuiRender();
 		}
 	}
 }

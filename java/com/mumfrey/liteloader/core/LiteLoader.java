@@ -5,6 +5,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLDecoder;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.*;
@@ -18,7 +19,6 @@ import java.util.zip.ZipInputStream;
 import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
-import com.sun.corba.se.impl.ior.ByteBuffer;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
@@ -28,7 +28,7 @@ import net.minecraft.src.Timer;
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.4.4
+ * @version 1.4.5_02
  */
 @SuppressWarnings("rawtypes")
 public final class LiteLoader implements FilenameFilter
@@ -36,7 +36,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.4.5";
+	private static final String LOADER_VERSION = "1.4.5_02";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
@@ -128,7 +128,7 @@ public final class LiteLoader implements FilenameFilter
 	 * List of mods which implement PluginChannelListener interface
 	 */
 	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
-	
+
 	/**
 	 * Mapping of plugin channel names to listeners 
 	 */
@@ -470,15 +470,35 @@ public final class LiteLoader implements FilenameFilter
 		{
 			logger.info("Searching protection domain code source...");
 			
-			File packagePath = new File(LiteLoader.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-			LinkedList<Class> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			File packagePath = null;
 			
-			for (Class mod : modClasses)
+			if (LiteLoader.class.getProtectionDomain().getCodeSource().getLocation() != null)
 			{
-				modsToLoad.put(mod.getSimpleName(), mod);
+				packagePath = new File(LiteLoader.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 			}
-
-			if (modClasses.size() > 0) logger.info(String.format("Found %s potential matches", modClasses.size()));
+			else
+			{
+				// Fix (?) for forge and other mods which screw up the protection domain 
+				String reflectionClassPath = LiteLoader.class.getResource("/com/mumfrey/liteloader/core/LiteLoader.class").getPath();
+				
+				if (reflectionClassPath.indexOf('!') > -1)
+				{
+					reflectionClassPath = URLDecoder.decode(reflectionClassPath, "UTF-8");
+					packagePath = new File(reflectionClassPath.substring(5, reflectionClassPath.indexOf('!')));
+				}
+			}
+			
+			if (packagePath != null)
+			{
+				LinkedList<Class> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+				
+				for (Class mod : modClasses)
+				{
+					modsToLoad.put(mod.getSimpleName(), mod);
+				}
+				
+				if (modClasses.size() > 0) logger.info(String.format("Found %s potential matches", modClasses.size()));
+			}
 		}
 		catch (Throwable th)
 		{
@@ -965,6 +985,15 @@ public final class LiteLoader implements FilenameFilter
 			renderListener.onRender();
 	}
 	
+	/**
+	 * Called immediately before the current GUI is rendered
+	 */
+	public void onBeforeGuiRender()
+	{
+		for (RenderListener renderListener : renderListeners)
+			renderListener.onRenderGui(minecraft.currentScreen);
+	}
+
 	/**
 	 * Callback from the tick hook, ticks all tickable mods
 	 * 
