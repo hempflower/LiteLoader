@@ -14,7 +14,20 @@ public interface RenderListener extends LiteMod
 	 */
 	public abstract void onRender();
 	
+	/**
+	 * Called immediately before the current GUI is rendered
+	 * 
+	 * @param currentScreen Current screen (if any)
+	 */
 	public abstract void onRenderGui(GuiScreen currentScreen);
 	
+	/**
+	 * Called when the world is rendered
+	 */
 	public abstract void onRenderWorld();
+
+	/**
+	 * Called immediately after the world/camera transform is initialised
+	 */
+	public abstract void onSetupCameraTransform();
 }

@@ -28,7 +28,7 @@ import net.minecraft.src.Timer;
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.4.5_02
+ * @version 1.4.6
  */
 @SuppressWarnings("rawtypes")
 public final class LiteLoader implements FilenameFilter
@@ -36,7 +36,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.4.5_02";
+	private static final String LOADER_VERSION = "1.4.6";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
@@ -48,7 +48,7 @@ public final class LiteLoader implements FilenameFilter
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String[] SUPPORTED_VERSIONS = { "1.4.4", "1.4.5" };
+	private static final String[] SUPPORTED_VERSIONS = { "1.4.6" };
 	
 	/**
 	 * LiteLoader is a singleton, this is the singleton instance
@@ -992,6 +992,15 @@ public final class LiteLoader implements FilenameFilter
 	{
 		for (RenderListener renderListener : renderListeners)
 			renderListener.onRenderGui(minecraft.currentScreen);
+	}
+
+	/**
+	 * Called immediately after the world/camera transform is initialised
+	 */
+	public void onSetupCameraTransform()
+	{
+		for (RenderListener renderListener : renderListeners)
+			renderListener.onSetupCameraTransform();
 	}
 
 	/**

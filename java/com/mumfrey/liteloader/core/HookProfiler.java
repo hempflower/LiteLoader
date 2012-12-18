@@ -139,7 +139,12 @@ public class HookProfiler extends Profiler
 		{
 			loader.onRender();
 		}
-			
+
+		if ("frustrum".equalsIgnoreCase(sectionName) && "level".equalsIgnoreCase(sectionStack.getLast()))
+		{
+			loader.onSetupCameraTransform();
+		}
+		
 		if ("animateTick".equals(sectionName)) tick = true;
 		sectionStack.add(sectionName);
 		super.startSection(sectionName);
