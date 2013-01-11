@@ -135,14 +135,19 @@ public class HookProfiler extends Profiler
 			loader.onInit();
 		}
 		
-		if ("gameRenderer".equalsIgnoreCase(sectionName) && "root".equalsIgnoreCase(sectionStack.getLast()))
+		if ("gameRenderer".equals(sectionName) && "root".equals(sectionStack.getLast()))
 		{
 			loader.onRender();
 		}
 
-		if ("frustrum".equalsIgnoreCase(sectionName) && "level".equalsIgnoreCase(sectionStack.getLast()))
+		if ("frustrum".equals(sectionName) && "level".equals(sectionStack.getLast()))
 		{
 			loader.onSetupCameraTransform();
+		}
+		
+		if ("litParticles".equals(sectionName))
+		{
+			loader.postRenderEntities();
 		}
 		
 		if ("animateTick".equals(sectionName)) tick = true;
@@ -189,6 +194,10 @@ public class HookProfiler extends Profiler
 		else if (("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (mc.skipRenderWorld || mc.theWorld == null)) || ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && mc.theWorld != null))
 		{
 			loader.onBeforeGuiRender();
+		}
+		else if ("hand".equals(endingSection) && "level".equals(sectionStack.getLast()))
+		{
+			loader.postRender();
 		}
 	}
 }

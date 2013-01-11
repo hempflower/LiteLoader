@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
+import com.mumfrey.liteloader.core.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.core.CallableLiteLoaderMods;
 
 class CallableJVMFlags implements Callable
@@ -16,10 +17,14 @@ class CallableJVMFlags implements Callable
     CallableJVMFlags(CrashReport par1CrashReport)
     {
         this.crashReportJVMFlags = par1CrashReport;
+        par1CrashReport.func_85056_g().addCrashSectionCallable("Mod Pack", new CallableLiteLoaderBrand(par1CrashReport));
         par1CrashReport.func_85056_g().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(par1CrashReport));
     }
 
-    public String func_71487_a()
+    /**
+     * Returns the number of JVM Flags along with the passed JVM Flags.
+     */
+    public String getJVMFlagsAsString()
     {
         RuntimeMXBean var1 = ManagementFactory.getRuntimeMXBean();
         List var2 = var1.getInputArguments();
@@ -48,6 +53,6 @@ class CallableJVMFlags implements Callable
     @Override
 	public Object call()
     {
-        return this.func_71487_a();
+        return this.getJVMFlagsAsString();
     }
 }
