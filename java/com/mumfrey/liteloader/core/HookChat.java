@@ -117,15 +117,15 @@ public class HookChat extends Packet3Chat
 	{
 		if (proxyPacket != null)
 			return proxyPacket.getPacketSize();
-		else
-			return super.getPacketSize();
+
+		return super.getPacketSize();
 	}
 	
 	/**
 	 * Register the specified handler as the packet handler for this packet
 	 * @param handler
 	 */
-	public static void RegisterPacketHandler(LiteLoader handler)
+	public static void registerPacketHandler(LiteLoader handler)
 	{
 		packetHandler = handler;
 	}
@@ -133,9 +133,9 @@ public class HookChat extends Packet3Chat
 	/**
 	 * Register this packet as the new packet for packet ID 3
 	 */
-    public static void Register()
+    public static void register()
     {
-    	Register(false);
+    	register(false);
     }
 
     /**
@@ -144,8 +144,8 @@ public class HookChat extends Packet3Chat
      * 
      * @param force Force registration even if registration was already performed previously.
      */
-    @SuppressWarnings("unchecked")
-	public static void Register(boolean force)
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void register(boolean force)
 	{
 		if (!registered || force)
 		{
@@ -162,7 +162,7 @@ public class HookChat extends Packet3Chat
 			    packetIdToClassMap.removeObject(3);
 			    packetIdToClassMap.addKey(3, HookChat.class);
 
-			    Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.Get();
+			    Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
 			    packetClassToIdMap.put(HookChat.class, Integer.valueOf(3));
 			    
 			    registered = true;

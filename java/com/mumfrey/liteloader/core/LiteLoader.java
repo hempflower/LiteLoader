@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -32,8 +31,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
+import javax.activity.InvalidActivityException;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.ConsoleLogManager;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet1Login;
 import net.minecraft.src.Packet3Chat;
@@ -57,7 +57,7 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.4.7
+ * @version 1.5
  */
 @SuppressWarnings("rawtypes")
 public final class LiteLoader implements FilenameFilter
@@ -65,19 +65,19 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.4.7";
+	private static final String LOADER_VERSION = "1.5";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
 	 */
-	private static final int LOADER_REVISION = 7;
+	private static final int LOADER_REVISION = 8;
 	
 	/**
 	 * Minecraft versions that we will load mods for, this will be compared
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String[] SUPPORTED_VERSIONS = { "1.4.6", "1.4.7" };
+	private static final String[] SUPPORTED_VERSIONS = { "1.5", "1.5.r1" };
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -241,6 +241,11 @@ public final class LiteLoader implements FilenameFilter
 		return logger;
 	}
 	
+	/**
+	 * Get the output stream which we are using for console output
+	 * 
+	 * @return
+	 */
 	public static final PrintStream getConsoleStream()
 	{
 		return useStdOut ? System.out : System.err;
@@ -331,7 +336,7 @@ public final class LiteLoader implements FilenameFilter
 	 */
 	private void prepareClassOverrides()
 	{
-		this.registerBaseClassOverride(ModUtilities.getObfuscatedFieldName("net.minecraft.src.CallableJVMFlags", "g"), "g");
+		this.registerBaseClassOverride(ModUtilities.getObfuscatedFieldName("net.minecraft.src.CallableJVMFlags", "h"), "h");
 	}
 	
 	/**
@@ -355,25 +360,25 @@ public final class LiteLoader implements FilenameFilter
 				
 				for (int readBytes = resourceInputStream.read(); readBytes >= 0; readBytes = resourceInputStream.read())
 				{
-			        outputStream.write(readBytes);
+					outputStream.write(readBytes);
 				}
-			 
+			
 				byte[] data = outputStream.toByteArray();
 
 				outputStream.close();
-			    resourceInputStream.close();
+				resourceInputStream.close();
 
-			    logger.info("Defining class override for " + binaryClassName);
-			    mDefineClass.invoke(Minecraft.class.getClassLoader(), binaryClassName, data, 0, data.length);
+				logger.info("Defining class override for " + binaryClassName);
+				mDefineClass.invoke(Minecraft.class.getClassLoader(), binaryClassName, data, 0, data.length);
 			}
 			else
 			{
-			    logger.info("Error defining class override for " + binaryClassName + ", file not found");
+				logger.info("Error defining class override for " + binaryClassName + ", file not found");
 			}
 		}
 		catch (Throwable th)
 		{
-		    logger.log(Level.WARNING, "Error defining class override for " + binaryClassName, th);
+			logger.log(Level.WARNING, "Error defining class override for " + binaryClassName, th);
 		}
 	}
 	
@@ -417,34 +422,19 @@ public final class LiteLoader implements FilenameFilter
 	 * @throws SecurityException
 	 * @throws IOException
 	 */
-	@SuppressWarnings("unchecked")
 	private void prepareLogger() throws SecurityException, IOException
 	{
-		Formatter minecraftLogFormatter = null;
-		
-		try
-		{
-			Class<? extends Formatter> formatterClass = (Class<? extends Formatter>)Minecraft.class.getClassLoader().loadClass(ModUtilities.getObfuscatedFieldName("net.minecraft.src.ConsoleLogFormatter", "em"));
-			Constructor<? extends Formatter> defaultConstructor = formatterClass.getDeclaredConstructor();
-			defaultConstructor.setAccessible(true);
-			minecraftLogFormatter = defaultConstructor.newInstance();
-		}
-		catch (Exception ex)
-		{
-			ConsoleLogManager.init();
-			minecraftLogFormatter = ConsoleLogManager.loggerLogManager.getHandlers()[0].getFormatter();
-		}
+		Formatter logFormatter = new LiteLoaderLogFormatter();
 		
 		logger.setUseParentHandlers(false);
-		
 		this.useStdOut = System.getProperty("liteloader.log", "stderr").equalsIgnoreCase("stdout") || this.localProperties.getProperty("log", "stderr").equalsIgnoreCase("stdout");
 		
 		StreamHandler consoleHandler = useStdOut ? new com.mumfrey.liteloader.util.log.ConsoleHandler() : new java.util.logging.ConsoleHandler();
-		if (minecraftLogFormatter != null) consoleHandler.setFormatter(minecraftLogFormatter);
+		consoleHandler.setFormatter(logFormatter);
 		logger.addHandler(consoleHandler);
 		
 		FileHandler logFileHandler = new FileHandler(new File(Minecraft.getMinecraftDir(), "LiteLoader.txt").getAbsolutePath());
-		if (minecraftLogFormatter != null) logFileHandler.setFormatter(minecraftLogFormatter);
+		logFileHandler.setFormatter(logFormatter);
 		logger.addHandler(logFileHandler);
 	}
 	
@@ -470,6 +460,7 @@ public final class LiteLoader implements FilenameFilter
 
 		try
 		{
+			this.localProperties = new Properties(this.internalProperties);
 			InputStream localPropertiesStream = this.getLocalPropertiesStream();
 			
 			if (localPropertiesStream != null)
@@ -480,7 +471,7 @@ public final class LiteLoader implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
-			this.localProperties = new Properties();
+			this.localProperties = new Properties(this.internalProperties);
 		}
 	}
 	
@@ -557,6 +548,34 @@ public final class LiteLoader implements FilenameFilter
 	public String getBranding()
 	{
 		return this.branding;
+	}
+	
+	/**
+	 * Get a reference to a loaded mod, if the mod exists
+	 * 
+	 * @param modName Mod's name or class name
+	 * @return
+	 * @throws InvalidActivityException
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends LiteMod> T getMod(String modName) throws InvalidActivityException, IllegalArgumentException
+	{
+		if (!this.loaderStartupComplete)
+		{
+			throw new InvalidActivityException("Attempted to get a reference to a mod before loader startup is complete");
+		}
+		
+		if (modName == null)
+		{
+			throw new IllegalArgumentException("Attempted to get a reference to a mod without specifying a mod name");
+		}
+			
+		for (LiteMod mod : this.mods)
+		{
+			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(mod.getClass().getSimpleName())) return (T)mod;
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -637,6 +656,10 @@ public final class LiteLoader implements FilenameFilter
 					{
 						modFiles.add(modFile);
 					}
+					else
+					{
+						logger.info("Not adding invalid or outdated mod file: " +  modFile.getAbsolutePath());
+					}
 				}
 				
 				modZip.close();
@@ -705,6 +728,11 @@ public final class LiteLoader implements FilenameFilter
 					
 					for (Class mod : modClasses)
 					{
+						if (modsToLoad.containsKey(mod.getSimpleName()))
+						{
+							logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+						}
+						
 						modsToLoad.put(mod.getSimpleName(), mod);
 					}
 					
@@ -729,6 +757,11 @@ public final class LiteLoader implements FilenameFilter
 				
 				for (Class mod : modClasses)
 				{
+					if (modsToLoad.containsKey(mod.getSimpleName()))
+					{
+						logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+					}
+					
 					modsToLoad.put(mod.getSimpleName(), mod);
 				}
 				
@@ -745,6 +778,11 @@ public final class LiteLoader implements FilenameFilter
 			
 			for (Class mod : modClasses)
 			{
+				if (modsToLoad.containsKey(mod.getSimpleName()))
+				{
+					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+				}
+				
 				modsToLoad.put(mod.getSimpleName(), mod);
 			}
 
@@ -831,9 +869,16 @@ public final class LiteLoader implements FilenameFilter
 					this.addChatFilter((ChatFilter)mod);
 				}
 				
-				if (mod instanceof ChatListener && !(mod instanceof ChatFilter))
+				if (mod instanceof ChatListener)
 				{
-					this.addChatListener((ChatListener)mod);
+					if (mod instanceof ChatFilter)
+					{
+						this.logger.warning(String.format("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", mod.getName()));
+					}
+					else
+					{
+						this.addChatListener((ChatListener)mod);
+					}
 				}
 				
 				if (mod instanceof PreLoginListener)
@@ -875,8 +920,8 @@ public final class LiteLoader implements FilenameFilter
 			if ((this.chatListeners.size() > 0 || this.chatFilters.size() > 0) && !this.chatHooked)
 			{
 				this.chatHooked = true;
-				HookChat.Register();
-				HookChat.RegisterPacketHandler(this);
+				HookChat.register();
+				HookChat.registerPacketHandler(this);
 			}
 			
 			// Login hook
@@ -891,15 +936,15 @@ public final class LiteLoader implements FilenameFilter
 			if (this.pluginChannelListeners.size() > 0 && !this.pluginChannelHooked)
 			{
 				this.pluginChannelHooked = true;
-				HookPluginChannels.Register();
-				HookPluginChannels.RegisterPacketHandler(this);
+				HookPluginChannels.register();
+				HookPluginChannels.registerPacketHandler(this);
 			}
 			
 			// Tick hook
 			if (!this.tickHooked)
 			{
 				this.tickHooked = true;
-				PrivateFields.minecraftProfiler.SetFinal(this.minecraft, new HookProfiler(this, logger));
+				PrivateFields.minecraftProfiler.setFinal(this.minecraft, new HookProfiler(this, logger));
 			}
 		}
 		catch (Exception ex)
@@ -1272,7 +1317,7 @@ public final class LiteLoader implements FilenameFilter
 		// Try to get the minecraft timer object and determine the value of the partialTicks
 		if (tick || this.minecraftTimer == null)
 		{
-			this.minecraftTimer = PrivateFields.minecraftTimer.Get(this.minecraft);
+			this.minecraftTimer = PrivateFields.minecraftTimer.get(this.minecraft);
 		}
 			
 		// Hooray, we got the timer reference
@@ -1421,9 +1466,9 @@ public final class LiteLoader implements FilenameFilter
 				separator = true;
 			}
 			
-	        byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
-        
-	        sendPluginChannelMessage("REGISTER", registrationData);
+			byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
+			
+			sendPluginChannelMessage("REGISTER", registrationData);
 		}
 	}
 }

@@ -5,10 +5,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import com.mumfrey.liteloader.util.ModUtilities;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.EntityPlayerSP;
 import net.minecraft.src.GameSettings;
 import net.minecraft.src.Profiler;
 
@@ -68,7 +65,7 @@ public class HookProfiler extends Profiler
 		this.logger = logger;
 		
 		// Detect optifine (duh!)
-		DetectOptifine();
+		detectOptifine();
 	}
 
 	/**
@@ -76,7 +73,7 @@ public class HookProfiler extends Profiler
 	 * 
 	 * @param logger
 	 */
-	private void DetectOptifine()
+	private void detectOptifine()
 	{
 		try
 		{
@@ -91,7 +88,7 @@ public class HookProfiler extends Profiler
 		{
 			if (ofProfiler != null)
 			{
-				logger.info(String.format("Optifine version %s detected, enabling compatibility check", GetOptifineVersion()));
+				logger.info(String.format("Optifine version %s detected, enabling compatibility check", getOptifineVersion()));
 			}
 		}
 	}
@@ -101,15 +98,14 @@ public class HookProfiler extends Profiler
 	 * 
 	 * @return
 	 */
-	private String GetOptifineVersion()
+	private String getOptifineVersion()
 	{
 		try
 		{
-			Class config = Class.forName("Config");
+			Class<?> config = Class.forName("Config");
 			
 			if (config != null)
 			{
-				@SuppressWarnings("unchecked")
 				Method getVersion = config.getDeclaredMethod("getVersion");
 				
 				if (getVersion != null)

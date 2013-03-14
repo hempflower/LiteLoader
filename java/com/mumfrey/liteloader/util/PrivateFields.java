@@ -15,12 +15,13 @@ import net.minecraft.src.*;
  * @param <P> Parent class type, the type of the class that owns the field
  * @param <T> Field type, the type of the field value
  */
+@SuppressWarnings("rawtypes")
 public class PrivateFields<P, T>
 {
 	/**
 	 * Class to which this field belongs
 	 */
-	public final Class parentClass;
+	public final Class<P> parentClass;
 
 	/**
 	 * MCP name for this field
@@ -44,7 +45,7 @@ public class PrivateFields<P, T>
 	 * @param mcpName
 	 * @param name
 	 */
-	private PrivateFields(Class owner, String mcpName, String name)
+	private PrivateFields(Class<P> owner, String mcpName, String name)
 	{
 		this.parentClass = owner;
 		this.mcpName = mcpName;
@@ -60,7 +61,7 @@ public class PrivateFields<P, T>
 	 * @return field value or null if errors occur
 	 */
 	@SuppressWarnings("unchecked")
-	public T Get(P instance)
+	public T get(P instance)
 	{
 		try
 		{
@@ -81,7 +82,7 @@ public class PrivateFields<P, T>
 	 * @param value value to set
 	 * @return value
 	 */
-	public T Set(P instance, T value)
+	public T set(P instance, T value)
 	{
 		try
 		{
@@ -101,7 +102,7 @@ public class PrivateFields<P, T>
 	 * @param value value to set
 	 * @return value
 	 */
-	public T SetFinal(P instance, T value)
+	public T setFinal(P instance, T value)
 	{
 		try
 		{
@@ -126,16 +127,16 @@ public class PrivateFields<P, T>
 	 */
 	public static final class StaticFields<P, T> extends PrivateFields<P, T>
 	{
-		public StaticFields(Class owner, String mcpName, String name) { super(owner, mcpName, name); }
-		public T Get() { return Get(null); }
-		public void Set(T value) { Set(null, value); }
+		public StaticFields(Class<P> owner, String mcpName, String name) { super(owner, mcpName, name); }
+		public T get() { return get(null); }
+		public void set(T value) { set(null, value); }
 		
 		public static final StaticFields<Packet, Map>           packetClassToIdMap = new StaticFields<Packet, Map>     (Packet.class,     "packetClassToIdMap", "a"); // Packet/packetClassToIdMap
 		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "T");  // Minecraft/timer
-	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "I");  // Minecraft/mcProfiler
-	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "p");  // RenderManager/entityRenderMap
+	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "V");  // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "J");  // Minecraft/mcProfiler
+	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "q");  // RenderManager/entityRenderMap
 }
 

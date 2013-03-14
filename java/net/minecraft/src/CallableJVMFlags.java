@@ -9,14 +9,14 @@ import java.util.concurrent.Callable;
 import com.mumfrey.liteloader.core.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.core.CallableLiteLoaderMods;
 
-class CallableJVMFlags implements Callable
+class CallableJVMFlags implements Callable<String>
 {
-    /** Gets additional Java Enviroment info for Crash Report. */
-    final CrashReport crashReportJVMFlags;
+    /** Reference to the CrashReport object. */
+    final CrashReport theCrashReport;
 
     CallableJVMFlags(CrashReport par1CrashReport)
     {
-        this.crashReportJVMFlags = par1CrashReport;
+        this.theCrashReport = par1CrashReport;
         par1CrashReport.func_85056_g().addCrashSectionCallable("Mod Pack", new CallableLiteLoaderBrand(par1CrashReport));
         par1CrashReport.func_85056_g().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(par1CrashReport));
     }
@@ -27,14 +27,14 @@ class CallableJVMFlags implements Callable
     public String getJVMFlagsAsString()
     {
         RuntimeMXBean var1 = ManagementFactory.getRuntimeMXBean();
-        List var2 = var1.getInputArguments();
+        List<String> var2 = var1.getInputArguments();
         int var3 = 0;
         StringBuilder var4 = new StringBuilder();
-        Iterator var5 = var2.iterator();
+        Iterator<String> var5 = var2.iterator();
 
         while (var5.hasNext())
         {
-            String var6 = (String)var5.next();
+            String var6 = var5.next();
 
             if (var6.startsWith("-X"))
             {
@@ -51,7 +51,7 @@ class CallableJVMFlags implements Callable
     }
 
     @Override
-	public Object call()
+	public String call()
     {
         return this.getJVMFlagsAsString();
     }

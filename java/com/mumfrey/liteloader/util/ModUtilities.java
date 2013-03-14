@@ -1,8 +1,10 @@
 package com.mumfrey.liteloader.util;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import com.mumfrey.liteloader.core.LiteLoader;
 
@@ -11,48 +13,55 @@ import net.minecraft.src.*;
 
 public abstract class ModUtilities
 {
-    /**
-     * Add a renderer map entry for the specified entity class
-     * 
-     * @param entityClass
-     * @param renderer
-     */
+	private static Set<Integer> overriddenPackets = new HashSet<Integer>();
+	
+	/**
+	 * Add a renderer map entry for the specified entity class
+	 * 
+	 * @param entityClass
+	 * @param renderer
+	 */
     @SuppressWarnings("unchecked")
 	public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
     {
-    	Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.Get(RenderManager.instance);
+    	Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(RenderManager.instance);
     	entityRenderMap.put(entityClass, renderer);
     	renderer.setRenderManager(RenderManager.instance);
     }
-
-	/**
-	 * Register a packet override
-	 * 
-	 * @param packetId
-	 * @param newPacket
-	 */
-	@SuppressWarnings("unchecked")
-	public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
-	{
-		try
-		{
-	    	IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-	    	PrivateFields.StaticFields.packetClassToIdMap.Get();
-			Map<Class<? extends Packet>, Integer> packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.Get();
-			
-		    packetIdToClassMap.removeObject(packetId);
-		    packetIdToClassMap.addKey(packetId, newPacket);
-	        packetClassToIdMap.put(newPacket, Integer.valueOf(packetId));
-			
-			return true;
-		}
-		catch (Exception ex)
-		{
-			LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
-			return false;
-		}
-	}
-	
+    
+    /**
+     * Register a packet override
+     * 
+     * @param packetId
+     * @param newPacket
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
+    {
+    	if (overriddenPackets.contains(Integer.valueOf(packetId)))
+    	{
+    		LiteLoader.getLogger().warning(String.format("Packet with ID %s was already overridden by another mod, one or mods may not function correctly", packetId));
+    	}
+    	
+    	try
+    	{
+    		IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
+    		PrivateFields.StaticFields.packetClassToIdMap.get();
+    		Map<Class<? extends Packet>, Integer> packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
+    		
+    		packetIdToClassMap.removeObject(packetId);
+    		packetIdToClassMap.addKey(packetId, newPacket);
+    		packetClassToIdMap.put(newPacket, Integer.valueOf(packetId));
+    		
+    		return true;
+    	}
+    	catch (Exception ex)
+    	{
+    		LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
+    		return false;
+    	}
+    }
+    
 	/**
 	 * Send a plugin channel (custom payload) packet to the server
 	 * 
@@ -99,17 +108,17 @@ public abstract class ModUtilities
 		
 		if (mc == null || mc.gameSettings == null) return;
 		
-	    LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
-	    keyBindings.addAll(Arrays.asList(mc.gameSettings.keyBindings));
-	    
-	    if (!keyBindings.contains(newBinding))
-	    {
-	    	keyBindings.add(newBinding);
-	    	mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
-	    	mc.gameSettings.loadOptions();
-	    }
+		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
+		keyBindings.addAll(Arrays.asList(mc.gameSettings.keyBindings));
+		
+		if (!keyBindings.contains(newBinding))
+		{
+			keyBindings.add(newBinding);
+			mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
+			mc.gameSettings.loadOptions();
+		}
 	}
-
+	
 	/**
 	 * Unregisters a registered keybind with the game settings class, thus removing it from the "controls" screen
 	 * 
@@ -120,14 +129,14 @@ public abstract class ModUtilities
 		Minecraft mc = Minecraft.getMinecraft();
 		
 		if (mc == null || mc.gameSettings == null) return;
-	
+		
 		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
-	    keyBindings.addAll(Arrays.asList(mc.gameSettings.keyBindings));
-	    
-	    if (keyBindings.contains(removeBinding))
-	    {
-	        keyBindings.remove(removeBinding);
-	        mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
-	    }
+		keyBindings.addAll(Arrays.asList(mc.gameSettings.keyBindings));
+		
+		if (keyBindings.contains(removeBinding))
+		{
+			keyBindings.remove(removeBinding);
+			mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
+		}
 	}
 }
