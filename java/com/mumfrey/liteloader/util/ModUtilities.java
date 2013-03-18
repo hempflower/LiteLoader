@@ -8,12 +8,27 @@ import java.util.Set;
 
 import com.mumfrey.liteloader.core.LiteLoader;
 
+import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.*;
 
 public abstract class ModUtilities
 {
+	/**
+	 * Collection of packets we have already overridden, so that duplicate registrations can generate a warning
+	 */
 	private static Set<Integer> overriddenPackets = new HashSet<Integer>();
+	
+	/**
+	 * True if FML is being used, in which case we use searge names instead of raw field/method names
+	 */
+	private static boolean forgeModLoader = false;
+	
+	static
+	{
+		// Check for FML
+		forgeModLoader = ClientBrandRetriever.getClientModName().contains("fml");
+	}
 	
 	/**
 	 * Add a renderer map entry for the specified entity class
@@ -92,9 +107,10 @@ public abstract class ModUtilities
 	 * @param fieldName Name of field to get, returned unmodified if in debug mode
 	 * @return Obfuscated field name if present
 	 */
-	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName)
+	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
 	{
-		return (!net.minecraft.src.Tessellator.instance.getClass().getSimpleName().equals("Tessellator")) ? obfuscatedFieldName : fieldName;
+		if (forgeModLoader) return seargeFieldName;
+		return !net.minecraft.src.Tessellator.instance.getClass().getSimpleName().equals("Tessellator") ? obfuscatedFieldName : fieldName;
 	}
 
 	/**

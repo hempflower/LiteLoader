@@ -65,7 +65,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.5";
+	private static final String LOADER_VERSION = "1.5_01";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
@@ -336,7 +336,7 @@ public final class LiteLoader implements FilenameFilter
 	 */
 	private void prepareClassOverrides()
 	{
-		this.registerBaseClassOverride(ModUtilities.getObfuscatedFieldName("net.minecraft.src.CallableJVMFlags", "h"), "h");
+		this.registerBaseClassOverride(ModUtilities.getObfuscatedFieldName("net.minecraft.src.CallableJVMFlags", "h", "h"), "h");
 	}
 	
 	/**

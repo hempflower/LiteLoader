@@ -33,6 +33,8 @@ public class PrivateFields<P, T>
 	 */
 	public final String name;
 	
+	public final String seargeName;
+	
 	/**
 	 * Name used to access the field, determined at init
 	 */
@@ -45,13 +47,14 @@ public class PrivateFields<P, T>
 	 * @param mcpName
 	 * @param name
 	 */
-	private PrivateFields(Class<P> owner, String mcpName, String name)
+	private PrivateFields(Class<P> owner, String mcpName, String name, String seargeName)
 	{
 		this.parentClass = owner;
-		this.mcpName = mcpName;
-		this.name = name;
+		this.mcpName     = mcpName;
+		this.name        = name;
+		this.seargeName  = seargeName;
 		
-		this.fieldName = ModUtilities.getObfuscatedFieldName(mcpName, name);
+		this.fieldName = ModUtilities.getObfuscatedFieldName(mcpName, name, seargeName);
 	}
 	
 	/**
@@ -127,16 +130,16 @@ public class PrivateFields<P, T>
 	 */
 	public static final class StaticFields<P, T> extends PrivateFields<P, T>
 	{
-		public StaticFields(Class<P> owner, String mcpName, String name) { super(owner, mcpName, name); }
+		public StaticFields(Class<P> owner, String mcpName, String name, String fmlName) { super(owner, mcpName, name, fmlName); }
 		public T get() { return get(null); }
 		public void set(T value) { set(null, value); }
 		
-		public static final StaticFields<Packet, Map>           packetClassToIdMap = new StaticFields<Packet, Map>     (Packet.class,     "packetClassToIdMap", "a"); // Packet/packetClassToIdMap
-		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a"); // TileEntity/nameToClassMap
+		public static final StaticFields<Packet, Map>           packetClassToIdMap = new StaticFields<Packet, Map>     (Packet.class,     "packetClassToIdMap", "a", "field_73291_a"); // Packet/packetClassToIdMap
+		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a", "field_70326_a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "V");  // Minecraft/timer
-	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "J");  // Minecraft/mcProfiler
-	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "q");  // RenderManager/entityRenderMap
+	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "V", "field_71428_T");  // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "J", "field_71424_I");  // Minecraft/mcProfiler
+	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "q", "field_78729_o");  // RenderManager/entityRenderMap
 }
 
