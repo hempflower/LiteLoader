@@ -57,7 +57,7 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * LiteLoader is a simple loader which provides tick events to loaded mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.5
+ * @version 1.5.1
  */
 @SuppressWarnings("rawtypes")
 public final class LiteLoader implements FilenameFilter
@@ -65,7 +65,7 @@ public final class LiteLoader implements FilenameFilter
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.5_01";
+	private static final String LOADER_VERSION = "1.5.1";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
@@ -77,7 +77,7 @@ public final class LiteLoader implements FilenameFilter
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String[] SUPPORTED_VERSIONS = { "1.5", "1.5.r1" };
+	private static final String[] SUPPORTED_VERSIONS = { "1.5.1", "1.5.r2" };
 	
 	/**
 	 * Maximum recursion depth for mod discovery
