@@ -34,14 +34,23 @@ import java.util.zip.ZipInputStream;
 import javax.activity.InvalidActivityException;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.src.GuiControls;
+import net.minecraft.src.GuiNewChat;
+import net.minecraft.src.GuiScreen;
+import net.minecraft.src.ILogAgent;
+import net.minecraft.src.IPlayerUsage;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet1Login;
 import net.minecraft.src.Packet3Chat;
+import net.minecraft.src.PlayerUsageSnooper;
 import net.minecraft.src.Profiler;
+import net.minecraft.src.ScaledResolution;
 import net.minecraft.src.Timer;
 
 import com.mumfrey.liteloader.ChatFilter;
 import com.mumfrey.liteloader.ChatListener;
+import com.mumfrey.liteloader.ChatRenderListener;
+import com.mumfrey.liteloader.GameLoopListener;
 import com.mumfrey.liteloader.InitCompleteListener;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.LoginListener;
@@ -50,34 +59,35 @@ import com.mumfrey.liteloader.PostRenderListener;
 import com.mumfrey.liteloader.PreLoginListener;
 import com.mumfrey.liteloader.RenderListener;
 import com.mumfrey.liteloader.Tickable;
+import com.mumfrey.liteloader.gui.GuiControlsPaginated;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
 
 /**
- * LiteLoader is a simple loader which provides tick events to loaded mods 
+ * LiteLoader is a simple loader which loads and provides useful callbacks to lightweight mods 
  *
  * @author Adam Mummery-Smith
- * @version 1.5.1
+ * @version 1.5.2
  */
 @SuppressWarnings("rawtypes")
-public final class LiteLoader implements FilenameFilter
+public final class LiteLoader implements FilenameFilter, IPlayerUsage
 {
 	/**
 	 * Liteloader version 
 	 */
-	private static final String LOADER_VERSION = "1.5.1";
+	private static final String LOADER_VERSION = "1.5.2";
 	
 	/**
 	 * Loader revision, can be used by mods to determine whether the loader is sufficiently up-to-date 
 	 */
-	private static final int LOADER_REVISION = 8;
+	private static final int LOADER_REVISION = 9;
 	
 	/**
 	 * Minecraft versions that we will load mods for, this will be compared
 	 * against the version.txt value in mod files to prevent outdated mods being
 	 * loaded!!!
 	 */
-	private static final String[] SUPPORTED_VERSIONS = { "1.5.1", "1.5.r2" };
+	private static final String[] SUPPORTED_VERSIONS = { "1.5.2", "1.5.r1" };
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -130,6 +140,11 @@ public final class LiteLoader implements FilenameFilter
 	private String branding = null;
 	
 	/**
+	 * Setting value, if true we will swap out the MC "Controls" GUI for our custom, paginated one 
+	 */
+	private boolean paginateControls = true;
+	
+	/**
 	 * Reference to the minecraft timer
 	 */
 	private Timer minecraftTimer;
@@ -151,6 +166,11 @@ public final class LiteLoader implements FilenameFilter
 	private LinkedList<Tickable> tickListeners = new LinkedList<Tickable>();
 	
 	/**
+	 * List of mods which implement the GameLoopListener interface and will receive loop events
+	 */
+	private LinkedList<GameLoopListener> loopListeners = new LinkedList<GameLoopListener>();
+	
+	/**
 	 * 
 	 */
 	private LinkedList<InitCompleteListener> initListeners = new LinkedList<InitCompleteListener>();
@@ -165,6 +185,11 @@ public final class LiteLoader implements FilenameFilter
 	 * List of mods which implement the PostRenderListener interface and want to render entities
 	 */
 	private LinkedList<PostRenderListener> postRenderListeners = new LinkedList<PostRenderListener>();
+	
+	/**
+	 * List of mods which implement ChatRenderListener and want to know when chat is rendered
+	 */
+	private LinkedList<ChatRenderListener> chatRenderListeners = new LinkedList<ChatRenderListener>();
 	
 	/**
 	 * List of mods which implement ChatListener interface and will receive chat
@@ -212,6 +237,16 @@ public final class LiteLoader implements FilenameFilter
 	 * Flags which keep track of whether hooks have been applied
 	 */
 	private boolean chatHooked, loginHooked, pluginChannelHooked, tickHooked;
+
+	/**
+	 * Profiler hook objects
+	 */
+	private HookProfiler profilerHook = new HookProfiler(this, logger);
+
+	/**
+	 * ScaledResolution used by the pre-chat and post-chat render callbacks
+	 */
+	private ScaledResolution currentResolution;
 	
 	/**
 	 * Get the singleton instance of LiteLoader, initialises the loader if necessary
@@ -398,6 +433,9 @@ public final class LiteLoader implements FilenameFilter
 			
 			// Prepare the log writer
 			this.prepareLogger();
+			
+			this.paginateControls = this.localProperties.getProperty("controls.pages", "true").equalsIgnoreCase("true");
+			this.localProperties.setProperty("controls.pages", String.valueOf(this.paginateControls));
 			
 			this.branding = this.internalProperties.getProperty("brand", null);
 			if (this.branding != null && this.branding.length() < 1) this.branding = null;
@@ -652,7 +690,7 @@ public final class LiteLoader implements FilenameFilter
 					versionReader.close();
 					
 					// Only add the mod if the version matches and we were able to successfully add it to the class path
-					if (supportedVerions.contains(strVersion) && addURLToClassPath(modFile.toURI().toURL()))
+					if (supportedVerions.contains(strVersion) && this.addURLToClassPath(modFile.toURI().toURL()))
 					{
 						modFiles.add(modFile);
 					}
@@ -834,7 +872,7 @@ public final class LiteLoader implements FilenameFilter
 		this.loadedModsList = "";
 		int loadedModsCount = 0;
 		
-		for (Iterator<LiteMod> iter = mods.iterator(); iter.hasNext();)
+		for (Iterator<LiteMod> iter = this.mods.iterator(); iter.hasNext();)
 		{
 			LiteMod mod = iter.next();
 			
@@ -847,6 +885,11 @@ public final class LiteLoader implements FilenameFilter
 				if (mod instanceof Tickable)
 				{
 					this.addTickListener((Tickable)mod);
+				}
+				
+				if (mod instanceof GameLoopListener)
+				{
+					this.addLoopListener((GameLoopListener)mod);
 				}
 
 				if (mod instanceof InitCompleteListener)
@@ -879,6 +922,11 @@ public final class LiteLoader implements FilenameFilter
 					{
 						this.addChatListener((ChatListener)mod);
 					}
+				}
+				
+				if (mod instanceof ChatRenderListener)
+				{
+					this.addChatRenderListener((ChatRenderListener)mod);
 				}
 				
 				if (mod instanceof PreLoginListener)
@@ -944,8 +992,12 @@ public final class LiteLoader implements FilenameFilter
 			if (!this.tickHooked)
 			{
 				this.tickHooked = true;
-				PrivateFields.minecraftProfiler.setFinal(this.minecraft, new HookProfiler(this, logger));
+				PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
 			}
+			
+			// Sanity hook
+			PlayerUsageSnooper snooper = this.minecraft.getPlayerUsageSnooper();
+			PrivateFields.playerStatsCollector.setFinal(snooper, this);
 		}
 		catch (Exception ex)
 		{
@@ -962,6 +1014,18 @@ public final class LiteLoader implements FilenameFilter
 		if (!this.tickListeners.contains(tickable))
 		{
 			this.tickListeners.add(tickable);
+			if (this.loaderStartupComplete) this.initHooks();
+		}
+	}
+	
+	/**
+	 * @param loopListener
+	 */
+	public void addLoopListener(GameLoopListener loopListener)
+	{
+		if (!this.loopListeners.contains(loopListener))
+		{
+			this.loopListeners.add(loopListener);
 			if (this.loaderStartupComplete) this.initHooks();
 		}
 	}
@@ -1022,6 +1086,18 @@ public final class LiteLoader implements FilenameFilter
 		if (!this.chatListeners.contains(chatListener))
 		{
 			this.chatListeners.add(chatListener);
+			if (this.loaderStartupComplete) this.initHooks();
+		}
+	}
+	
+	/**
+	 * @param chatRenderListener
+	 */
+	public void addChatRenderListener(ChatRenderListener chatRenderListener)
+	{
+		if (!this.chatRenderListeners.contains(chatRenderListener))
+		{
+			this.chatRenderListeners.add(chatRenderListener);
 			if (this.loaderStartupComplete) this.initHooks();
 		}
 	}
@@ -1261,6 +1337,17 @@ public final class LiteLoader implements FilenameFilter
 	 */
 	public void onRender()
 	{
+		if (this.paginateControls && this.minecraft.currentScreen != null && this.minecraft.currentScreen.getClass().equals(GuiControls.class))
+		{
+			try
+			{
+				// Try to get the parent screen entry from the existing screen
+				GuiScreen parentScreen = PrivateFields.guiControlsParentScreen.get((GuiControls)this.minecraft.currentScreen);
+				this.minecraft.displayGuiScreen(new GuiControlsPaginated(parentScreen, this.minecraft.gameSettings));
+			}
+			catch (Exception ex) { }
+		}
+		
 		for (RenderListener renderListener : this.renderListeners)
 			renderListener.onRender();
 	}
@@ -1304,6 +1391,44 @@ public final class LiteLoader implements FilenameFilter
 		for (RenderListener renderListener : this.renderListeners)
 			renderListener.onSetupCameraTransform();
 	}
+	
+	/**
+	 * Called immediately before the chat log is rendered
+	 */
+	public void onBeforeChatRender()
+	{
+        this.currentResolution = new ScaledResolution(this.minecraft.gameSettings, this.minecraft.displayWidth, this.minecraft.displayHeight);
+        int screenWidth = this.currentResolution.getScaledWidth();
+        int screenHeight = this.currentResolution.getScaledHeight();
+
+        GuiNewChat chat = this.minecraft.ingameGUI.getChatGUI();
+		
+		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
+			chatRenderListener.onPreRenderChat(screenWidth, screenHeight, chat);
+	}
+
+	/**
+	 * Called immediately after the chat log is rendered
+	 */
+	public void onAfterChatRender()
+	{
+        int screenWidth = this.currentResolution.getScaledWidth();
+        int screenHeight = this.currentResolution.getScaledHeight();
+
+        GuiNewChat chat = this.minecraft.ingameGUI.getChatGUI();
+		
+		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
+			chatRenderListener.onPostRenderChat(screenWidth, screenHeight, chat);
+	}
+
+	/**
+	 * Callback from the tick hook, called every frame when the timer is updated 
+	 */
+	public void onTimerUpdate()
+	{
+		for (GameLoopListener loopListener : this.loopListeners)
+			loopListener.onRunGameLoop(this.minecraft);
+	}
 
 	/**
 	 * Callback from the tick hook, ticks all tickable mods
@@ -1323,7 +1448,7 @@ public final class LiteLoader implements FilenameFilter
 		// Hooray, we got the timer reference
 		if (this.minecraftTimer != null)
 		{
-			partialTicks = this.minecraftTimer.elapsedPartialTicks;
+			partialTicks = this.minecraftTimer.renderPartialTicks;
 			tick = this.minecraftTimer.elapsedTicks > 0;
 		}
 	
@@ -1389,7 +1514,7 @@ public final class LiteLoader implements FilenameFilter
 		for (LoginListener loginListener : this.loginListeners)
 			loginListener.onLogin(netHandler, loginPacket);
 		
-		setupPluginChannels();
+		this.setupPluginChannels();
 	}
 	
 	/**
@@ -1468,7 +1593,55 @@ public final class LiteLoader implements FilenameFilter
 			
 			byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
 			
-			sendPluginChannelMessage("REGISTER", registrationData);
+			this.sendPluginChannelMessage("REGISTER", registrationData);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.src.IPlayerUsage#addServerStatsToSnooper(net.minecraft.src.PlayerUsageSnooper)
+	 */
+	@Override
+	public void addServerStatsToSnooper(PlayerUsageSnooper var1)
+	{
+		this.minecraft.addServerStatsToSnooper(var1);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.src.IPlayerUsage#addServerTypeToSnooper(net.minecraft.src.PlayerUsageSnooper)
+	 */
+	@Override
+	public void addServerTypeToSnooper(PlayerUsageSnooper var1)
+	{
+		this.sanityCheck();
+		this.minecraft.addServerTypeToSnooper(var1);
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.src.IPlayerUsage#isSnooperEnabled()
+	 */
+	@Override
+	public boolean isSnooperEnabled()
+	{
+		return this.minecraft.isSnooperEnabled();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.src.IPlayerUsage#getLogAgent()
+	 */
+	@Override
+	public ILogAgent getLogAgent()
+	{
+		return this.minecraft.getLogAgent();
+	}
+	
+	/**
+	 * Check that the profiler hook hasn't been overridden by something else
+	 */
+	private void sanityCheck()
+	{
+		if (this.tickHooked && this.minecraft.mcProfiler != this.profilerHook)
+		{
+			PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
 		}
 	}
 }

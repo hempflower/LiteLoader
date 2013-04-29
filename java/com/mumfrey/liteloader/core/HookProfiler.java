@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.core;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
+import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
 import net.minecraft.client.Minecraft;
@@ -65,7 +66,7 @@ public class HookProfiler extends Profiler
 		this.logger = logger;
 		
 		// Detect optifine (duh!)
-		detectOptifine();
+		this.detectOptifine();
 	}
 
 	/**
@@ -77,18 +78,18 @@ public class HookProfiler extends Profiler
 	{
 		try
 		{
-			ofProfiler = GameSettings.class.getDeclaredField("ofProfiler");
+			this.ofProfiler = GameSettings.class.getDeclaredField("ofProfiler");
 		}
 		catch (SecurityException ex) {}
 		catch (NoSuchFieldException ex)
 		{
-			logger.info("Optifine not detected");
+			this.logger.info("Optifine not detected");
 		}
 		finally
 		{
-			if (ofProfiler != null)
+			if (this.ofProfiler != null)
 			{
-				logger.info(String.format("Optifine version %s detected, enabling compatibility check", getOptifineVersion()));
+				this.logger.info(String.format("Optifine version %s detected, enabling compatibility check", this.getOptifineVersion()));
 			}
 		}
 	}
@@ -125,44 +126,54 @@ public class HookProfiler extends Profiler
 	@Override
 	public void startSection(String sectionName)
 	{
-		if (!initDone)
+		if (!this.initDone)
 		{
-			initDone = true;
-			loader.onInit();
+			this.initDone = true;
+			this.loader.onInit();
 		}
 		
-		if ("gameRenderer".equals(sectionName) && "root".equals(sectionStack.getLast()))
+		if ("gameRenderer".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
 		{
-			loader.onRender();
+			this.loader.onRender();
 		}
 
-		if ("frustrum".equals(sectionName) && "level".equals(sectionStack.getLast()))
+		if ("frustrum".equals(sectionName) && "level".equals(this.sectionStack.getLast()))
 		{
-			loader.onSetupCameraTransform();
+			this.loader.onSetupCameraTransform();
 		}
 		
 		if ("litParticles".equals(sectionName))
 		{
-			loader.postRenderEntities();
+			this.loader.postRenderEntities();
 		}
 		
-		if ("animateTick".equals(sectionName)) tick = true;
-		sectionStack.add(sectionName);
+		if ("tick".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
+		{
+			this.loader.onTimerUpdate();
+		}
+		
+		if ("chat".equals(sectionName))
+		{
+			this.loader.onBeforeChatRender();
+		}
+		
+		if ("animateTick".equals(sectionName)) this.tick = true;
+		this.sectionStack.add(sectionName);
 		super.startSection(sectionName);
 
-		if (ofProfiler != null)
+		if (this.ofProfiler != null)
 		{
 			try
 			{
-				ofProfiler.set(mc.gameSettings, true);
+				this.ofProfiler.set(this.mc.gameSettings, true);
 			}
 			catch (IllegalArgumentException ex)
 			{
-				ofProfiler = null;
+				this.ofProfiler = null;
 			}
 			catch (IllegalAccessException ex)
 			{
-				ofProfiler = null;
+				this.ofProfiler = null;
 			}
 		}
 	}
@@ -175,25 +186,37 @@ public class HookProfiler extends Profiler
 	{
 		super.endSection();
 		
-		String endingSection = sectionStack.size() > 0 ? sectionStack.removeLast() : null;
-		String nextSection = sectionStack.size() > 0 ? sectionStack.getLast() : null;
-		
-		if ("gameRenderer".equals(endingSection) && "root".equals(sectionStack.getLast()))
+		try
 		{
-			super.startSection("litetick");
-
-			loader.onTick(this, tick);
-			tick = false;
+			String endingSection = this.sectionStack.size() > 0 ? this.sectionStack.removeLast() : null;
+			String nextSection = this.sectionStack.size() > 0 ? this.sectionStack.getLast() : null;
 			
-			super.endSection();
+			if ("gameRenderer".equals(endingSection) && "root".equals(this.sectionStack.getLast()))
+			{
+				super.startSection("litetick");
+				
+				this.loader.onTick(this, this.tick);
+				this.tick = false;
+				
+				super.endSection();
+			}
+			else if (("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (this.mc.skipRenderWorld || this.mc.theWorld == null)) || ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && this.mc.theWorld != null))
+			{
+				this.loader.onBeforeGuiRender();
+			}
+			else if ("hand".equals(endingSection) && "level".equals(this.sectionStack.getLast()))
+			{
+				this.loader.postRender();
+			}
+			else if ("chat".equals(endingSection))
+			{
+				this.loader.onAfterChatRender();
+			}
 		}
-		else if (("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (mc.skipRenderWorld || mc.theWorld == null)) || ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && mc.theWorld != null))
+		catch (NoSuchElementException ex)
 		{
-			loader.onBeforeGuiRender();
-		}
-		else if ("hand".equals(endingSection) && "level".equals(sectionStack.getLast()))
-		{
-			loader.postRender();
+			this.logger.severe("Corrupted Profiler stack detected, this indicates an error with one of your mods.");
+			throw new ProfilerStackCorruptionException("Corrupted Profiler stack detected");
 		}
 	}
 }

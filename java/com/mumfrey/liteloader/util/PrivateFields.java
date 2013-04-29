@@ -15,7 +15,7 @@ import net.minecraft.src.*;
  * @param <P> Parent class type, the type of the class that owns the field
  * @param <T> Field type, the type of the field value
  * 
- * TODO Obfuscation - updated 1.5.1
+ * TODO Obfuscation - updated 1.5.2
  */
 @SuppressWarnings("rawtypes")
 public class PrivateFields<P, T>
@@ -132,6 +132,7 @@ public class PrivateFields<P, T>
 	 */
 	public static final class StaticFields<P, T> extends PrivateFields<P, T>
 	{
+		@SuppressWarnings("synthetic-access")
 		public StaticFields(Class<P> owner, String mcpName, String name, String fmlName) { super(owner, mcpName, name, fmlName); }
 		public T get() { return get(null); }
 		public void set(T value) { set(null, value); }
@@ -140,8 +141,10 @@ public class PrivateFields<P, T>
 		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a", "field_70326_a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>       minecraftTimer = new PrivateFields<Minecraft, Timer>    (Minecraft.class,     "timer",           "V", "field_71428_T");  // Minecraft/timer
-	public static final PrivateFields<Minecraft, Profiler> minecraftProfiler = new PrivateFields<Minecraft, Profiler> (Minecraft.class,     "mcProfiler",      "J", "field_71424_I");  // Minecraft/mcProfiler
-	public static final PrivateFields<RenderManager, Map>    entityRenderMap = new PrivateFields<RenderManager, Map>  (RenderManager.class, "entityRenderMap", "q", "field_78729_o");  // RenderManager/entityRenderMap
+	public static final PrivateFields<Minecraft, Timer>                       minecraftTimer = new PrivateFields<Minecraft, Timer>                (Minecraft.class,          "timer",                "V", "field_71428_T");  // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler>                 minecraftProfiler = new PrivateFields<Minecraft, Profiler>             (Minecraft.class,          "mcProfiler",           "J", "field_71424_I");  // Minecraft/mcProfiler
+	public static final PrivateFields<RenderManager, Map>                    entityRenderMap = new PrivateFields<RenderManager, Map>              (RenderManager.class,      "entityRenderMap",      "q", "field_78729_o");  // RenderManager/entityRenderMap
+	public static final PrivateFields<GuiControls, GuiScreen>        guiControlsParentScreen = new PrivateFields<GuiControls, GuiScreen>          (GuiControls.class,        "parentScreen",         "b", "field_73909_b");  // GuiControls/parentScreen
+	public static final PrivateFields<PlayerUsageSnooper, IPlayerUsage> playerStatsCollector = new PrivateFields<PlayerUsageSnooper, IPlayerUsage>(PlayerUsageSnooper.class, "playerStatsCollector", "d", "field_76478_d");  // PlayerUsageSnooper/playerStatsCollector
 }
 
