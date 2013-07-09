@@ -9,7 +9,7 @@ import java.util.Set;
 import com.mumfrey.liteloader.core.LiteLoader;
 
 import net.minecraft.client.ClientBrandRetriever;
-import net.minecraft.client.Minecraft;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.*;
 
 public abstract class ModUtilities

@@ -1,13 +1,16 @@
 package com.mumfrey.liteloader.core;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
 
-import com.mumfrey.liteloader.util.PrivateFields;
+import net.minecraft.src.IntHashMap;
+import net.minecraft.src.NetHandler;
+import net.minecraft.src.Packet;
+import net.minecraft.src.Packet3Chat;
 
-import net.minecraft.src.*;
+import com.mumfrey.liteloader.util.PrivateFields;
 
 /**
  * Proxy packet which we will register in place of the original chat packet. The class will proxy the function calls
@@ -80,7 +83,7 @@ public class HookChat extends Packet3Chat
 	}
 
 	@Override
-	public void readPacketData(DataInputStream datainputstream) throws IOException
+	public void readPacketData(DataInput datainputstream) throws IOException
 	{
 		if (proxyPacket != null)
 		{
@@ -92,7 +95,7 @@ public class HookChat extends Packet3Chat
 	}
 
 	@Override
-	public void writePacketData(DataOutputStream dataoutputstream) throws IOException
+	public void writePacketData(DataOutput dataoutputstream) throws IOException
 	{
 		if (proxyPacket != null)
 			proxyPacket.writePacketData(dataoutputstream);

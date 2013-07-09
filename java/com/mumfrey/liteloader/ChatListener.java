@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader;
 
+import net.minecraft.src.ChatMessageComponent;
+
 /**
  * Interface for mods which receive inbound chat
  *
@@ -10,7 +12,8 @@ public interface ChatListener extends LiteMod
 	/**
 	 * Handle an inbound message
 	 * 
-	 * @param message
+	 * @param chat ChatMessageComponent parsed from the chat packet
+	 * @param message Chat message parsed from the chat message component
 	 */
-	public abstract void onChat(String message);
+	public abstract void onChat(ChatMessageComponent chat, String message);
 }

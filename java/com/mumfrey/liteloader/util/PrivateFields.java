@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.*;
 
 /**
@@ -15,7 +15,7 @@ import net.minecraft.src.*;
  * @param <P> Parent class type, the type of the class that owns the field
  * @param <T> Field type, the type of the field value
  * 
- * TODO Obfuscation - updated 1.5.2
+ * TODO Obfuscation - updated 1.6.2
  */
 @SuppressWarnings("rawtypes")
 public class PrivateFields<P, T>
@@ -70,7 +70,7 @@ public class PrivateFields<P, T>
 	{
 		try
 		{
-			Field field = parentClass.getDeclaredField(fieldName);
+			Field field = this.parentClass.getDeclaredField(this.fieldName);
 			field.setAccessible(true);
 			return (T)field.get(instance);
 		}
@@ -79,7 +79,7 @@ public class PrivateFields<P, T>
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Set the value of this field on the instance class supplied
 	 * 
@@ -91,11 +91,11 @@ public class PrivateFields<P, T>
 	{
 		try
 		{
-			Field field = parentClass.getDeclaredField(fieldName);
+			Field field = this.parentClass.getDeclaredField(this.fieldName);
 			field.setAccessible(true);
 			field.set(instance, value);
 		}
-		catch (Exception ex) {}
+		catch (Exception ex) { }
 		
 		return value;
 	}
@@ -114,12 +114,12 @@ public class PrivateFields<P, T>
 			Field modifiers = Field.class.getDeclaredField("modifiers");
 			modifiers.setAccessible(true);
 			
-			Field field = parentClass.getDeclaredField(fieldName);
+			Field field = this.parentClass.getDeclaredField(fieldName);
 			modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 			field.setAccessible(true);
 			field.set(instance, value);
 		}
-		catch (Exception ex) {}
+		catch (Exception ex) { }
 		
 		return value;
 	}
@@ -141,8 +141,8 @@ public class PrivateFields<P, T>
 		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a", "field_70326_a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>                       minecraftTimer = new PrivateFields<Minecraft, Timer>                (Minecraft.class,          "timer",                "V", "field_71428_T");  // Minecraft/timer
-	public static final PrivateFields<Minecraft, Profiler>                 minecraftProfiler = new PrivateFields<Minecraft, Profiler>             (Minecraft.class,          "mcProfiler",           "J", "field_71424_I");  // Minecraft/mcProfiler
+	public static final PrivateFields<Minecraft, Timer>                       minecraftTimer = new PrivateFields<Minecraft, Timer>                (Minecraft.class,          "timer",                "S", "field_71428_T");  // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler>                 minecraftProfiler = new PrivateFields<Minecraft, Profiler>             (Minecraft.class,          "mcProfiler",           "C", "field_71424_I");  // Minecraft/mcProfiler
 	public static final PrivateFields<RenderManager, Map>                    entityRenderMap = new PrivateFields<RenderManager, Map>              (RenderManager.class,      "entityRenderMap",      "q", "field_78729_o");  // RenderManager/entityRenderMap
 	public static final PrivateFields<GuiControls, GuiScreen>        guiControlsParentScreen = new PrivateFields<GuiControls, GuiScreen>          (GuiControls.class,        "parentScreen",         "b", "field_73909_b");  // GuiControls/parentScreen
 	public static final PrivateFields<PlayerUsageSnooper, IPlayerUsage> playerStatsCollector = new PrivateFields<PlayerUsageSnooper, IPlayerUsage>(PlayerUsageSnooper.class, "playerStatsCollector", "d", "field_76478_d");  // PlayerUsageSnooper/playerStatsCollector

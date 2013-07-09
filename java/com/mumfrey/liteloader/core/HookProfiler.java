@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
 
-import net.minecraft.client.Minecraft;
+import net.minecraft.src.Minecraft;
 import net.minecraft.src.GameSettings;
 import net.minecraft.src.Profiler;
 

@@ -6,8 +6,8 @@ import net.minecraft.src.GameSettings;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiSmallButton;
+import net.minecraft.src.I18n;
 import net.minecraft.src.KeyBinding;
-import net.minecraft.src.StringTranslate;
 
 /**
  * Extended "Controls" screen with pages
@@ -83,7 +83,6 @@ public class GuiControlsPaginated extends GuiScreen
 	@Override
 	public void initGui()
 	{
-		StringTranslate stringtranslate = StringTranslate.getInstance();
 		this.getLegacyControlList().clear();
         
 		int oldControlsPerPage = this.controlsPerPage;
@@ -106,17 +105,17 @@ public class GuiControlsPaginated extends GuiScreen
         {
 	        this.getLegacyControlList().add(this.btnNext = new GuiButton(201, this.getWidth() / 2 - 51, buttonY, 50, 20, ">>"));
 	        this.getLegacyControlList().add(this.btnPrevious = new GuiButton(202, this.getWidth() / 2 - 103, buttonY, 50, 20, "<<"));
-	        this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 + 1, buttonY, 100, 20, stringtranslate.translateKey("gui.done")));
+	        this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 + 1, buttonY, 100, 20, I18n.func_135053_a("gui.done")));
 
 	        this.btnNext.enabled = this.startIndex < this.endIndex;
 	        this.btnPrevious.enabled = this.startIndex > 0;
         }
         else
         {
-        	this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 - 100, buttonY, stringtranslate.translateKey("gui.done")));
+        	this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 - 100, buttonY, I18n.func_135053_a("gui.done")));
         }
         
-        this.screenTitle = stringtranslate.translateKey("controls.title");
+        this.screenTitle = I18n.func_135053_a("controls.title");
 	}
 
 	/**

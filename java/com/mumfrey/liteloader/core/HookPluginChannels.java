@@ -1,13 +1,16 @@
 package com.mumfrey.liteloader.core;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
 
-import com.mumfrey.liteloader.util.PrivateFields;
+import net.minecraft.src.IntHashMap;
+import net.minecraft.src.NetHandler;
+import net.minecraft.src.Packet;
+import net.minecraft.src.Packet250CustomPayload;
 
-import net.minecraft.src.*;
+import com.mumfrey.liteloader.util.PrivateFields;
 
 public class HookPluginChannels extends Packet250CustomPayload
 {
@@ -68,7 +71,7 @@ public class HookPluginChannels extends Packet250CustomPayload
 	
 
 	@Override
-	public void readPacketData(DataInputStream datainputstream) throws IOException
+	public void readPacketData(DataInput datainputstream) throws IOException
 	{
 		if (proxyPacket != null)
 		{
@@ -82,7 +85,7 @@ public class HookPluginChannels extends Packet250CustomPayload
 	}
 
 	@Override
-	public void writePacketData(DataOutputStream dataoutputstream) throws IOException
+	public void writePacketData(DataOutput dataoutputstream) throws IOException
 	{
 		if (proxyPacket != null)
 			proxyPacket.writePacketData(dataoutputstream);
