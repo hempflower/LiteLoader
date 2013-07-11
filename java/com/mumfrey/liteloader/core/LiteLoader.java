@@ -10,16 +10,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.TreeSet;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Level;
@@ -71,7 +78,6 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * @author Adam Mummery-Smith
  * @version 1.6.2
  */
-@SuppressWarnings("rawtypes")
 public final class LiteLoader implements FilenameFilter, IPlayerUsage
 {
 	/**
@@ -113,6 +119,11 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * Profile name from launcher
 	 */
 	private static String profile = "";
+	
+	/**
+	 * List of mods passed into the command line
+	 */
+	private static List<String> modNameFilter = null;
 	
 	/**
 	 * Mods folder which contains mods and legacy config files
@@ -171,6 +182,16 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * Reference to the minecraft timer
 	 */
 	private Timer minecraftTimer;
+	
+	/**
+	 * Classes to load, mapped by class name 
+	 */
+	private Map<String, Class<? extends LiteMod>> modsToLoad = new HashMap<String, Class<? extends LiteMod>>();
+	
+	/**
+	 * Mod metadata from version file 
+	 */
+	private Map<String, ModFile> modFiles = new HashMap<String, ModFile>();
 	
 	/**
 	 * List of loaded mods, for crash reporting
@@ -280,14 +301,30 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * Permission Manager
 	 */
 	private static PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
-	
-	public static final void init(File gameDirectory, File assetsDirectory, String profile)
+
+	public static final void init(File gameDirectory, File assetsDirectory, String profile, List<String> modNameFilter)
 	{
 		if (instance == null)
 		{
 			LiteLoader.gameDirectory = gameDirectory;
 			LiteLoader.assetsDirectory = assetsDirectory;
 			LiteLoader.profile = profile;
+			
+			try
+			{
+				if (modNameFilter != null)
+				{
+					LiteLoader.modNameFilter = new ArrayList<String>();
+					for (String filterEntry : modNameFilter)
+					{
+						LiteLoader.modNameFilter.add(filterEntry.toLowerCase().trim());
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				LiteLoader.modNameFilter = null;
+			}
 			
 			instance = new LiteLoader();
 			instance.initLoader();
@@ -371,14 +408,10 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		this.commonConfigFolder = new File(this.configBaseFolder, "common");
 		this.versionConfigFolder = this.inflectVersionedConfigPath(LiteLoader.VERSION);
 		
-		if (!this.modsFolder.exists())
-			this.modsFolder.mkdirs();
-		if (!this.configBaseFolder.exists())
-			this.configBaseFolder.mkdirs();
-		if (!this.commonConfigFolder.exists())
-			this.commonConfigFolder.mkdirs();
-		if (!this.versionConfigFolder.exists())
-			this.versionConfigFolder.mkdirs();
+		if (!this.modsFolder.exists()) this.modsFolder.mkdirs();
+		if (!this.configBaseFolder.exists()) this.configBaseFolder.mkdirs();
+		if (!this.commonConfigFolder.exists()) this.commonConfigFolder.mkdirs();
+		if (!this.versionConfigFolder.exists()) this.versionConfigFolder.mkdirs();
 		
 		this.propertiesFile = new File(this.configBaseFolder, "liteloader.properties");
 	}
@@ -402,8 +435,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	private void initLoader()
 	{
-		if (this.loaderStartupDone)
-			return;
+		if (this.loaderStartupDone) return;
 		this.loaderStartupDone = true;
 		
 		// Set up loader, initialises any reflection methods needed
@@ -700,8 +732,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
-	 * @param modName
-	 *            Mod's name or class name
+	 * @param modName Mod's name or class name
 	 * @return
 	 * @throws InvalidActivityException
 	 */
@@ -728,13 +759,65 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	}
 	
 	/**
+	 * Get whether the specified mod is installed
+	 *
+	 * @param modName
+	 * @return
+	 */
+	public boolean isModInstalled(String modName)
+	{
+		if (!this.loaderStartupComplete || modName == null) return false;
+		
+		for (LiteMod mod : this.mods)
+		{
+			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(mod.getClass().getSimpleName())) return true;
+		}
+		
+		return true;
+	}
+
+	/**
+	 * Get metadata for the specified mod, attempts to retrieve the mod by name first
+	 * 
+	 * @param mod
+	 * @param metaDataKey
+	 * @param defaultValue
+	 * @return
+	 * @throws InvalidActivityException
+	 * @throws IllegalArgumentException
+	 */
+	public String getModMetaData(String mod, String metaDataKey, String defaultValue) throws InvalidActivityException, IllegalArgumentException
+	{
+		return this.getModMetaData(this.getMod(mod), metaDataKey, defaultValue);
+	}
+	
+	/**
+	 * Get a metadata value for the specified mod
+	 * 
+	 * @param mod
+	 * @param metaDataKey
+	 * @param defaultValue
+	 * @return
+	 */
+	public String getModMetaData(LiteMod mod, String metaDataKey, String defaultValue)
+	{
+		if (mod == null || metaDataKey == null) return defaultValue;
+		
+		String modClassName = mod.getClass().getSimpleName();
+		if (!this.modFiles.containsKey(modClassName)) return defaultValue;
+		
+		ModFile modFile = this.modFiles.get(modClassName);
+		return modFile.getMetaValue(metaDataKey, defaultValue);
+	}
+	
+	/**
 	 * Enumerate the java class path and "mods" folder to find mod classes, then
 	 * load the classes
 	 */
 	private void prepareMods(boolean searchMods, boolean searchProtectionDomain, boolean searchClassPath)
 	{
 		// List of mod files in the "mods" folder
-		LinkedList<File> modFiles = new LinkedList<File>();
+		List<ModFile> modFiles = new LinkedList<ModFile>();
 		
 		if (searchMods)
 		{
@@ -748,8 +831,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 		}
 		
-		// Find and enumerate classes on the class path
-		HashMap<String, Class> modsToLoad = null;
 		try
 		{
 			logger.info("Enumerating class path...");
@@ -763,7 +844,8 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			
 			if (searchProtectionDomain || searchClassPath)
 				logger.info("Discovering mods on class path...");
-			modsToLoad = this.findModClasses(classPathEntries, modFiles, searchProtectionDomain, searchClassPath);
+			
+			this.findModClasses(classPathEntries, modFiles, searchProtectionDomain, searchClassPath);
 			
 			logger.info("Mod class discovery completed");
 		}
@@ -773,44 +855,87 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			return;
 		}
 		
-		this.loadMods(modsToLoad);
+		this.loadMods();
 	}
 	
 	/**
 	 * Find mod files in the "mods" folder
 	 * 
-	 * @param modFolder
-	 *            Folder to search
-	 * @param modFiles
-	 *            List of mod files to load
+	 * @param modFolder Folder to search
+	 * @param modFiles List of mod files to load
 	 */
-	protected void findModFiles(File modFolder, LinkedList<File> modFiles)
+	protected void findModFiles(File modFolder, List<ModFile> modFiles)
 	{
+		Map<String, TreeSet<ModFile>> versionOrderingSets = new HashMap<String, TreeSet<ModFile>>();
+		
 		for (File modFile : modFolder.listFiles(this))
 		{
 			try
 			{
+				String strVersion = null;
+				
 				// Check for a version file
 				ZipFile modZip = new ZipFile(modFile);
-				ZipEntry version = modZip.getEntry("version.txt");
+				ZipEntry version = modZip.getEntry("litemod.json");
+				
+				if (version == null)
+				{
+					version = modZip.getEntry("version.txt");
+				}
 				
 				if (version != null)
 				{
-					// Read the version string
-					InputStream versionStream = modZip.getInputStream(version);
-					BufferedReader versionReader = new BufferedReader(new InputStreamReader(versionStream));
-					String strVersion = versionReader.readLine();
-					versionReader.close();
+					BufferedReader versionReader = null; 
+					StringBuilder versionBuilder = new StringBuilder();
 					
-					// Only add the mod if the version matches and we were able
-					// to successfully add it to the class path
-					if (LiteLoader.VERSION.isVersionSupported(strVersion) && this.addURLToClassPath(modFile.toURI().toURL()))
+					try
 					{
-						modFiles.add(modFile);
+						// Read the version string
+						InputStream versionStream = modZip.getInputStream(version);
+						versionReader = new BufferedReader(new InputStreamReader(versionStream));
+
+						String versionFileLine;
+						while ((versionFileLine = versionReader.readLine()) != null)
+							versionBuilder.append(versionFileLine);
+						
+						strVersion = versionBuilder.toString();
 					}
-					else
+					catch (Exception ex)
 					{
-						logger.info("Not adding invalid or outdated mod file: " + modFile.getAbsolutePath());
+						logger.warning("Error reading version data from " + modFile.getName());
+					}
+					finally
+					{
+						if (versionReader != null) versionReader.close();
+					}
+					
+					if (strVersion != null)
+					{
+						ModFile modFileInfo = new ModFile(modFile, strVersion);
+						
+						if (modFileInfo.isValid())
+						{
+							// Only add the mod if the version matches and we were able
+							// to successfully add it to the class path
+							if (LiteLoader.VERSION.isVersionSupported(modFileInfo.getVersion()))
+							{
+								if (!modFileInfo.isJson())
+								{
+									logger.warning("Missing or invalid litemod.json reading mod file: " + modFile.getAbsolutePath());
+								}
+								
+								if (!versionOrderingSets.containsKey(modFileInfo.getName()))
+								{
+									versionOrderingSets.put(modFileInfo.getName(), new TreeSet<ModFile>());
+								}
+								
+								versionOrderingSets.get(modFileInfo.getName()).add(modFileInfo);
+							}
+							else
+							{
+								logger.info("Not adding invalid or outdated mod file: " + modFile.getAbsolutePath());
+							}
+						}
 					}
 				}
 				
@@ -818,7 +943,26 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 			catch (Exception ex)
 			{
+				ex.printStackTrace(System.err);
 				logger.warning("Error enumerating '" + modFile.getAbsolutePath() + "': Invalid zip file or error reading file");
+			}
+		}
+
+		// Copy the first entry in every version set into the modfiles list
+		for (Entry<String, TreeSet<ModFile>> modFileEntry : versionOrderingSets.entrySet())
+		{
+			ModFile newestVersion = modFileEntry.getValue().iterator().next();
+
+			try
+			{
+				if (this.addURLToClassPath(newestVersion.toURI().toURL()))
+				{
+					modFiles.add(newestVersion);
+				}
+			}
+			catch (Exception ex)
+			{
+				logger.warning("Error injecting '" + newestVersion.getAbsolutePath() + "' into classPath. The mod will not be loaded");
 			}
 		}
 	}
@@ -837,66 +981,15 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Find mod classes in the class path and enumerated mod files list
 	 * 
-	 * @param classPathEntries
-	 *            Java class path split into string entries
-	 * @return map of classes to load
+	 * @param classPathEntries Java class path split into string entries
 	 */
-	private HashMap<String, Class> findModClasses(String[] classPathEntries, LinkedList<File> modFiles, boolean searchProtectionDomain, boolean searchClassPath)
+	private void findModClasses(String[] classPathEntries, List<ModFile> modFiles, boolean searchProtectionDomain, boolean searchClassPath)
 	{
-		// To try to avoid loading the same mod multiple times if it appears in
-		// more than one entry in the class path, we index
-		// the mods by name and hopefully match only a single instance of a
-		// particular mod
-		HashMap<String, Class> modsToLoad = new HashMap<String, Class>();
-		
 		if (searchProtectionDomain)
 		{
 			try
 			{
-				logger.info("Searching protection domain code source...");
-				
-				File packagePath = null;
-				
-				URL protectionDomainLocation = LiteLoader.class.getProtectionDomain().getCodeSource().getLocation();
-				if (protectionDomainLocation != null)
-				{
-					if (protectionDomainLocation.toString().indexOf('!') > -1 && protectionDomainLocation.toString().startsWith("jar:"))
-					{
-						protectionDomainLocation = new URL(protectionDomainLocation.toString().substring(4, protectionDomainLocation.toString().indexOf('!')));
-					}
-					
-					packagePath = new File(protectionDomainLocation.toURI());
-				}
-				else
-				{
-					// Fix (?) for forge and other mods which screw up the
-					// protection domain
-					String reflectionClassPath = LiteLoader.class.getResource("/com/mumfrey/liteloader/core/LiteLoader.class").getPath();
-					
-					if (reflectionClassPath.indexOf('!') > -1)
-					{
-						reflectionClassPath = URLDecoder.decode(reflectionClassPath, "UTF-8");
-						packagePath = new File(reflectionClassPath.substring(5, reflectionClassPath.indexOf('!')));
-					}
-				}
-				
-				if (packagePath != null)
-				{
-					LinkedList<Class> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
-					
-					for (Class mod : modClasses)
-					{
-						if (modsToLoad.containsKey(mod.getSimpleName()))
-						{
-							logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
-						}
-						
-						modsToLoad.put(mod.getSimpleName(), mod);
-					}
-					
-					if (modClasses.size() > 0)
-						logger.info(String.format("Found %s potential matches", modClasses.size()));
-				}
+				this.searchProtectionDomain();
 			}
 			catch (Throwable th)
 			{
@@ -907,78 +1000,158 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		if (searchClassPath)
 		{
 			// Search through the class path and find mod classes
-			for (String classPathPart : classPathEntries)
-			{
-				logger.info(String.format("Searching %s...", classPathPart));
-				
-				File packagePath = new File(classPathPart);
-				LinkedList<Class> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
-				
-				for (Class mod : modClasses)
-				{
-					if (modsToLoad.containsKey(mod.getSimpleName()))
-					{
-						logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
-					}
-					
-					modsToLoad.put(mod.getSimpleName(), mod);
-				}
-				
-				if (modClasses.size() > 0)
-					logger.info(String.format("Found %s potential matches", modClasses.size()));
-			}
+			this.searchClassPath(classPathEntries);
 		}
 		
 		// Search through mod files and find mod classes
-		for (File modFile : modFiles)
+		this.searchModFiles(modFiles);
+	}
+
+	/**
+	 * @param modsToLoad
+	 * @throws MalformedURLException
+	 * @throws URISyntaxException
+	 * @throws UnsupportedEncodingException
+	 */
+	@SuppressWarnings("unchecked")
+	private void searchProtectionDomain() throws MalformedURLException, URISyntaxException, UnsupportedEncodingException
+	{
+		logger.info("Searching protection domain code source...");
+		
+		File packagePath = null;
+		
+		URL protectionDomainLocation = LiteLoader.class.getProtectionDomain().getCodeSource().getLocation();
+		if (protectionDomainLocation != null)
 		{
-			logger.info(String.format("Searching %s...", modFile.getAbsolutePath()));
-			
-			LinkedList<Class> modClasses = getSubclassesFor(modFile, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
-			
-			for (Class mod : modClasses)
+			if (protectionDomainLocation.toString().indexOf('!') > -1 && protectionDomainLocation.toString().startsWith("jar:"))
 			{
-				if (modsToLoad.containsKey(mod.getSimpleName()))
+				protectionDomainLocation = new URL(protectionDomainLocation.toString().substring(4, protectionDomainLocation.toString().indexOf('!')));
+			}
+			
+			packagePath = new File(protectionDomainLocation.toURI());
+		}
+		else
+		{
+			// Fix (?) for forge and other mods which screw up the
+			// protection domain
+			String reflectionClassPath = LiteLoader.class.getResource("/com/mumfrey/liteloader/core/LiteLoader.class").getPath();
+			
+			if (reflectionClassPath.indexOf('!') > -1)
+			{
+				reflectionClassPath = URLDecoder.decode(reflectionClassPath, "UTF-8");
+				packagePath = new File(reflectionClassPath.substring(5, reflectionClassPath.indexOf('!')));
+			}
+		}
+		
+		if (packagePath != null)
+		{
+			LinkedList<Class<?>> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			
+			for (Class<?> mod : modClasses)
+			{
+				if (this.modsToLoad.containsKey(mod.getSimpleName()))
 				{
 					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
 				}
 				
-				modsToLoad.put(mod.getSimpleName(), mod);
+				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
 			}
 			
 			if (modClasses.size() > 0)
 				logger.info(String.format("Found %s potential matches", modClasses.size()));
 		}
-		
-		return modsToLoad;
+	}
+
+	/**
+	 * @param classPathEntries
+	 * @param modsToLoad
+	 */
+	@SuppressWarnings("unchecked")
+	private void searchClassPath(String[] classPathEntries)
+	{
+		for (String classPathPart : classPathEntries)
+		{
+			logger.info(String.format("Searching %s...", classPathPart));
+			
+			File packagePath = new File(classPathPart);
+			LinkedList<Class<?>> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			
+			for (Class<?> mod : modClasses)
+			{
+				if (this.modsToLoad.containsKey(mod.getSimpleName()))
+				{
+					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+				}
+				
+				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
+			}
+			
+			if (modClasses.size() > 0)
+				logger.info(String.format("Found %s potential matches", modClasses.size()));
+		}
+	}
+
+	/**
+	 * @param modFiles
+	 * @param modsToLoad
+	 */
+	@SuppressWarnings("unchecked")
+	private void searchModFiles(List<ModFile> modFiles)
+	{
+		for (ModFile modFile : modFiles)
+		{
+			logger.info(String.format("Searching %s...", modFile.getAbsolutePath()));
+			
+			LinkedList<Class<?>> modClasses = getSubclassesFor(modFile, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			
+			for (Class<?> mod : modClasses)
+			{
+				if (this.modsToLoad.containsKey(mod.getSimpleName()))
+				{
+					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+				}
+				
+				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
+				this.modFiles.put(mod.getSimpleName(), modFile);
+			}
+			
+			if (modClasses.size() > 0)
+				logger.info(String.format("Found %s potential matches", modClasses.size()));
+		}
 	}
 	
 	/**
 	 * Create mod instances from the enumerated classes
 	 * 
-	 * @param modsToLoad
-	 *            List of mods to load
+	 * @param modsToLoad List of mods to load
 	 */
-	private void loadMods(HashMap<String, Class> modsToLoad)
+	private void loadMods()
 	{
-		if (modsToLoad == null)
+		if (this.modsToLoad == null)
 		{
 			logger.info("Mod class discovery failed. Not loading any mods!");
 			return;
 		}
 		
-		logger.info("Discovered " + modsToLoad.size() + " total mod(s)");
+		logger.info("Discovered " + this.modsToLoad.size() + " total mod(s)");
 		
-		for (Class mod : modsToLoad.values())
+		for (Class<? extends LiteMod> mod : this.modsToLoad.values())
 		{
 			try
 			{
 				logger.info("Loading mod from " + mod.getName());
 				
-				LiteMod newMod = (LiteMod)mod.newInstance();
-				this.mods.add(newMod);
+				LiteMod newMod = mod.newInstance();
 				
-				logger.info("Successfully added mod " + newMod.getName() + " version " + newMod.getVersion());
+				if (this.shouldAddMod(newMod))
+				{
+					this.mods.add(newMod);
+					logger.info("Successfully added mod " + newMod.getName() + " version " + newMod.getVersion());
+				}
+				else
+				{
+					logger.info("Not loading mod " + newMod.getName() + ", excluded by filter");
+				}
 			}
 			catch (Throwable th)
 			{
@@ -988,6 +1161,26 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		}
 	}
 	
+	/**
+	 * @param name
+	 * @return
+	 */
+	private boolean shouldAddMod(LiteMod mod)
+	{
+		if (this.modNameFilter == null) return true;
+		
+		String modClassName = mod.getClass().getSimpleName();
+		if (!this.modFiles.containsKey(modClassName)) return true;
+
+		String metaName = this.modFiles.get(modClassName).getModName().toLowerCase();
+		if (this.modNameFilter.contains(metaName))
+		{
+			return true;
+		}
+		
+		return false;
+	}
+
 	/**
 	 * Initialise the mods which were loaded
 	 */
@@ -999,28 +1192,29 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		for (Iterator<LiteMod> iter = this.mods.iterator(); iter.hasNext();)
 		{
 			LiteMod mod = iter.next();
+			String modName = mod.getName();
 			
 			try
 			{
-				logger.info("Initialising mod " + mod.getName() + " version " + mod.getVersion());
+				logger.info("Initialising mod " + modName + " version " + mod.getVersion());
 				
 				try
 				{
-					String modKey = this.getModNameForConfig(mod.getClass(), mod.getName());
+					String modKey = this.getModNameForConfig(mod.getClass(), modName);
 					LiteLoaderVersion lastModVersion = LiteLoaderVersion.getVersionFromRevision(this.getLastKnownModRevision(modKey));
 					
 					if (LiteLoader.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
 					{
-						logger.info("Performing config upgrade for mod " + mod.getName() + ". Upgrading " + lastModVersion + " to " + LiteLoader.VERSION + "...");
+						logger.info("Performing config upgrade for mod " + modName + ". Upgrading " + lastModVersion + " to " + LiteLoader.VERSION + "...");
 						mod.upgradeSettings(LiteLoader.getVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
 						
 						this.storeLastKnownModRevision(modKey);
-						logger.info("Config upgrade succeeded for mod " + mod.getName());
+						logger.info("Config upgrade succeeded for mod " + modName);
 					}
 				}
 				catch (Throwable th)
 				{
-					logger.warning("Error performing settings upgrade for " + mod.getName() + ". Settings may not be properly migrated");
+					logger.warning("Error performing settings upgrade for " + modName + ". Settings may not be properly migrated");
 				}
 				
 				mod.init(this.modsFolder);
@@ -1059,7 +1253,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				{
 					if (mod instanceof ChatFilter)
 					{
-						this.logger.warning(String.format("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", mod.getName()));
+						this.logger.warning(String.format("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", modName));
 					}
 					else
 					{
@@ -1092,12 +1286,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					permissionsManager.registerPermissible((Permissible)mod);
 				}
 				
-				this.loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
+				this.loadedModsList += String.format("\n          - %s version %s", modName, mod.getVersion());
 				loadedModsCount++;
 			}
 			catch (Throwable th)
 			{
-				logger.log(Level.WARNING, "Error initialising mod '" + mod.getName(), th);
+				logger.log(Level.WARNING, "Error initialising mod '" + modName, th);
 				iter.remove();
 			}
 		}
@@ -1304,9 +1498,9 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param superClass
 	 * @return
 	 */
-	private static LinkedList<Class> getSubclassesFor(File packagePath, ClassLoader classloader, Class superClass, String prefix)
+	private static LinkedList<Class<?>> getSubclassesFor(File packagePath, ClassLoader classloader, Class<?> superClass, String prefix)
 	{
-		LinkedList<Class> classes = new LinkedList<Class>();
+		LinkedList<Class<?>> classes = new LinkedList<Class<?>>();
 		
 		try
 		{
@@ -1335,7 +1529,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private static void enumerateCompressedPackage(String prefix, Class superClass, ClassLoader classloader, LinkedList<Class> classes, File packagePath) throws FileNotFoundException, IOException
+	private static void enumerateCompressedPackage(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath) throws FileNotFoundException, IOException
 	{
 		FileInputStream fileinputstream = new FileInputStream(packagePath);
 		ZipInputStream zipinputstream = new ZipInputStream(fileinputstream);
@@ -1377,7 +1571,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param packagePath
 	 * @param packageName
 	 */
-	private static void enumerateDirectory(String prefix, Class superClass, ClassLoader classloader, LinkedList<Class> classes, File packagePath)
+	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath)
 	{
 		enumerateDirectory(prefix, superClass, classloader, classes, packagePath, "", 0);
 	}
@@ -1391,7 +1585,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param packagePath
 	 * @param packageName
 	 */
-	private static void enumerateDirectory(String prefix, Class superClass, ClassLoader classloader, LinkedList<Class> classes, File packagePath, String packageName, int depth)
+	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath, String packageName, int depth)
 	{
 		// Prevent crash due to broken recursion
 		if (depth > MAX_DISCOVERY_DEPTH)
@@ -1423,15 +1617,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param classes
 	 * @param className
 	 */
-	@SuppressWarnings("unchecked")
-	private static void checkAndAddClass(ClassLoader classloader, Class superClass, LinkedList<Class> classes, String className)
+	private static void checkAndAddClass(ClassLoader classloader, Class<?> superClass, LinkedList<Class<?>> classes, String className)
 	{
 		if (className.indexOf('$') > -1)
 			return;
 		
 		try
 		{
-			Class subClass = classloader.loadClass(className);
+			Class<?> subClass = classloader.loadClass(className);
 			
 			if (subClass != null && !superClass.equals(subClass) && superClass.isAssignableFrom(subClass) && !subClass.isInterface() && !classes.contains(subClass))
 			{
@@ -1447,8 +1640,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Add a URL to the Minecraft classloader class path
 	 * 
-	 * @param classUrl
-	 *            URL of the resource to add
+	 * @param classUrl URL of the resource to add
 	 */
 	private boolean addURLToClassPath(URL classUrl)
 	{
@@ -1596,8 +1788,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Callback from the tick hook, ticks all tickable mods
 	 * 
-	 * @param tick
-	 *            True if this is a new tick (otherwise it's just a new frame)
+	 * @param tick True if this is a new tick (otherwise it's just a new frame)
 	 */
 	public void onTick(Profiler profiler, boolean tick)
 	{
@@ -1728,10 +1919,8 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Delegate to ModUtilities.sendPluginChannelMessage
 	 * 
-	 * @param channel
-	 *            Channel to send data to
-	 * @param data
-	 *            Data to send
+	 * @param channel Channel to send data to
+	 * @param data Data to send
 	 */
 	public void sendPluginChannelMessage(String channel, byte[] data)
 	{

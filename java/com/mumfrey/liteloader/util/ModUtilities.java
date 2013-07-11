@@ -36,47 +36,47 @@ public abstract class ModUtilities
 	 * @param entityClass
 	 * @param renderer
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
-    {
-    	Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(RenderManager.instance);
-    	entityRenderMap.put(entityClass, renderer);
-    	renderer.setRenderManager(RenderManager.instance);
-    }
-    
-    /**
-     * Register a packet override
-     * 
-     * @param packetId
-     * @param newPacket
-     */
-    @SuppressWarnings("unchecked")
-    public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
-    {
-    	if (overriddenPackets.contains(Integer.valueOf(packetId)))
-    	{
-    		LiteLoader.getLogger().warning(String.format("Packet with ID %s was already overridden by another mod, one or mods may not function correctly", packetId));
-    	}
-    	
-    	try
-    	{
-    		IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-    		PrivateFields.StaticFields.packetClassToIdMap.get();
-    		Map<Class<? extends Packet>, Integer> packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
-    		
-    		packetIdToClassMap.removeObject(packetId);
-    		packetIdToClassMap.addKey(packetId, newPacket);
-    		packetClassToIdMap.put(newPacket, Integer.valueOf(packetId));
-    		
-    		return true;
-    	}
-    	catch (Exception ex)
-    	{
-    		LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
-    		return false;
-    	}
-    }
-    
+	{
+		Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(RenderManager.instance);
+		entityRenderMap.put(entityClass, renderer);
+		renderer.setRenderManager(RenderManager.instance);
+	}
+	
+	/**
+	 * Register a packet override
+	 * 
+	 * @param packetId
+	 * @param newPacket
+	 */
+	@SuppressWarnings("unchecked")
+	public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
+	{
+		if (overriddenPackets.contains(Integer.valueOf(packetId)))
+		{
+			LiteLoader.getLogger().warning(String.format("Packet with ID %s was already overridden by another mod, one or mods may not function correctly", packetId));
+		}
+		
+		try
+		{
+			IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
+			PrivateFields.StaticFields.packetClassToIdMap.get();
+			Map<Class<? extends Packet>, Integer> packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
+			
+			packetIdToClassMap.removeObject(packetId);
+			packetIdToClassMap.addKey(packetId, newPacket);
+			packetClassToIdMap.put(newPacket, Integer.valueOf(packetId));
+			
+			return true;
+		}
+		catch (Exception ex)
+		{
+			LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
+			return false;
+		}
+	}
+	
 	/**
 	 * Send a plugin channel (custom payload) packet to the server
 	 * 

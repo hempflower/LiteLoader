@@ -136,39 +136,39 @@ public class HookChat extends Packet3Chat
 	/**
 	 * Register this packet as the new packet for packet ID 3
 	 */
-    public static void register()
-    {
-    	register(false);
-    }
-
-    /**
-     * Register this packet as the new packet for packet ID 3 and optionally force re-registration even
-     * if registration was performed already.
-     * 
-     * @param force Force registration even if registration was already performed previously.
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void register()
+	{
+		register(false);
+	}
+	
+	/**
+	 * Register this packet as the new packet for packet ID 3 and optionally force re-registration even
+	 * if registration was performed already.
+	 * 
+	 * @param force Force registration even if registration was already performed previously.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void register(boolean force)
 	{
 		if (!registered || force)
 		{
 			try
 			{
-			    IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-			    proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(3);
-			    
-			    if (proxyClass.equals(Packet3Chat.class))
-			    {
-			    	proxyClass = null;
-			    }
-			    
-			    packetIdToClassMap.removeObject(3);
-			    packetIdToClassMap.addKey(3, HookChat.class);
-
-			    Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
-			    packetClassToIdMap.put(HookChat.class, Integer.valueOf(3));
-			    
-			    registered = true;
+				IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
+				proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(3);
+				
+				if (proxyClass.equals(Packet3Chat.class))
+				{
+					proxyClass = null;
+				}
+				
+				packetIdToClassMap.removeObject(3);
+				packetIdToClassMap.addKey(3, HookChat.class);
+				
+				Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
+				packetClassToIdMap.put(HookChat.class, Integer.valueOf(3));
+				
+				registered = true;
 			}
 			catch (Exception ex)
 			{

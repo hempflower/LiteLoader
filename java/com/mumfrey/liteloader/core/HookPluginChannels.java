@@ -128,39 +128,39 @@ public class HookPluginChannels extends Packet250CustomPayload
 	/**
 	 * Register this packet as the new packet for packet ID 250
 	 */
-    public static void register()
-    {
-    	register(false);
-    }
-
-    /**
-     * Register this packet as the new packet for packet ID 250 and optionally force re-registration even
-     * if registration was performed already.
-     * 
-     * @param force Force registration even if registration was already performed previously.
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static void register()
+	{
+		register(false);
+	}
+	
+	/**
+	 * Register this packet as the new packet for packet ID 250 and optionally force re-registration even
+	 * if registration was performed already.
+	 * 
+	 * @param force Force registration even if registration was already performed previously.
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void register(boolean force)
 	{
 		if (!registered || force)
 		{
 			try
 			{
-			    IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-			    proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(250);
-			    
-			    if (proxyClass.equals(Packet250CustomPayload.class))
-			    {
-			    	proxyClass = null;
-			    }
-			    
-			    packetIdToClassMap.removeObject(250);
-			    packetIdToClassMap.addKey(250, HookPluginChannels.class);
-
-			    Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
-			    packetClassToIdMap.put(HookPluginChannels.class, Integer.valueOf(250));
-			    
-			    registered = true;
+				IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
+				proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(250);
+				
+				if (proxyClass.equals(Packet250CustomPayload.class))
+				{
+					proxyClass = null;
+				}
+				
+				packetIdToClassMap.removeObject(250);
+				packetIdToClassMap.addKey(250, HookPluginChannels.class);
+				
+				Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
+				packetClassToIdMap.put(HookPluginChannels.class, Integer.valueOf(250));
+				
+				registered = true;
 			}
 			catch (Exception ex)
 			{

@@ -58,13 +58,13 @@ public interface PermissionsManager
 	 */
 	public abstract void onCustomPayload(String channel, int length, byte[] data);
 	
-    /**
-     * LiteLoader support, gets the list of plugin channels to listen on
-     * 
-     * @return
-     */
-    public abstract List<String> getChannels();
-    
+	/**
+	 * LiteLoader support, gets the list of plugin channels to listen on
+	 * 
+	 * @return
+	 */
+	public abstract List<String> getChannels();
+	
 	/**
 	 * Register a new event listener, the registered object will receive callbacks for permissions events
 	 * 
