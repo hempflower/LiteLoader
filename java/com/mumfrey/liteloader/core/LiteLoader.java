@@ -38,20 +38,7 @@ import java.util.zip.ZipInputStream;
 
 import javax.activity.InvalidActivityException;
 
-import net.minecraft.src.ChatMessageComponent;
-import net.minecraft.src.Minecraft;
-import net.minecraft.src.GuiControls;
-import net.minecraft.src.GuiNewChat;
-import net.minecraft.src.GuiScreen;
-import net.minecraft.src.ILogAgent;
-import net.minecraft.src.IPlayerUsage;
-import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet1Login;
-import net.minecraft.src.Packet3Chat;
-import net.minecraft.src.PlayerUsageSnooper;
-import net.minecraft.src.Profiler;
-import net.minecraft.src.ScaledResolution;
-import net.minecraft.src.Timer;
+import net.minecraft.src.*;
 
 import com.mumfrey.liteloader.ChatFilter;
 import com.mumfrey.liteloader.ChatListener;
@@ -68,6 +55,7 @@ import com.mumfrey.liteloader.RenderListener;
 import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
+import com.mumfrey.liteloader.resources.ModResourcePack;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -192,6 +180,11 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * Mod metadata from version file 
 	 */
 	private Map<String, ModFile> modFiles = new HashMap<String, ModFile>();
+	
+	/**
+	 * Registered resource packs 
+	 */
+	private Map<String, ResourcePack> registeredResourcePacks = new HashMap<String, ResourcePack>();
 	
 	/**
 	 * List of loaded mods, for crash reporting
@@ -614,6 +607,46 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	}
 	
 	/**
+	 * Register a 
+	 * 
+	 * @param name
+	 * @param resourcePack
+	 * @return
+	 */
+	public boolean registerModResourcePack(ModResourcePack resourcePack)
+	{
+		if (!this.registeredResourcePacks.containsKey(resourcePack.func_130077_b())) // TODO adamsrc -> getName()
+		{
+			List<ResourcePack> defaultResourcePacks = PrivateFields.defaultResourcePacks.get(this.minecraft);
+			if (!defaultResourcePacks.contains(resourcePack))
+			{
+				defaultResourcePacks.add(resourcePack);
+				this.registeredResourcePacks.put(resourcePack.func_130077_b(), resourcePack); // TODO adamsrc -> getName()
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * @param name
+	 * @return
+	 */
+	public boolean unRegisterModResourcePack(ModResourcePack resourcePack)
+	{
+		if (this.registeredResourcePacks.containsValue(resourcePack))
+		{
+			List<ResourcePack> defaultResourcePacks = PrivateFields.defaultResourcePacks.get(this.minecraft);
+			this.registeredResourcePacks.remove(resourcePack.func_130077_b()); // TODO adamsrc -> getName()
+			defaultResourcePacks.remove(resourcePack);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Get the "mods" folder
 	 */
 	public File getModsFolder()
@@ -808,6 +841,16 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		
 		ModFile modFile = this.modFiles.get(modClassName);
 		return modFile.getMetaValue(metaDataKey, defaultValue);
+	}
+	
+	/**
+	 * @param mod
+	 * @return
+	 */
+	private ModFile getModFile(LiteMod mod)
+	{
+		String modClassName = mod.getClass().getSimpleName();
+		return this.modFiles.containsKey(modClassName) ? this.modFiles.get(modClassName) : null;
 	}
 	
 	/**
@@ -1135,6 +1178,8 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		
 		logger.info("Discovered " + this.modsToLoad.size() + " total mod(s)");
 		
+		boolean addedResources = false;
+		
 		for (Class<? extends LiteMod> mod : this.modsToLoad.values())
 		{
 			try
@@ -1147,6 +1192,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				{
 					this.mods.add(newMod);
 					logger.info("Successfully added mod " + newMod.getName() + " version " + newMod.getVersion());
+					
+					// Get the mod file and register it as a resource pack if it exists
+					ModFile modFile = this.getModFile(newMod);
+					if (modFile != null && modFile.registerAsResourcePack(newMod.getName()))
+					{
+						logger.info("Adding " + modFile.getAbsolutePath() + " to resources list");
+						addedResources = true;
+					}
 				}
 				else
 				{
@@ -1158,6 +1211,11 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				logger.warning(th.toString());
 				th.printStackTrace();
 			}
+		}
+		
+		if (addedResources)
+		{
+			this.minecraft.func_110436_a(); // TODO adamsrc -> refreshResourcePacks
 		}
 	}
 	

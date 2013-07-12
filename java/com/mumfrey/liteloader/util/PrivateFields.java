@@ -2,9 +2,9 @@ package com.mumfrey.liteloader.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 import java.util.Map;
 
-import net.minecraft.src.Minecraft;
 import net.minecraft.src.*;
 
 /**
@@ -141,10 +141,11 @@ public class PrivateFields<P, T>
 		public static final StaticFields<TileEntity, Map> tileEntityNameToClassMap = new StaticFields<TileEntity, Map> (TileEntity.class, "nameToClassMap",     "a", "field_70326_a"); // TileEntity/nameToClassMap
 	}
 
-	public static final PrivateFields<Minecraft, Timer>                       minecraftTimer = new PrivateFields<Minecraft, Timer>                (Minecraft.class,          "timer",                "S", "field_71428_T");  // Minecraft/timer
-	public static final PrivateFields<Minecraft, Profiler>                 minecraftProfiler = new PrivateFields<Minecraft, Profiler>             (Minecraft.class,          "mcProfiler",           "C", "field_71424_I");  // Minecraft/mcProfiler
-	public static final PrivateFields<RenderManager, Map>                    entityRenderMap = new PrivateFields<RenderManager, Map>              (RenderManager.class,      "entityRenderMap",      "q", "field_78729_o");  // RenderManager/entityRenderMap
-	public static final PrivateFields<GuiControls, GuiScreen>        guiControlsParentScreen = new PrivateFields<GuiControls, GuiScreen>          (GuiControls.class,        "parentScreen",         "b", "field_73909_b");  // GuiControls/parentScreen
-	public static final PrivateFields<PlayerUsageSnooper, IPlayerUsage> playerStatsCollector = new PrivateFields<PlayerUsageSnooper, IPlayerUsage>(PlayerUsageSnooper.class, "playerStatsCollector", "d", "field_76478_d");  // PlayerUsageSnooper/playerStatsCollector
+	public static final PrivateFields<Minecraft, Timer>                       minecraftTimer = new PrivateFields<Minecraft, Timer>                (Minecraft.class,          "timer",                "S",  "field_71428_T");   // Minecraft/timer
+	public static final PrivateFields<Minecraft, Profiler>                 minecraftProfiler = new PrivateFields<Minecraft, Profiler>             (Minecraft.class,          "mcProfiler",           "C",  "field_71424_I");   // Minecraft/mcProfiler
+	public static final PrivateFields<Minecraft, List<ResourcePack>>    defaultResourcePacks = new PrivateFields<Minecraft, List<ResourcePack>>   (Minecraft.class,          "field_110449_ao",      "aq", "field_110449_ao"); // Minecraft/field_110449_ao
+	public static final PrivateFields<RenderManager, Map>                    entityRenderMap = new PrivateFields<RenderManager, Map>              (RenderManager.class,      "entityRenderMap",      "q",  "field_78729_o");   // RenderManager/entityRenderMap
+	public static final PrivateFields<GuiControls, GuiScreen>        guiControlsParentScreen = new PrivateFields<GuiControls, GuiScreen>          (GuiControls.class,        "parentScreen",         "b",  "field_73909_b");   // GuiControls/parentScreen
+	public static final PrivateFields<PlayerUsageSnooper, IPlayerUsage> playerStatsCollector = new PrivateFields<PlayerUsageSnooper, IPlayerUsage>(PlayerUsageSnooper.class, "playerStatsCollector", "d",  "field_76478_d");   // PlayerUsageSnooper/playerStatsCollector
 }
 

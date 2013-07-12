@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.mumfrey.liteloader.resources.ModResourcePack;
 
 /**
  * Wrapper for file which represents a mod file to load with associated version information and
@@ -57,6 +58,11 @@ public class ModFile extends File
 	 * True if the revision number was successfully read, used as a semaphore so that we know when revision is a valid number
 	 */
 	private boolean hasRevision = false;
+	
+	/**
+	 * Resource pack we have registered with minecraft
+	 */
+	private ModResourcePack resourcePack = null;
 	
 	/**
 	 * ALL of the parsed metadata from the file, associated with the mod later on for retrieval via the loader
@@ -160,6 +166,23 @@ public class ModFile extends File
 	public Map<String, String> getMetaData()
 	{
 		return this.metaData;
+	}
+	
+	/**
+	 * Registers this file as a minecraft resource pack 
+	 * 
+	 * @param name
+	 * @return true if the pack was added
+	 */
+	public boolean registerAsResourcePack(String name)
+	{
+		if (this.resourcePack == null)
+		{
+			this.resourcePack = new ModResourcePack(name, this);
+			return LiteLoader.getInstance().registerModResourcePack(this.resourcePack);
+		}
+		
+		return false;
 	}
 	
 	@Override
