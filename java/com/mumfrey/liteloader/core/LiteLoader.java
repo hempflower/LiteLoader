@@ -55,7 +55,6 @@ import com.mumfrey.liteloader.RenderListener;
 import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
-import com.mumfrey.liteloader.resources.ModResourcePack;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -613,7 +612,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param resourcePack
 	 * @return
 	 */
-	public boolean registerModResourcePack(ModResourcePack resourcePack)
+	public boolean registerModResourcePack(ResourcePack resourcePack)
 	{
 		if (!this.registeredResourcePacks.containsKey(resourcePack.func_130077_b())) // TODO adamsrc -> getName()
 		{
@@ -633,7 +632,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * @param name
 	 * @return
 	 */
-	public boolean unRegisterModResourcePack(ModResourcePack resourcePack)
+	public boolean unRegisterModResourcePack(ResourcePack resourcePack)
 	{
 		if (this.registeredResourcePacks.containsValue(resourcePack))
 		{
@@ -1127,6 +1126,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				}
 				
 				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
+				this.modFiles.put(mod.getSimpleName(), new ClassPathMod(packagePath, mod.getSimpleName().substring(7), LiteLoader.getVersion()));
 			}
 			
 			if (modClasses.size() > 0)

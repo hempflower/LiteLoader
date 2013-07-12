@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.minecraft.src.ResourcePack;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mumfrey.liteloader.resources.ModResourcePack;
@@ -22,52 +24,52 @@ public class ModFile extends File
 	/**
 	 * Gson parser for JSON
 	 */
-	private static Gson gson = new Gson();
+	protected static Gson gson = new Gson();
 	
 	/**
 	 * True if the metadata information is parsed successfully, the mod will be added
 	 */
-	private boolean valid = false;
+	protected boolean valid = false;
 	
 	/**
 	 * True if parsed from JSON, false if fallback mode using legacy version.txt
 	 */
-	private boolean json = false;
+	protected boolean json = false;
 	
 	/**
 	 * Name of the mod specified in the JSON file, this can be any string but should be the same between mod versions
 	 */
-	private String modName;
+	protected String modName;
 	
 	/**
 	 * Loader version
 	 */
-	private String version;
+	protected String version;
 	
 	/**
 	 * File time stamp, used as sorting criteria when no revision information is found
 	 */
-	private long timeStamp;
+	protected long timeStamp;
 	
 	/**
 	 * Revision number from the json file
 	 */
-	private float revision = 0.0F;
+	protected float revision = 0.0F;
 	
 	/**
 	 * True if the revision number was successfully read, used as a semaphore so that we know when revision is a valid number
 	 */
-	private boolean hasRevision = false;
+	protected boolean hasRevision = false;
 	
 	/**
 	 * Resource pack we have registered with minecraft
 	 */
-	private ModResourcePack resourcePack = null;
+	protected ResourcePack resourcePack = null;
 	
 	/**
 	 * ALL of the parsed metadata from the file, associated with the mod later on for retrieval via the loader
 	 */
-	private HashMap<String, String> metaData = new HashMap<String, String>();
+	protected HashMap<String, String> metaData = new HashMap<String, String>();
 	
 	/**
 	 * @param file
@@ -83,7 +85,7 @@ public class ModFile extends File
 	}
 
 	@SuppressWarnings("unchecked")
-	private void parseVersionFile(String strVersionData)
+	protected void parseVersionFile(String strVersionData)
 	{
 		// Assume that it's json if the file starts with a brace
 		if (strVersionData.trim().startsWith("{"))
