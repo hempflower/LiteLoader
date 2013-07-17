@@ -63,14 +63,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.6.2
+ * @version 1.6.2_01
  */
 public final class LiteLoader implements FilenameFilter, IPlayerUsage
 {
 	/**
 	 * Liteloader version
 	 */
-	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R0;
+	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R1;
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -1899,8 +1899,17 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		// Chat filters get a stab at the chat first, if any filter returns
 		// false the chat is discarded
 		for (ChatFilter chatFilter : this.chatFilters)
-			if (!chatFilter.onChat(chatPacket, chat, message))
+		{
+			if (chatFilter.onChat(chatPacket, chat, message))
+			{
+				chat = ChatMessageComponent.func_111078_c(chatPacket.message);
+				message = chat.func_111068_a(true);
+			}
+			else
+			{
 				return false;
+			}
+		}
 		
 		// Chat listeners get the chat if no filter removed it
 		for (ChatListener chatListener : this.chatListeners)
