@@ -294,6 +294,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	private static PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
 
+	private boolean pendingResourceReload;
+	
+	private boolean inhibitSoundManagerReload = true;
+	
+	private SoundManagerReloadInhibitor soundManagerReloadInhibitor;
+
 	public static final void init(File gameDirectory, File assetsDirectory, String profile, List<String> modNameFilter)
 	{
 		if (instance == null)
@@ -419,7 +425,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			return this.modsFolder;
 		}
 		
-		return new File(this.configBaseFolder, String.format("config.%s", version.getLoaderVersion()));
+		return new File(this.configBaseFolder, String.format("config.%s", version.getMinecraftVersion()));
 	}
 	
 	/**
@@ -433,7 +439,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		// Set up loader, initialises any reflection methods needed
 		if (this.prepareLoader())
 		{
-			logger.info(String.format("LiteLoader %s starting up...", VERSION));
+			logger.info(String.format("LiteLoader %s starting up...", VERSION.getLoaderVersion()));
 			
 			// Print the branding version if any was provided
 			if (this.branding != null)
@@ -494,6 +500,9 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			
 			this.paginateControls = this.localProperties.getProperty("controls.pages", "true").equalsIgnoreCase("true");
 			this.localProperties.setProperty("controls.pages", String.valueOf(this.paginateControls));
+			
+			this.inhibitSoundManagerReload = this.localProperties.getProperty("soundManagerFix", "true").equalsIgnoreCase("true");
+			this.localProperties.setProperty("soundManagerFix", String.valueOf(this.inhibitSoundManagerReload));
 			
 			this.branding = this.internalProperties.getProperty("brand", null);
 			if (this.branding != null && this.branding.length() < 1)
@@ -616,6 +625,8 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		if (!this.registeredResourcePacks.containsKey(resourcePack.func_130077_b())) // TODO adamsrc -> getName()
 		{
+			this.pendingResourceReload = true;
+
 			List<ResourcePack> defaultResourcePacks = PrivateFields.defaultResourcePacks.get(this.minecraft);
 			if (!defaultResourcePacks.contains(resourcePack))
 			{
@@ -636,6 +647,8 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		if (this.registeredResourcePacks.containsValue(resourcePack))
 		{
+			this.pendingResourceReload = true;
+
 			List<ResourcePack> defaultResourcePacks = PrivateFields.defaultResourcePacks.get(this.minecraft);
 			this.registeredResourcePacks.remove(resourcePack.func_130077_b()); // TODO adamsrc -> getName()
 			defaultResourcePacks.remove(resourcePack);
@@ -1178,7 +1191,9 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		
 		logger.info("Discovered " + this.modsToLoad.size() + " total mod(s)");
 		
-		boolean addedResources = false;
+		this.pendingResourceReload = false;
+		this.soundManagerReloadInhibitor = new SoundManagerReloadInhibitor((SimpleReloadableResourceManager)minecraft.getResourceManager(), minecraft.sndManager);
+		if (this.inhibitSoundManagerReload) this.soundManagerReloadInhibitor.inhibit();
 		
 		for (Class<? extends LiteMod> mod : this.modsToLoad.values())
 		{
@@ -1198,7 +1213,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					if (modFile != null && modFile.registerAsResourcePack(newMod.getName()))
 					{
 						logger.info("Adding " + modFile.getAbsolutePath() + " to resources list");
-						addedResources = true;
 					}
 				}
 				else
@@ -1211,11 +1225,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				logger.warning(th.toString());
 				th.printStackTrace();
 			}
-		}
-		
-		if (addedResources)
-		{
-			this.minecraft.func_110436_a(); // TODO adamsrc -> refreshResourcePacks
 		}
 	}
 	
@@ -1264,7 +1273,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					if (LiteLoader.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
 					{
 						logger.info("Performing config upgrade for mod " + modName + ". Upgrading " + lastModVersion + " to " + LiteLoader.VERSION + "...");
-						mod.upgradeSettings(LiteLoader.getVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
+						mod.upgradeSettings(VERSION.getMinecraftVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
 						
 						this.storeLastKnownModRevision(modKey);
 						logger.info("Config upgrade succeeded for mod " + modName);
@@ -1724,6 +1733,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	public void onInit()
 	{
+		if (this.pendingResourceReload)
+		{
+			this.pendingResourceReload = false;
+			this.minecraft.func_110436_a(); // TODO adamsrc -> refreshResourcePacks
+		}
+		
 		if (!this.lateInitDone)
 		{
 			this.lateInitDone = true;
@@ -1740,6 +1755,11 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					logger.log(Level.WARNING, "Error initialising mod " + initMod.getName(), th);
 				}
 			}
+		}
+
+		if (this.soundManagerReloadInhibitor != null && this.soundManagerReloadInhibitor.isInhibited())
+		{
+			this.soundManagerReloadInhibitor.unInhibit(true);
 		}
 	}
 	
