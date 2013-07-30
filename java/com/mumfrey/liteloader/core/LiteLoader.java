@@ -63,14 +63,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.6.2_01
+ * @version 1.6.2_03
  */
 public final class LiteLoader implements FilenameFilter, IPlayerUsage
 {
 	/**
 	 * Liteloader version
 	 */
-	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R1;
+	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R2;
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -981,10 +981,10 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 								
 								if (!versionOrderingSets.containsKey(modFileInfo.getName()))
 								{
-									versionOrderingSets.put(modFileInfo.getName(), new TreeSet<ModFile>());
+									versionOrderingSets.put(modFileInfo.getModName(), new TreeSet<ModFile>());
 								}
 								
-								versionOrderingSets.get(modFileInfo.getName()).add(modFileInfo);
+								versionOrderingSets.get(modFileInfo.getModName()).add(modFileInfo);
 							}
 							else
 							{
