@@ -120,19 +120,7 @@ public abstract class ModUtilities
 	 */
 	public static void registerKey(KeyBinding newBinding)
 	{
-		Minecraft mc = Minecraft.getMinecraft();
-		
-		if (mc == null || mc.gameSettings == null) return;
-		
-		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
-		keyBindings.addAll(Arrays.asList(mc.gameSettings.keyBindings));
-		
-		if (!keyBindings.contains(newBinding))
-		{
-			keyBindings.add(newBinding);
-			mc.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
-			mc.gameSettings.loadOptions();
-		}
+		LiteLoader.getInstance().registerModKey(newBinding);
 	}
 	
 	/**

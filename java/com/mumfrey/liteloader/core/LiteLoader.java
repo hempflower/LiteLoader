@@ -1,16 +1,6 @@
 package com.mumfrey.liteloader.core;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -19,6 +9,8 @@ import java.net.URLClassLoader;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -63,14 +55,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.6.2_03
+ * @version 1.6.2_04
  */
 public final class LiteLoader implements FilenameFilter, IPlayerUsage
 {
 	/**
 	 * Liteloader version
 	 */
-	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R2;
+	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R3;
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -191,9 +183,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	private String loadedModsList = "none";
 	
 	/**
-	 * Global list of mods which we have loaded
+	 * Global list of mods which we can loaded
 	 */
 	private LinkedList<LiteMod> mods = new LinkedList<LiteMod>();
+	
+	/**
+	 * Global list of mods which we have loaded
+	 */
+	private LinkedList<LiteMod> loadedMods = new LinkedList<LiteMod>();
 	
 	/**
 	 * List of mods which implement Tickable interface and will receive tick
@@ -294,12 +291,42 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	private static PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
 
+	/**
+	 * True while initialising mods if we need to do a resource manager reload once the process is completed
+	 */
 	private boolean pendingResourceReload;
 	
+	/**
+	 * Read from the properties file, if true we will inhibit the sound manager reload during startup to avoid getting in trouble with OpenAL
+	 */
 	private boolean inhibitSoundManagerReload = true;
 	
+	/**
+	 * If inhibit is enabled, this object is used to reflectively inhibit the sound manager's reload process during startup by removing it from the reloadables list
+	 */
 	private SoundManagerReloadInhibitor soundManagerReloadInhibitor;
 
+	/**
+	 * File in which we will store mod key mappings
+	 */
+	private File keyMapSettingsFile = null;
+	
+	/**
+	 * Properties object which stores mod key mappings
+	 */
+	private Properties keyMapSettings = new Properties();
+	
+	/**
+	 * List of all registered mod keys
+	 */
+	private List<KeyBinding> modKeys = new ArrayList<KeyBinding>();
+	
+	/**
+	 * Map of mod key bindings to their key codes, stored so that we don't need to cast from
+	 * string in the properties file every tick
+	 */
+	private Map<KeyBinding, Integer> storedModKeyBindings = new HashMap<KeyBinding, Integer>();
+	
 	public static final void init(File gameDirectory, File assetsDirectory, String profile, List<String> modNameFilter)
 	{
 		if (instance == null)
@@ -579,6 +606,17 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		{
 			this.localProperties = new Properties(this.internalProperties);
 		}
+
+		this.keyMapSettingsFile = new File(this.configBaseFolder, "litemodkeys.properties");
+
+		if (this.keyMapSettingsFile.exists())
+		{
+			try
+			{
+				this.keyMapSettings.load(new FileReader(this.keyMapSettingsFile));
+			}
+			catch (Exception ex) {}
+		}
 	}
 	
 	/**
@@ -707,7 +745,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	}
 	
 	/**
-	 * Used for crash reporting
+	 * Used for crash reporting, returns a text list of all loaded mods
 	 * 
 	 * @return List of loaded mods as a string
 	 */
@@ -716,6 +754,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		return this.loadedModsList;
 	}
 	
+	/**
+	 * Get a list containing all loaded mods
+	 */
+	public List<LiteMod> getLoadedMods()
+	{
+		return Collections.unmodifiableList(this.loadedMods);
+	}
+
 	/**
 	 * Used to get the name of the modpack being used
 	 * 
@@ -1192,7 +1238,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		logger.info("Discovered " + this.modsToLoad.size() + " total mod(s)");
 		
 		this.pendingResourceReload = false;
-		this.soundManagerReloadInhibitor = new SoundManagerReloadInhibitor((SimpleReloadableResourceManager)minecraft.getResourceManager(), minecraft.sndManager);
+		this.soundManagerReloadInhibitor = new SoundManagerReloadInhibitor((SimpleReloadableResourceManager)minecraft.func_110442_L(), minecraft.sndManager); // TODO adamsrc -> getResourceManager
 		if (this.inhibitSoundManagerReload) this.soundManagerReloadInhibitor.inhibit();
 		
 		for (Class<? extends LiteMod> mod : this.modsToLoad.values())
@@ -1353,6 +1399,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					permissionsManager.registerPermissible((Permissible)mod);
 				}
 				
+				this.loadedMods.add(mod);
 				this.loadedModsList += String.format("\n          - %s version %s", modName, mod.getVersion());
 				loadedModsCount++;
 			}
@@ -1889,9 +1936,13 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		// Flag indicates whether we are in game at the moment
 		boolean inGame = this.minecraft.renderViewEntity != null && this.minecraft.renderViewEntity.worldObj != null;
 		
-		// Tick the permissions manager
 		if (tick)
+		{
+			// Tick the permissions manager
 			permissionsManager.onTick(this.minecraft, partialTicks, inGame);
+			
+			this.checkAndStoreKeyBindings();
+		}
 		
 		// Iterate tickable mods
 		for (Tickable tickable : this.tickListeners)
@@ -2136,5 +2187,71 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		{
 			PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
 		}
+	}
+
+	public void registerModKey(KeyBinding binding)
+	{
+		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
+		keyBindings.addAll(Arrays.asList(this.minecraft.gameSettings.keyBindings));
+		
+		if (!keyBindings.contains(binding))
+		{
+			if (this.keyMapSettings.containsKey(binding.keyDescription))
+			{
+				try
+				{
+					binding.keyCode = Integer.parseInt(this.keyMapSettings.getProperty(binding.keyDescription, String.valueOf(binding.keyCode)));
+				}
+				catch (NumberFormatException ex) {}
+			}
+
+			keyBindings.add(binding);
+			this.minecraft.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
+			this.modKeys.add(binding);
+			
+			this.updateBinding(binding);
+			this.storeBindings();
+		}
+	}
+	
+	/**
+	 * Checks for changed mod keybindings and stores any that have changed 
+	 */
+	private void checkAndStoreKeyBindings()
+	{
+		boolean updated = false;
+		
+		for (KeyBinding binding : this.modKeys)
+		{
+			if (binding.keyCode != this.storedModKeyBindings.get(binding))
+			{
+				this.updateBinding(binding);
+				updated = true;
+			}
+		}
+		
+		if (updated)
+			this.storeBindings();
+	}
+	
+	/**
+	 * @param binding
+	 */
+	private void updateBinding(KeyBinding binding)
+	{
+		this.keyMapSettings.setProperty(binding.keyDescription, String.valueOf(binding.keyCode));
+		this.storedModKeyBindings.put(binding, Integer.valueOf(binding.keyCode));
+	}
+
+	/**
+	 * Writes mod bindings to disk
+	 */
+	protected void storeBindings()
+	{
+		try
+		{
+			this.keyMapSettings.store(new FileWriter(this.keyMapSettingsFile), "Mod key mappings for LiteLoader mods, stored here to avoid losing settings stored in options.txt");
+		}
+		catch (IOException ex) {}
 	}
 }
