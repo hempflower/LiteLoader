@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.core.hooks;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -8,19 +8,12 @@ import java.util.Map;
 import net.minecraft.src.IntHashMap;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet;
-import net.minecraft.src.Packet3Chat;
+import net.minecraft.src.Packet250CustomPayload;
 
+import com.mumfrey.liteloader.core.PluginChannels;
 import com.mumfrey.liteloader.util.PrivateFields;
 
-/**
- * Proxy packet which we will register in place of the original chat packet. The class will proxy the function calls
- * through to the replaced class via reflection if the original (replaced) class is NOT the basic Packet3Chat (this
- * is to maintain compatibility with things like WorldEditCUI. 
- * 
- * @author Adam Mummery-Smith
- *
- */
-public class HookChat extends Packet3Chat
+public class HookPluginChannels extends Packet250CustomPayload
 {
 	/**
 	 * True if this class was registered with the base class
@@ -30,7 +23,7 @@ public class HookChat extends Packet3Chat
 	/**
 	 * Handler module which is registered to handle inbound chat packets
 	 */
-	private static LiteLoader packetHandler; 
+	private static PluginChannels events; 
 	
 	/**
 	 * Class which was overridden and will be instanced for new packets
@@ -42,45 +35,41 @@ public class HookChat extends Packet3Chat
 	 */
 	private Packet proxyPacket;
 	
-	/**
-	 * Create a new chat packet proxy
-	 */
-	public HookChat()
+	public HookPluginChannels()
 	{
 		super();
 		
 		try
 		{
-			if (proxyClass != null)
+			if (HookPluginChannels.proxyClass != null)
 			{
-				proxyPacket = proxyClass.newInstance();
+				proxyPacket = HookPluginChannels.proxyClass.newInstance();
 			}
 		}
 		catch (Exception ex) {}
 	}
 	
-	/**
-	 * Create a new chat proxy with the specified message
-	 * @param message
-	 */
-	public HookChat(String message)
+	public HookPluginChannels(String channel, byte[] data)
 	{
-		super(message);
+		super(channel, data);
 
 		try
 		{
-			if (proxyClass != null)
+			if (HookPluginChannels.proxyClass != null)
 			{
-				proxyPacket = proxyClass.newInstance();
+				proxyPacket = HookPluginChannels.proxyClass.newInstance();
 				
-				if (proxyPacket instanceof Packet3Chat)
+				if (proxyPacket instanceof Packet250CustomPayload)
 				{
-					((Packet3Chat)proxyPacket).message = this.message;
+					((Packet250CustomPayload)proxyPacket).channel = this.channel;
+					((Packet250CustomPayload)proxyPacket).data = this.data;
+					((Packet250CustomPayload)proxyPacket).length = this.length;
 				}
 			}
 		}
 		catch (Exception ex) {}
 	}
+	
 
 	@Override
 	public void readPacketData(DataInput datainputstream) throws IOException
@@ -88,7 +77,9 @@ public class HookChat extends Packet3Chat
 		if (proxyPacket != null)
 		{
 			proxyPacket.readPacketData(datainputstream);
-			this.message = ((Packet3Chat)proxyPacket).message;
+			this.channel = ((Packet250CustomPayload)proxyPacket).channel;
+			this.length = ((Packet250CustomPayload)proxyPacket).length;
+			this.data = ((Packet250CustomPayload)proxyPacket).data;
 		}
 		else
 			super.readPacketData(datainputstream);
@@ -106,12 +97,14 @@ public class HookChat extends Packet3Chat
 	@Override
 	public void processPacket(NetHandler nethandler)
 	{
-		if (packetHandler == null || packetHandler.onChat(this))
+		if (proxyPacket != null)
+			proxyPacket.processPacket(nethandler);
+		else
+			super.processPacket(nethandler);
+
+		if (HookPluginChannels.events != null)
 		{
-			if (proxyPacket != null)
-				proxyPacket.processPacket(nethandler);
-			else
-				super.processPacket(nethandler);
+			HookPluginChannels.events.onPluginChannelMessage(this);
 		}
 	}
 
@@ -120,7 +113,7 @@ public class HookChat extends Packet3Chat
 	{
 		if (proxyPacket != null)
 			return proxyPacket.getPacketSize();
-
+		
 		return super.getPacketSize();
 	}
 	
@@ -128,13 +121,13 @@ public class HookChat extends Packet3Chat
 	 * Register the specified handler as the packet handler for this packet
 	 * @param handler
 	 */
-	public static void registerPacketHandler(LiteLoader handler)
+	public static void registerPacketHandler(PluginChannels handler)
 	{
-		packetHandler = handler;
+		HookPluginChannels.events = handler;
 	}
 	
 	/**
-	 * Register this packet as the new packet for packet ID 3
+	 * Register this packet as the new packet for packet ID 250
 	 */
 	public static void register()
 	{
@@ -142,7 +135,7 @@ public class HookChat extends Packet3Chat
 	}
 	
 	/**
-	 * Register this packet as the new packet for packet ID 3 and optionally force re-registration even
+	 * Register this packet as the new packet for packet ID 250 and optionally force re-registration even
 	 * if registration was performed already.
 	 * 
 	 * @param force Force registration even if registration was already performed previously.
@@ -150,25 +143,26 @@ public class HookChat extends Packet3Chat
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static void register(boolean force)
 	{
-		if (!registered || force)
+		if (!HookPluginChannels.registered || force)
 		{
 			try
 			{
+				int packetId = 250;
 				IntHashMap packetIdToClassMap = Packet.packetIdToClassMap;
-				proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(3);
+				HookPluginChannels.proxyClass = (Class<? extends Packet>)packetIdToClassMap.lookup(packetId);
 				
-				if (proxyClass.equals(Packet3Chat.class))
+				if (HookPluginChannels.proxyClass.equals(Packet250CustomPayload.class))
 				{
-					proxyClass = null;
+					HookPluginChannels.proxyClass = null;
 				}
 				
-				packetIdToClassMap.removeObject(3);
-				packetIdToClassMap.addKey(3, HookChat.class);
+				packetIdToClassMap.removeObject(packetId);
+				packetIdToClassMap.addKey(packetId, HookPluginChannels.class);
 				
 				Map packetClassToIdMap = PrivateFields.StaticFields.packetClassToIdMap.get();
-				packetClassToIdMap.put(HookChat.class, Integer.valueOf(3));
+				packetClassToIdMap.put(HookPluginChannels.class, Integer.valueOf(packetId));
 				
-				registered = true;
+				HookPluginChannels.registered = true;
 			}
 			catch (Exception ex)
 			{

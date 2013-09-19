@@ -4,14 +4,14 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 	
     <!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.6.2" />
-    <property name="mcversion" value="1.6.2" />
+	<property name="version" value="1.6.3" />
+    <property name="mcversion" value="1.6.3" />
     <property name="author" value="Mumfrey" />
 	
     <!-- Project definitions and dependencies -->
-	<property name="upstream" value="LiteLoader,LegacyLauncher" />
-	<property name="project" value="LiteLoaderLauncher" />
-	<property name="md5set" value="legacylauncher" />
+	<property name="upstream" value="" />
+	<property name="project" value="LiteLoader" />
+	<property name="md5set" value="mcp" />
     <property name="outmd5set" value="liteloader" />
 	
 	<property name="mcp.dir" location="../../.." />
@@ -21,6 +21,7 @@
     <property name="temp" location="${mcp.dir}/temp" />
     <property name="md5.dir" location="${mcp.dir}/md5" />
     <property name="mc.src" location="${mcp.dir}/src/mcp" />
+    <property name="libs" location="${mcp.dir}/lib" />
 
 	<property name="dist.dir" location="${build}/dist" />
 	<property name="stage.dir" location="${build}/stage/${ant.project.name}/${version}" />
@@ -62,6 +63,10 @@
 	<target name="prepare" description="Prepare source for MCP" depends="preparemd5">
         <echo level="info" message="Prepare sources for compile" />
 
+        <copy todir="${libs}" verbose="true" overwrite="true">
+            <fileset dir="${eclipse}/LiteLoader/lib" />
+        </copy>
+		
     	<copy todir="${src}" verbose="false" overwrite="true">
 			<fileset dir="${mc.src}" />
 		</copy>

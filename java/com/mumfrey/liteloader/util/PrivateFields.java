@@ -15,7 +15,7 @@ import net.minecraft.src.*;
  * @param <P> Parent class type, the type of the class that owns the field
  * @param <T> Field type, the type of the field value
  * 
- * TODO Obfuscation - updated 1.6.2
+ * TODO Obfuscation - updated 1.6.3
  */
 @SuppressWarnings("rawtypes")
 public class PrivateFields<P, T>
@@ -147,6 +147,6 @@ public class PrivateFields<P, T>
 	public static final PrivateFields<RenderManager, Map>                    entityRenderMap = new PrivateFields<RenderManager, Map>              (RenderManager.class,      "entityRenderMap",      "q",  "field_78729_o");   // RenderManager/entityRenderMap
 	public static final PrivateFields<GuiControls, GuiScreen>        guiControlsParentScreen = new PrivateFields<GuiControls, GuiScreen>          (GuiControls.class,        "parentScreen",         "b",  "field_73909_b");   // GuiControls/parentScreen
 	public static final PrivateFields<PlayerUsageSnooper, IPlayerUsage> playerStatsCollector = new PrivateFields<PlayerUsageSnooper, IPlayerUsage>(PlayerUsageSnooper.class, "playerStatsCollector", "d",  "field_76478_d");   // PlayerUsageSnooper/playerStatsCollector
-	public static final PrivateFields<SimpleReloadableResourceManager, List<ResourceManagerReloadListener>> reloadListeners = new PrivateFields<SimpleReloadableResourceManager, List<ResourceManagerReloadListener>>(SimpleReloadableResourceManager.class, "field_110546_b", "c", "field_110546_b");   // SimpleReloadableResourceManager/field_110546_b
+	public static final PrivateFields<SimpleReloadableResourceManager, List<ResourceManagerReloadListener>> reloadListeners = new PrivateFields<SimpleReloadableResourceManager, List<ResourceManagerReloadListener>>(SimpleReloadableResourceManager.class, "reloadListeners", "c", "field_110546_b");   // SimpleReloadableResourceManager/reloadListeners
 }
 

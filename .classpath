@@ -8,5 +8,8 @@
 	<classpathentry kind="lib" path="/Client/jars/libraries/com/google/code/gson/gson/2.2.2/gson-2.2.2.jar"/>
 	<classpathentry kind="lib" path="/Client/jars/libraries/com/google/guava/guava/14.0/guava-14.0.jar"/>
 	<classpathentry kind="lib" path="/Client/jars/libraries/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/launchwrapper-1.7.jar"/>
+	<classpathentry kind="lib" path="lib/jopt-simple-4.5.jar"/>
+	<classpathentry kind="src" path="run"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -24,15 +24,13 @@ public class ConsoleHandler extends StreamHandler
 	 * initialized the <tt>LogRecord</tt> and forwarded it here.
 	 * <p>
 	 * 
-	 * @param record
-	 *            description of the log event. A null record is silently
-	 *            ignored and is not published
+	 * @param record description of the log event. A null record is silently ignored and is not published
 	 */
 	@Override
 	public synchronized void publish(LogRecord record)
 	{
 		super.publish(record);
-		flush();
+		this.flush();
 	}
 	
 	/**
@@ -42,6 +40,6 @@ public class ConsoleHandler extends StreamHandler
 	@Override
 	public synchronized void close()
 	{
-		flush();
+		this.flush();
 	}
 }

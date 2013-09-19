@@ -1,4 +1,6 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.core.hooks;
+
+import com.mumfrey.liteloader.core.Events;
 
 import net.minecraft.src.EnumGameType;
 import net.minecraft.src.NetHandler;
@@ -7,7 +9,7 @@ import net.minecraft.src.WorldType;
 
 public class HookLogin extends Packet1Login
 {
-	public static LiteLoader loader;
+	public static Events events;
 	
 	public HookLogin()
 	{
@@ -25,11 +27,11 @@ public class HookLogin extends Packet1Login
 	@Override
 	public void processPacket(NetHandler par1NetHandler)
 	{
-		if (loader == null || loader.onPreLogin(par1NetHandler, this))
+		if (events == null || events.onPreLogin(par1NetHandler, this))
 		{
 			super.processPacket(par1NetHandler);
 
-			if (loader != null) loader.onConnectToServer(par1NetHandler, this);
+			if (events != null) events.onConnectToServer(par1NetHandler, this);
 		}
 	}
 }

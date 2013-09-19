@@ -103,7 +103,7 @@ public class SoundManagerReloadInhibitor
 					if (reload)
 					{
 						LiteLoader.getLogger().info("Reloading sound manager");
-						this.soundManager.func_110549_a(this.resourceManager); // TODO adamsrc -> onReload
+						this.soundManager.onResourceManagerReload(this.resourceManager);
 					}
 
 					this.inhibited = false;

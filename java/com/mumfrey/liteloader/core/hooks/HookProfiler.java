@@ -1,10 +1,15 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.core.hooks;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.logging.Logger;
+
+import com.mumfrey.liteloader.core.Events;
+import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.exceptions.ProfilerCrossThreadAccessException;
+import com.mumfrey.liteloader.core.exceptions.ProfilerStackCorruptionException;
 
 import net.minecraft.src.Minecraft;
 import net.minecraft.src.GameSettings;
@@ -18,14 +23,19 @@ import net.minecraft.src.Profiler;
 public class HookProfiler extends Profiler
 {
 	/**
+	 * Cross-thread sanity check 
+	 */
+	private final Thread minecraftThread;
+	
+	/**
 	 * Logger instance
 	 */
 	private Logger logger;
 	
 	/**
-	 * LiteLoader instance which will receive callbacks
+	 * Event manager instance which will receive callbacks
 	 */
-	private LiteLoader loader;
+	private Events events;
 	
 	/**
 	 * Section list, used as a kind of stack to determine where we are in the profiler stack
@@ -55,18 +65,20 @@ public class HookProfiler extends Profiler
 	/**
 	 * .ctor
 	 * 
-	 * @param core LiteLoader object which will get callbacks
+	 * @param events LiteLoader object which will get callbacks
 	 * @param logger Logger instance
 	 */
-	public HookProfiler(LiteLoader core, Logger logger)
+	public HookProfiler(Events events)
 	{
 		this.mc = Minecraft.getMinecraft();
 
-		this.loader = core;
-		this.logger = logger;
+		this.events = events;
+		this.logger = LiteLoader.getLogger();
 		
 		// Detect optifine (duh!)
 		this.detectOptifine();
+		
+		this.minecraftThread = Thread.currentThread();
 	}
 
 	/**
@@ -126,35 +138,40 @@ public class HookProfiler extends Profiler
 	@Override
 	public void startSection(String sectionName)
 	{
+		if (Thread.currentThread() != this.minecraftThread)
+		{
+			throw new ProfilerCrossThreadAccessException(Thread.currentThread().getName());
+		}
+		
 		if (!this.initDone)
 		{
 			this.initDone = true;
-			this.loader.onInit();
+			this.events.onInit();
 		}
 		
 		if ("gameRenderer".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
 		{
-			this.loader.onRender();
+			this.events.onRender();
 		}
-
-		if ("frustrum".equals(sectionName) && "level".equals(this.sectionStack.getLast()))
+		else if ("frustrum".equals(sectionName) && "level".equals(this.sectionStack.getLast()))
 		{
-			this.loader.onSetupCameraTransform();
+			this.events.onSetupCameraTransform();
 		}
-		
-		if ("litParticles".equals(sectionName))
+		else if ("litParticles".equals(sectionName))
 		{
-			this.loader.postRenderEntities();
+			this.events.postRenderEntities();
 		}
-		
-		if ("tick".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
+		else if ("tick".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
 		{
-			this.loader.onTimerUpdate();
+			this.events.onTimerUpdate();
 		}
-		
-		if ("chat".equals(sectionName))
+		else if ("chat".equals(sectionName))
 		{
-			this.loader.onBeforeChatRender();
+			this.events.onRenderChat();
+		}
+		else if ("gui".equals(sectionName) && "gameRenderer".equals(this.sectionStack.getLast()))
+		{
+			this.events.onRenderHUD();
 		}
 		
 		if ("animateTick".equals(sectionName)) this.tick = true;
@@ -184,6 +201,11 @@ public class HookProfiler extends Profiler
 	@Override
 	public void endSection()
 	{
+		if (Thread.currentThread() != this.minecraftThread)
+		{
+			throw new ProfilerCrossThreadAccessException(Thread.currentThread().getName());
+		}
+		
 		super.endSection();
 		
 		try
@@ -191,26 +213,34 @@ public class HookProfiler extends Profiler
 			String endingSection = this.sectionStack.size() > 0 ? this.sectionStack.removeLast() : null;
 			String nextSection = this.sectionStack.size() > 0 ? this.sectionStack.getLast() : null;
 			
-			if ("gameRenderer".equals(endingSection) && "root".equals(this.sectionStack.getLast()))
+			if ("gameRenderer".equals(endingSection) && "root".equals(nextSection))
 			{
 				super.startSection("litetick");
 				
-				this.loader.onTick(this, this.tick);
+				this.events.onTick(this, this.tick);
 				this.tick = false;
 				
 				super.endSection();
 			}
-			else if (("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (this.mc.skipRenderWorld || this.mc.theWorld == null)) || ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && this.mc.theWorld != null))
+			else
 			{
-				this.loader.onBeforeGuiRender();
-			}
-			else if ("hand".equals(endingSection) && "level".equals(this.sectionStack.getLast()))
-			{
-				this.loader.postRender();
-			}
-			else if ("chat".equals(endingSection))
-			{
-				this.loader.onAfterChatRender();
+				if ("gui".equals(endingSection) && "gameRenderer".equals(nextSection) && this.mc.theWorld != null)
+				{
+					this.events.postRenderHUD();
+					this.events.preRenderGUI();
+				}
+				else if ("mouse".equals(endingSection) && "gameRenderer".equals(nextSection) && (this.mc.skipRenderWorld || this.mc.theWorld == null))
+				{
+					this.events.preRenderGUI();
+				}
+				else if ("hand".equals(endingSection) && "level".equals(nextSection))
+				{
+					this.events.postRender();
+				}
+				else if ("chat".equals(endingSection))
+				{
+					this.events.postRenderChat();
+				}
 			}
 		}
 		catch (NoSuchElementException ex)
@@ -219,4 +249,14 @@ public class HookProfiler extends Profiler
 			throw new ProfilerStackCorruptionException("Corrupted Profiler stack detected");
 		}
 	}
+//	
+//	@Override
+//	public void dumpState()
+//	{
+//		String endingSection = this.sectionStack.size() > 0 ? this.sectionStack.getLast() : null;
+//		String nextSection = this.sectionStack.size() > 1 ? this.sectionStack.get(sectionStack.size() - 2) : null;
+//		
+//		System.out.println("endingSection=" + endingSection + "   nextSection=" + nextSection);
+//	}
+
 }

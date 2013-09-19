@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.PluginChannels;
 
 import net.minecraft.client.ClientBrandRetriever;
-import net.minecraft.src.Minecraft;
 import net.minecraft.src.*;
 
 public abstract class ModUtilities
@@ -27,7 +27,7 @@ public abstract class ModUtilities
 	static
 	{
 		// Check for FML
-		forgeModLoader = ClientBrandRetriever.getClientModName().contains("fml");
+		ModUtilities.forgeModLoader = ClientBrandRetriever.getClientModName().contains("fml");
 	}
 	
 	/**
@@ -53,6 +53,11 @@ public abstract class ModUtilities
 	@SuppressWarnings("unchecked")
 	public static boolean registerPacketOverride(int packetId, Class<? extends Packet> newPacket)
 	{
+		if (packetId == 250)
+		{
+			throw new RuntimeException("Cannot override packet 250, register a plugin channel listener instead");
+		}
+		
 		if (overriddenPackets.contains(Integer.valueOf(packetId)))
 		{
 			LiteLoader.getLogger().warning(String.format("Packet with ID %s was already overridden by another mod, one or mods may not function correctly", packetId));
@@ -72,7 +77,7 @@ public abstract class ModUtilities
 		}
 		catch (Exception ex)
 		{
-			LiteLoader.logger.warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
+			LiteLoader.getLogger().warning("Error registering packet override for packet id " + packetId + ": " + ex.getMessage());
 			return false;
 		}
 	}
@@ -82,23 +87,13 @@ public abstract class ModUtilities
 	 * 
 	 * @param channel Channel to send the data
 	 * @param data
+	 * 
+	 * @deprecated User PluginChannels.sendMessage(channel, data) instead.
 	 */
+	@Deprecated
 	public static void sendPluginChannelMessage(String channel, byte[] data)
 	{
-		if (channel == null || channel.length() > 16)
-			throw new RuntimeException("Invalid channel name specified"); 
-		
-		try
-		{
-			Minecraft minecraft = Minecraft.getMinecraft();
-			
-			if (minecraft.thePlayer != null)
-			{
-				Packet250CustomPayload payload = new Packet250CustomPayload(channel, data);
-				minecraft.thePlayer.sendQueue.addToSendQueue(payload);
-			}
-		}
-		catch (Exception ex) {}
+		PluginChannels.sendMessage(channel, data);
 	}
 
 	/**

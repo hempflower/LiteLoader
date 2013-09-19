@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -7,7 +7,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-final class LiteLoaderLogFormatter extends Formatter
+public class LiteLoaderLogFormatter extends Formatter
 {
 	private SimpleDateFormat simpleDateFormatLogFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
@@ -29,9 +29,9 @@ final class LiteLoaderLogFormatter extends Formatter
 		
 		if (th != null)
 		{
-			StringWriter var5 = new StringWriter();
-			th.printStackTrace(new PrintWriter(var5));
-			sb.append(var5.toString());
+			StringWriter stringWriter = new StringWriter();
+			th.printStackTrace(new PrintWriter(stringWriter));
+			sb.append(stringWriter.toString());
 		}
 		
 		return sb.toString();

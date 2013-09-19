@@ -34,7 +34,7 @@ public class ModFile extends File
 	/**
 	 * True if parsed from JSON, false if fallback mode using legacy version.txt
 	 */
-	protected boolean json = false;
+//	protected boolean json = false;
 	
 	/**
 	 * Name of the mod specified in the JSON file, this can be any string but should be the same between mod versions
@@ -88,8 +88,8 @@ public class ModFile extends File
 	protected void parseVersionFile(String strVersionData)
 	{
 		// Assume that it's json if the file starts with a brace
-		if (strVersionData.trim().startsWith("{"))
-		{
+//		if (strVersionData.trim().startsWith("{"))
+//		{
 			try
 			{
 				this.metaData = ModFile.gson.fromJson(strVersionData, HashMap.class);
@@ -120,14 +120,14 @@ public class ModFile extends File
 			}
 
 			this.valid = true;
-			this.json = true;
-		}
-		else
-		{
-			// Legacy version.txt file
-			this.version = strVersionData;
-			this.valid = true;
-		}
+//			this.json = true;
+//		}
+//		else
+//		{
+//			// Legacy version.txt file
+//			this.version = strVersionData;
+//			this.valid = true;
+//		}
 		
 		if (this.modName == null)
 		{
@@ -145,10 +145,10 @@ public class ModFile extends File
 		return this.valid;
 	}
 	
-	public boolean isJson()
-	{
-		return this.json;
-	}
+//	public boolean isJson()
+//	{
+//		return this.json;
+//	}
 	
 	public String getVersion()
 	{
@@ -180,6 +180,7 @@ public class ModFile extends File
 	{
 		if (this.resourcePack == null)
 		{
+			LiteLoader.getLogger().info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
 			this.resourcePack = new ModResourcePack(name, this);
 			return LiteLoader.getInstance().registerModResourcePack(this.resourcePack);
 		}

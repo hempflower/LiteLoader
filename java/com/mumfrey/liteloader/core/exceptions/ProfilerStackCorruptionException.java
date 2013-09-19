@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.core.exceptions;
 
 /**
  * Exception to throw when a mod corrupts the profiler stack, this avoids throwing a

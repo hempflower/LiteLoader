@@ -35,10 +35,12 @@ public class ClassPathMod extends ModFile
 		{
 			if (this.isDirectory())
 			{
+				LiteLoader.getLogger().info(String.format("Registering \"%s/%s\" as mod resource pack with identifier \"%s\"", this.getParentFile().getName(), this.getName(), name));
 				this.resourcePack = new ModResourcePackDir(name, this);
 			}
 			else
 			{
+				LiteLoader.getLogger().info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
 				this.resourcePack = new ModResourcePack(name, this);
 			}
 			

@@ -1,13 +1,11 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.*;
-import java.lang.reflect.Method;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,24 +28,15 @@ import java.util.zip.ZipInputStream;
 
 import javax.activity.InvalidActivityException;
 
+import net.minecraft.client.ClientBrandRetriever;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.src.*;
 
-import com.mumfrey.liteloader.ChatFilter;
-import com.mumfrey.liteloader.ChatListener;
-import com.mumfrey.liteloader.ChatRenderListener;
-import com.mumfrey.liteloader.GameLoopListener;
-import com.mumfrey.liteloader.InitCompleteListener;
-import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.LoginListener;
-import com.mumfrey.liteloader.Permissible;
-import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.PostRenderListener;
-import com.mumfrey.liteloader.PreLoginListener;
-import com.mumfrey.liteloader.RenderListener;
+import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
+import com.mumfrey.liteloader.log.LiteLoaderLogFormatter;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
-import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
 
 /**
@@ -55,14 +44,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.6.2_04
+ * @version 1.6.3
  */
-public final class LiteLoader implements FilenameFilter, IPlayerUsage
+public final class LiteLoader implements FilenameFilter
 {
 	/**
 	 * Liteloader version
 	 */
-	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_2_R3;
+	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_3_R0;
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -77,7 +66,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * Logger for LiteLoader events
 	 */
-	public static Logger logger = Logger.getLogger("liteloader");
+	private static Logger logger = Logger.getLogger("liteloader");
 	
 	/**
 	 * Use stdout rather than stderr
@@ -100,9 +89,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	private static String profile = "";
 	
 	/**
+	 * Tweak system class loader 
+	 */
+	private static LaunchClassLoader classLoader;
+	
+	/**
 	 * List of mods passed into the command line
 	 */
-	private static List<String> modNameFilter = null;
+	private EnabledModsList enabledModsList = null;
 	
 	/**
 	 * Mods folder which contains mods and legacy config files
@@ -124,6 +118,16 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 * Folder containing version-specific configuration
 	 */
 	private File versionConfigFolder;
+	
+	/**
+	 * JSON file containing the list of enabled/disabled mods by profile
+	 */
+	private File enabledModsFile;
+	
+	/**
+	 * File to write log entries to
+	 */
+	private File logFile;
 	
 	/**
 	 * Reference to the Minecraft game instance
@@ -158,11 +162,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	private boolean paginateControls = true;
 	
 	/**
-	 * Reference to the minecraft timer
-	 */
-	private Timer minecraftTimer;
-	
-	/**
 	 * Classes to load, mapped by class name 
 	 */
 	private Map<String, Class<? extends LiteMod>> modsToLoad = new HashMap<String, Class<? extends LiteMod>>();
@@ -193,103 +192,29 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	private LinkedList<LiteMod> loadedMods = new LinkedList<LiteMod>();
 	
 	/**
-	 * List of mods which implement Tickable interface and will receive tick
-	 * events
+	 * Mods which are loaded but disabled
 	 */
-	private LinkedList<Tickable> tickListeners = new LinkedList<Tickable>();
+	private LinkedList<ModFile> disabledMods = new LinkedList<ModFile>();
 	
 	/**
-	 * List of mods which implement the GameLoopListener interface and will
-	 * receive loop events
+	 * Event manager
 	 */
-	private LinkedList<GameLoopListener> loopListeners = new LinkedList<GameLoopListener>();
+	private Events events;
 	
 	/**
-	 * 
+	 * Plugin channel manager 
 	 */
-	private LinkedList<InitCompleteListener> initListeners = new LinkedList<InitCompleteListener>();
-	
-	/**
-	 * List of mods which implement RenderListener interface and will receive
-	 * render events events
-	 */
-	private LinkedList<RenderListener> renderListeners = new LinkedList<RenderListener>();
-	
-	/**
-	 * List of mods which implement the PostRenderListener interface and want to
-	 * render entities
-	 */
-	private LinkedList<PostRenderListener> postRenderListeners = new LinkedList<PostRenderListener>();
-	
-	/**
-	 * List of mods which implement ChatRenderListener and want to know when
-	 * chat is rendered
-	 */
-	private LinkedList<ChatRenderListener> chatRenderListeners = new LinkedList<ChatRenderListener>();
-	
-	/**
-	 * List of mods which implement ChatListener interface and will receive chat
-	 * events
-	 */
-	private LinkedList<ChatListener> chatListeners = new LinkedList<ChatListener>();
-	
-	/**
-	 * List of mods which implement ChatFilter interface and will receive chat
-	 * filter events
-	 */
-	private LinkedList<ChatFilter> chatFilters = new LinkedList<ChatFilter>();
-	
-	/**
-	 * List of mods which implement LoginListener interface and will receive
-	 * client login events
-	 */
-	private LinkedList<LoginListener> loginListeners = new LinkedList<LoginListener>();
-	
-	/**
-	 * List of mods which implement LoginListener interface and will receive
-	 * client login events
-	 */
-	private LinkedList<PreLoginListener> preLoginListeners = new LinkedList<PreLoginListener>();
-	
-	/**
-	 * List of mods which implement PluginChannelListener interface
-	 */
-	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
-	
-	/**
-	 * Mapping of plugin channel names to listeners
-	 */
-	private HashMap<String, LinkedList<PluginChannelListener>> pluginChannels = new HashMap<String, LinkedList<PluginChannelListener>>();
-	
-	/**
-	 * Reference to the addUrl method on URLClassLoader
-	 */
-	private Method mAddUrl;
-	
-	/**
-	 * Flag which keeps track of whether late initialisation has been done
-	 */
-	private boolean loaderStartupDone, loaderStartupComplete, lateInitDone;
-	
-	/**
-	 * Flags which keep track of whether hooks have been applied
-	 */
-	private boolean chatHooked, loginHooked, pluginChannelHooked, tickHooked;
-	
-	/**
-	 * Profiler hook objects
-	 */
-	private HookProfiler profilerHook = new HookProfiler(this, logger);
-	
-	/**
-	 * ScaledResolution used by the pre-chat and post-chat render callbacks
-	 */
-	private ScaledResolution currentResolution;
+	private PluginChannels pluginChannels;
 	
 	/**
 	 * Permission Manager
 	 */
-	private static PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
+	private PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
+	
+	/**
+	 * Flag which keeps track of whether late initialisation has been done
+	 */
+	private boolean loaderStartupDone, loaderStartupComplete;
 
 	/**
 	 * True while initialising mods if we need to do a resource manager reload once the process is completed
@@ -319,7 +244,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	/**
 	 * List of all registered mod keys
 	 */
-	private List<KeyBinding> modKeys = new ArrayList<KeyBinding>();
+	private List<KeyBinding> modKeyBindings = new ArrayList<KeyBinding>();
 	
 	/**
 	 * Map of mod key bindings to their key codes, stored so that we don't need to cast from
@@ -327,99 +252,35 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	private Map<KeyBinding, Integer> storedModKeyBindings = new HashMap<KeyBinding, Integer>();
 	
-	public static final void init(File gameDirectory, File assetsDirectory, String profile, List<String> modNameFilter)
+	@SuppressWarnings("unused")
+	private static final void init(File gameDirectory, File assetsDirectory, String profile, List<String> modNameFilter, LaunchClassLoader classLoader)
 	{
-		if (instance == null)
+		if (LiteLoader.instance == null)
 		{
 			LiteLoader.gameDirectory = gameDirectory;
 			LiteLoader.assetsDirectory = assetsDirectory;
 			LiteLoader.profile = profile;
+			LiteLoader.classLoader = classLoader;
 			
-			try
-			{
-				if (modNameFilter != null)
-				{
-					LiteLoader.modNameFilter = new ArrayList<String>();
-					for (String filterEntry : modNameFilter)
-					{
-						LiteLoader.modNameFilter.add(filterEntry.toLowerCase().trim());
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				LiteLoader.modNameFilter = null;
-			}
-			
-			instance = new LiteLoader();
-			instance.initLoader();
+			LiteLoader.instance = new LiteLoader(profile, modNameFilter);
+			LiteLoader.instance.initLoader();
 		}
-		
 	}
-	
-	/**
-	 * Get the singleton instance of LiteLoader, initialises the loader if
-	 * necessary
-	 * 
-	 * @param locationProvider
-	 * @return LiteLoader instance
-	 */
-	public static final LiteLoader getInstance()
-	{
-		return instance;
-	}
-	
-	/**
-	 * Get the LiteLoader logger object
-	 * 
-	 * @return
-	 */
-	public static final Logger getLogger()
-	{
-		return logger;
-	}
-	
-	/**
-	 * Get the output stream which we are using for console output
-	 * 
-	 * @return
-	 */
-	public static final PrintStream getConsoleStream()
-	{
-		return useStdOut ? System.out : System.err;
-	}
-	
-	/**
-	 * Get LiteLoader version
-	 * 
-	 * @return
-	 */
-	public static final String getVersion()
-	{
-		return VERSION.getLoaderVersion();
-	}
-	
-	/**
-	 * Get the loader revision
-	 * 
-	 * @return
-	 */
-	public static final int getRevision()
-	{
-		return VERSION.getLoaderRevision();
-	}
-	
-	public static final PermissionsManagerClient getPermissionsManager()
-	{
-		return permissionsManager;
-	}
-	
+
 	/**
 	 * LiteLoader constructor
+	 * @param profile 
+	 * @param modNameFilter 
 	 */
-	private LiteLoader()
+	private LiteLoader(String profile, List<String> modNameFilter)
 	{
 		this.initPaths();
+		
+		this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
+		this.enabledModsList.processModsList(profile, modNameFilter);
+		
+		this.pluginChannels = new PluginChannels(this);
+		this.events = new Events(this, this.minecraft, this.pluginChannels);
 	}
 	
 	/**
@@ -439,6 +300,9 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		if (!this.versionConfigFolder.exists()) this.versionConfigFolder.mkdirs();
 		
 		this.propertiesFile = new File(this.configBaseFolder, "liteloader.properties");
+		this.enabledModsFile = new File(this.configBaseFolder, "liteloader.profiles.json");
+		this.logFile = new File(this.configBaseFolder, "liteloader.log");
+		this.keyMapSettingsFile = new File(this.configBaseFolder, "liteloader.keys.properties");
 	}
 	
 	/**
@@ -466,15 +330,15 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		// Set up loader, initialises any reflection methods needed
 		if (this.prepareLoader())
 		{
-			logger.info(String.format("LiteLoader %s starting up...", VERSION.getLoaderVersion()));
+			LiteLoader.getLogger().info(String.format("LiteLoader %s starting up...", VERSION.getLoaderVersion()));
 			
 			// Print the branding version if any was provided
 			if (this.branding != null)
 			{
-				logger.info(String.format("Active Pack: %s", this.branding));
+				LiteLoader.getLogger().info(String.format("Active Pack: %s", this.branding));
 			}
 			
-			logger.info(String.format("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase()));
+			LiteLoader.getLogger().info(String.format("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase()));
 			
 			boolean searchMods = this.localProperties.getProperty("search.mods", "true").equalsIgnoreCase("true");
 			boolean searchProtectionDomain = this.localProperties.getProperty("search.jar", "true").equalsIgnoreCase("true");
@@ -482,7 +346,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			
 			if (!searchMods && !searchProtectionDomain && !searchClassPath)
 			{
-				logger.warning("Invalid configuration, no search locations defined. Enabling all search locations.");
+				LiteLoader.getLogger().warning("Invalid configuration, no search locations defined. Enabling all search locations.");
 				
 				this.localProperties.setProperty("search.mods", "true");
 				this.localProperties.setProperty("search.jar", "true");
@@ -496,18 +360,23 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			// Examines the class path and mods folder and locates loadable mods
 			this.prepareMods(searchMods, searchProtectionDomain, searchClassPath);
 			
+			// Spawn mod instances
+			this.loadMods();
+			
 			// Initialises enumerated mods
 			this.initMods();
 			
 			// Initialises the required hooks for loaded mods
-			this.initHooks();
-			
+			this.events.initHooks();
 			this.loaderStartupComplete = true;
 			
 			this.writeProperties();
+			this.enabledModsList.saveTo(this.enabledModsFile);
+			
+			this.setBranding("LiteLoader");
 		}
 	}
-	
+
 	/**
 	 * Set up reflection methods required by the loader
 	 */
@@ -515,10 +384,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		try
 		{
-			// addURL method is used by the class loader to
-			this.mAddUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-			this.mAddUrl.setAccessible(true);
-			
 			// Prepare the properties
 			this.prepareProperties();
 			
@@ -544,7 +409,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		}
 		catch (Throwable th)
 		{
-			logger.log(Level.SEVERE, "Error initialising LiteLoader", th);
+			LiteLoader.getLogger().log(Level.SEVERE, "Error initialising LiteLoader", th);
 			return false;
 		}
 		
@@ -559,16 +424,16 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		Formatter logFormatter = new LiteLoaderLogFormatter();
 		
-		logger.setUseParentHandlers(false);
-		this.useStdOut = System.getProperty("liteloader.log", "stderr").equalsIgnoreCase("stdout") || this.localProperties.getProperty("log", "stderr").equalsIgnoreCase("stdout");
+		LiteLoader.getLogger().setUseParentHandlers(false);
+		LiteLoader.useStdOut = System.getProperty("liteloader.log", "stderr").equalsIgnoreCase("stdout") || this.localProperties.getProperty("log", "stderr").equalsIgnoreCase("stdout");
 		
 		StreamHandler consoleHandler = useStdOut ? new com.mumfrey.liteloader.util.log.ConsoleHandler() : new java.util.logging.ConsoleHandler();
 		consoleHandler.setFormatter(logFormatter);
-		logger.addHandler(consoleHandler);
+		LiteLoader.getLogger().addHandler(consoleHandler);
 		
-		FileHandler logFileHandler = new FileHandler(new File(this.configBaseFolder, "LiteLoader.txt").getAbsolutePath());
+		FileHandler logFileHandler = new FileHandler(this.logFile.getAbsolutePath());
 		logFileHandler.setFormatter(logFormatter);
-		logger.addHandler(logFileHandler);
+		LiteLoader.getLogger().addHandler(logFileHandler);
 	}
 	
 	/**
@@ -606,8 +471,6 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		{
 			this.localProperties = new Properties(this.internalProperties);
 		}
-
-		this.keyMapSettingsFile = new File(this.configBaseFolder, "litemodkeys.properties");
 
 		if (this.keyMapSettingsFile.exists())
 		{
@@ -648,7 +511,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		}
 		catch (Throwable th)
 		{
-			logger.log(Level.WARNING, "Error writing liteloader properties", th);
+			LiteLoader.getLogger().log(Level.WARNING, "Error writing liteloader properties", th);
 		}
 	}
 	
@@ -661,7 +524,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	 */
 	public boolean registerModResourcePack(ResourcePack resourcePack)
 	{
-		if (!this.registeredResourcePacks.containsKey(resourcePack.func_130077_b())) // TODO adamsrc -> getName()
+		if (!this.registeredResourcePacks.containsKey(resourcePack.getPackName()))
 		{
 			this.pendingResourceReload = true;
 
@@ -669,7 +532,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			if (!defaultResourcePacks.contains(resourcePack))
 			{
 				defaultResourcePacks.add(resourcePack);
-				this.registeredResourcePacks.put(resourcePack.func_130077_b(), resourcePack); // TODO adamsrc -> getName()
+				this.registeredResourcePacks.put(resourcePack.getPackName(), resourcePack);
 				return true;
 			}
 		}
@@ -688,7 +551,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			this.pendingResourceReload = true;
 
 			List<ResourcePack> defaultResourcePacks = PrivateFields.defaultResourcePacks.get(this.minecraft);
-			this.registeredResourcePacks.remove(resourcePack.func_130077_b()); // TODO adamsrc -> getName()
+			this.registeredResourcePacks.remove(resourcePack.getPackName());
 			defaultResourcePacks.remove(resourcePack);
 			return true;
 		}
@@ -697,27 +560,107 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	}
 	
 	/**
+	 * Get the singleton instance of LiteLoader, initialises the loader if
+	 * necessary
+	 * 
+	 * @param locationProvider
+	 * @return LiteLoader instance
+	 */
+	public static final LiteLoader getInstance()
+	{
+		return LiteLoader.instance;
+	}
+	
+	/**
+	 * Get the LiteLoader logger object
+	 * 
+	 * @return
+	 */
+	public static final Logger getLogger()
+	{
+		return LiteLoader.logger;
+	}
+	
+	/**
+	 * Get the output stream which we are using for console output
+	 * 
+	 * @return
+	 */
+	public static final PrintStream getConsoleStream()
+	{
+		return LiteLoader.useStdOut ? System.out : System.err;
+	}
+	
+	/**
+	 * Get LiteLoader version
+	 * 
+	 * @return
+	 */
+	public static final String getVersion()
+	{
+		return LiteLoader.VERSION.getLoaderVersion();
+	}
+	
+	/**
+	 * Get the loader revision
+	 * 
+	 * @return
+	 */
+	public static final int getRevision()
+	{
+		return LiteLoader.VERSION.getLoaderRevision();
+	}
+	
+	/**
+	 * @return
+	 */
+	public static PermissionsManagerClient getPermissionsManager()
+	{
+		return LiteLoader.getInstance().permissionsManager;
+	}
+	
+	/**
+	 * Get the event manager
+	 * 
+	 * @return
+	 */
+	public static Events getEvents()
+	{
+		return LiteLoader.getInstance().events;
+	}
+	
+	/**
+	 * Get the plugin channel manager
+	 * 
+	 * @return
+	 */
+	public static PluginChannels getPluginChannels()
+	{
+		return LiteLoader.getInstance().pluginChannels;
+	}
+
+	/**
 	 * Get the "mods" folder
 	 */
-	public File getModsFolder()
+	public static File getModsFolder()
 	{
-		return this.modsFolder;
+		return LiteLoader.getInstance().modsFolder;
 	}
 	
 	/**
 	 * Get the common (version-independent) config folder
 	 */
-	public File getCommonConfigFolder()
+	public static File getCommonConfigFolder()
 	{
-		return this.commonConfigFolder;
+		return LiteLoader.getInstance().commonConfigFolder;
 	}
 	
 	/**
 	 * Get the config folder for this version
 	 */
-	public File getConfigFolder()
+	public static File getConfigFolder()
 	{
-		return this.versionConfigFolder;
+		return LiteLoader.getInstance().versionConfigFolder;
 	}
 	
 	/**
@@ -761,7 +704,15 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		return Collections.unmodifiableList(this.loadedMods);
 	}
-
+	
+	/**
+	 * Get a list containing all mod files which were NOT loaded
+	 */
+	public List<ModFile> getDisabledMods()
+	{
+		return Collections.unmodifiableList(this.disabledMods);
+	}
+	
 	/**
 	 * Used to get the name of the modpack being used
 	 * 
@@ -868,7 +819,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	}
 
 	/**
-	 * Get metadata for the specified mod, attempts to retrieve the mod by name first
+	 * Get a metadata value for the specified mod
 	 * 
 	 * @param mod
 	 * @param metaDataKey
@@ -893,24 +844,45 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	public String getModMetaData(LiteMod mod, String metaDataKey, String defaultValue)
 	{
 		if (mod == null || metaDataKey == null) return defaultValue;
-		
-		String modClassName = mod.getClass().getSimpleName();
-		if (!this.modFiles.containsKey(modClassName)) return defaultValue;
-		
-		ModFile modFile = this.modFiles.get(modClassName);
-		return modFile.getMetaValue(metaDataKey, defaultValue);
+		return this.getModMetaData(mod.getClass(), metaDataKey, defaultValue);
+	}
+
+	/**
+	 * Get a metadata value for the specified mod
+	 * 
+	 * @param modClassName
+	 * @param metaDataKey
+	 * @param defaultValue
+	 * @return
+	 */
+	public String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue)
+	{
+		ModFile modFile = this.getModFile(modClass);
+		return modFile != null ? modFile.getMetaValue(metaDataKey, defaultValue) : defaultValue;
 	}
 	
 	/**
 	 * @param mod
 	 * @return
 	 */
-	private ModFile getModFile(LiteMod mod)
+	private ModFile getModFile(Class<? extends LiteMod> modClass)
 	{
-		String modClassName = mod.getClass().getSimpleName();
-		return this.modFiles.containsKey(modClassName) ? this.modFiles.get(modClassName) : null;
+		return this.modFiles.get(modClass.getSimpleName());
 	}
-	
+
+	/**
+	 * Get the mod "name" metadata key, this is used for versioning, exclusivity, and enablement checks
+	 * 
+	 * @param modClass
+	 * @return
+	 */
+	public String getModMetaName(Class<? extends LiteMod> modClass)
+	{
+		String modClassName = modClass.getSimpleName();
+		if (!this.modFiles.containsKey(modClassName)) return null;
+		return this.modFiles.get(modClassName).getModName().toLowerCase();
+	}
+
 	/**
 	 * Enumerate the java class path and "mods" folder to find mod classes, then
 	 * load the classes
@@ -926,37 +898,35 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			File modFolder = this.getModsFolder();
 			if (modFolder.exists() && modFolder.isDirectory())
 			{
-				logger.info("Mods folder found, searching " + modFolder.getPath());
+				LiteLoader.getLogger().info("Mods folder found, searching " + modFolder.getPath());
 				this.findModFiles(modFolder, modFiles);
-				logger.info("Found " + modFiles.size() + " mod file(s)");
+				LiteLoader.getLogger().info("Found " + modFiles.size() + " mod file(s)");
 			}
 		}
 		
 		try
 		{
-			logger.info("Enumerating class path...");
+			LiteLoader.getLogger().info("Enumerating class path...");
 			
 			String classPath = System.getProperty("java.class.path");
 			String classPathSeparator = System.getProperty("path.separator");
 			String[] classPathEntries = classPath.split(classPathSeparator);
 			
-			logger.info(String.format("Class path separator=\"%s\"", classPathSeparator));
-			logger.info(String.format("Class path entries=(\n   classpathEntry=%s\n)", classPath.replace(classPathSeparator, "\n   classpathEntry=")));
+			LiteLoader.getLogger().info(String.format("Class path separator=\"%s\"", classPathSeparator));
+			LiteLoader.getLogger().info(String.format("Class path entries=(\n   classpathEntry=%s\n)", classPath.replace(classPathSeparator, "\n   classpathEntry=")));
 			
 			if (searchProtectionDomain || searchClassPath)
-				logger.info("Discovering mods on class path...");
+				getLogger().info("Discovering mods on class path...");
 			
-			this.findModClasses(classPathEntries, modFiles, searchProtectionDomain, searchClassPath);
+			this.findModClasses(modFiles, searchProtectionDomain, searchClassPath, classPathEntries);
 			
-			logger.info("Mod class discovery completed");
+			LiteLoader.getLogger().info("Mod class discovery completed");
 		}
 		catch (Throwable th)
 		{
-			logger.log(Level.WARNING, "Mod class discovery failed", th);
+			LiteLoader.getLogger().log(Level.WARNING, "Mod class discovery failed", th);
 			return;
 		}
-		
-		this.loadMods();
 	}
 	
 	/**
@@ -978,11 +948,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 				// Check for a version file
 				ZipFile modZip = new ZipFile(modFile);
 				ZipEntry version = modZip.getEntry("litemod.json");
-				
-				if (version == null)
-				{
-					version = modZip.getEntry("version.txt");
-				}
+
+				// Not supporting this past 1.6.2
+//				if (version == null)
+//				{
+//					version = modZip.getEntry("version.txt");
+//				}
 				
 				if (version != null)
 				{
@@ -1003,7 +974,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					}
 					catch (Exception ex)
 					{
-						logger.warning("Error reading version data from " + modFile.getName());
+						LiteLoader.getLogger().warning("Error reading version data from " + modFile.getName());
 					}
 					finally
 					{
@@ -1020,10 +991,10 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 							// to successfully add it to the class path
 							if (LiteLoader.VERSION.isVersionSupported(modFileInfo.getVersion()))
 							{
-								if (!modFileInfo.isJson())
-								{
-									logger.warning("Missing or invalid litemod.json reading mod file: " + modFile.getAbsolutePath());
-								}
+//								if (!modFileInfo.isJson())
+//								{
+//									logger.warning("Missing or invalid litemod.json reading mod file: " + modFile.getAbsolutePath());
+//								}
 								
 								if (!versionOrderingSets.containsKey(modFileInfo.getName()))
 								{
@@ -1034,9 +1005,17 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 							}
 							else
 							{
-								logger.info("Not adding invalid or outdated mod file: " + modFile.getAbsolutePath());
+								LiteLoader.getLogger().info("Not adding invalid or outdated mod file: " + modFile.getAbsolutePath());
 							}
 						}
+					}
+				}
+				else
+				{
+					ZipEntry legacyVersion = modZip.getEntry("version.txt");
+					if (legacyVersion != null)
+					{
+						LiteLoader.getLogger().warning("version.txt is no longer supported, ignoring outdated mod file: " + modFile.getAbsolutePath());
 					}
 				}
 				
@@ -1045,7 +1024,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			catch (Exception ex)
 			{
 				ex.printStackTrace(System.err);
-				logger.warning("Error enumerating '" + modFile.getAbsolutePath() + "': Invalid zip file or error reading file");
+				LiteLoader.getLogger().warning("Error enumerating '" + modFile.getAbsolutePath() + "': Invalid zip file or error reading file");
 			}
 		}
 
@@ -1056,14 +1035,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 
 			try
 			{
-				if (this.addURLToClassPath(newestVersion.toURI().toURL()))
-				{
-					modFiles.add(newestVersion);
-				}
+				LiteLoader.classLoader.addURL(newestVersion.toURI().toURL());
+				modFiles.add(newestVersion);
 			}
 			catch (Exception ex)
 			{
-				logger.warning("Error injecting '" + newestVersion.getAbsolutePath() + "' into classPath. The mod will not be loaded");
+				LiteLoader.getLogger().warning("Error injecting '" + newestVersion.getAbsolutePath() + "' into classPath. The mod will not be loaded");
 			}
 		}
 	}
@@ -1081,10 +1058,9 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	
 	/**
 	 * Find mod classes in the class path and enumerated mod files list
-	 * 
 	 * @param classPathEntries Java class path split into string entries
 	 */
-	private void findModClasses(String[] classPathEntries, List<ModFile> modFiles, boolean searchProtectionDomain, boolean searchClassPath)
+	private void findModClasses(List<ModFile> modFiles, boolean searchProtectionDomain, boolean searchClassPath, String[] classPathEntries)
 	{
 		if (searchProtectionDomain)
 		{
@@ -1094,7 +1070,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 			catch (Throwable th)
 			{
-				logger.warning("Error loading from local class path: " + th.getMessage());
+				LiteLoader.getLogger().warning("Error loading from local class path: " + th.getMessage());
 			}
 		}
 		
@@ -1117,7 +1093,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	@SuppressWarnings("unchecked")
 	private void searchProtectionDomain() throws MalformedURLException, URISyntaxException, UnsupportedEncodingException
 	{
-		logger.info("Searching protection domain code source...");
+		LiteLoader.getLogger().info("Searching protection domain code source...");
 		
 		File packagePath = null;
 		
@@ -1152,14 +1128,14 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			{
 				if (this.modsToLoad.containsKey(mod.getSimpleName()))
 				{
-					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+					LiteLoader.getLogger().warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
 				}
 				
 				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
 			}
 			
 			if (modClasses.size() > 0)
-				logger.info(String.format("Found %s potential matches", modClasses.size()));
+				LiteLoader.getLogger().info(String.format("Found %s potential matches", modClasses.size()));
 		}
 	}
 
@@ -1172,7 +1148,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		for (String classPathPart : classPathEntries)
 		{
-			logger.info(String.format("Searching %s...", classPathPart));
+			LiteLoader.getLogger().info(String.format("Searching %s...", classPathPart));
 			
 			File packagePath = new File(classPathPart);
 			LinkedList<Class<?>> modClasses = getSubclassesFor(packagePath, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
@@ -1181,7 +1157,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			{
 				if (this.modsToLoad.containsKey(mod.getSimpleName()))
 				{
-					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+					LiteLoader.getLogger().warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
 				}
 				
 				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
@@ -1189,7 +1165,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 			
 			if (modClasses.size() > 0)
-				logger.info(String.format("Found %s potential matches", modClasses.size()));
+				LiteLoader.getLogger().info(String.format("Found %s potential matches", modClasses.size()));
 		}
 	}
 
@@ -1202,15 +1178,15 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		for (ModFile modFile : modFiles)
 		{
-			logger.info(String.format("Searching %s...", modFile.getAbsolutePath()));
+			LiteLoader.getLogger().info(String.format("Searching %s...", modFile.getAbsolutePath()));
 			
-			LinkedList<Class<?>> modClasses = getSubclassesFor(modFile, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
+			LinkedList<Class<?>> modClasses = LiteLoader.getSubclassesFor(modFile, Minecraft.class.getClassLoader(), LiteMod.class, "LiteMod");
 			
 			for (Class<?> mod : modClasses)
 			{
 				if (this.modsToLoad.containsKey(mod.getSimpleName()))
 				{
-					logger.warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
+					LiteLoader.getLogger().warning("Mod name collision for mod with class '" + mod.getSimpleName() + "', maybe you have more than one copy?");
 				}
 				
 				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
@@ -1218,7 +1194,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 			
 			if (modClasses.size() > 0)
-				logger.info(String.format("Found %s potential matches", modClasses.size()));
+				LiteLoader.getLogger().info(String.format("Found %s potential matches", modClasses.size()));
 		}
 	}
 	
@@ -1231,69 +1207,56 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		if (this.modsToLoad == null)
 		{
-			logger.info("Mod class discovery failed. Not loading any mods!");
+			LiteLoader.getLogger().info("Mod class discovery failed. Not loading any mods!");
 			return;
 		}
 		
-		logger.info("Discovered " + this.modsToLoad.size() + " total mod(s)");
+		LiteLoader.getLogger().info("Discovered " + this.modsToLoad.size() + " total mod(s)");
 		
 		this.pendingResourceReload = false;
-		this.soundManagerReloadInhibitor = new SoundManagerReloadInhibitor((SimpleReloadableResourceManager)minecraft.func_110442_L(), minecraft.sndManager); // TODO adamsrc -> getResourceManager
-		if (this.inhibitSoundManagerReload) this.soundManagerReloadInhibitor.inhibit();
+		this.soundManagerReloadInhibitor = new SoundManagerReloadInhibitor((SimpleReloadableResourceManager)this.minecraft.getResourceManager(), this.minecraft.sndManager);
+//		if (this.inhibitSoundManagerReload) this.soundManagerReloadInhibitor.inhibit();
 		
 		for (Class<? extends LiteMod> mod : this.modsToLoad.values())
 		{
 			try
 			{
-				logger.info("Loading mod from " + mod.getName());
-				
-				LiteMod newMod = mod.newInstance();
-				
-				if (this.shouldAddMod(newMod))
+				String metaName = this.getModMetaName(mod);
+				if (metaName == null || this.enabledModsList.isEnabled(this.profile, metaName))
 				{
+					LiteLoader.getLogger().info(String.format("Loading mod from %s", mod.getName()));
+					
+					LiteMod newMod = mod.newInstance();
+					
 					this.mods.add(newMod);
-					logger.info("Successfully added mod " + newMod.getName() + " version " + newMod.getVersion());
+					LiteLoader.getLogger().info(String.format("Successfully added mod %s version %s", newMod.getName(), newMod.getVersion()));
 					
 					// Get the mod file and register it as a resource pack if it exists
-					ModFile modFile = this.getModFile(newMod);
-					if (modFile != null && modFile.registerAsResourcePack(newMod.getName()))
+					ModFile modFile = this.getModFile(mod);
+					if (modFile != null)
 					{
-						logger.info("Adding " + modFile.getAbsolutePath() + " to resources list");
+						this.disabledMods.remove(modFile);
+						
+						if (modFile.registerAsResourcePack(newMod.getName()))
+						{
+							LiteLoader.getLogger().info(String.format("Successfully added \"%s\" to active resource pack set", modFile.getAbsolutePath()));
+						}
 					}
 				}
 				else
 				{
-					logger.info("Not loading mod " + newMod.getName() + ", excluded by filter");
+					LiteLoader.getLogger().info(String.format("Not loading mod %s, excluded by filter", metaName));
+					this.disabledMods.add(this.getModFile(mod));
 				}
 			}
 			catch (Throwable th)
 			{
-				logger.warning(th.toString());
+				LiteLoader.getLogger().warning(th.toString());
 				th.printStackTrace();
 			}
 		}
 	}
 	
-	/**
-	 * @param name
-	 * @return
-	 */
-	private boolean shouldAddMod(LiteMod mod)
-	{
-		if (this.modNameFilter == null) return true;
-		
-		String modClassName = mod.getClass().getSimpleName();
-		if (!this.modFiles.containsKey(modClassName)) return true;
-
-		String metaName = this.modFiles.get(modClassName).getModName().toLowerCase();
-		if (this.modNameFilter.contains(metaName))
-		{
-			return true;
-		}
-		
-		return false;
-	}
-
 	/**
 	 * Initialise the mods which were loaded
 	 */
@@ -1309,7 +1272,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			
 			try
 			{
-				logger.info("Initialising mod " + modName + " version " + mod.getVersion());
+				LiteLoader.getLogger().info("Initialising mod " + modName + " version " + mod.getVersion());
 				
 				try
 				{
@@ -1318,81 +1281,21 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 					
 					if (LiteLoader.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
 					{
-						logger.info("Performing config upgrade for mod " + modName + ". Upgrading " + lastModVersion + " to " + LiteLoader.VERSION + "...");
+						LiteLoader.getLogger().info("Performing config upgrade for mod " + modName + ". Upgrading " + lastModVersion + " to " + LiteLoader.VERSION + "...");
 						mod.upgradeSettings(VERSION.getMinecraftVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
 						
 						this.storeLastKnownModRevision(modKey);
-						logger.info("Config upgrade succeeded for mod " + modName);
+						LiteLoader.getLogger().info("Config upgrade succeeded for mod " + modName);
 					}
 				}
 				catch (Throwable th)
 				{
-					logger.warning("Error performing settings upgrade for " + modName + ". Settings may not be properly migrated");
+					LiteLoader.getLogger().warning("Error performing settings upgrade for " + modName + ". Settings may not be properly migrated");
 				}
 				
 				mod.init(this.modsFolder);
 				
-				if (mod instanceof Tickable)
-				{
-					this.addTickListener((Tickable)mod);
-				}
-				
-				if (mod instanceof GameLoopListener)
-				{
-					this.addLoopListener((GameLoopListener)mod);
-				}
-				
-				if (mod instanceof InitCompleteListener)
-				{
-					this.addInitListener((InitCompleteListener)mod);
-				}
-				
-				if (mod instanceof RenderListener)
-				{
-					this.addRenderListener((RenderListener)mod);
-				}
-				
-				if (mod instanceof PostRenderListener)
-				{
-					this.addPostRenderListener((PostRenderListener)mod);
-				}
-				
-				if (mod instanceof ChatFilter)
-				{
-					this.addChatFilter((ChatFilter)mod);
-				}
-				
-				if (mod instanceof ChatListener)
-				{
-					if (mod instanceof ChatFilter)
-					{
-						this.logger.warning(String.format("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", modName));
-					}
-					else
-					{
-						this.addChatListener((ChatListener)mod);
-					}
-				}
-				
-				if (mod instanceof ChatRenderListener)
-				{
-					this.addChatRenderListener((ChatRenderListener)mod);
-				}
-				
-				if (mod instanceof PreLoginListener)
-				{
-					this.addPreLoginListener((PreLoginListener)mod);
-				}
-				
-				if (mod instanceof LoginListener)
-				{
-					this.addLoginListener((LoginListener)mod);
-				}
-				
-				if (mod instanceof PluginChannelListener)
-				{
-					this.addPluginChannelListener((PluginChannelListener)mod);
-				}
+				this.events.addListener(mod);
 				
 				if (mod instanceof Permissible)
 				{
@@ -1405,204 +1308,12 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			}
 			catch (Throwable th)
 			{
-				logger.log(Level.WARNING, "Error initialising mod '" + modName, th);
+				LiteLoader.getLogger().log(Level.WARNING, "Error initialising mod '" + modName, th);
 				iter.remove();
 			}
 		}
 		
 		this.loadedModsList = String.format("%s loaded mod(s)%s", loadedModsCount, this.loadedModsList);
-	}
-	
-	/**
-	 * Initialise mod hooks
-	 */
-	private void initHooks()
-	{
-		try
-		{
-			// Chat hook
-			if ((this.chatListeners.size() > 0 || this.chatFilters.size() > 0) && !this.chatHooked)
-			{
-				this.chatHooked = true;
-				HookChat.register();
-				HookChat.registerPacketHandler(this);
-			}
-			
-			// Login hook
-			if ((this.preLoginListeners.size() > 0 || this.loginListeners.size() > 0) && !this.loginHooked)
-			{
-				this.loginHooked = true;
-				ModUtilities.registerPacketOverride(1, HookLogin.class);
-				HookLogin.loader = this;
-			}
-			
-			// Plugin channels hook
-			if (this.pluginChannelListeners.size() > 0 && !this.pluginChannelHooked)
-			{
-				this.pluginChannelHooked = true;
-				HookPluginChannels.register();
-				HookPluginChannels.registerPacketHandler(this);
-			}
-			
-			// Tick hook
-			if (!this.tickHooked)
-			{
-				this.tickHooked = true;
-				PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
-			}
-			
-			// Sanity hook
-			PlayerUsageSnooper snooper = this.minecraft.getPlayerUsageSnooper();
-			PrivateFields.playerStatsCollector.setFinal(snooper, this);
-		}
-		catch (Exception ex)
-		{
-			logger.log(Level.WARNING, "Error creating hooks", ex);
-			ex.printStackTrace();
-		}
-	}
-	
-	/**
-	 * @param tickable
-	 */
-	public void addTickListener(Tickable tickable)
-	{
-		if (!this.tickListeners.contains(tickable))
-		{
-			this.tickListeners.add(tickable);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param loopListener
-	 */
-	public void addLoopListener(GameLoopListener loopListener)
-	{
-		if (!this.loopListeners.contains(loopListener))
-		{
-			this.loopListeners.add(loopListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param initCompleteListener
-	 */
-	public void addInitListener(InitCompleteListener initCompleteListener)
-	{
-		if (!this.initListeners.contains(initCompleteListener))
-		{
-			this.initListeners.add(initCompleteListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param tickable
-	 */
-	public void addRenderListener(RenderListener tickable)
-	{
-		if (!this.renderListeners.contains(tickable))
-		{
-			this.renderListeners.add(tickable);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param tickable
-	 */
-	public void addPostRenderListener(PostRenderListener tickable)
-	{
-		if (!this.postRenderListeners.contains(tickable))
-		{
-			this.postRenderListeners.add(tickable);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param chatFilter
-	 */
-	public void addChatFilter(ChatFilter chatFilter)
-	{
-		if (!this.chatFilters.contains(chatFilter))
-		{
-			this.chatFilters.add(chatFilter);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param chatListener
-	 */
-	public void addChatListener(ChatListener chatListener)
-	{
-		if (!this.chatListeners.contains(chatListener))
-		{
-			this.chatListeners.add(chatListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param chatRenderListener
-	 */
-	public void addChatRenderListener(ChatRenderListener chatRenderListener)
-	{
-		if (!this.chatRenderListeners.contains(chatRenderListener))
-		{
-			this.chatRenderListeners.add(chatRenderListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param loginListener
-	 */
-	public void addPreLoginListener(PreLoginListener loginListener)
-	{
-		if (!this.preLoginListeners.contains(loginListener))
-		{
-			this.preLoginListeners.add(loginListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param loginListener
-	 */
-	public void addLoginListener(LoginListener loginListener)
-	{
-		if (!this.loginListeners.contains(loginListener))
-		{
-			this.loginListeners.add(loginListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
-	}
-	
-	/**
-	 * @param pluginChannelListener
-	 */
-	public void addPluginChannelListener(PluginChannelListener pluginChannelListener)
-	{
-		if (!this.pluginChannelListeners.contains(pluginChannelListener))
-		{
-			this.pluginChannelListeners.add(pluginChannelListener);
-			if (this.loaderStartupComplete)
-				this.initHooks();
-		}
 	}
 	
 	/**
@@ -1629,7 +1340,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		}
 		catch (Throwable th)
 		{
-			logger.log(Level.WARNING, "Enumeration error", th);
+			LiteLoader.getLogger().log(Level.WARNING, "Enumeration error", th);
 		}
 		
 		return classes;
@@ -1747,72 +1458,32 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 		}
 		catch (Throwable th)
 		{
-			logger.log(Level.WARNING, "checkAndAddClass error", th);
+			LiteLoader.getLogger().log(Level.WARNING, "checkAndAddClass error", th);
 		}
 	}
-	
-	/**
-	 * Add a URL to the Minecraft classloader class path
-	 * 
-	 * @param classUrl URL of the resource to add
-	 */
-	private boolean addURLToClassPath(URL classUrl)
-	{
-		try
-		{
-			if (Minecraft.class.getClassLoader() instanceof URLClassLoader && this.mAddUrl != null && this.mAddUrl.isAccessible())
-			{
-				URLClassLoader classLoader = (URLClassLoader)Minecraft.class.getClassLoader();
-				this.mAddUrl.invoke(classLoader, classUrl);
-				return true;
-			}
-		}
-		catch (Throwable th)
-		{
-			logger.log(Level.WARNING, "Error adding class path entry", th);
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Late initialisation callback
-	 */
-	public void onInit()
+
+	public void refreshResources()
 	{
 		if (this.pendingResourceReload)
 		{
 			this.pendingResourceReload = false;
-			this.minecraft.func_110436_a(); // TODO adamsrc -> refreshResourcePacks
+			this.minecraft.refreshResources();
 		}
-		
-		if (!this.lateInitDone)
-		{
-			this.lateInitDone = true;
-			
-			for (InitCompleteListener initMod : this.initListeners)
-			{
-				try
-				{
-					logger.info("Calling late init for mod " + initMod.getName());
-					initMod.onInitCompleted(this.minecraft, this);
-				}
-				catch (Throwable th)
-				{
-					logger.log(Level.WARNING, "Error initialising mod " + initMod.getName(), th);
-				}
-			}
-		}
-
+	}
+	
+	public void onInit()
+	{
 		if (this.soundManagerReloadInhibitor != null && this.soundManagerReloadInhibitor.isInhibited())
 		{
 			this.soundManagerReloadInhibitor.unInhibit(true);
 		}
 	}
-	
-	/**
-	 * Callback from the tick hook, pre render
-	 */
+
+	public void onLogin(NetHandler netHandler, Packet1Login loginPacket)
+	{
+		this.permissionsManager.onLogin(netHandler, loginPacket);
+	}
+
 	public void onRender()
 	{
 		if (this.paginateControls && this.minecraft.currentScreen != null && this.minecraft.currentScreen.getClass().equals(GuiControls.class))
@@ -1827,368 +1498,16 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			{
 			}
 		}
-		
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onRender();
-	}
-	
-	/**
-	 * Callback from the tick hook, post render entities
-	 */
-	public void postRenderEntities()
-	{
-		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
-		
-		for (PostRenderListener renderListener : this.postRenderListeners)
-			renderListener.onPostRenderEntities(partialTicks);
-	}
-	
-	/**
-	 * Callback from the tick hook, post render
-	 */
-	public void postRender()
-	{
-		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
-		
-		for (PostRenderListener renderListener : this.postRenderListeners)
-			renderListener.onPostRender(partialTicks);
-	}
-	
-	/**
-	 * Called immediately before the current GUI is rendered
-	 */
-	public void onBeforeGuiRender()
-	{
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onRenderGui(this.minecraft.currentScreen);
-	}
-	
-	/**
-	 * Called immediately after the world/camera transform is initialised
-	 */
-	public void onSetupCameraTransform()
-	{
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onSetupCameraTransform();
-	}
-	
-	/**
-	 * Called immediately before the chat log is rendered
-	 */
-	public void onBeforeChatRender()
-	{
-		this.currentResolution = new ScaledResolution(this.minecraft.gameSettings, this.minecraft.displayWidth, this.minecraft.displayHeight);
-		int screenWidth = this.currentResolution.getScaledWidth();
-		int screenHeight = this.currentResolution.getScaledHeight();
-		
-		GuiNewChat chat = this.minecraft.ingameGUI.getChatGUI();
-		
-		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
-			chatRenderListener.onPreRenderChat(screenWidth, screenHeight, chat);
-	}
-	
-	/**
-	 * Called immediately after the chat log is rendered
-	 */
-	public void onAfterChatRender()
-	{
-		int screenWidth = this.currentResolution.getScaledWidth();
-		int screenHeight = this.currentResolution.getScaledHeight();
-		
-		GuiNewChat chat = this.minecraft.ingameGUI.getChatGUI();
-		
-		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
-			chatRenderListener.onPostRenderChat(screenWidth, screenHeight, chat);
-	}
-	
-	/**
-	 * Callback from the tick hook, called every frame when the timer is updated
-	 */
-	public void onTimerUpdate()
-	{
-		for (GameLoopListener loopListener : this.loopListeners)
-			loopListener.onRunGameLoop(this.minecraft);
-	}
-	
-	/**
-	 * Callback from the tick hook, ticks all tickable mods
-	 * 
-	 * @param tick True if this is a new tick (otherwise it's just a new frame)
-	 */
-	public void onTick(Profiler profiler, boolean tick)
-	{
-		float partialTicks = 0.0F;
-		
-		// Try to get the minecraft timer object and determine the value of the
-		// partialTicks
-		if (tick || this.minecraftTimer == null)
-		{
-			this.minecraftTimer = PrivateFields.minecraftTimer.get(this.minecraft);
-		}
-		
-		// Hooray, we got the timer reference
-		if (this.minecraftTimer != null)
-		{
-			partialTicks = this.minecraftTimer.renderPartialTicks;
-			tick = this.minecraftTimer.elapsedTicks > 0;
-		}
-		
-		// Flag indicates whether we are in game at the moment
-		boolean inGame = this.minecraft.renderViewEntity != null && this.minecraft.renderViewEntity.worldObj != null;
-		
-		if (tick)
-		{
-			// Tick the permissions manager
-			permissionsManager.onTick(this.minecraft, partialTicks, inGame);
-			
-			this.checkAndStoreKeyBindings();
-		}
-		
-		// Iterate tickable mods
-		for (Tickable tickable : this.tickListeners)
-		{
-			profiler.startSection(tickable.getClass().getSimpleName());
-			tickable.onTick(this.minecraft, partialTicks, inGame, tick);
-			profiler.endSection();
-		}
-	}
-	
-	/**
-	 * Callback from the chat hook
-	 * 
-	 * @param chatPacket
-	 * @return
-	 */
-	public boolean onChat(Packet3Chat chatPacket)
-	{
-		if (chatPacket.message == null)
-			return true;
-		
-		ChatMessageComponent chat = ChatMessageComponent.func_111078_c(chatPacket.message);
-		String message = chat.func_111068_a(true);
-		
-		// Chat filters get a stab at the chat first, if any filter returns
-		// false the chat is discarded
-		for (ChatFilter chatFilter : this.chatFilters)
-		{
-			if (chatFilter.onChat(chatPacket, chat, message))
-			{
-				chat = ChatMessageComponent.func_111078_c(chatPacket.message);
-				message = chat.func_111068_a(true);
-			}
-			else
-			{
-				return false;
-			}
-		}
-		
-		// Chat listeners get the chat if no filter removed it
-		for (ChatListener chatListener : this.chatListeners)
-			chatListener.onChat(chat, message);
-		
-		return true;
-	}
-	
-	/**
-	 * Pre-login callback from the login hook
-	 * 
-	 * @param netHandler
-	 * @param hookLogin
-	 * @return
-	 */
-	public boolean onPreLogin(NetHandler netHandler, Packet1Login loginPacket)
-	{
-		boolean cancelled = false;
-		
-		for (PreLoginListener loginListener : this.preLoginListeners)
-		{
-			cancelled |= !loginListener.onPreLogin(netHandler, loginPacket);
-		}
-		
-		return !cancelled;
-	}
-	
-	/**
-	 * Callback from the login hook
-	 * 
-	 * @param netHandler
-	 * @param loginPacket
-	 */
-	public void onConnectToServer(NetHandler netHandler, Packet1Login loginPacket)
-	{
-		permissionsManager.onLogin(netHandler, loginPacket);
-		
-		for (LoginListener loginListener : this.loginListeners)
-			loginListener.onLogin(netHandler, loginPacket);
-		
-		this.setupPluginChannels();
-	}
-	
-	/**
-	 * Callback for the plugin channel hook
-	 * 
-	 * @param hookPluginChannels
-	 */
-	public void onPluginChannelMessage(HookPluginChannels hookPluginChannels)
-	{
-		if (hookPluginChannels != null && hookPluginChannels.channel != null && this.pluginChannels.containsKey(hookPluginChannels.channel))
-		{
-			try
-			{
-				permissionsManager.onCustomPayload(hookPluginChannels.channel, hookPluginChannels.length, hookPluginChannels.data);
-			}
-			catch (Exception ex)
-			{
-			}
-			
-			for (PluginChannelListener pluginChannelListener : this.pluginChannels.get(hookPluginChannels.channel))
-			{
-				try
-				{
-					pluginChannelListener.onCustomPayload(hookPluginChannels.channel, hookPluginChannels.length, hookPluginChannels.data);
-				}
-				catch (Exception ex)
-				{
-				}
-			}
-		}
-	}
-	
-	/**
-	 * Delegate to ModUtilities.sendPluginChannelMessage
-	 * 
-	 * @param channel Channel to send data to
-	 * @param data Data to send
-	 */
-	public void sendPluginChannelMessage(String channel, byte[] data)
-	{
-		ModUtilities.sendPluginChannelMessage(channel, data);
-	}
-	
-	/**
-	 * Query loaded mods for registered channels
-	 */
-	protected void setupPluginChannels()
-	{
-		// Clear any channels from before
-		this.pluginChannels.clear();
-		
-		// Add the permissions manager channels
-		this.addPluginChannelsFor(permissionsManager);
-		
-		// Enumerate mods for plugin channels
-		for (PluginChannelListener pluginChannelListener : this.pluginChannelListeners)
-		{
-			this.addPluginChannelsFor(pluginChannelListener);
-		}
-		
-		// If any mods have registered channels, send the REGISTER packet
-		if (this.pluginChannels.keySet().size() > 0)
-		{
-			StringBuilder channelList = new StringBuilder();
-			boolean separator = false;
-			
-			for (String channel : this.pluginChannels.keySet())
-			{
-				if (separator)
-					channelList.append("\u0000");
-				channelList.append(channel);
-				separator = true;
-			}
-			
-			byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
-			
-			this.sendPluginChannelMessage("REGISTER", registrationData);
-		}
-	}
-	
-	/**
-	 * Adds plugin channels for the specified listener to the local channels
-	 * collection
-	 * 
-	 * @param pluginChannelListener
-	 */
-	private void addPluginChannelsFor(PluginChannelListener pluginChannelListener)
-	{
-		List<String> channels = pluginChannelListener.getChannels();
-		
-		if (channels != null)
-		{
-			for (String channel : channels)
-			{
-				if (channel.length() > 16 || channel.toUpperCase().equals("REGISTER") || channel.toUpperCase().equals("UNREGISTER"))
-					continue;
-				
-				if (!this.pluginChannels.containsKey(channel))
-				{
-					this.pluginChannels.put(channel, new LinkedList<PluginChannelListener>());
-				}
-				
-				this.pluginChannels.get(channel).add(pluginChannelListener);
-			}
-		}
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.minecraft.src.IPlayerUsage#addServerStatsToSnooper(net.minecraft.
-	 * src.PlayerUsageSnooper)
-	 */
-	@Override
-	public void addServerStatsToSnooper(PlayerUsageSnooper var1)
-	{
-		this.minecraft.addServerStatsToSnooper(var1);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.minecraft.src.IPlayerUsage#addServerTypeToSnooper(net.minecraft.src
-	 * .PlayerUsageSnooper)
-	 */
-	@Override
-	public void addServerTypeToSnooper(PlayerUsageSnooper var1)
-	{
-		this.sanityCheck();
-		this.minecraft.addServerTypeToSnooper(var1);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.IPlayerUsage#isSnooperEnabled()
-	 */
-	@Override
-	public boolean isSnooperEnabled()
-	{
-		return this.minecraft.isSnooperEnabled();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.IPlayerUsage#getLogAgent()
-	 */
-	@Override
-	public ILogAgent getLogAgent()
-	{
-		return this.minecraft.getLogAgent();
-	}
-	
-	/**
-	 * Check that the profiler hook hasn't been overridden by something else
-	 */
-	private void sanityCheck()
-	{
-		if (this.tickHooked && this.minecraft.mcProfiler != this.profilerHook)
-		{
-			PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
-		}
 	}
 
+	public void onTick(float partialTicks, boolean inGame)
+	{
+		// Tick the permissions manager
+		permissionsManager.onTick(this.minecraft, partialTicks, inGame);
+		
+		this.checkAndStoreKeyBindings();
+	}
+	
 	public void registerModKey(KeyBinding binding)
 	{
 		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
@@ -2207,7 +1526,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 
 			keyBindings.add(binding);
 			this.minecraft.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
-			this.modKeys.add(binding);
+			this.modKeyBindings.add(binding);
 			
 			this.updateBinding(binding);
 			this.storeBindings();
@@ -2221,7 +1540,7 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 	{
 		boolean updated = false;
 		
-		for (KeyBinding binding : this.modKeys)
+		for (KeyBinding binding : this.modKeyBindings)
 		{
 			if (binding.keyCode != this.storedModKeyBindings.get(binding))
 			{
@@ -2253,5 +1572,117 @@ public final class LiteLoader implements FilenameFilter, IPlayerUsage
 			this.keyMapSettings.store(new FileWriter(this.keyMapSettingsFile), "Mod key mappings for LiteLoader mods, stored here to avoid losing settings stored in options.txt");
 		}
 		catch (IOException ex) {}
+	}
+	
+	/**
+	 * Set the brand in ClientBrandRetriever to the specified brand 
+	 * 
+	 * @param brand
+	 */
+	private void setBranding(String brand)
+	{
+		try
+		{
+			String oldBrand = ClientBrandRetriever.getClientModName();
+			
+			if (oldBrand.equals("vanilla"))
+			{
+				char[] newValue = brand.toCharArray();
+				
+				Field stringValue = String.class.getDeclaredField("value");
+				stringValue.setAccessible(true);
+				stringValue.set(oldBrand, newValue);
+				
+				try
+				{
+					Field stringCount = String.class.getDeclaredField("count");
+					stringCount.setAccessible(true);
+					stringCount.set(oldBrand, newValue.length);
+				}
+				catch (NoSuchFieldException ex) {} // java 1.7 doesn't have this member
+			}
+		}
+		catch (Exception ex)
+		{
+			LiteLoader.getLogger().log(Level.WARNING, "Setting branding failed", ex);
+		}
+	}
+
+	// -----------------------------------------------------------------------------------------------------------
+	// TODO Remove delegates below after 1.6.3
+	// -----------------------------------------------------------------------------------------------------------
+	
+	/**
+	 * Delegate to PluginChannels.sendMessage. Deprecated and will be removed
+	 * 
+	 * @param channel Channel to send data to
+	 * @param data Data to send
+	 * 
+	 * @deprecated User PluginChannels.sendMessage(channel, data) instead.
+	 */
+	@Deprecated
+	public void sendPluginChannelMessage(String channel, byte[] data)
+	{
+		PluginChannels.sendMessage(channel, data);
+	}
+
+	@Deprecated
+	public void addTickListener(Tickable tickable)
+	{
+		this.events.addTickListener(tickable);
+	}
+	
+	@Deprecated
+	public void addLoopListener(GameLoopListener loopListener)
+	{
+		this.events.addLoopListener(loopListener);
+	}
+	
+	@Deprecated
+	public void addInitListener(InitCompleteListener initCompleteListener)
+	{
+		this.events.addInitListener(initCompleteListener);
+	}
+	
+	@Deprecated
+	public void addRenderListener(RenderListener renderListener)
+	{
+		this.events.addRenderListener(renderListener);
+	}
+	
+	@Deprecated
+	public void addPostRenderListener(PostRenderListener postRenderListener)
+	{
+		this.events.addPostRenderListener(postRenderListener);
+	}
+	
+	@Deprecated
+	public void addChatFilter(ChatFilter chatFilter)
+	{
+		this.events.addChatFilter(chatFilter);
+	}
+	
+	@Deprecated
+	public void addChatListener(ChatListener chatListener)
+	{
+		this.events.addChatListener(chatListener);
+	}
+	
+	@Deprecated
+	public void addChatRenderListener(ChatRenderListener chatRenderListener)
+	{
+		this.events.addChatRenderListener(chatRenderListener);
+	}
+	
+	@Deprecated
+	public void addPreLoginListener(PreLoginListener loginListener)
+	{
+		this.events.addPreLoginListener(loginListener);
+	}
+
+	@Deprecated
+	public void addLoginListener(LoginListener loginListener)
+	{
+		this.events.addLoginListener(loginListener);
 	}
 }

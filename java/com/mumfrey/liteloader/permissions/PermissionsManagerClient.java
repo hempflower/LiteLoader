@@ -16,7 +16,7 @@ import net.minecraft.src.Packet1Login;
 
 import com.mumfrey.liteloader.Permissible;
 import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.util.ModUtilities;
+import com.mumfrey.liteloader.core.PluginChannels;
 
 /**
  * This class manages permissions on the client, it is a singleton class which can manage permissions for multiple 
@@ -220,7 +220,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 				if (!query.modName.equals("all") || query.permissions.size() > 0)
 				{
 					byte[] data = query.getBytes();
-					ModUtilities.sendPluginChannelMessage(ReplicatedPermissionsContainer.CHANNEL, data);
+					PluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, data);
 				}
 			}
 		}

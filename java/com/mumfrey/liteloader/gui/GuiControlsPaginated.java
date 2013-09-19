@@ -105,17 +105,17 @@ public class GuiControlsPaginated extends GuiScreen
 		{
 			this.getLegacyControlList().add(this.btnNext = new GuiButton(201, this.getWidth() / 2 - 51, buttonY, 50, 20, ">>"));
 			this.getLegacyControlList().add(this.btnPrevious = new GuiButton(202, this.getWidth() / 2 - 103, buttonY, 50, 20, "<<"));
-			this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 + 1, buttonY, 100, 20, I18n.func_135053_a("gui.done"))); // TODO adamsrc -> translate 
+			this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 + 1, buttonY, 100, 20, I18n.getString("gui.done"))); 
 			
 			this.btnNext.enabled = this.startIndex < this.endIndex;
 			this.btnPrevious.enabled = this.startIndex > 0;
 		}
 		else
 		{
-			this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 - 100, buttonY, I18n.func_135053_a("gui.done"))); // TODO adamsrc -> translate
+			this.getLegacyControlList().add(new GuiButton(200, this.getWidth() / 2 - 100, buttonY, I18n.getString("gui.done")));
 		}
 		
-		this.screenTitle = I18n.func_135053_a("controls.title"); // TODO adamsrc -> translate
+		this.screenTitle = I18n.getString("controls.title");
 	}
 	
 	/**
