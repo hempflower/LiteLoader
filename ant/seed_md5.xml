@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="mcp" basedir="." default="genmd5">
+	
+    <!-- ========================================================================== -->
+    <!-- DO NOT RUN THIS SCRIPT DIRECTLY                                            -->
+    <!-- ========================================================================== -->
+        
+    <!-- This script is called by the LiteLoader build script if the initial MD5s   -->
+    <!-- are missing. If you want to fire this script then delete the 'md5' folder  -->
+    <!-- before running the LiteLoader build.                                       -->
+    
+    <property name="outmd5set" value="mcp" />
+	<property name="mcp.dir" location="../../.." />
+    <property name="src" location="${mcp.dir}/src/minecraft" />
+    <property name="temp" location="${mcp.dir}/temp" />
+    <property name="md5.dir" location="${mcp.dir}/md5" />
+    <property name="mc.src" location="${mcp.dir}/src/mcp" />
+
+	<property name="python" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
+
+    <target name="genmd5" description="Seed the initial MCP md5 set">
+        <echo level="info" message="MCP md5set was not found, making a clean compile" />
+    	<antcall target="clean" />
+    	<antcall target="init" />
+    	<antcall target="recompile" />
+        <antcall target="reobfuscate" />
+        <antcall target="savemd5" />
+	</target>
+
+	<target name="clean">
+        <echo level="info" message="Cleaning output directories" />
+	
+        <delete dir="${src}" />
+        <delete dir="${mcp.dir}/reobf" />
+    </target>
+	
+	<target name="init" description="Initialize environment">
+        <echo level="info" message="Initialising environment" />
+
+    	<mkdir dir="${md5.dir}" />
+		
+        <copy todir="${src}" verbose="false" overwrite="true">
+            <fileset dir="${mc.src}" />
+        </copy>
+	</target>
+
+	<target name="recompile" description="MCP recompile">
+        <echo level="info" message="Compiling MCP sources" />
+
+		<exec executable="${python}" dir="${mcp.dir}">
+			<arg value="runtime/recompile.py" />
+			<arg value="--client" />
+			<arg value="%*" />
+		</exec>
+	</target>
+
+	<target name="reobfuscate" description="MCP reobfuscate">
+        <echo level="info" message="Obfuscating classes" />
+
+		<exec executable="${python}" dir="${mcp.dir}">
+			<arg value="runtime/reobfuscate.py" />
+            <arg value="--client" />
+			<arg value="%*" />
+		</exec>
+	</target>
+	
+    <target name="savemd5" description="Put post-obfuscation MD5 to stored md5 set" if="outmd5set">
+        <echo level="info" message="Storing obfuscated MD5s" />
+
+		<copy file="${temp}/client_reobf.md5" tofile="${md5.dir}/client_${outmd5set}.md5" overwrite="true" verbose="true" />
+	</target>
+</project>
