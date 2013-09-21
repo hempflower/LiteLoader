@@ -13,7 +13,7 @@ public class LiteLoaderTransformer implements IClassTransformer
 {
 	private static final String classMappingRenderLightningBolt = "net.minecraft.src.RenderLightningBolt";
 	
-	// TODO Obfuscation 1.6.3
+	// TODO Obfuscation 1.6.4
 	private static final String classMappingRenderLightningBoltObf = "bha";
 
 	private static Logger logger = Logger.getLogger("liteloader");

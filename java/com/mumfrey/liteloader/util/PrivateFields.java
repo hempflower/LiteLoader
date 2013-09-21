@@ -15,7 +15,7 @@ import net.minecraft.src.*;
  * @param <P> Parent class type, the type of the class that owns the field
  * @param <T> Field type, the type of the field value
  * 
- * TODO Obfuscation - updated 1.6.3
+ * TODO Obfuscation - updated 1.6.4
  */
 @SuppressWarnings("rawtypes")
 public class PrivateFields<P, T>

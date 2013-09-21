@@ -44,14 +44,14 @@ import com.mumfrey.liteloader.util.PrivateFields;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.6.3
+ * @version 1.6.4
  */
 public final class LiteLoader implements FilenameFilter
 {
 	/**
 	 * Liteloader version
 	 */
-	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_3_R0;
+	private static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_4_R0;
 	
 	/**
 	 * Maximum recursion depth for mod discovery
@@ -794,6 +794,30 @@ public final class LiteLoader implements FilenameFilter
 		for (LiteMod mod : this.mods)
 		{
 			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(mod.getClass().getSimpleName()))
+				return (T)mod;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Get a reference to a loaded mod, if the mod exists
+	 * 
+	 * @param modName Mod's name or class name
+	 * @return
+	 * @throws InvalidActivityException
+	 */
+	@SuppressWarnings("unchecked")
+	public <T extends LiteMod> T getMod(Class<T> modClass)
+	{
+		if (!this.loaderStartupComplete)
+		{
+			throw new RuntimeException("Attempted to get a reference to a mod before loader startup is complete");
+		}
+		
+		for (LiteMod mod : this.mods)
+		{
+			if (mod.getClass().equals(modClass))
 				return (T)mod;
 		}
 		
@@ -1609,7 +1633,7 @@ public final class LiteLoader implements FilenameFilter
 	}
 
 	// -----------------------------------------------------------------------------------------------------------
-	// TODO Remove delegates below after 1.6.3
+	// TODO Remove delegates below after 1.6.4
 	// -----------------------------------------------------------------------------------------------------------
 	
 	/**
