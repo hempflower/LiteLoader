@@ -29,15 +29,16 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private String profile;
 
-	private List<String> unClassifiedArgs = new ArrayList<String>();
+	private List<String> singularLaunchArgs = new ArrayList<String>();
 	
-	private Map<String, String> classifiedArgs = new HashMap<String, String>();
+	private Map<String, String> launchArgs;
 	
 	private ArgumentAcceptingOptionSpec<String> modsOption;
 	private OptionSet parsedOptions;
 	
 	private List<String> passThroughArgs;
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
@@ -56,6 +57,13 @@ public class LiteLoaderTweaker implements ITweaker
 		
 		this.parsedOptions = optionParser.parse(args.toArray(new String[args.size()]));
 		this.passThroughArgs = this.parsedOptions.valuesOf(nonOptions);
+		
+		this.launchArgs = (Map<String, String>)Launch.blackboard.get("launchArgs");
+		if (this.launchArgs == null)
+		{
+			this.launchArgs = new HashMap<String, String>();			
+			Launch.blackboard.put("launchArgs", this.launchArgs);
+		}
 		
 		// Parse out the arguments ourself because joptsimple doesn't really provide a good way to
 		// add arguments to the unparsed argument list after parsing
@@ -76,29 +84,14 @@ public class LiteLoaderTweaker implements ITweaker
 	 */
 	public void provideRequiredArgs(File gameDirectory, File assetsDirectory)
 	{
-		@SuppressWarnings("unchecked")
-		final List<String> argumentList = (List<String>)Launch.blackboard.get("ArgumentList");
+		if (!this.launchArgs.containsKey("--version"))
+			this.addClassifiedArg("--version", this.VERSION);
 		
-		if (argumentList != null)
-		{
-			if (!argumentList.contains("--version"))
-			{
-				argumentList.add("--version");
-				argumentList.add(this.VERSION);
-			}
-			
-			if (!argumentList.contains("--gameDir") && gameDirectory != null)
-			{
-				argumentList.add("--gameDir");
-				argumentList.add(gameDirectory.getAbsolutePath());
-			}
-			
-			if (!argumentList.contains("--assetsDir") && assetsDirectory != null)
-			{
-				argumentList.add("--assetsDir");
-				argumentList.add(assetsDirectory.getAbsolutePath());
-			}
-		}
+		if (!this.launchArgs.containsKey("--gameDir") && gameDirectory != null)
+			this.addClassifiedArg("--gameDir", gameDirectory.getAbsolutePath());
+		
+		if (!this.launchArgs.containsKey("--assetsDir") && assetsDirectory != null)
+			this.addClassifiedArg("--assetsDir", assetsDirectory.getAbsolutePath());
 	}
 
 	private void parseArgs(List<String> args)
@@ -121,14 +114,14 @@ public class LiteLoaderTweaker implements ITweaker
 				if (classifier != null)
 					classifier = this.addClassifiedArg(classifier, arg);
 				else
-					this.unClassifiedArgs.add(arg);
+					this.singularLaunchArgs.add(arg);
 			}
 		}
 	}
 
 	private String addClassifiedArg(String classifiedArg, String arg)
 	{
-		this.classifiedArgs.put(classifiedArg, arg);
+		this.launchArgs.put(classifiedArg, arg);
 		return null;
 	}
 
@@ -136,7 +129,7 @@ public class LiteLoaderTweaker implements ITweaker
 	public void injectIntoClassLoader(LaunchClassLoader classLoader)
 	{
 		LiteLoaderTransformer.launchClassLoader = classLoader;
-		classLoader.registerTransformer("com.mumfrey.liteloader.launch.LiteLoaderTransformer");
+		classLoader.registerTransformer(LiteLoaderTransformer.class.getName());
 	}
 
 	@Override
@@ -150,14 +143,17 @@ public class LiteLoaderTweaker implements ITweaker
 	{
 		List<String> args = new ArrayList<String>();
 		
-		for (String unClassifiedArg : this.unClassifiedArgs)
+		for (String unClassifiedArg : this.singularLaunchArgs)
 			args.add(unClassifiedArg);
 		
-		for (Entry<String, String> classifiedArg : this.classifiedArgs.entrySet())
+		for (Entry<String, String> launchArg : this.launchArgs.entrySet())
 		{
-			args.add(classifiedArg.getKey().trim());
-			args.add(classifiedArg.getValue().trim());
+			args.add(launchArg.getKey().trim());
+			args.add(launchArg.getValue().trim());
 		}
+		
+		this.singularLaunchArgs.clear();
+		this.launchArgs.clear();
 		
 		return args.toArray(new String[args.size()]);
 	}
