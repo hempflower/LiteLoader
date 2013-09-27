@@ -48,7 +48,7 @@ public class LiteLoaderTweaker implements ITweaker
 		
 		LiteLoaderTransformer.gameDirectory = gameDirectory;
 		LiteLoaderTransformer.assetsDirectory = assetsDirectory;
-		LiteLoaderTransformer.profile = profile;
+		LiteLoaderTransformer.profile = profile != null ? profile : VERSION;
 		
 		OptionParser optionParser = new OptionParser();
 		this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load").withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
