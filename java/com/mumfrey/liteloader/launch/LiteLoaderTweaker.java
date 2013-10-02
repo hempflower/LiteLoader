@@ -1,11 +1,16 @@
 package com.mumfrey.liteloader.launch;
 
 import java.io.File;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
@@ -22,12 +27,18 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 public class LiteLoaderTweaker implements ITweaker
 {
 	public static final String VERSION = "1.6.4";
-
-	private File gameDirectory;
 	
-	private File assetsDirectory;
+	private static Logger logger = Logger.getLogger("liteloader");
 	
-	private String profile;
+	private static boolean preInit = true;
+	
+	private static File gameDirectory;
+	
+	private static File assetsDirectory;
+	
+	private static String profile;
+	
+	private static List<String> modsToLoad;
 
 	private List<String> singularLaunchArgs = new ArrayList<String>();
 	
@@ -42,13 +53,9 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		this.gameDirectory = gameDirectory;
-		this.assetsDirectory = assetsDirectory;
-		this.profile = profile;
-		
-		LiteLoaderTransformer.gameDirectory = gameDirectory;
-		LiteLoaderTransformer.assetsDirectory = assetsDirectory;
-		LiteLoaderTransformer.profile = profile != null ? profile : VERSION;
+		LiteLoaderTweaker.gameDirectory = gameDirectory;
+		LiteLoaderTweaker.assetsDirectory = assetsDirectory;
+		LiteLoaderTweaker.profile = profile;
 		
 		OptionParser optionParser = new OptionParser();
 		this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load").withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
@@ -74,8 +81,10 @@ public class LiteLoaderTweaker implements ITweaker
 		
 		if (this.parsedOptions.has(this.modsOption))
 		{
-			LiteLoaderTransformer.modsToLoad = this.modsOption.values(this.parsedOptions);
+			LiteLoaderTweaker.modsToLoad = this.modsOption.values(this.parsedOptions);
 		}
+		
+//		LiteLoaderTweaker.preInitLoader(); // for future version with tweak support
 	}
 
 	/**
@@ -85,7 +94,7 @@ public class LiteLoaderTweaker implements ITweaker
 	public void provideRequiredArgs(File gameDirectory, File assetsDirectory)
 	{
 		if (!this.launchArgs.containsKey("--version"))
-			this.addClassifiedArg("--version", this.VERSION);
+			this.addClassifiedArg("--version", LiteLoaderTweaker.VERSION);
 		
 		if (!this.launchArgs.containsKey("--gameDir") && gameDirectory != null)
 			this.addClassifiedArg("--gameDir", gameDirectory.getAbsolutePath());
@@ -128,7 +137,7 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public void injectIntoClassLoader(LaunchClassLoader classLoader)
 	{
-		LiteLoaderTransformer.launchClassLoader = classLoader;
+		LiteLoaderTweaker.logger.info("Injecting LiteLoader Class Transformer");
 		classLoader.registerTransformer(LiteLoaderTransformer.class.getName());
 	}
 
@@ -143,8 +152,8 @@ public class LiteLoaderTweaker implements ITweaker
 	{
 		List<String> args = new ArrayList<String>();
 		
-		for (String unClassifiedArg : this.singularLaunchArgs)
-			args.add(unClassifiedArg);
+		for (String singularArg : this.singularLaunchArgs)
+			args.add(singularArg);
 		
 		for (Entry<String, String> launchArg : this.launchArgs.entrySet())
 		{
@@ -160,16 +169,109 @@ public class LiteLoaderTweaker implements ITweaker
 
 	public File getGameDirectory()
 	{
-		return this.gameDirectory;
+		return LiteLoaderTweaker.gameDirectory;
 	}
 
 	public File getAssetsDirectory()
 	{
-		return this.assetsDirectory;
+		return LiteLoaderTweaker.assetsDirectory;
 	}
 	
 	public String getProfile()
 	{
-		return this.profile;
+		return LiteLoaderTweaker.profile;
+	}
+	
+	public static boolean addTweaker(URL tweakSource, String tweakClass)
+	{
+		if (LiteLoaderTweaker.preInit)
+		{
+			@SuppressWarnings("unchecked")
+			List<String> tweakers = (List<String>)Launch.blackboard.get("TweakClasses");
+			if (tweakers != null)
+			{
+				if (LiteLoaderTweaker.addURLToParentClassLoader(tweakSource))
+				{
+					tweakers.add(tweakClass);
+					return true;
+				}
+			}
+		}
+		else
+		{
+			LiteLoaderTweaker.logger.warning(String.format("Failed to add tweak class %s from %s because preInit is already complete", tweakClass, tweakSource));
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
+	 */
+	protected static void preInitLoader()
+	{
+		if (!LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader PreInit but PreInit was already completed");
+		LiteLoaderTweaker.logger.info("Beginning LiteLoader PreInit...");
+		
+		try
+		{
+			Class<?> loaderClass = Class.forName("com.mumfrey.liteloader.core.LiteLoader", false, Launch.classLoader);
+			Method mPreInit = loaderClass.getDeclaredMethod("preInit", File.class, File.class, String.class, List.class, LaunchClassLoader.class, Boolean.TYPE);
+			mPreInit.setAccessible(true);
+			mPreInit.invoke(null, LiteLoaderTweaker.gameDirectory, LiteLoaderTweaker.assetsDirectory, LiteLoaderTweaker.profile, LiteLoaderTweaker.modsToLoad, Launch.classLoader, false);
+
+			LiteLoaderTweaker.preInit = false;
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PreInit: %s", th.getMessage()), th);
+		}
+	}
+	
+	/**
+	 * Do the second stage of loader startup
+	 */
+	protected static void postInitLoader()
+	{
+		if (LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader PostInit but PreInit was not completed");
+		LiteLoaderTweaker.logger.info("Beginning LiteLoader PostInit...");
+		
+		try
+		{
+			Class<?> loaderClass = Class.forName("com.mumfrey.liteloader.core.LiteLoader", false, Launch.classLoader);
+			Method mPostInit = loaderClass.getDeclaredMethod("postInit");
+			mPostInit.setAccessible(true);
+			mPostInit.invoke(null);
+		}
+		catch (Throwable th)
+		{
+			th.printStackTrace(System.out);
+			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PostInit: %s", th.getMessage()), th);
+		}
+	}
+
+	/**
+	 * @param url URL to add
+	 */
+	public static boolean addURLToParentClassLoader(URL url)
+	{
+		if (LiteLoaderTweaker.preInit)
+		{
+			try
+			{
+				URLClassLoader classLoader = (URLClassLoader)Launch.class.getClassLoader();
+				Method mAddUrl = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
+				mAddUrl.setAccessible(true);
+				mAddUrl.invoke(classLoader, url);
+				
+				return true;
+			}
+			catch (Exception ex)
+			{
+				LiteLoaderTweaker.logger.log(Level.WARNING, String.format("addURLToParentClassLoader failed: %s", ex.getMessage()), ex);
+			}
+		}
+			
+		return false;
 	}
 }

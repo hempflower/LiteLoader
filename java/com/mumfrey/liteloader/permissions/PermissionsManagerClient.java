@@ -383,7 +383,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 */
 	public boolean getModPermission(Permissible mod, String permission)
 	{
-		if (mod == null) mod = this.allMods;
+		if (mod == null) mod = PermissionsManagerClient.allMods;
 		permission = formatModPermission(mod.getPermissibleModName(), permission);
 		Permissions permissions = this.getPermissions(mod);
 		

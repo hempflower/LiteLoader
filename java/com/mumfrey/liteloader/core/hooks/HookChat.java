@@ -54,7 +54,7 @@ public class HookChat extends Packet3Chat
 		{
 			if (proxyClass != null)
 			{
-				proxyPacket = proxyClass.newInstance();
+				this.proxyPacket = proxyClass.newInstance();
 			}
 		}
 		catch (Exception ex) {}
@@ -72,11 +72,11 @@ public class HookChat extends Packet3Chat
 		{
 			if (proxyClass != null)
 			{
-				proxyPacket = proxyClass.newInstance();
+				this.proxyPacket = proxyClass.newInstance();
 				
-				if (proxyPacket instanceof Packet3Chat)
+				if (this.proxyPacket instanceof Packet3Chat)
 				{
-					((Packet3Chat)proxyPacket).message = this.message;
+					((Packet3Chat)this.proxyPacket).message = this.message;
 				}
 			}
 		}
@@ -86,10 +86,10 @@ public class HookChat extends Packet3Chat
 	@Override
 	public void readPacketData(DataInput datainputstream) throws IOException
 	{
-		if (proxyPacket != null)
+		if (this.proxyPacket != null)
 		{
-			proxyPacket.readPacketData(datainputstream);
-			this.message = ((Packet3Chat)proxyPacket).message;
+			this.proxyPacket.readPacketData(datainputstream);
+			this.message = ((Packet3Chat)this.proxyPacket).message;
 		}
 		else
 			super.readPacketData(datainputstream);
@@ -98,8 +98,8 @@ public class HookChat extends Packet3Chat
 	@Override
 	public void writePacketData(DataOutput dataoutputstream) throws IOException
 	{
-		if (proxyPacket != null)
-			proxyPacket.writePacketData(dataoutputstream);
+		if (this.proxyPacket != null)
+			this.proxyPacket.writePacketData(dataoutputstream);
 		else
 			super.writePacketData(dataoutputstream);
 	}
@@ -109,8 +109,8 @@ public class HookChat extends Packet3Chat
 	{
 		if (events == null || events.onChat(this))
 		{
-			if (proxyPacket != null)
-				proxyPacket.processPacket(nethandler);
+			if (this.proxyPacket != null)
+				this.proxyPacket.processPacket(nethandler);
 			else
 				super.processPacket(nethandler);
 		}
@@ -119,8 +119,8 @@ public class HookChat extends Packet3Chat
 	@Override
 	public int getPacketSize()
 	{
-		if (proxyPacket != null)
-			return proxyPacket.getPacketSize();
+		if (this.proxyPacket != null)
+			return this.proxyPacket.getPacketSize();
 
 		return super.getPacketSize();
 	}

@@ -43,7 +43,7 @@ public class HookPluginChannels extends Packet250CustomPayload
 		{
 			if (HookPluginChannels.proxyClass != null)
 			{
-				proxyPacket = HookPluginChannels.proxyClass.newInstance();
+				this.proxyPacket = HookPluginChannels.proxyClass.newInstance();
 			}
 		}
 		catch (Exception ex) {}
@@ -57,13 +57,13 @@ public class HookPluginChannels extends Packet250CustomPayload
 		{
 			if (HookPluginChannels.proxyClass != null)
 			{
-				proxyPacket = HookPluginChannels.proxyClass.newInstance();
+				this.proxyPacket = HookPluginChannels.proxyClass.newInstance();
 				
-				if (proxyPacket instanceof Packet250CustomPayload)
+				if (this.proxyPacket instanceof Packet250CustomPayload)
 				{
-					((Packet250CustomPayload)proxyPacket).channel = this.channel;
-					((Packet250CustomPayload)proxyPacket).data = this.data;
-					((Packet250CustomPayload)proxyPacket).length = this.length;
+					((Packet250CustomPayload)this.proxyPacket).channel = this.channel;
+					((Packet250CustomPayload)this.proxyPacket).data = this.data;
+					((Packet250CustomPayload)this.proxyPacket).length = this.length;
 				}
 			}
 		}
@@ -74,12 +74,12 @@ public class HookPluginChannels extends Packet250CustomPayload
 	@Override
 	public void readPacketData(DataInput datainputstream) throws IOException
 	{
-		if (proxyPacket != null)
+		if (this.proxyPacket != null)
 		{
-			proxyPacket.readPacketData(datainputstream);
-			this.channel = ((Packet250CustomPayload)proxyPacket).channel;
-			this.length = ((Packet250CustomPayload)proxyPacket).length;
-			this.data = ((Packet250CustomPayload)proxyPacket).data;
+			this.proxyPacket.readPacketData(datainputstream);
+			this.channel = ((Packet250CustomPayload)this.proxyPacket).channel;
+			this.length = ((Packet250CustomPayload)this.proxyPacket).length;
+			this.data = ((Packet250CustomPayload)this.proxyPacket).data;
 		}
 		else
 			super.readPacketData(datainputstream);
@@ -88,8 +88,8 @@ public class HookPluginChannels extends Packet250CustomPayload
 	@Override
 	public void writePacketData(DataOutput dataoutputstream) throws IOException
 	{
-		if (proxyPacket != null)
-			proxyPacket.writePacketData(dataoutputstream);
+		if (this.proxyPacket != null)
+			this.proxyPacket.writePacketData(dataoutputstream);
 		else
 			super.writePacketData(dataoutputstream);
 	}
@@ -97,8 +97,8 @@ public class HookPluginChannels extends Packet250CustomPayload
 	@Override
 	public void processPacket(NetHandler nethandler)
 	{
-		if (proxyPacket != null)
-			proxyPacket.processPacket(nethandler);
+		if (this.proxyPacket != null)
+			this.proxyPacket.processPacket(nethandler);
 		else
 			super.processPacket(nethandler);
 
@@ -111,8 +111,8 @@ public class HookPluginChannels extends Packet250CustomPayload
 	@Override
 	public int getPacketSize()
 	{
-		if (proxyPacket != null)
-			return proxyPacket.getPacketSize();
+		if (this.proxyPacket != null)
+			return this.proxyPacket.getPacketSize();
 		
 		return super.getPacketSize();
 	}

@@ -26,11 +26,6 @@ public class PluginChannels
 	private static final String CHANNEL_UNREGISTER = "UNREGISTER";
 
 	/**
-	 * Reference to the loader
-	 */
-	private LiteLoader loader;
-	
-	/**
 	 * True if we have initialised the hook
 	 */
 	private boolean hookInitDone;
@@ -48,9 +43,8 @@ public class PluginChannels
 	/**
 	 * @param loader
 	 */
-	public PluginChannels(LiteLoader loader)
+	public PluginChannels()
 	{
-		this.loader = loader;
 	}
 
 	/**
@@ -101,7 +95,7 @@ public class PluginChannels
 		{
 			try
 			{
-				PermissionsManagerClient permissionsManager = this.loader.getPermissionsManager();
+				PermissionsManagerClient permissionsManager = LiteLoader.getPermissionsManager();
 				if (permissionsManager != null)
 				{
 					permissionsManager.onCustomPayload(customPayload.channel, customPayload.length, customPayload.data);
@@ -129,7 +123,7 @@ public class PluginChannels
 		this.pluginChannels.clear();
 		
 		// Add the permissions manager channels
-		this.addPluginChannelsFor(this.loader.getPermissionsManager());
+		this.addPluginChannelsFor(LiteLoader.getPermissionsManager());
 		
 		// Enumerate mods for plugin channels
 		for (PluginChannelListener pluginChannelListener : this.pluginChannelListeners)

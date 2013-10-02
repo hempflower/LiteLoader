@@ -114,7 +114,7 @@ public class PrivateFields<P, T>
 			Field modifiers = Field.class.getDeclaredField("modifiers");
 			modifiers.setAccessible(true);
 			
-			Field field = this.parentClass.getDeclaredField(fieldName);
+			Field field = this.parentClass.getDeclaredField(this.fieldName);
 			modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 			field.setAccessible(true);
 			field.set(instance, value);

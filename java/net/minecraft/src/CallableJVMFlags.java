@@ -6,8 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.mumfrey.liteloader.core.CallableLiteLoaderBrand;
-import com.mumfrey.liteloader.core.CallableLiteLoaderMods;
+import com.mumfrey.liteloader.core.LiteLoader;
 
 class CallableJVMFlags implements Callable<String>
 {
@@ -17,8 +16,7 @@ class CallableJVMFlags implements Callable<String>
 	CallableJVMFlags(CrashReport par1CrashReport)
 	{
 		this.theCrashReport = par1CrashReport;
-		par1CrashReport.getCategory().addCrashSectionCallable("Mod Pack", new CallableLiteLoaderBrand(par1CrashReport));
-		par1CrashReport.getCategory().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(par1CrashReport));
+		LiteLoader.populateCrashReport(par1CrashReport);
 	}
 	
 	/**
