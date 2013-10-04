@@ -13,6 +13,7 @@
 	<property name="project" value="LiteLoader" />
 	<property name="md5set" value="mcp" />
 	<property name="outmd5set" value="liteloader" />
+	<property name="tweakclass" value="com.mumfrey.liteloader.launch.LiteLoaderTweaker" />
 
 	<property name="mcp.dir" location="../../.." />
 	<property name="build" location="${mcp.dir}/build" />
@@ -202,12 +203,14 @@
 		<echo level="info" message="Building final output" />
 
 		<mkdir dir="${dist.dir}" />
+		
 		<jar destfile="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
 			<manifest>
 				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
 				<attribute name="Implementation-Vendor" value="${author}" />
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Version" value="${version}" />
+				<attribute name="TweakClass" value="${tweakclass}" />
 			</manifest>
 			<fileset dir="${stage.dir}" />
 		</jar>

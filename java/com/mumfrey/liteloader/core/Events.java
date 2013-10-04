@@ -129,7 +129,14 @@ public class Events implements IPlayerUsage
 	 */
 	private LinkedList<PreLoginListener> preLoginListeners = new LinkedList<PreLoginListener>();
 
-	public Events(LiteLoader loader, Minecraft minecraft, PluginChannels pluginChannels)
+	/**
+	 * Package private ctor
+	 * 
+	 * @param loader
+	 * @param minecraft
+	 * @param pluginChannels
+	 */
+	Events(LiteLoader loader, Minecraft minecraft, PluginChannels pluginChannels)
 	{
 		this.loader = loader;
 		this.minecraft = minecraft;
@@ -405,9 +412,9 @@ public class Events implements IPlayerUsage
 	/**
 	 * Late initialisation callback
 	 */
-	public void onInit()
+	public void preBeginGame()
 	{
-		this.loader.refreshResources();
+		this.loader.preInitMods();
 		
 		if (!this.lateInitDone)
 		{
@@ -427,7 +434,7 @@ public class Events implements IPlayerUsage
 			}
 		}
 
-		this.loader.onInit();
+		this.loader.preBeginGame();
 	}
 	
 	/**

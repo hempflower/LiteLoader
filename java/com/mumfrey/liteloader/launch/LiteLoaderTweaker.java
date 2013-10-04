@@ -1,6 +1,8 @@
 package com.mumfrey.liteloader.launch;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -16,6 +18,8 @@ import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
+import net.minecraft.client.ClientBrandRetriever;
+import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
@@ -32,6 +36,8 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private static boolean preInit = true;
 	
+	private static boolean init = true;
+	
 	private static File gameDirectory;
 	
 	private static File assetsDirectory;
@@ -40,6 +46,8 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private static List<String> modsToLoad;
 
+	private static ILoaderBootstrap bootstrap;
+	
 	private List<String> singularLaunchArgs = new ArrayList<String>();
 	
 	private Map<String, String> launchArgs;
@@ -84,7 +92,7 @@ public class LiteLoaderTweaker implements ITweaker
 			LiteLoaderTweaker.modsToLoad = this.modsOption.values(this.parsedOptions);
 		}
 		
-//		LiteLoaderTweaker.preInitLoader(); // for future version with tweak support
+		this.preInit();
 	}
 
 	/**
@@ -166,21 +174,6 @@ public class LiteLoaderTweaker implements ITweaker
 		
 		return args.toArray(new String[args.size()]);
 	}
-
-	public File getGameDirectory()
-	{
-		return LiteLoaderTweaker.gameDirectory;
-	}
-
-	public File getAssetsDirectory()
-	{
-		return LiteLoaderTweaker.assetsDirectory;
-	}
-	
-	public String getProfile()
-	{
-		return LiteLoaderTweaker.profile;
-	}
 	
 	public static boolean addTweaker(URL tweakSource, String tweakClass)
 	{
@@ -203,51 +196,6 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 		
 		return false;
-	}
-	
-	/**
-	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
-	 */
-	protected static void preInitLoader()
-	{
-		if (!LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader PreInit but PreInit was already completed");
-		LiteLoaderTweaker.logger.info("Beginning LiteLoader PreInit...");
-		
-		try
-		{
-			Class<?> loaderClass = Class.forName("com.mumfrey.liteloader.core.LiteLoader", false, Launch.classLoader);
-			Method mPreInit = loaderClass.getDeclaredMethod("preInit", File.class, File.class, String.class, List.class, LaunchClassLoader.class, Boolean.TYPE);
-			mPreInit.setAccessible(true);
-			mPreInit.invoke(null, LiteLoaderTweaker.gameDirectory, LiteLoaderTweaker.assetsDirectory, LiteLoaderTweaker.profile, LiteLoaderTweaker.modsToLoad, Launch.classLoader, false);
-
-			LiteLoaderTweaker.preInit = false;
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PreInit: %s", th.getMessage()), th);
-		}
-	}
-	
-	/**
-	 * Do the second stage of loader startup
-	 */
-	protected static void postInitLoader()
-	{
-		if (LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader PostInit but PreInit was not completed");
-		LiteLoaderTweaker.logger.info("Beginning LiteLoader PostInit...");
-		
-		try
-		{
-			Class<?> loaderClass = Class.forName("com.mumfrey.liteloader.core.LiteLoader", false, Launch.classLoader);
-			Method mPostInit = loaderClass.getDeclaredMethod("postInit");
-			mPostInit.setAccessible(true);
-			mPostInit.invoke(null);
-		}
-		catch (Throwable th)
-		{
-			th.printStackTrace(System.out);
-			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PostInit: %s", th.getMessage()), th);
-		}
 	}
 
 	/**
@@ -272,6 +220,89 @@ public class LiteLoaderTweaker implements ITweaker
 			}
 		}
 			
+		return false;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static void spawnBootstrap() throws ClassNotFoundException, NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException
+	{
+		Class<? extends ILoaderBootstrap> bootstrapClass = (Class<? extends ILoaderBootstrap>)Class.forName("com.mumfrey.liteloader.core.LiteLoaderBootstrap", false, Launch.classLoader);
+		Constructor<? extends ILoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(File.class, File.class, String.class);
+		bootstrapCtor.setAccessible(true);
+		
+		LiteLoaderTweaker.bootstrap = bootstrapCtor.newInstance(LiteLoaderTweaker.gameDirectory, LiteLoaderTweaker.assetsDirectory, LiteLoaderTweaker.profile);
+	}
+
+	/**
+	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
+	 */
+	private void preInit()
+	{
+		if (!LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader PreInit but PreInit was already completed");
+		
+		try
+		{
+			LiteLoaderTweaker.logger.info("Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
+			
+			LiteLoaderTweaker.spawnBootstrap();
+			
+			LiteLoaderTweaker.logger.info("Beginning LiteLoader PreInit...");
+			
+			LiteLoaderTweaker.bootstrap.preInit(Launch.classLoader, true);
+			LiteLoaderTweaker.preInit = false;
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PreInit: %s", th.getMessage()), th);
+		}
+	}
+
+	/**
+	 * Do the second stage of loader startup
+	 */
+	protected static void init()
+	{
+		if (LiteLoaderTweaker.preInit) throw new IllegalStateException("Attempt to perform LiteLoader Init but PreInit was not completed");
+		LiteLoaderTweaker.init = true;
+		
+		try
+		{
+			LiteLoaderTweaker.bootstrap.init(LiteLoaderTweaker.modsToLoad, Launch.classLoader);
+			LiteLoaderTweaker.init = false;
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader Init: %s", th.getMessage()), th);
+		}
+	}
+	
+	/**
+	 * Do the second stage of loader startup
+	 */
+	protected static void postInit()
+	{
+		if (LiteLoaderTweaker.init) throw new IllegalStateException("Attempt to perform LiteLoader PostInit but Init was not completed");
+
+		try
+		{
+			LiteLoaderTweaker.bootstrap.postInit();
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderTweaker.logger.log(Level.SEVERE, String.format("Error during LiteLoader PostInit: %s", th.getMessage()), th);
+		}
+	}
+
+	/**
+	 * Naive implementation to check whether Forge ModLoader (FML) is loaded
+	 */
+	public static boolean fmlIsPresent()
+	{
+		if (ClientBrandRetriever.getClientModName().contains("fml")) return true;
+				
+		for (IClassTransformer transformer : Launch.classLoader.getTransformers())
+			if (transformer.getClass().getName().contains("fml")) return true;
+		
 		return false;
 	}
 }

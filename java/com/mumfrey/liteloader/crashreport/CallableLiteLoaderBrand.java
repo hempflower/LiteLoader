@@ -1,6 +1,8 @@
-package com.mumfrey.liteloader.core;
+package com.mumfrey.liteloader.crashreport;
 
 import java.util.concurrent.Callable;
+
+import com.mumfrey.liteloader.core.LiteLoader;
 
 import net.minecraft.src.CrashReport;
 

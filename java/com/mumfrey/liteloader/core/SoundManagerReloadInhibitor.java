@@ -35,7 +35,7 @@ public class SoundManagerReloadInhibitor
 	 */
 	private int storedIndex;
 	
-	public SoundManagerReloadInhibitor(SimpleReloadableResourceManager resourceManager, SoundManager soundManager)
+	SoundManagerReloadInhibitor(SimpleReloadableResourceManager resourceManager, SoundManager soundManager)
 	{
 		this.resourceManager = resourceManager;
 		this.soundManager = soundManager;

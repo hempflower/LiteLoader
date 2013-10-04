@@ -8,8 +8,8 @@ import java.util.Set;
 
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.PluginChannels;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 
-import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.src.*;
 
 public abstract class ModUtilities
@@ -27,7 +27,7 @@ public abstract class ModUtilities
 	static
 	{
 		// Check for FML
-		ModUtilities.forgeModLoader = ClientBrandRetriever.getClientModName().contains("fml");
+		ModUtilities.forgeModLoader = LiteLoaderTweaker.fmlIsPresent();
 	}
 	
 	/**

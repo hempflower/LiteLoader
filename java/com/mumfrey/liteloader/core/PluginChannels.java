@@ -41,11 +41,9 @@ public class PluginChannels
 	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
 
 	/**
-	 * @param loader
+	 * Package private
 	 */
-	public PluginChannels()
-	{
-	}
+	PluginChannels() {}
 
 	/**
 	 * 
@@ -145,7 +143,7 @@ public class PluginChannels
 			}
 			
 			byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
-			PluginChannels.sendMessage(CHANNEL_REGISTER, registrationData);
+			PluginChannels.dispatch(new Packet250CustomPayload(CHANNEL_REGISTER, registrationData));
 		}
 	}
 	
@@ -176,20 +174,33 @@ public class PluginChannels
 		}
 	}
 	
+	/**
+	 * Send a message on a plugin channel
+	 * 
+	 * @param channel Channel to send, must not be a reserved channel name
+	 * @param data
+	 */
 	public static void sendMessage(String channel, byte[] data)
 	{
-		if (channel == null || channel.length() > 16)
+		if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
 			throw new RuntimeException("Invalid channel name specified"); 
 		
+		Packet250CustomPayload payload = new Packet250CustomPayload(channel, data);
+		PluginChannels.dispatch(payload);
+	}
+
+	/**
+	 * @param channel
+	 * @param data
+	 */
+	private static void dispatch(Packet250CustomPayload payload)
+	{
 		try
 		{
 			Minecraft minecraft = Minecraft.getMinecraft();
 			
 			if (minecraft.thePlayer != null && minecraft.thePlayer.sendQueue != null)
-			{
-				Packet250CustomPayload payload = new Packet250CustomPayload(channel, data);
 				minecraft.thePlayer.sendQueue.addToSendQueue(payload);
-			}
 		}
 		catch (Exception ex) {}
 	}

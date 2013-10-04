@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 import com.mumfrey.liteloader.resources.ModResourcePack;
 import com.mumfrey.liteloader.resources.ModResourcePackDir;
@@ -13,8 +14,10 @@ import com.mumfrey.liteloader.resources.ModResourcePackDir;
 public class ClassPathMod extends ModFile
 {
 	private static final long serialVersionUID = -4759310661966590773L;
+	
+	private static final Logger logger = Logger.getLogger("liteloader");
 
-	public ClassPathMod(File file, String name, String version)
+	ClassPathMod(File file, String name, String version)
 	{
 		super(file, "");
 
@@ -29,22 +32,22 @@ public class ClassPathMod extends ModFile
 	}
 	
 	@Override
-	public boolean registerAsResourcePack(String name)
+	public boolean canRegisterAsResourcePack(String name)
 	{
 		if (this.resourcePack == null)
 		{
 			if (this.isDirectory())
 			{
-				LiteLoader.getLogger().info(String.format("Registering \"%s/%s\" as mod resource pack with identifier \"%s\"", this.getParentFile().getName(), this.getName(), name));
+				ClassPathMod.logger.info(String.format("Registering \"%s/%s\" as mod resource pack with identifier \"%s\"", this.getParentFile().getName(), this.getName(), name));
 				this.resourcePack = new ModResourcePackDir(name, this);
 			}
 			else
 			{
-				LiteLoader.getLogger().info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
+				ClassPathMod.logger.info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
 				this.resourcePack = new ModResourcePack(name, this);
 			}
 			
-			return LiteLoader.getInstance().registerModResourcePack(this.resourcePack);
+			return true;
 		}
 		
 		return false;

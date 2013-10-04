@@ -3,8 +3,7 @@ package com.mumfrey.liteloader.core;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
-
-import net.minecraft.src.ResourcePack;
+import java.util.logging.Logger;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -20,6 +19,8 @@ import com.mumfrey.liteloader.resources.ModResourcePack;
 public class ModFile extends File
 {
 	private static final long serialVersionUID = -7952147161905688459L;
+
+	private static final Logger logger = Logger.getLogger("liteloader");
 
 	/**
 	 * Gson parser for JSON
@@ -64,7 +65,7 @@ public class ModFile extends File
 	/**
 	 * Resource pack we have registered with minecraft
 	 */
-	protected ResourcePack resourcePack = null;
+	protected Object resourcePack = null;
 	
 	/**
 	 * ALL of the parsed metadata from the file, associated with the mod later on for retrieval via the loader
@@ -75,7 +76,7 @@ public class ModFile extends File
 	 * @param file
 	 * @param strVersion
 	 */
-	public ModFile(File file, String strVersion)
+	ModFile(File file, String strVersion)
 	{
 		super(file.getAbsolutePath());
 		
@@ -87,47 +88,36 @@ public class ModFile extends File
 	@SuppressWarnings("unchecked")
 	protected void parseVersionFile(String strVersionData)
 	{
-		// Assume that it's json if the file starts with a brace
-//		if (strVersionData.trim().startsWith("{"))
-//		{
-			try
-			{
-				this.metaData = ModFile.gson.fromJson(strVersionData, HashMap.class);
-			}
-			catch (JsonSyntaxException jsx)
-			{
-				LiteLoader.getLogger().warning("Error reading litemod.json in " + this.getName() + ", JSON syntax exception: " + jsx.getMessage());
-				return;
-			}
-			
-			this.modName = this.metaData.get("name");
-			
-			this.version = this.metaData.get("mcversion");
-			if (this.version == null)
-			{
-				LiteLoader.getLogger().warning("Mod in " + this.getName() + " has no loader version number reading litemod.json");
-				return;
-			}
-			
-			try
-			{
-				this.revision = Float.parseFloat(this.metaData.get("revision"));
-				this.hasRevision = true;
-			}
-			catch (Exception ex)
-			{
-				LiteLoader.getLogger().warning("Mod in " + this.getName() + " has an invalid revision number reading litemod.json");
-			}
+		try
+		{
+			this.metaData = ModFile.gson.fromJson(strVersionData, HashMap.class);
+		}
+		catch (JsonSyntaxException jsx)
+		{
+			ModFile.logger.warning("Error reading litemod.json in " + this.getName() + ", JSON syntax exception: " + jsx.getMessage());
+			return;
+		}
+		
+		this.modName = this.metaData.get("name");
+		
+		this.version = this.metaData.get("mcversion");
+		if (this.version == null)
+		{
+			ModFile.logger.warning("Mod in " + this.getName() + " has no loader version number reading litemod.json");
+			return;
+		}
+		
+		try
+		{
+			this.revision = Float.parseFloat(this.metaData.get("revision"));
+			this.hasRevision = true;
+		}
+		catch (Exception ex)
+		{
+			ModFile.logger.warning("Mod in " + this.getName() + " has an invalid revision number reading litemod.json");
+		}
 
-			this.valid = true;
-//			this.json = true;
-//		}
-//		else
-//		{
-//			// Legacy version.txt file
-//			this.version = strVersionData;
-//			this.valid = true;
-//		}
+		this.valid = true;
 		
 		if (this.modName == null)
 		{
@@ -144,11 +134,6 @@ public class ModFile extends File
 	{
 		return this.valid;
 	}
-	
-//	public boolean isJson()
-//	{
-//		return this.json;
-//	}
 	
 	public String getVersion()
 	{
@@ -170,19 +155,25 @@ public class ModFile extends File
 		return this.metaData;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public <T> T getResourcePack()
+	{
+		return (T)this.resourcePack;
+	}
+	
 	/**
 	 * Registers this file as a minecraft resource pack 
 	 * 
 	 * @param name
 	 * @return true if the pack was added
 	 */
-	public boolean registerAsResourcePack(String name)
+	public boolean canRegisterAsResourcePack(String name)
 	{
 		if (this.resourcePack == null)
 		{
-			LiteLoader.getLogger().info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
+			ModFile.logger.info(String.format("Registering \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name));
 			this.resourcePack = new ModResourcePack(name, this);
-			return LiteLoader.getInstance().registerModResourcePack(this.resourcePack);
+			return true;
 		}
 		
 		return false;

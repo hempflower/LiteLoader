@@ -17,8 +17,8 @@ public class LiteLoaderTransformer implements IClassTransformer
 		if ((classMappingRenderLightningBolt.equals(name) || classMappingRenderLightningBoltObf.equals(name)) && !LiteLoaderTransformer.postInit)
 		{
 			LiteLoaderTransformer.postInit = true;
-			LiteLoaderTweaker.preInitLoader(); // This is here at the moment, it will move later
-			LiteLoaderTweaker.postInitLoader();
+			LiteLoaderTweaker.init();
+			LiteLoaderTweaker.postInit();
 		}
 		
 		return basicClass;

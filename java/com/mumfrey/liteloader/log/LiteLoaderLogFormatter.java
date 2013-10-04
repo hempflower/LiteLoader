@@ -16,12 +16,12 @@ public class LiteLoaderLogFormatter extends Formatter
 	{
 		StringBuilder sb = new StringBuilder();
 		sb.append(this.simpleDateFormatLogFormatter.format(Long.valueOf(logRecord.getMillis())));
-		Level var3 = logRecord.getLevel();
+		Level level = logRecord.getLevel();
 		
-		if (var3 == Level.SEVERE)
-			sb.append(" [").append(var3.getLocalizedName()).append("] ");
+		if (level == Level.SEVERE)
+			sb.append(" [").append(level.getLocalizedName()).append("] ");
 		else
-			sb.append(" [").append(var3.toString().toUpperCase()).append("] ");
+			sb.append(" [").append(level.toString().toUpperCase()).append("] ");
 		
 		sb.append(logRecord.getMessage());
 		sb.append('\n');

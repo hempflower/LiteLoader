@@ -146,7 +146,7 @@ public class HookProfiler extends Profiler
 		if (!this.initDone)
 		{
 			this.initDone = true;
-			this.events.onInit();
+			this.events.preBeginGame();
 		}
 		
 		if ("gameRenderer".equals(sectionName) && "root".equals(this.sectionStack.getLast()))
@@ -249,14 +249,4 @@ public class HookProfiler extends Profiler
 			throw new ProfilerStackCorruptionException("Corrupted Profiler stack detected");
 		}
 	}
-//	
-//	@Override
-//	public void dumpState()
-//	{
-//		String endingSection = this.sectionStack.size() > 0 ? this.sectionStack.getLast() : null;
-//		String nextSection = this.sectionStack.size() > 1 ? this.sectionStack.get(sectionStack.size() - 2) : null;
-//		
-//		System.out.println("endingSection=" + endingSection + "   nextSection=" + nextSection);
-//	}
-
 }
