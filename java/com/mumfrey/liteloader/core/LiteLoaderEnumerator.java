@@ -32,6 +32,7 @@ import java.util.zip.ZipInputStream;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.core.exceptions.OutdatedLoaderException;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 
 /**
@@ -645,6 +646,11 @@ class LiteLoaderEnumerator implements FilenameFilter
 				LiteLoaderEnumerator.enumerateCompressedPackage(prefix, superClass, classloader, classes, packagePath);
 			}
 		}
+		catch (OutdatedLoaderException ex)
+		{
+			classes.clear();
+			LiteLoaderEnumerator.logWarning("Error searching in '%s', missing API component '%s', your loader is probably out of date", packagePath, ex.getMessage());
+		}
 		catch (Throwable th)
 		{
 			LiteLoaderEnumerator.logger.log(Level.WARNING, "Enumeration error", th);
@@ -700,8 +706,9 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 * @param classes
 	 * @param packagePath
 	 * @param packageName
+	 * @throws OutdatedLoaderException 
 	 */
-	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath)
+	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath) throws OutdatedLoaderException
 	{
 		LiteLoaderEnumerator.enumerateDirectory(prefix, superClass, classloader, classes, packagePath, "", 0);
 	}
@@ -714,8 +721,9 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 * @param classes
 	 * @param packagePath
 	 * @param packageName
+	 * @throws OutdatedLoaderException 
 	 */
-	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath, String packageName, int depth)
+	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath, String packageName, int depth) throws OutdatedLoaderException
 	{
 		// Prevent crash due to broken recursion
 		if (depth > MAX_DISCOVERY_DEPTH)
@@ -746,8 +754,9 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 * @param superClass
 	 * @param classes
 	 * @param className
+	 * @throws OutdatedLoaderException 
 	 */
-	private static void checkAndAddClass(ClassLoader classloader, Class<?> superClass, LinkedList<Class<?>> classes, String className)
+	private static void checkAndAddClass(ClassLoader classloader, Class<?> superClass, LinkedList<Class<?>> classes, String className) throws OutdatedLoaderException
 	{
 		if (className.indexOf('$') > -1)
 			return;
@@ -763,6 +772,15 @@ class LiteLoaderEnumerator implements FilenameFilter
 		}
 		catch (Throwable th)
 		{
+			String missingClassName = th.getCause().getMessage();
+			if (th.getCause() instanceof NoClassDefFoundError && missingClassName != null)
+			{
+				if (missingClassName.startsWith("com/mumfrey/liteloader/"))
+				{
+					throw new OutdatedLoaderException(missingClassName.substring(missingClassName.lastIndexOf('/') + 1));
+				}
+			}
+			
 			LiteLoaderEnumerator.logger.log(Level.WARNING, "checkAndAddClass error", th);
 		}
 	}

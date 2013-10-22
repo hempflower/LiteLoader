@@ -22,17 +22,17 @@ public class Events implements IPlayerUsage
 	/**
 	 * Reference to the loader instance
 	 */
-	private LiteLoader loader;
+	private final LiteLoader loader;
 	
 	/**
 	 * Reference to the game
 	 */
-	private Minecraft minecraft;
+	private final Minecraft minecraft;
 	
 	/**
 	 * Plugin channel manager
 	 */
-	private PluginChannels pluginChannels;
+	private final PluginChannels pluginChannels;
 	
 	/**
 	 * Reference to the minecraft timer
@@ -47,7 +47,7 @@ public class Events implements IPlayerUsage
 	/**
 	 * Profiler hook objects
 	 */
-	private HookProfiler profilerHook = new HookProfiler(this);
+	private final HookProfiler profilerHook = new HookProfiler(this);
 	
 	/**
 	 * ScaledResolution used by the pre-chat and post-chat render callbacks
@@ -128,6 +128,12 @@ public class Events implements IPlayerUsage
 	 * client login events
 	 */
 	private LinkedList<PreLoginListener> preLoginListeners = new LinkedList<PreLoginListener>();
+	
+	/**
+	 * Hash code of the current world. We don't store the world reference here because we don't want
+	 * to mess with world GC by mistake
+	 */
+	private int worldHashCode = 0;
 
 	/**
 	 * Package private ctor
@@ -584,6 +590,21 @@ public class Events implements IPlayerUsage
 			profiler.startSection(tickable.getClass().getSimpleName());
 			tickable.onTick(this.minecraft, partialTicks, inGame, clock);
 			profiler.endSection();
+		}
+		
+		// Detected world change
+		if (this.minecraft.theWorld != null)
+		{
+			if (this.minecraft.theWorld.hashCode() != this.worldHashCode)
+			{
+				this.worldHashCode = this.minecraft.theWorld.hashCode();
+				this.loader.onWorldChanged(this.minecraft.theWorld);
+			}
+		}
+		else
+		{
+			this.worldHashCode = 0;
+			this.loader.onWorldChanged(null);
 		}
 	}
 	

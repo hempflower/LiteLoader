@@ -75,7 +75,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	/**
 	 * Delay counter for when joining a server
 	 */
-	private int loginRegisterTicks = 0;
+	private int pendingRefreshTicks = 0;
 	
 	private int menuTicks = 0;
 
@@ -166,10 +166,18 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	@Override
 	public void onLogin(NetHandler netHandler, Packet1Login loginPacket)
 	{
-		this.loginRegisterTicks = 2;
 		this.clearServerPermissions();
+		this.scheduleRefresh();
 	}
 
+	/**
+	 * Schedule a permissions refresh
+	 */
+	public void scheduleRefresh()
+	{
+		this.pendingRefreshTicks = 2;
+	}
+	
 	/**
 	 * Clears the current replicated server permissions 
 	 */
@@ -239,11 +247,11 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 		this.minecraft = minecraft;
 		this.lastTickTime = System.currentTimeMillis();
 		
-		if (this.loginRegisterTicks > 0)
+		if (this.pendingRefreshTicks > 0)
 		{
-			this.loginRegisterTicks--;
+			this.pendingRefreshTicks--;
 			
-			if (this.loginRegisterTicks == 0 && inGame)
+			if (this.pendingRefreshTicks == 0 && inGame)
 			{
 				this.sendPermissionQueries();
 				return;

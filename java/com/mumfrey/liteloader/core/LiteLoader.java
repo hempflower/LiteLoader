@@ -29,6 +29,7 @@ import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet1Login;
 import net.minecraft.src.ResourcePack;
 import net.minecraft.src.SimpleReloadableResourceManager;
+import net.minecraft.src.World;
 
 import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
@@ -639,8 +640,8 @@ public final class LiteLoader
 	 * @param metaDataKey
 	 * @param defaultValue
 	 * @return
-	 * @throws InvalidActivityException
-	 * @throws IllegalArgumentException
+	 * @throws InvalidActivityException Thrown by getMod if init is not complete 
+	 * @throws IllegalArgumentException Thrown by getMod if argument is null
 	 */
 	public String getModMetaData(String mod, String metaDataKey, String defaultValue) throws InvalidActivityException, IllegalArgumentException
 	{
@@ -846,7 +847,24 @@ public final class LiteLoader
 	{
 		this.permissionsManager.onLogin(netHandler, loginPacket);
 	}
+	
+	/**
+	 * Called when the world reference is changed
+	 * 
+	 * @param world
+	 */
+	void onWorldChanged(World world)
+	{
+		if (world != null)
+		{
+			// For bungeecord
+			this.permissionsManager.scheduleRefresh();
+		}
+	}
 
+	/**
+	 * On render callback
+	 */
 	void onRender()
 	{
 		if (this.paginateControls && this.minecraft.currentScreen != null && this.minecraft.currentScreen.getClass().equals(GuiControls.class))
@@ -863,6 +881,10 @@ public final class LiteLoader
 		}
 	}
 
+	/**
+	 * @param partialTicks
+	 * @param inGame
+	 */
 	void onTick(float partialTicks, boolean inGame)
 	{
 		// Tick the permissions manager
@@ -871,6 +893,11 @@ public final class LiteLoader
 		this.checkAndStoreKeyBindings();
 	}
 	
+	/**
+	 * Register a key for a mod
+	 * 
+	 * @param binding
+	 */
 	public void registerModKey(KeyBinding binding)
 	{
 		LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
