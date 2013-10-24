@@ -40,6 +40,11 @@ public class EnabledModsList
 	private transient Boolean defaultEnabledValue = Boolean.TRUE;
 	private transient boolean allowSave = true;
 	
+	/**
+	 * JSON file containing the list of enabled/disabled mods by profile
+	 */
+	private transient File enabledModsFile = null;
+	
 	private EnabledModsList()
 	{
 		// Private because we are always instanced by the static createFrom() method below
@@ -151,6 +156,7 @@ public class EnabledModsList
 			{
 				reader = new FileReader(file);
 				EnabledModsList instance = gson.fromJson(reader, EnabledModsList.class);
+				instance.setEnabledModsFile(file);
 				return instance;
 			}
 			catch (Exception ex)
@@ -171,7 +177,9 @@ public class EnabledModsList
 			}
 		}
 		
-		return new EnabledModsList();
+		EnabledModsList instance = new EnabledModsList();
+		instance.setEnabledModsFile(file);
+		return instance;
 	}
 	
 	/**
@@ -206,5 +214,34 @@ public class EnabledModsList
 				ex.printStackTrace();
 			}
 		}
+	}
+	
+	/**
+	 * Save to the file we were loaded from
+	 */
+	public void save()
+	{
+		if (this.enabledModsFile != null)
+		{
+			this.saveTo(this.enabledModsFile);
+		}
+	}
+	
+	/**
+	 * Get whether saving this list is allowed
+	 */
+	public boolean saveAllowed()
+	{
+		return this.allowSave;
+	}
+
+	public File getEnabledModsFile()
+	{
+		return this.enabledModsFile;
+	}
+
+	public void setEnabledModsFile(File enabledModsFile)
+	{
+		this.enabledModsFile = enabledModsFile;
 	}
 }

@@ -19,9 +19,12 @@ import java.util.logging.Logger;
 
 import javax.activity.InvalidActivityException;
 
+import org.lwjgl.input.Keyboard;
+
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.src.CrashReport;
 import net.minecraft.src.GuiControls;
+import net.minecraft.src.GuiMainMenu;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.KeyBinding;
 import net.minecraft.src.Minecraft;
@@ -35,6 +38,7 @@ import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
+import com.mumfrey.liteloader.gui.GuiScreenModInfo;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -196,6 +200,23 @@ public final class LiteLoader
 	private Map<KeyBinding, Integer> storedModKeyBindings = new HashMap<KeyBinding, Integer>();
 	
 	/**
+	 * Setting which determines whether we show the "mod info" screen tab in the main menu
+	 */
+	private boolean displayModInfoScreenTab = true;
+	
+	/**
+	 * Override for the "mod info" tab setting, so that mods which want to handle the mod info themselves
+	 * can temporarily disable the function without having to change the underlying property
+	 */
+	private boolean hideModInfoScreenTab = false;
+	
+	/**
+	 * Active "mod info" screen, drawn as an overlay when in the main menu and made the active screen if
+	 * the user clicks the tab
+	 */
+	private GuiScreenModInfo modInfoScreen;
+	
+	/**
 	 * Pre-init routine, called using reflection by the tweaker
 	 * 
 	 * @param gameDirectory Game directory passed to the tweaker
@@ -295,6 +316,7 @@ public final class LiteLoader
 			
 			this.paginateControls = this.bootstrap.getAndStoreBooleanProperty("controls.pages", true);
 			this.inhibitSoundManagerReload = this.bootstrap.getAndStoreBooleanProperty("soundManagerFix", true);
+			this.displayModInfoScreenTab = this.bootstrap.getAndStoreBooleanProperty("modInfoScreen", true);
 			
 			this.enumerator.discoverModClasses();
 		}
@@ -328,7 +350,7 @@ public final class LiteLoader
 		this.events.initHooks();
 		this.startupComplete = true;
 		
-		this.enabledModsList.saveTo(this.enabledModsFile);
+		this.enabledModsList.save();
 		this.bootstrap.writeProperties();
 	}
 	
@@ -880,6 +902,33 @@ public final class LiteLoader
 			}
 		}
 	}
+	
+	/**
+	 * @param partialTicks
+	 */
+	void postRender(int mouseX, int mouseY, float partialTicks)
+	{
+		if (this.minecraft.currentScreen instanceof GuiMainMenu && this.displayModInfoScreenTab && !this.hideModInfoScreenTab)
+		{
+			// If we're at the main menu, prepare the overlay
+			if (this.modInfoScreen == null || this.modInfoScreen.getMenu() != this.minecraft.currentScreen)
+			{
+				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList);
+			}
+
+			this.modInfoScreen.drawScreen(mouseX, mouseY, partialTicks);
+		}
+		else if (this.minecraft.currentScreen != this.modInfoScreen && this.modInfoScreen != null)
+		{
+			// If we're in any other screen, kill the overlay
+			this.modInfoScreen.release();
+			this.modInfoScreen = null;
+		}
+		else if (this.minecraft.currentScreen instanceof GuiMainMenu && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && Keyboard.isKeyDown(Keyboard.KEY_TAB))
+		{
+			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList));
+		}			
+	}
 
 	/**
 	 * @param partialTicks
@@ -891,6 +940,11 @@ public final class LiteLoader
 		this.permissionsManager.onTick(this.minecraft, partialTicks, inGame);
 		
 		this.checkAndStoreKeyBindings();
+		
+		if (this.modInfoScreen != null && this.minecraft.currentScreen != this.modInfoScreen)
+		{
+			this.modInfoScreen.updateScreen();
+		}
 	}
 	
 	/**
@@ -963,16 +1017,40 @@ public final class LiteLoader
 		}
 		catch (IOException ex) {}
 	}
-
+	
+	/**
+	 * Set the "mod info" screen tab to hidden, regardless of the property setting
+	 */
+	public void hideModInfoScreenTab()
+	{
+		this.hideModInfoScreenTab = true;
+	}
+	
+	/**
+	 * Set whether the "mod info" screen tab should be shown in the main menu
+	 */
+	public void setDisplayModInfoScreenTab(boolean show)
+	{
+		this.displayModInfoScreenTab = show;
+		this.bootstrap.setBooleanProperty("modInfoScreen", show);
+		this.bootstrap.writeProperties();
+	}
+	
+	/**
+	 * Get whether the "mod info" screen tab is shown in the main menu
+	 */
+	public boolean getDisplayModInfoScreenTab()
+	{
+		return this.displayModInfoScreenTab;
+	}
+	
 	private static void logInfo(String string, Object... args)
 	{
-//		System.out.println("<INFO> " + String.format(string, args));
 		LiteLoader.logger.info(String.format(string, args));
 	}
 
 	private static void logWarning(String string, Object... args)
 	{
-//		System.out.println("<WARN> " + String.format(string, args));
 		LiteLoader.logger.warning(String.format(string, args));
 	}
 

@@ -3,6 +3,8 @@ package com.mumfrey.liteloader.core;
 import java.util.LinkedList;
 import java.util.logging.Level;
 
+import org.lwjgl.input.Mouse;
+
 import net.minecraft.src.*;
 
 import com.mumfrey.liteloader.*;
@@ -223,7 +225,6 @@ public class Events implements IPlayerUsage
 			this.pluginChannels.addPluginChannelListener((PluginChannelListener)listener);
 		}
 	}
-
 	
 	/**
 	 * Initialise mod hooks
@@ -448,6 +449,10 @@ public class Events implements IPlayerUsage
 	 */
 	public void onRender()
 	{
+		this.currentResolution = new ScaledResolution(this.minecraft.gameSettings, this.minecraft.displayWidth, this.minecraft.displayHeight);
+		this.screenWidth = this.currentResolution.getScaledWidth();
+		this.screenHeight = this.currentResolution.getScaledHeight();
+		
 		this.loader.onRender();
 		
 		for (RenderListener renderListener : this.renderListeners)
@@ -521,10 +526,6 @@ public class Events implements IPlayerUsage
 	 */
 	public void onRenderHUD()
 	{
-		this.currentResolution = new ScaledResolution(this.minecraft.gameSettings, this.minecraft.displayWidth, this.minecraft.displayHeight);
-		this.screenWidth = this.currentResolution.getScaledWidth();
-		this.screenHeight = this.currentResolution.getScaledHeight();
-		
 		if (!this.minecraft.gameSettings.hideGUI || this.minecraft.currentScreen != null)
 		{
 			for (HUDRenderListener hudRenderListener : this.hudRenderListeners)
@@ -583,6 +584,10 @@ public class Events implements IPlayerUsage
 		{
 			this.loader.onTick(partialTicks, inGame);
 		}
+
+		int mouseX = Mouse.getX() * this.screenWidth / this.minecraft.displayWidth;
+		int mouseY = this.screenHeight - Mouse.getY() * this.screenHeight / this.minecraft.displayHeight - 1;
+		this.loader.postRender(mouseX, mouseY, partialTicks);
 		
 		// Iterate tickable mods
 		for (Tickable tickable : this.tickListeners)
