@@ -121,7 +121,7 @@ public class GuiSimpleScrollBar extends Gui
 			float pct = Math.min(1.0F, (float)slideHeight / (float)totalHeight);
 			int barHeight = (int)(pct * slideHeight);
 			int barTravel = slideHeight - barHeight;
-			int barPosition = this.maxValue > 0 ? yPosition + 1 + (int)((this.value / (float)this.maxValue) * barTravel) : 0;
+			int barPosition = yPosition + 1 + (this.maxValue > 0 ? (int)((this.value / (float)this.maxValue) * barTravel) : 0);
 			
 			drawRect(xPosition + 1, barPosition, xPosition + width - 1, barPosition + barHeight, this.foreColour);
 			

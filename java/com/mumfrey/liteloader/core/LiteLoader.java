@@ -587,7 +587,7 @@ public final class LiteLoader
 	/**
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
-	 * @param modName Mod's name or class name
+	 * @param modName Mod's name, meta name or class name
 	 * @return
 	 * @throws InvalidActivityException
 	 */
@@ -606,7 +606,9 @@ public final class LiteLoader
 		
 		for (LiteMod mod : this.mods)
 		{
-			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(mod.getClass().getSimpleName()))
+			String metaName = this.getModMetaName(mod.getClass());
+			
+			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(metaName) || modName.equalsIgnoreCase(mod.getClass().getSimpleName()))
 				return (T)mod;
 		}
 		
