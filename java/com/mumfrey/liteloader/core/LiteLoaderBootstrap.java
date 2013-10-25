@@ -123,6 +123,9 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 		this.configBaseFolder = new File(this.gameDirectory,    "liteconfig");
 		this.logFile          = new File(this.configBaseFolder, "liteloader.log");
 		this.propertiesFile   = new File(this.configBaseFolder, "liteloader.properties");
+
+		if (!this.modsFolder.exists()) this.modsFolder.mkdirs();
+		if (!this.configBaseFolder.exists()) this.configBaseFolder.mkdirs();
 	}
 	
 	/* (non-Javadoc)
@@ -156,6 +159,9 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	@Override
 	public void init(List<String> modsToLoad, LaunchClassLoader classLoader)
 	{
+		// PreInit failed
+		if (this.enumerator == null) return;
+		
 		try
 		{
 			if (LiteLoaderBootstrap.logger.getHandlers().length < 1)
@@ -173,6 +179,9 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	@Override
 	public void postInit()
 	{
+		// PreInit failed
+		if (this.enumerator == null) return;
+		
 		try
 		{
 			if (LiteLoaderBootstrap.logger.getHandlers().length < 1)

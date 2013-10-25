@@ -51,6 +51,10 @@ import com.mumfrey.liteloader.util.PrivateFields;
  */
 public final class LiteLoader
 {
+	private static final String OPTION_MOD_INFO_SCREEN   = "modInfoScreen";
+	private static final String OPTION_SOUND_MANAGER_FIX = "soundManagerFix";
+	private static final String OPTION_CONTROLS_PAGES    = "controls.pages";
+
 	/**
 	 * LiteLoader is a singleton, this is the singleton instance
 	 */
@@ -314,9 +318,9 @@ public final class LiteLoader
 				catch (Exception ex) {}
 			}
 			
-			this.paginateControls = this.bootstrap.getAndStoreBooleanProperty("controls.pages", true);
-			this.inhibitSoundManagerReload = this.bootstrap.getAndStoreBooleanProperty("soundManagerFix", true);
-			this.displayModInfoScreenTab = this.bootstrap.getAndStoreBooleanProperty("modInfoScreen", true);
+			this.paginateControls = this.bootstrap.getAndStoreBooleanProperty(OPTION_CONTROLS_PAGES, true);
+			this.inhibitSoundManagerReload = this.bootstrap.getAndStoreBooleanProperty(OPTION_SOUND_MANAGER_FIX, true);
+			this.displayModInfoScreenTab = this.bootstrap.getAndStoreBooleanProperty(OPTION_MOD_INFO_SCREEN, true);
 			
 			this.enumerator.discoverModClasses();
 		}
@@ -1034,7 +1038,7 @@ public final class LiteLoader
 	public void setDisplayModInfoScreenTab(boolean show)
 	{
 		this.displayModInfoScreenTab = show;
-		this.bootstrap.setBooleanProperty("modInfoScreen", show);
+		this.bootstrap.setBooleanProperty(OPTION_MOD_INFO_SCREEN, show);
 		this.bootstrap.writeProperties();
 	}
 	

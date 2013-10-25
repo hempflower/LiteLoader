@@ -43,6 +43,12 @@ import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
  */
 class LiteLoaderEnumerator implements FilenameFilter
 {
+	private static final String OPTION_SEARCH_ZIPFILES  = "search.zipfiles";
+	private static final String OPTION_SEARCH_JARFILES  = "search.jarfiles";
+	private static final String OPTION_SEARCH_MODS      = "search.mods";
+	private static final String OPTION_SEARCH_JAR       = "search.jar";
+	private static final String OPTION_SEARCH_CLASSPATH = "search.classpath";
+
 	/**
 	 * Maximum recursion depth for mod discovery
 	 */
@@ -111,6 +117,9 @@ class LiteLoaderEnumerator implements FilenameFilter
 		
 		// Read the discovery settings from the properties 
 		this.readSettings();
+		
+		// Write settings back to the properties file, in case they changed 
+		this.writeSettings();
 	}
 
 	/**
@@ -176,13 +185,13 @@ class LiteLoaderEnumerator implements FilenameFilter
 	/**
 	 * Get the discovery settings from the properties file
 	 */
-	public void readSettings()
+	private void readSettings()
 	{
-		this.readZipFiles           = this.bootstrap.getAndStoreBooleanProperty("search.zips",     false);
-		this.readZipFiles           = this.bootstrap.getAndStoreBooleanProperty("search.jars",      true);
-		this.searchModsFolder       = this.bootstrap.getAndStoreBooleanProperty("search.mods",      true);
-		this.searchProtectionDomain = this.bootstrap.getAndStoreBooleanProperty("search.jar",       true);
-		this.searchClassPath        = this.bootstrap.getAndStoreBooleanProperty("search.classpath", true);
+		this.readZipFiles           = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_ZIPFILES,  false);
+		this.readJarFiles           = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_JARFILES,  true);
+		this.searchModsFolder       = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_MODS,      true);
+		this.searchProtectionDomain = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_JAR,       true);
+		this.searchClassPath        = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_CLASSPATH, true);
 		
 		if (!this.searchModsFolder && !this.searchProtectionDomain && !this.searchClassPath)
 		{
@@ -192,12 +201,18 @@ class LiteLoaderEnumerator implements FilenameFilter
 			this.searchProtectionDomain = true;
 			this.searchClassPath        = true;
 		}
-		
-		this.bootstrap.setBooleanProperty("search.zips",      this.readZipFiles);
-		this.bootstrap.setBooleanProperty("search.jars",      this.readJarFiles);
-		this.bootstrap.setBooleanProperty("search.mods",      this.searchModsFolder);
-		this.bootstrap.setBooleanProperty("search.jar",       this.searchProtectionDomain);
-		this.bootstrap.setBooleanProperty("search.classpath", this.searchClassPath);
+	}
+
+	/**
+	 * Write settings
+	 */
+	private void writeSettings()
+	{
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_ZIPFILES,  this.readZipFiles);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_JARFILES,  this.readJarFiles);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_MODS,      this.searchModsFolder);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_JAR,       this.searchProtectionDomain);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_CLASSPATH, this.searchClassPath);
 	}
 
 	/**
