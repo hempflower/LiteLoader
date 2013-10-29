@@ -148,7 +148,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 		LiteLoaderBootstrap.logInfo("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase());
 		
 		this.enumerator = new LiteLoaderEnumerator(this, classLoader, loadTweaks);
-		this.enumerator.discoverModFiles();
+		this.enumerator.discoverMods();
 
 		LiteLoaderBootstrap.logInfo("LiteLoader PreInit completed");
 	}

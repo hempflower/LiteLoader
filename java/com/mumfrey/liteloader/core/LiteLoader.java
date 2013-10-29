@@ -756,9 +756,11 @@ public final class LiteLoader
 						this.disabledMods.remove(modFile);
 						
 						LiteLoader.logInfo("Adding \"%s\" to active resource pack set", modFile.getAbsolutePath());
-						if (modName != null && modFile.canRegisterAsResourcePack(modName))
+						if (modName != null)
 						{
-							if (this.registerModResourcePack((ResourcePack)modFile.getResourcePack()))
+							modFile.initResourcePack(modName);
+							
+							if (modFile.hasResourcePack() && this.registerModResourcePack((ResourcePack)modFile.getResourcePack()))
 							{
 								LiteLoader.logInfo("Successfully added \"%s\" to active resource pack set", modFile.getAbsolutePath());
 							}
@@ -1060,9 +1062,16 @@ public final class LiteLoader
 		LiteLoader.logger.warning(String.format(string, args));
 	}
 
-	public static void populateCrashReport(CrashReport crashReport)
+	/**
+	 * @param objCrashReport This is an object so that we don't need to transform the obfuscated name in the transformer
+	 */
+	public static void populateCrashReport(Object objCrashReport)
 	{
-		crashReport.getCategory().addCrashSectionCallable("Mod Pack",        new CallableLiteLoaderBrand(crashReport));
-		crashReport.getCategory().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(crashReport));
+		if (objCrashReport instanceof CrashReport)
+		{
+			CrashReport crashReport = (CrashReport)objCrashReport;
+			crashReport.getCategory().addCrashSectionCallable("Mod Pack",        new CallableLiteLoaderBrand(crashReport));
+			crashReport.getCategory().addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(crashReport));
+		}
 	}
 }

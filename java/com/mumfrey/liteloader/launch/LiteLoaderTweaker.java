@@ -8,9 +8,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,6 +49,8 @@ public class LiteLoaderTweaker implements ITweaker
 	private static List<String> modsToLoad;
 
 	private static ILoaderBootstrap bootstrap;
+	
+	private static Set<String> modTransformers = new HashSet<String>();
 	
 	private List<String> singularLaunchArgs = new ArrayList<String>();
 	
@@ -145,8 +149,16 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public void injectIntoClassLoader(LaunchClassLoader classLoader)
 	{
-		LiteLoaderTweaker.logger.info("Injecting LiteLoader Class Transformer");
+		LiteLoaderTweaker.logger.info("Injecting LiteLoader class transformer");
 		classLoader.registerTransformer(LiteLoaderTransformer.class.getName());
+		
+		for (String transformerClassName : LiteLoaderTweaker.modTransformers)
+		{
+			LiteLoaderTweaker.logger.info(String.format("Injecting additional class transformer class '%s'", transformerClassName));
+			classLoader.registerTransformer(transformerClassName);
+		}
+		
+		LiteLoaderTweaker.modTransformers.clear();
 	}
 
 	@Override
@@ -175,29 +187,37 @@ public class LiteLoaderTweaker implements ITweaker
 		return args.toArray(new String[args.size()]);
 	}
 	
-	public static boolean addTweaker(URL tweakSource, String tweakClass)
+	@SuppressWarnings("unchecked")
+	public static boolean addTweaker(String tweakClass)
 	{
-		if (LiteLoaderTweaker.preInit)
+		if (!LiteLoaderTweaker.preInit)
 		{
-			@SuppressWarnings("unchecked")
-			List<String> tweakers = (List<String>)Launch.blackboard.get("TweakClasses");
-			if (tweakers != null)
-			{
-				if (LiteLoaderTweaker.addURLToParentClassLoader(tweakSource))
-				{
-					tweakers.add(tweakClass);
-					return true;
-				}
-			}
+			LiteLoaderTweaker.logger.warning(String.format("Failed to add tweak class %s because preInit is already complete", tweakClass));
+			return false;
 		}
-		else
+		
+		List<String> tweakers = (List<String>)Launch.blackboard.get("TweakClasses");
+		if (tweakers != null)
 		{
-			LiteLoaderTweaker.logger.warning(String.format("Failed to add tweak class %s from %s because preInit is already complete", tweakClass, tweakSource));
+			tweakers.add(tweakClass);
+			return true;
 		}
 		
 		return false;
 	}
 
+	public static boolean addClassTransformer(String transfomerClass)
+	{
+		if (!LiteLoaderTweaker.preInit)
+		{
+			LiteLoaderTweaker.logger.warning(String.format("Failed to add transformer class %s because preInit is already complete", transfomerClass));
+			return false;
+		}
+			
+		LiteLoaderTweaker.modTransformers.add(transfomerClass);
+		return true;
+	}
+	
 	/**
 	 * @param url URL to add
 	 */
