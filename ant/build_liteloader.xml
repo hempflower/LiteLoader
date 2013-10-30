@@ -98,10 +98,10 @@
 	<target name="contributeresources" description="Contribute resources to the staging path">
 		<echo level="info" message="Contributing project resources for ${lib}" />
 		<copy todir="${stage.dir}" verbose="false" failonerror="false">
-			<fileset dir="${eclipse}/${lib}/res" excludes=".svn/**">
-				<exclude name="**/Thumbs.db" />
-				<exclude name="**/minecraft.key" />
-			</fileset>
+            <fileset dir="${eclipse}/${lib}/resources" excludes=".svn/**">
+                <exclude name="**/Thumbs.db" />
+                <exclude name="**/minecraft.key" />
+            </fileset>
 		</copy>
 	</target>
 
