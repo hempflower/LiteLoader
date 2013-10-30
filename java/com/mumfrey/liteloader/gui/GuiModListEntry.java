@@ -21,11 +21,6 @@ public class GuiModListEntry extends Gui
 	private static final int PANEL_SPACING = 4;
 	
 	/**
-	 * Enabled mods list, keep a reference so that we can toggle mod enablement when required
-	 */
-	private EnabledModsList enabledModsList;
-	
-	/**
 	 * For text display
 	 */
 	private FontRenderer fontRenderer;
@@ -91,7 +86,6 @@ public class GuiModListEntry extends Gui
 	 */
 	GuiModListEntry(LiteLoader loader, EnabledModsList enabledMods, FontRenderer fontRenderer, LiteMod mod)
 	{
-		this.enabledModsList = enabledMods;
 		this.fontRenderer    = fontRenderer;
 		this.metaName        = loader.getModMetaName(mod.getClass());
 		this.name            = mod.getName();
@@ -100,7 +94,7 @@ public class GuiModListEntry extends Gui
 		this.url             = loader.getModMetaData(mod.getClass(), "url", null);
 		this.description     = loader.getModMetaData(mod.getClass(), "description", "");
 		this.enabled         = true;
-		this.canBeToggled    = this.metaName != null && this.enabledModsList.saveAllowed();
+		this.canBeToggled    = this.metaName != null && enabledMods.saveAllowed();
 		this.willBeEnabled   = true;
 	}
 	
@@ -114,7 +108,6 @@ public class GuiModListEntry extends Gui
 	 */
 	GuiModListEntry(LiteLoader loader, EnabledModsList enabledMods, FontRenderer fontRenderer, ModFile file)
 	{
-		this.enabledModsList = enabledMods;
 		this.fontRenderer    = fontRenderer;
 		this.metaName        = file.getModName().toLowerCase();
 		this.name            = file instanceof ClassPathMod ? file.getModName() : file.getName();
@@ -123,7 +116,7 @@ public class GuiModListEntry extends Gui
 		this.url             = file.getMetaValue("url", null);
 		this.description     = file.getMetaValue("description", "");
 		this.enabled         = false;
-		this.canBeToggled    = this.enabledModsList.saveAllowed();
+		this.canBeToggled    = enabledMods.saveAllowed();
 		this.willBeEnabled   = enabledMods.isEnabled(loader.getProfile(), this.metaName);
 	}
 	
@@ -202,8 +195,7 @@ public class GuiModListEntry extends Gui
 		if (this.canBeToggled)
 		{
 			this.willBeEnabled = !this.willBeEnabled;
-			this.enabledModsList.setEnabled(LiteLoader.getProfile(), this.metaName, this.willBeEnabled);
-			this.enabledModsList.save();
+			LiteLoader.getInstance().setModEnabled(this.metaName, this.willBeEnabled);
 		}
 	}
 	

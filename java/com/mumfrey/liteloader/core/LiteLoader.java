@@ -133,7 +133,7 @@ public final class LiteLoader
 	private String loadedModsList = "none";
 	
 	/**
-	 * Global list of mods which we can loaded
+	 * Global list of mods which we can load
 	 */
 	private final LinkedList<LiteMod> mods = new LinkedList<LiteMod>();
 	
@@ -354,7 +354,7 @@ public final class LiteLoader
 		this.events.initHooks();
 		this.startupComplete = true;
 		
-		this.enabledModsList.save();
+		this.enabledModsList.saveTo(this.enabledModsFile);
 		this.bootstrap.writeProperties();
 	}
 	
@@ -572,23 +572,6 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * Used by the version upgrade code, gets a version of the mod name suitable
-	 * for inclusion in the properties file
-	 * 
-	 * @param modName
-	 * @return
-	 */
-	private String getModNameForConfig(Class<? extends LiteMod> modClass, String modName)
-	{
-		if (modName == null || modName.isEmpty())
-		{
-			modName = modClass.getSimpleName().toLowerCase();
-		}
-		
-		return String.format("version.%s", modName.toLowerCase().replaceAll("[^a-z0-9_\\-\\.]", ""));
-	}
-	
-	/**
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
 	 * @param modName Mod's name, meta name or class name
@@ -713,7 +696,82 @@ public final class LiteLoader
 	{
 		return this.enumerator.getModMetaName(modClass);
 	}
+	
+	/**
+	 * Get the mod "name" metadata key, this is used for versioning, exclusivity, and enablement checks
+	 * 
+	 * @param modClass
+	 * @return
+	 */
+	public Class<? extends LiteMod> getModFromMetaName(String modName)
+	{
+		if (modName == null) return null;
+		
+		for (LiteMod mod : this.mods)
+		{
+			if (modName.equalsIgnoreCase(this.enumerator.getModMetaName(mod.getClass())))
+			{
+				return mod.getClass();
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param modMetaName Mod meta name to enable
+	 */
+	public void enableMod(String modMetaName)
+	{
+		this.setModEnabled(modMetaName, true);
+	}
 
+	/**
+	 * @param modMetaName Mod meta name to disable
+	 */
+	public void disableMod(String modMetaName)
+	{
+		this.setModEnabled(modMetaName, false);
+	}
+	
+	/**
+	 * @param modMetaName Mod meta name to enable/disable
+	 * @param enabled
+	 */
+	public void setModEnabled(String modMetaName, boolean enabled)
+	{
+		this.enabledModsList.setEnabled(this.bootstrap.getProfile(), modMetaName, enabled);
+		this.enabledModsList.saveTo(this.enabledModsFile);
+	}
+
+	/**
+	 * @param modName
+	 * @return
+	 */
+	public boolean isModEnabled(String modName)
+	{
+		return this.enabledModsList.isEnabled(LiteLoader.getProfile(), modName);
+	}
+	
+	/**
+	 * @param modName
+	 * @return
+	 */
+	public boolean isModActive(String modName)
+	{
+		if (modName == null) return false;
+		
+		for (LiteMod mod : this.loadedMods)
+		{
+			if (modName.equalsIgnoreCase(this.enumerator.getModMetaName(mod.getClass())))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Create mod instances from the enumerated classes
 	 * 
@@ -740,32 +798,7 @@ public final class LiteLoader
 				String metaName = this.getModMetaName(mod);
 				if (metaName == null || this.enabledModsList.isEnabled(this.bootstrap.getProfile(), metaName))
 				{
-					LiteLoader.logInfo("Loading mod from %s", mod.getName());
-					
-					LiteMod newMod = mod.newInstance();
-					
-					this.mods.add(newMod);
-					String modName = newMod.getName();
-					if (modName == null && metaName != null) modName = metaName;
-					LiteLoader.logInfo("Successfully added mod %s version %s", modName, newMod.getVersion());
-					
-					// Get the mod file and register it as a resource pack if it exists
-					ModFile modFile = this.enumerator.getModFile(mod);
-					if (modFile != null)
-					{
-						this.disabledMods.remove(modFile);
-						
-						LiteLoader.logInfo("Adding \"%s\" to active resource pack set", modFile.getAbsolutePath());
-						if (modName != null)
-						{
-							modFile.initResourcePack(modName);
-							
-							if (modFile.hasResourcePack() && this.registerModResourcePack((ResourcePack)modFile.getResourcePack()))
-							{
-								LiteLoader.logInfo("Successfully added \"%s\" to active resource pack set", modFile.getAbsolutePath());
-							}
-						}
-					}
+					this.loadMod(metaName, mod);
 				}
 				else
 				{
@@ -782,6 +815,42 @@ public final class LiteLoader
 	}
 
 	/**
+	 * @param metaName
+	 * @param mod
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	protected void loadMod(String metaName, Class<? extends LiteMod> mod) throws InstantiationException, IllegalAccessException
+	{
+		LiteLoader.logInfo("Loading mod from %s", mod.getName());
+		
+		LiteMod newMod = mod.newInstance();
+		
+		this.mods.add(newMod);
+		String modName = newMod.getName();
+		if (modName == null && metaName != null) modName = metaName;
+		LiteLoader.logInfo("Successfully added mod %s version %s", modName, newMod.getVersion());
+		
+		// Get the mod file and register it as a resource pack if it exists
+		ModFile modFile = this.enumerator.getModFile(mod);
+		if (modFile != null)
+		{
+			this.disabledMods.remove(modFile);
+			
+			LiteLoader.logInfo("Adding \"%s\" to active resource pack set", modFile.getAbsolutePath());
+			if (modName != null)
+			{
+				modFile.initResourcePack(modName);
+				
+				if (modFile.hasResourcePack() && this.registerModResourcePack((ResourcePack)modFile.getResourcePack()))
+				{
+					LiteLoader.logInfo("Successfully added \"%s\" to active resource pack set", modFile.getAbsolutePath());
+				}
+			}
+		}
+	}
+
+	/**
 	 * Initialise the mods which were loaded
 	 */
 	private void initMods()
@@ -792,53 +861,86 @@ public final class LiteLoader
 		for (Iterator<LiteMod> iter = this.mods.iterator(); iter.hasNext();)
 		{
 			LiteMod mod = iter.next();
-			String modName = mod.getName();
 			
 			try
 			{
-				LiteLoader.logInfo("Initialising mod %s version %s", modName, mod.getVersion());
-				
-				try
-				{
-					String modKey = this.getModNameForConfig(mod.getClass(), modName);
-					LiteLoaderVersion lastModVersion = LiteLoaderVersion.getVersionFromRevision(this.bootstrap.getLastKnownModRevision(modKey));
-					
-					if (LiteLoaderBootstrap.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
-					{
-						LiteLoader.logInfo("Performing config upgrade for mod %s. Upgrading %s to %s...", modName, lastModVersion, LiteLoaderBootstrap.VERSION);
-						mod.upgradeSettings(LiteLoaderBootstrap.VERSION.getMinecraftVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
-						
-						this.bootstrap.storeLastKnownModRevision(modKey);
-						LiteLoader.logInfo("Config upgrade succeeded for mod %s", modName);
-					}
-				}
-				catch (Throwable th)
-				{
-					LiteLoader.logWarning("Error performing settings upgrade for %s. Settings may not be properly migrated", modName);
-				}
-				
-				// pre-1.6.4_01 this was being called with the wrong path, I hope this doesn't break anything
-				mod.init(this.commonConfigFolder); 
-				
-				this.events.addListener(mod);
-				
-				if (mod instanceof Permissible)
-				{
-					this.permissionsManager.registerPermissible((Permissible)mod);
-				}
-				
-				this.loadedMods.add(mod);
-				this.loadedModsList += String.format("\n          - %s version %s", modName, mod.getVersion());
+				this.initMod(mod);
 				loadedModsCount++;
 			}
 			catch (Throwable th)
 			{
-				LiteLoader.getLogger().log(Level.WARNING, "Error initialising mod '" + modName, th);
+				LiteLoader.getLogger().log(Level.WARNING, "Error initialising mod '" + mod.getName() + "'", th);
 				iter.remove();
 			}
 		}
 		
 		this.loadedModsList = String.format("%s loaded mod(s)%s", loadedModsCount, this.loadedModsList);
+	}
+
+	/**
+	 * @param mod
+	 */
+	protected void initMod(LiteMod mod)
+	{
+		LiteLoader.logInfo("Initialising mod %s version %s", mod.getName(), mod.getVersion());
+		
+		try
+		{
+			this.handleModVersionUpgrade(mod);
+		}
+		catch (Throwable th)
+		{
+			LiteLoader.logWarning("Error performing settings upgrade for %s. Settings may not be properly migrated", mod.getName());
+		}
+		
+		// initialise the mod
+		mod.init(this.commonConfigFolder); 
+		
+		// add the mod to all relevant listener queues
+		this.events.addListener(mod);
+		
+		if (mod instanceof Permissible)
+		{
+			this.permissionsManager.registerPermissible((Permissible)mod);
+		}
+		
+		this.loadedMods.add(mod);
+		this.loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
+	}
+
+	/**
+	 * @param mod
+	 */
+	protected void handleModVersionUpgrade(LiteMod mod)
+	{
+		String modKey = this.getModNameForConfig(mod.getClass(), mod.getName());
+		LiteLoaderVersion lastModVersion = LiteLoaderVersion.getVersionFromRevision(this.bootstrap.getLastKnownModRevision(modKey));
+		
+		if (LiteLoaderBootstrap.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
+		{
+			LiteLoader.logInfo("Performing config upgrade for mod %s. Upgrading %s to %s...", mod.getName(), lastModVersion, LiteLoaderBootstrap.VERSION);
+			mod.upgradeSettings(LiteLoaderBootstrap.VERSION.getMinecraftVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
+			
+			this.bootstrap.storeLastKnownModRevision(modKey);
+			LiteLoader.logInfo("Config upgrade succeeded for mod %s", mod.getName());
+		}
+	}
+	
+	/**
+	 * Used by the version upgrade code, gets a version of the mod name suitable
+	 * for inclusion in the properties file
+	 * 
+	 * @param modName
+	 * @return
+	 */
+	private String getModNameForConfig(Class<? extends LiteMod> modClass, String modName)
+	{
+		if (modName == null || modName.isEmpty())
+		{
+			modName = modClass.getSimpleName().toLowerCase();
+		}
+		
+		return String.format("version.%s", modName.toLowerCase().replaceAll("[^a-z0-9_\\-\\.]", ""));
 	}
 	
 	/**

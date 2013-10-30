@@ -186,7 +186,7 @@ class LiteLoaderEnumerator implements FilenameFilter
 		if (!this.modFiles.containsKey(modClassName)) return null;
 		return this.modFiles.get(modClassName).getModName().toLowerCase();
 	}
-
+	
 	/**
 	 * Get the discovery settings from the properties file
 	 */
@@ -238,15 +238,15 @@ class LiteLoaderEnumerator implements FilenameFilter
 			{
 				LiteLoaderEnumerator.logInfo("Mods folder found, searching %s", modsFolder.getPath());
 				this.findModFiles(modsFolder, false);
-				LiteLoaderEnumerator.logInfo("Found %d mod file(s)", this.allModFiles.size());
 				
 				File versionedModsFolder = new File(modsFolder, LiteLoaderBootstrap.VERSION.getMinecraftVersion());
 				if (versionedModsFolder.exists() && versionedModsFolder.isDirectory())
 				{
 					LiteLoaderEnumerator.logInfo("Versioned mods folder found, searching %s", versionedModsFolder.getPath());
 					this.findModFiles(versionedModsFolder, true);
-					LiteLoaderEnumerator.logInfo("Found %d mod file(s)", this.allModFiles.size());
 				}
+				
+				LiteLoaderEnumerator.logInfo("Found %d mod file(s)", this.allModFiles.size());
 			}
 		}
 	}
