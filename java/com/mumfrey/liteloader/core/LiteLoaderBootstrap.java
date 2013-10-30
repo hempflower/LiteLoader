@@ -20,7 +20,7 @@ import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.launch.ILoaderBootstrap;
-import com.mumfrey.liteloader.log.LiteLoaderLogFormatter;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogFormatter;
 
 /**
  * LiteLoaderBootstrap is a proxy class which handles the early part of the LiteLoader startup process which

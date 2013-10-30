@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.log;
+package com.mumfrey.liteloader.util.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
