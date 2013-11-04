@@ -101,6 +101,15 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 		this.mod    = mod;
 	}
 
+	/**
+	 * @return
+	 */
+	protected String getPanelTitle()
+	{
+		String panelTitle = this.panel.getPanelTitle();
+		return panelTitle != null ? panelTitle : String.format("%s Settings", this.mod.getName());
+	}
+
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#getMod()
 	 */
@@ -195,11 +204,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 		this.panelTop = TOP - this.scrollBar.getValue();
 	
 		// Draw panel title
-		String panelTitle = this.panel.getPanelTitle();
-		if (panelTitle != null)
-		{
-			this.mc.fontRenderer.drawString(panelTitle, MARGIN, TOP - 14, 0xFFFFFFFF);
-		}
+		this.mc.fontRenderer.drawString(this.getPanelTitle(), MARGIN, TOP - 14, 0xFFFFFFFF);
 		
 		// Draw top and bottom horizontal bars
 		drawRect(MARGIN, TOP - 4, this.width - MARGIN, TOP - 3, 0xFF999999);
