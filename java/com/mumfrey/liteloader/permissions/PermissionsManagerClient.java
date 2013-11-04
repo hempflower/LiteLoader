@@ -14,6 +14,7 @@ import net.minecraft.src.Minecraft;
 import net.minecraft.src.NetHandler;
 import net.minecraft.src.Packet1Login;
 
+import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.Permissible;
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.core.PluginChannels;
@@ -126,6 +127,19 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 
 		ServerPermissions modPermissions = this.serverPermissions.get(modName);
 		return modPermissions != null ? modPermissions.getReplicationTime() : 0;
+	}
+	
+	/**
+	 * Register a new mod, if permissible
+	 * 
+	 * @param mod
+	 */
+	public void registerMod(LiteMod mod)
+	{
+		if (mod instanceof Permissible)
+		{
+			this.registerPermissible((Permissible)mod);
+		}
 	}
 
 	/* (non-Javadoc)

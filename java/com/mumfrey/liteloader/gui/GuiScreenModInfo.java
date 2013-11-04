@@ -19,6 +19,8 @@ import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.core.EnabledModsList;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.ModFile;
+import com.mumfrey.liteloader.modconfig.ConfigPanel;
+import com.mumfrey.liteloader.modconfig.ConfigPanelManager;
 
 import net.minecraft.src.DynamicTexture;
 import net.minecraft.src.GuiButton;
@@ -39,12 +41,14 @@ import net.minecraft.src.Tessellator;
  */
 public class GuiScreenModInfo extends GuiScreen
 {
-	private static final int LEFT_EDGE    = 80;
-	private static final int TAB_WIDTH    = 20;
-	private static final int TAB_HEIGHT   = 40;
-	private static final int TAB_TOP      = 20;
-	private static final int PANEL_TOP    = 83;
-	private static final int PANEL_BOTTOM = 26;
+	private static final int LEFT_EDGE       = 80;
+	private static final int MARGIN          = 12;
+	private static final int TAB_WIDTH       = 20;
+	private static final int TAB_HEIGHT      = 40;
+	private static final int TAB_TOP         = 20;
+	private static final int PANEL_TOP       = 83;
+	private static final int PANEL_BOTTOM    = 26;
+	private static final int SCROLLBAR_WIDTH = 5;
 	
 	private static final double TWEEN_RATE = 0.08;
 
@@ -83,6 +87,11 @@ public class GuiScreenModInfo extends GuiScreen
 	private boolean mouseDown, toggled;
 	
 	/**
+	 * Timer used to handle double-clicking on a mod
+	 */
+	private int doubleClickTime = 0;
+	
+	/**
 	 * Hover opacity for the tab
 	 */
 	private float tabOpacity = 0.0F;
@@ -118,9 +127,21 @@ public class GuiScreenModInfo extends GuiScreen
 	private GuiButton btnToggle;
 	
 	/**
+	 * Config button 
+	 */
+	private GuiButton btnConfig;
+	
+	/**
 	 * Enable the mod info tab checkbox
 	 */
 	private GuiCheckbox chkEnabled;
+	
+	private ConfigPanelManager configPanelManager;
+	
+	/**
+	 * Configuration panel
+	 */
+	private GuiConfigPanelContainer configPanel;
 	
 	/**
 	 * @param minecraft
@@ -128,10 +149,11 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param loader
 	 * @param enabledModsList
 	 */
-	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList)
+	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigPanelManager configPanelManager)
 	{
 		this.mc = minecraft;
 		this.mainMenu = mainMenu;
+		this.configPanelManager = configPanelManager;
 		
 		// Spawn the texture resource if we haven't already
 		if (aboutTexture == null)
@@ -206,11 +228,17 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	public void initGui()
 	{
-		int left = LEFT_EDGE + 16 + (this.width - LEFT_EDGE - 28) / 2;
+		if (this.configPanel != null)
+		{
+			this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
+		}
+		
+		int left = LEFT_EDGE + MARGIN + 4 + (this.width - LEFT_EDGE - MARGIN - MARGIN - 4) / 2;
 		
 		this.buttonList.clear();
-		this.buttonList.add(this.btnToggle = new GuiButton(0, left, this.height - PANEL_BOTTOM - 24, 100, 20, "Enable mod"));
-		this.buttonList.add(this.chkEnabled = new GuiCheckbox(1, LEFT_EDGE + 12, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
+		this.buttonList.add(this.btnToggle = new GuiButton(0, left, this.height - PANEL_BOTTOM - 24, 90, 20, "Enable mod"));
+		this.buttonList.add(this.btnConfig = new GuiButton(1, left + 92, this.height - PANEL_BOTTOM - 24, 60, 20, "Config"));
+		this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
 		
 		this.selectMod(this.selectedMod);
 	}
@@ -236,6 +264,11 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	public void updateScreen()
 	{
+		if (this.configPanel != null)
+		{
+			this.configPanel.onTick();
+		}
+		
 		this.tickNumber++;
 		
 		if (this.mc.currentScreen == this)
@@ -248,6 +281,9 @@ public class GuiScreenModInfo extends GuiScreen
 		{
 			this.onToggled();
 		}
+		
+		if (this.doubleClickTime > 0)
+			this.doubleClickTime--;
 	}
 	
 	/* (non-Javadoc)
@@ -311,28 +347,55 @@ public class GuiScreenModInfo extends GuiScreen
 		// Only draw the panel contents if we are actually open
 		if (this.tweenAmount > 0.0)
 		{
-			// Draw the header pieces
-			glDrawTexturedRect(LEFT_EDGE + 12, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
-			glDrawTexturedRect(this.width - 32 - 12, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
-			
-			// Draw header text
-			this.fontRenderer.drawString("Version " + LiteLoader.getVersion(), LEFT_EDGE + 12 + 38, 50, 0xFFFFFFFF);
-			this.fontRenderer.drawString(this.activeModText, LEFT_EDGE + 12 + 38, 60, 0xFFAAAAAA);
-
-			// Draw top and bottom horizontal rules
-			drawRect(LEFT_EDGE + 12, 80, this.width - 12, 81, 0xFF999999);
-			drawRect(LEFT_EDGE + 12, this.height - PANEL_BOTTOM + 2, this.width - 12, this.height - PANEL_BOTTOM + 3, 0xFF999999);
-			
-			int innerWidth = this.width - LEFT_EDGE - 24 - 4;
-			int panelWidth = innerWidth / 2;
-			int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
-
-			this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
-			this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
-
-			// Draw other controls inside the transform so that they slide properly
-			super.drawScreen(mouseX, mouseY, partialTicks);
+			if (this.configPanel != null)
+			{
+				this.drawConfigPanel(mouseX, mouseY, partialTicks);
+			}
+			else
+			{
+				// Draw the header pieces
+				glDrawTexturedRect(LEFT_EDGE + MARGIN, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
+				glDrawTexturedRect(this.width - 32 - MARGIN, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
+				
+				// Draw header text
+				this.fontRenderer.drawString("Version " + LiteLoader.getVersion(), LEFT_EDGE + MARGIN + 38, 50, 0xFFFFFFFF);
+				this.fontRenderer.drawString(this.activeModText, LEFT_EDGE + MARGIN + 38, 60, 0xFFAAAAAA);
+				
+				// Draw top and bottom horizontal rules
+				drawRect(LEFT_EDGE + MARGIN, 80, this.width - MARGIN, 81, 0xFF999999);
+				drawRect(LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 2, this.width - MARGIN, this.height - PANEL_BOTTOM + 3, 0xFF999999);
+				
+				int innerWidth = this.width - LEFT_EDGE - MARGIN - MARGIN - 4;
+				int panelWidth = innerWidth / 2;
+				int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
+				
+				this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+				this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+				
+				// Draw other controls inside the transform so that they slide properly
+				super.drawScreen(mouseX, mouseY, partialTicks);
+			}
 		}
+		else if (this.configPanel != null)
+		{
+			this.closeConfigPanel(this.configPanel);
+		}
+			
+		
+		glPopMatrix();
+	}
+
+	/**
+	 * @param mouseX
+	 * @param mouseY
+	 * @param partialTicks
+	 */
+	public void drawConfigPanel(int mouseX, int mouseY, float partialTicks)
+	{
+		glPushMatrix();
+		glTranslatef(LEFT_EDGE, 0, 0);
+		
+		this.configPanel.draw(mouseX - LEFT_EDGE, mouseY, partialTicks);
 		
 		glPopMatrix();
 	}
@@ -346,10 +409,10 @@ public class GuiScreenModInfo extends GuiScreen
 	 */
 	public void drawModsList(int mouseX, int mouseY, float partialTicks, int width, int height)
 	{
-		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, LEFT_EDGE + 12 + width - 5, PANEL_TOP, 5, height, this.listHeight);
+		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, LEFT_EDGE + MARGIN + width - SCROLLBAR_WIDTH, PANEL_TOP, SCROLLBAR_WIDTH, height, this.listHeight);
 
 		// clip outside of scroll area
-		glEnableClipping(LEFT_EDGE + 12, LEFT_EDGE + 12 + width - 6, PANEL_TOP, this.height - PANEL_BOTTOM);
+		glEnableClipping(LEFT_EDGE + MARGIN, LEFT_EDGE + MARGIN + width - SCROLLBAR_WIDTH - 1, PANEL_TOP, this.height - PANEL_BOTTOM);
 		
 		// handle scrolling
 		glPushMatrix();
@@ -361,7 +424,7 @@ public class GuiScreenModInfo extends GuiScreen
 		for (GuiModListEntry mod : this.mods)
 		{
 			// drawListEntry returns a value indicating the height of the item drawn
-			yPos += mod.drawListEntry(mouseX, mouseY, partialTicks, LEFT_EDGE + 12, yPos, width - 6, mod == this.selectedMod);
+			yPos += mod.drawListEntry(mouseX, mouseY, partialTicks, LEFT_EDGE + MARGIN, yPos, width - 6, mod == this.selectedMod);
 		}
 		
 		glPopMatrix();
@@ -382,8 +445,8 @@ public class GuiScreenModInfo extends GuiScreen
 	{
 		if (this.selectedMod != null)
 		{
-			int left = LEFT_EDGE + 12 + width;
-			int right = this.width - 12;
+			int left = LEFT_EDGE + MARGIN + width;
+			int right = this.width - MARGIN;
 
 			glEnableClipping(left, right, PANEL_TOP, this.height - PANEL_BOTTOM - 28);
 			this.selectedMod.drawInfo(mouseX, mouseY, partialTicks, left, PANEL_TOP, right - left);
@@ -399,11 +462,14 @@ public class GuiScreenModInfo extends GuiScreen
 	{
 		this.selectedMod = mod;
 		this.btnToggle.drawButton = false;
+		this.btnConfig.drawButton = false;
 		
 		if (this.selectedMod != null && this.selectedMod.canBeToggled())
 		{
 			this.btnToggle.drawButton = true;
 			this.btnToggle.displayString = this.selectedMod.willBeEnabled() ? "Disable mod" : "Enable mod";
+			
+			this.btnConfig.drawButton = this.configPanelManager.hasPanel(this.selectedMod.getModClass());
 		}
 	}
 	
@@ -421,6 +487,11 @@ public class GuiScreenModInfo extends GuiScreen
 		
 		if (button.id == 1)
 		{
+			this.openConfigPanel();
+		}
+		
+		if (button.id == 2)
+		{
 			this.chkEnabled.checked = !this.chkEnabled.checked;
 			LiteLoader.getInstance().setDisplayModInfoScreenTab(this.chkEnabled.checked);
 			
@@ -437,6 +508,12 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	protected void keyTyped(char keyChar, int keyCode)
 	{
+		if (this.configPanel != null)
+		{
+			this.configPanel.keyPressed(keyChar, keyCode);
+			return;
+		}
+		
 		if (keyCode == Keyboard.KEY_ESCAPE)
 		{
 			this.onToggled();
@@ -450,6 +527,12 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int button)
 	{
+		if (this.configPanel != null)
+		{
+			this.configPanel.mousePressed(mouseX - LEFT_EDGE, mouseY, button);
+			return;
+		}
+		
 		if (button == 0)
 		{
 			if (this.scrollBar.wasMouseOver())
@@ -459,9 +542,22 @@ public class GuiScreenModInfo extends GuiScreen
 			
 			if (mouseY > PANEL_TOP && mouseY < this.height - PANEL_BOTTOM)
 			{
+				GuiModListEntry lastSelectedMod = this.selectedMod;
+				
 				for (GuiModListEntry mod : this.mods)
 				{
-					if (mod.mouseWasOver()) this.selectMod(mod); 
+					if (mod.mouseWasOver())
+					{
+						this.selectMod(mod);
+						
+						// handle double-click
+						if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.drawButton)
+						{
+							this.actionPerformed(this.btnConfig);
+						}
+						
+						this.doubleClickTime = 5;
+					}
 				}
 			}
 		}
@@ -475,6 +571,16 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	protected void mouseMovedOrUp(int mouseX, int mouseY, int button)
 	{
+		if (this.configPanel != null)
+		{
+			if (button == -1)
+				this.configPanel.mouseMoved(mouseX - LEFT_EDGE, mouseY);
+			else
+				this.configPanel.mouseReleased(mouseX - LEFT_EDGE, mouseY, button);
+			
+			return;
+		}
+		
 		if (button == 0)
 		{
 			this.scrollBar.setDragging(false);
@@ -490,10 +596,12 @@ public class GuiScreenModInfo extends GuiScreen
 	public void handleMouseInput()
 	{
 		int mouseWheelDelta = Mouse.getEventDWheel();
-		
 		if (mouseWheelDelta != 0)
 		{
-			this.scrollBar.offsetValue(-mouseWheelDelta / 8);
+			if (this.configPanel != null)
+				this.configPanel.mouseWheelScrolled(mouseWheelDelta);
+			else
+				this.scrollBar.offsetValue(-mouseWheelDelta / 8);
 		}
 		
 		super.handleMouseInput();
@@ -550,6 +658,40 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/**
+	 * Callback for the "config" button, display the config panel for the currently selected mod
+	 */
+	private void openConfigPanel()
+	{
+		if (this.selectedMod != null && this.selectedMod.getModClass() != null)
+		{
+			ConfigPanel panel = this.configPanelManager.getPanel(this.selectedMod.getModClass());
+			if (panel != null)
+			{
+				if (this.configPanel != null)
+				{
+					this.configPanel.onHidden();
+				}
+				
+				this.configPanel = new GuiConfigPanelContainer(this, this.mc, panel, this.selectedMod.getModInstance());
+				this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
+				this.configPanel.onShown();
+			}
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#close()
+	 */
+	void closeConfigPanel(GuiConfigPanelContainer container)
+	{
+		if (this.configPanel != null && (container == null || this.configPanel == container))
+		{
+			this.configPanel.onHidden();
+			this.configPanel = null;
+		}
+	}
+	
+	/**
 	 * @param x
 	 * @param y
 	 * @param width
@@ -590,7 +732,7 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param yTop Top edge clip or -1 to not use this plane
 	 * @param yBottom Bottom edge clip or -1 to not use this plane
 	 */
-	private final static void glEnableClipping(int xLeft, int xRight, int yTop, int yBottom)
+	final static void glEnableClipping(int xLeft, int xRight, int yTop, int yBottom)
 	{
 		// Apply left edge clipping if specified
 		if (xLeft != -1)
@@ -632,7 +774,7 @@ public class GuiScreenModInfo extends GuiScreen
 	/**
 	 * Disable OpenGL clipping planes (uses planes 2, 3, 4 and 5)
 	 */
-	private final static void glDisableClipping()
+	final static void glDisableClipping()
 	{
 		glDisable(GL_CLIP_PLANE5);
 		glDisable(GL_CLIP_PLANE4);

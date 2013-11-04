@@ -39,6 +39,7 @@ import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
 import com.mumfrey.liteloader.gui.GuiScreenModInfo;
+import com.mumfrey.liteloader.modconfig.ConfigPanelManager;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -163,6 +164,11 @@ public final class LiteLoader
 	private final PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
 	
 	/**
+	 * Configuration panel manager/registry
+	 */
+	private final ConfigPanelManager configPanelManager;
+	
+	/**
 	 * Flag which keeps track of whether late initialisation has been done
 	 */
 	private boolean postInitStarted, startupComplete;
@@ -266,6 +272,8 @@ public final class LiteLoader
 		
 		this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
 		this.enabledModsList.processModsList(bootstrap.getProfile(), modNameFilter);
+		
+		this.configPanelManager = new ConfigPanelManager();
 	}
 	
 	/**
@@ -899,10 +907,11 @@ public final class LiteLoader
 		// add the mod to all relevant listener queues
 		this.events.addListener(mod);
 		
-		if (mod instanceof Permissible)
-		{
-			this.permissionsManager.registerPermissible((Permissible)mod);
-		}
+		// add mod to permissions manager if permissible
+		this.permissionsManager.registerMod(mod);
+		
+		// register mod config panel if configurable
+		this.configPanelManager.registerMod(mod);
 		
 		this.loadedMods.add(mod);
 		this.loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
@@ -1023,7 +1032,7 @@ public final class LiteLoader
 			// If we're at the main menu, prepare the overlay
 			if (this.modInfoScreen == null || this.modInfoScreen.getMenu() != this.minecraft.currentScreen)
 			{
-				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList);
+				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configPanelManager);
 			}
 
 			this.modInfoScreen.drawScreen(mouseX, mouseY, partialTicks);
@@ -1036,7 +1045,7 @@ public final class LiteLoader
 		}
 		else if (this.minecraft.currentScreen instanceof GuiMainMenu && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && Keyboard.isKeyDown(Keyboard.KEY_TAB))
 		{
-			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList));
+			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configPanelManager));
 		}			
 	}
 

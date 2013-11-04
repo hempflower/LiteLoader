@@ -24,6 +24,10 @@ public class GuiModListEntry extends Gui
 	 * For text display
 	 */
 	private FontRenderer fontRenderer;
+	
+	private LiteMod modInstance;
+	
+	private Class<? extends LiteMod> modClass;
 
 	/**
 	 * The metadata name (id) of the mod, used as the enablement/disablement key
@@ -82,17 +86,19 @@ public class GuiModListEntry extends Gui
 	 * @param loader
 	 * @param enabledMods
 	 * @param fontRenderer
-	 * @param mod
+	 * @param modInstance
 	 */
-	GuiModListEntry(LiteLoader loader, EnabledModsList enabledMods, FontRenderer fontRenderer, LiteMod mod)
+	GuiModListEntry(LiteLoader loader, EnabledModsList enabledMods, FontRenderer fontRenderer, LiteMod modInstance)
 	{
 		this.fontRenderer    = fontRenderer;
-		this.metaName        = loader.getModMetaName(mod.getClass());
-		this.name            = mod.getName();
-		this.version         = mod.getVersion();
-		this.author          = loader.getModMetaData(mod.getClass(), "author", "Unknown");
-		this.url             = loader.getModMetaData(mod.getClass(), "url", null);
-		this.description     = loader.getModMetaData(mod.getClass(), "description", "");
+		this.modInstance     = modInstance;
+		this.modClass        = modInstance.getClass();
+		this.metaName        = loader.getModMetaName(this.modClass);
+		this.name            = modInstance.getName();
+		this.version         = modInstance.getVersion();
+		this.author          = loader.getModMetaData(this.modClass, "author", "Unknown");
+		this.url             = loader.getModMetaData(this.modClass, "url", null);
+		this.description     = loader.getModMetaData(this.modClass, "description", "");
 		this.enabled         = true;
 		this.canBeToggled    = this.metaName != null && enabledMods.saveAllowed();
 		this.willBeEnabled   = true;
@@ -202,6 +208,16 @@ public class GuiModListEntry extends Gui
 	public String getKey()
 	{
 		return this.metaName + Integer.toHexString(this.hashCode());
+	}
+	
+	public LiteMod getModInstance()
+	{
+		return this.modInstance;
+	}
+	
+	public Class<? extends LiteMod> getModClass()
+	{
+		return this.modClass;
 	}
 	
 	public String getName()
