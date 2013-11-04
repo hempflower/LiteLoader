@@ -213,7 +213,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 		glTranslatef(MARGIN, this.panelTop, 0.0F);
 		
 		// Draw panel contents
-		this.panel.drawPanel(this, mouseX - MARGIN, mouseY - this.panelTop, partialTicks);
+		this.panel.drawPanel(this, mouseX - MARGIN - (this.mouseOverPanel(mouseX, mouseY) ? 0 : 99999), mouseY - this.panelTop, partialTicks);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		// Disable clip rect
@@ -240,6 +240,16 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	private void actionPerformed(GuiButton control)
 	{
 		if (control.id == 0) this.close();
+	}
+
+	/**
+	 * @param mouseX
+	 * @param mouseY
+	 * @return
+	 */
+	private boolean mouseOverPanel(int mouseX, int mouseY)
+	{
+		return mouseX > MARGIN && mouseX <= this.width - MARGIN && mouseY > TOP && mouseY <= this.height - BOTTOM;
 	}
 
 	/**
@@ -272,7 +282,10 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 			}
 		}
 		
-		this.panel.mousePressed(this, mouseX - MARGIN, mouseY - this.panelTop, mouseButton);
+		if (this.mouseOverPanel(mouseX, mouseY))
+		{
+			this.panel.mousePressed(this, mouseX - MARGIN, mouseY - this.panelTop, mouseButton);
+		}
 	}
 	
 	/**

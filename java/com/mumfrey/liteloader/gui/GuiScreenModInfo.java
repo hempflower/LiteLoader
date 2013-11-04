@@ -237,7 +237,7 @@ public class GuiScreenModInfo extends GuiScreen
 		
 		this.buttonList.clear();
 		this.buttonList.add(this.btnToggle = new GuiButton(0, left, this.height - PANEL_BOTTOM - 24, 90, 20, "Enable mod"));
-		this.buttonList.add(this.btnConfig = new GuiButton(1, left + 92, this.height - PANEL_BOTTOM - 24, 60, 20, "Config"));
+		this.buttonList.add(this.btnConfig = new GuiButton(1, left + 92, this.height - PANEL_BOTTOM - 24, 69, 20, "Settings..."));
 		this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
 		
 		this.selectMod(this.selectedMod);
