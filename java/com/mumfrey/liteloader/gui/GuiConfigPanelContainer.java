@@ -28,11 +28,6 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	private static final int MARGIN = 12;
 	
 	/**
-	 * Parent screen
-	 */
-	private GuiScreenModInfo parent;
-	
-	/**
 	 * Minecraft
 	 */
 	private Minecraft mc;
@@ -88,17 +83,21 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	private int panelTop = TOP;
 	
 	/**
+	 * True if the client wants to close the panel 
+	 */
+	private boolean closeRequested;
+	
+	/**
 	 * @param parent
 	 * @param minecraft
 	 * @param panel
 	 * @param mod
 	 */
-	GuiConfigPanelContainer(GuiScreenModInfo parent, Minecraft minecraft, ConfigPanel panel, LiteMod mod)
+	GuiConfigPanelContainer(ConfigPanel panel, LiteMod mod)
 	{
-		this.parent = parent;
-		this.mc     = minecraft;
-		this.panel  = panel;
-		this.mod    = mod;
+		this.mc    = Minecraft.getMinecraft();
+		this.panel = panel;
+		this.mod   = mod;
 	}
 
 	/**
@@ -137,14 +136,22 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	{
 		return this.panelHeight;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#close()
 	 */
 	@Override
 	public void close()
 	{
-		this.parent.closeConfigPanel(this);
+		this.closeRequested = true;
+	}
+	
+	/**
+	 * Get whether the client wants to close the panel
+	 */
+	boolean isCloseRequested()
+	{
+		return this.closeRequested;
 	}
 	
 	/**

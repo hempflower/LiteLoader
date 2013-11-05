@@ -353,24 +353,7 @@ public class GuiScreenModInfo extends GuiScreen
 			}
 			else
 			{
-				// Draw the header pieces
-				glDrawTexturedRect(LEFT_EDGE + MARGIN, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
-				glDrawTexturedRect(this.width - 32 - MARGIN, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
-				
-				// Draw header text
-				this.fontRenderer.drawString("Version " + LiteLoader.getVersion(), LEFT_EDGE + MARGIN + 38, 50, 0xFFFFFFFF);
-				this.fontRenderer.drawString(this.activeModText, LEFT_EDGE + MARGIN + 38, 60, 0xFFAAAAAA);
-				
-				// Draw top and bottom horizontal rules
-				drawRect(LEFT_EDGE + MARGIN, 80, this.width - MARGIN, 81, 0xFF999999);
-				drawRect(LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 2, this.width - MARGIN, this.height - PANEL_BOTTOM + 3, 0xFF999999);
-				
-				int innerWidth = this.width - LEFT_EDGE - MARGIN - MARGIN - 4;
-				int panelWidth = innerWidth / 2;
-				int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
-				
-				this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
-				this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+				this.drawInfoPanel(mouseX, mouseY, partialTicks);
 				
 				// Draw other controls inside the transform so that they slide properly
 				super.drawScreen(mouseX, mouseY, partialTicks);
@@ -378,9 +361,8 @@ public class GuiScreenModInfo extends GuiScreen
 		}
 		else if (this.configPanel != null)
 		{
-			this.closeConfigPanel(this.configPanel);
+			this.closeConfigPanel();
 		}
-			
 		
 		glPopMatrix();
 	}
@@ -392,12 +374,45 @@ public class GuiScreenModInfo extends GuiScreen
 	 */
 	public void drawConfigPanel(int mouseX, int mouseY, float partialTicks)
 	{
+		if (this.configPanel.isCloseRequested())
+		{
+			this.closeConfigPanel();
+			return;
+		}
+		
 		glPushMatrix();
 		glTranslatef(LEFT_EDGE, 0, 0);
 		
 		this.configPanel.draw(mouseX - LEFT_EDGE, mouseY, partialTicks);
 		
 		glPopMatrix();
+	}
+
+	/**
+	 * @param mouseX
+	 * @param mouseY
+	 * @param partialTicks
+	 */
+	public void drawInfoPanel(int mouseX, int mouseY, float partialTicks)
+	{
+		// Draw the header pieces
+		glDrawTexturedRect(LEFT_EDGE + MARGIN, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
+		glDrawTexturedRect(this.width - 32 - MARGIN, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
+		
+		// Draw header text
+		this.fontRenderer.drawString("Version " + LiteLoader.getVersion(), LEFT_EDGE + MARGIN + 38, 50, 0xFFFFFFFF);
+		this.fontRenderer.drawString(this.activeModText, LEFT_EDGE + MARGIN + 38, 60, 0xFFAAAAAA);
+		
+		// Draw top and bottom horizontal rules
+		drawRect(LEFT_EDGE + MARGIN, 80, this.width - MARGIN, 81, 0xFF999999);
+		drawRect(LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 2, this.width - MARGIN, this.height - PANEL_BOTTOM + 3, 0xFF999999);
+		
+		int innerWidth = this.width - LEFT_EDGE - MARGIN - MARGIN - 4;
+		int panelWidth = innerWidth / 2;
+		int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
+		
+		this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+		this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
 	}
 
 	/**
@@ -672,7 +687,7 @@ public class GuiScreenModInfo extends GuiScreen
 					this.configPanel.onHidden();
 				}
 				
-				this.configPanel = new GuiConfigPanelContainer(this, this.mc, panel, this.selectedMod.getModInstance());
+				this.configPanel = new GuiConfigPanelContainer(panel, this.selectedMod.getModInstance());
 				this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
 				this.configPanel.onShown();
 			}
@@ -682,9 +697,9 @@ public class GuiScreenModInfo extends GuiScreen
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#close()
 	 */
-	void closeConfigPanel(GuiConfigPanelContainer container)
+	private void closeConfigPanel()
 	{
-		if (this.configPanel != null && (container == null || this.configPanel == container))
+		if (this.configPanel != null)
 		{
 			this.configPanel.onHidden();
 			this.configPanel = null;
