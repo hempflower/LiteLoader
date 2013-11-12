@@ -61,6 +61,14 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private List<String> passThroughArgs;
 	
+	private static final String[] requiredTransformers = {
+		"com.mumfrey.liteloader.launch.LiteLoaderTransformer",
+		"com.mumfrey.liteloader.core.hooks.asm.CrashReportTransformer",
+		"com.mumfrey.liteloader.core.hooks.asm.ChatPacketTransformer",
+		"com.mumfrey.liteloader.core.hooks.asm.LoginPacketTransformer",
+		"com.mumfrey.liteloader.core.hooks.asm.CustomPayloadPacketTransformer"
+	};
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
@@ -124,33 +132,45 @@ public class LiteLoaderTweaker implements ITweaker
 			if (arg.startsWith("-"))
 			{
 				if (classifier != null)
-					classifier = this.addClassifiedArg(classifier, "");
+				{
+					this.addClassifiedArg(classifier, "");
+					classifier = null;
+				}
 				else if (arg.contains("="))
-					classifier = this.addClassifiedArg(arg.substring(0, arg.indexOf('=')), arg.substring(arg.indexOf('=') + 1));
+				{
+					this.addClassifiedArg(arg.substring(0, arg.indexOf('=')), arg.substring(arg.indexOf('=') + 1));
+				}
 				else
+				{
 					classifier = arg;
+				}
 			}
 			else
 			{
 				if (classifier != null)
-					classifier = this.addClassifiedArg(classifier, arg);
+				{
+					this.addClassifiedArg(classifier, arg);
+					classifier = null;
+				}
 				else
 					this.singularLaunchArgs.add(arg);
 			}
 		}
 	}
 
-	private String addClassifiedArg(String classifiedArg, String arg)
+	private void addClassifiedArg(String classifiedArg, String arg)
 	{
 		this.launchArgs.put(classifiedArg, arg);
-		return null;
 	}
 
 	@Override
 	public void injectIntoClassLoader(LaunchClassLoader classLoader)
 	{
-		LiteLoaderTweaker.logger.info("Injecting LiteLoader class transformer");
-		classLoader.registerTransformer(LiteLoaderTransformer.class.getName());
+		for (String requiredTransformerClassName : LiteLoaderTweaker.requiredTransformers)
+		{
+			LiteLoaderTweaker.logger.info(String.format("Injecting required class transformer '%s'", requiredTransformerClassName));
+			classLoader.registerTransformer(requiredTransformerClassName);
+		}
 		
 		for (String transformerClassName : LiteLoaderTweaker.modTransformers)
 		{

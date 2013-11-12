@@ -12,6 +12,9 @@ import net.minecraft.src.Packet250CustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.core.hooks.HookPluginChannels;
+import com.mumfrey.liteloader.core.hooks.asm.ASMHookProxy;
+import com.mumfrey.liteloader.core.hooks.asm.CustomPayloadPacketTransformer;
+import com.mumfrey.liteloader.core.hooks.asm.PacketTransformer;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 
 /**
@@ -39,11 +42,16 @@ public class PluginChannels
 	 * List of mods which implement PluginChannelListener interface
 	 */
 	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
+	
+	private ASMHookProxy asmProxy;
 
 	/**
 	 * Package private
 	 */
-	PluginChannels() {}
+	PluginChannels(ASMHookProxy proxy)
+	{
+		this.asmProxy = proxy;
+	}
 
 	/**
 	 * 
@@ -53,8 +61,17 @@ public class PluginChannels
 		// Plugin channels hook
 		if (this.pluginChannelListeners.size() > 0 && !this.hookInitDone)
 		{
-			HookPluginChannels.register();
-			HookPluginChannels.registerPacketHandler(this);
+			if (CustomPayloadPacketTransformer.isInjected())
+			{
+				PacketTransformer.registerProxy(Packet250CustomPayload.class, this.asmProxy);
+			}
+			else
+			{
+				LiteLoader.getLogger().info("Callback injection failed for custom payload packet, injecting reflection hook");
+				HookPluginChannels.register();
+				HookPluginChannels.registerPacketHandler(this);
+			}
+			
 			this.hookInitDone = true;
 		}
 	}

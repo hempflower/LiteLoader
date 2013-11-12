@@ -140,6 +140,7 @@ public class HookProfiler extends Profiler
 	{
 		if (Thread.currentThread() != this.minecraftThread)
 		{
+			this.logger.severe("Profiler cross thread access detected, this indicates an error with one of your mods.");
 			throw new ProfilerCrossThreadAccessException(Thread.currentThread().getName());
 		}
 		
@@ -203,6 +204,7 @@ public class HookProfiler extends Profiler
 	{
 		if (Thread.currentThread() != this.minecraftThread)
 		{
+			this.logger.severe("Profiler cross thread access detected, this indicates an error with one of your mods.");
 			throw new ProfilerCrossThreadAccessException(Thread.currentThread().getName());
 		}
 		

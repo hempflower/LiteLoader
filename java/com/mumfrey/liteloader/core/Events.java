@@ -12,6 +12,10 @@ import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.core.hooks.HookChat;
 import com.mumfrey.liteloader.core.hooks.HookLogin;
 import com.mumfrey.liteloader.core.hooks.HookProfiler;
+import com.mumfrey.liteloader.core.hooks.asm.ASMHookProxy;
+import com.mumfrey.liteloader.core.hooks.asm.ChatPacketTransformer;
+import com.mumfrey.liteloader.core.hooks.asm.LoginPacketTransformer;
+import com.mumfrey.liteloader.core.hooks.asm.PacketTransformer;
 import com.mumfrey.liteloader.util.ModUtilities;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -35,6 +39,11 @@ public class Events implements IPlayerUsage
 	 * Plugin channel manager
 	 */
 	private final PluginChannels pluginChannels;
+	
+	/**
+	 * ASM hook proxy 
+	 */
+	private final ASMHookProxy asmProxy;
 	
 	/**
 	 * Reference to the minecraft timer
@@ -144,11 +153,12 @@ public class Events implements IPlayerUsage
 	 * @param minecraft
 	 * @param pluginChannels
 	 */
-	Events(LiteLoader loader, Minecraft minecraft, PluginChannels pluginChannels)
+	Events(LiteLoader loader, Minecraft minecraft, PluginChannels pluginChannels, ASMHookProxy asmProxy)
 	{
 		this.loader = loader;
 		this.minecraft = minecraft;
 		this.pluginChannels = pluginChannels;
+		this.asmProxy = asmProxy;
 	}
 
 	/**
@@ -239,16 +249,34 @@ public class Events implements IPlayerUsage
 			if ((this.chatListeners.size() > 0 || this.chatFilters.size() > 0) && !this.chatHooked)
 			{
 				this.chatHooked = true;
-				HookChat.register();
-				HookChat.registerPacketHandler(this);
+				
+				if (ChatPacketTransformer.isInjected())
+				{
+					PacketTransformer.registerProxy(Packet3Chat.class, this.asmProxy);
+				}
+				else
+				{
+					LiteLoader.getLogger().info("Callback injection failed for chat packet, injecting reflection hook");
+					HookChat.register();
+					HookChat.registerPacketHandler(this);
+				}
 			}
 			
 			// Login hook
 			if ((this.preLoginListeners.size() > 0 || this.loginListeners.size() > 0) && !this.loginHooked)
 			{
 				this.loginHooked = true;
-				ModUtilities.registerPacketOverride(1, HookLogin.class);
-				HookLogin.events = this;
+				
+				if (LoginPacketTransformer.isInjected())
+				{
+					PacketTransformer.registerProxy(Packet1Login.class, this.asmProxy);
+				}
+				else
+				{
+					LiteLoader.getLogger().info("Callback injection failed for login packet, injecting reflection hook");
+					ModUtilities.registerPacketOverride(1, HookLogin.class);
+					HookLogin.events = this;
+				}
 			}
 
 			// Tick hook
@@ -614,7 +642,7 @@ public class Events implements IPlayerUsage
 	}
 	
 	/**
-	 * Callback from the chat hook
+	 * Callback from the reflective chat hook
 	 * 
 	 * @param chatPacket
 	 * @return
