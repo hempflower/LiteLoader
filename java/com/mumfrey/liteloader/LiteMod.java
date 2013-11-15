@@ -2,12 +2,14 @@ package com.mumfrey.liteloader;
 
 import java.io.File;
 
+import com.mumfrey.liteloader.modconfig.Exposable;
+
 /**
  * Base interface for mods
  *
  * @author Adam Mummery-Smith
  */
-public interface LiteMod
+public interface LiteMod extends Exposable
 {
 	/**
 	 * Get the mod's display name

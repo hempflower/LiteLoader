@@ -20,7 +20,7 @@ import com.mumfrey.liteloader.core.EnabledModsList;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.ModFile;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
-import com.mumfrey.liteloader.modconfig.ConfigPanelManager;
+import com.mumfrey.liteloader.modconfig.ConfigManager;
 
 import net.minecraft.src.DynamicTexture;
 import net.minecraft.src.GuiButton;
@@ -136,7 +136,7 @@ public class GuiScreenModInfo extends GuiScreen
 	 */
 	private GuiCheckbox chkEnabled;
 	
-	private ConfigPanelManager configPanelManager;
+	private ConfigManager configManager;
 	
 	/**
 	 * Configuration panel
@@ -149,11 +149,11 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param loader
 	 * @param enabledModsList
 	 */
-	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigPanelManager configPanelManager)
+	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigManager configManager)
 	{
 		this.mc = minecraft;
 		this.mainMenu = mainMenu;
-		this.configPanelManager = configPanelManager;
+		this.configManager = configManager;
 		
 		// Spawn the texture resource if we haven't already
 		if (aboutTexture == null)
@@ -484,7 +484,7 @@ public class GuiScreenModInfo extends GuiScreen
 			this.btnToggle.drawButton = true;
 			this.btnToggle.displayString = this.selectedMod.willBeEnabled() ? "Disable mod" : "Enable mod";
 			
-			this.btnConfig.drawButton = this.configPanelManager.hasPanel(this.selectedMod.getModClass());
+			this.btnConfig.drawButton = this.configManager.hasPanel(this.selectedMod.getModClass());
 		}
 	}
 	
@@ -679,7 +679,7 @@ public class GuiScreenModInfo extends GuiScreen
 	{
 		if (this.selectedMod != null && this.selectedMod.getModClass() != null)
 		{
-			ConfigPanel panel = this.configPanelManager.getPanel(this.selectedMod.getModClass());
+			ConfigPanel panel = this.configManager.getPanel(this.selectedMod.getModClass());
 			if (panel != null)
 			{
 				if (this.configPanel != null)

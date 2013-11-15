@@ -40,7 +40,8 @@ import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
 import com.mumfrey.liteloader.gui.GuiScreenModInfo;
-import com.mumfrey.liteloader.modconfig.ConfigPanelManager;
+import com.mumfrey.liteloader.modconfig.ConfigManager;
+import com.mumfrey.liteloader.modconfig.Exposable;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.util.PrivateFields;
 
@@ -170,9 +171,9 @@ public final class LiteLoader
 	private final PermissionsManagerClient permissionsManager = PermissionsManagerClient.getInstance();
 	
 	/**
-	 * Configuration panel manager/registry
+	 * Mod configuration manager
 	 */
-	private final ConfigPanelManager configPanelManager;
+	private final ConfigManager configManager;
 	
 	/**
 	 * Flag which keeps track of whether late initialisation has been done
@@ -279,7 +280,7 @@ public final class LiteLoader
 		this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
 		this.enabledModsList.processModsList(bootstrap.getProfile(), modNameFilter);
 		
-		this.configPanelManager = new ConfigPanelManager();
+		this.configManager = new ConfigManager();
 	}
 	
 	/**
@@ -787,6 +788,37 @@ public final class LiteLoader
 	}
 	
 	/**
+	 * @param modClass
+	 */
+	public void writeConfig(LiteMod mod)
+	{
+		if (mod != null)
+		{
+			this.writeConfig(mod.getClass());
+		}
+	}
+	
+	/**
+	 * @param exposableClass
+	 */
+	public void writeConfig(Class<? extends Exposable> exposableClass)
+	{
+		this.configManager.invalidateConfig(exposableClass);
+	}
+	
+	/**
+	 * Register an arbitrary Exposable
+	 * 
+	 * @param exposable Exposable object to register
+	 * @param fileName
+	 */
+	public void registerExposable(Exposable exposable, String fileName)
+	{
+		this.configManager.registerExposable(exposable, fileName, true);
+		this.configManager.initConfig(exposable);
+	}
+
+	/**
 	 * Create mod instances from the enumerated classes
 	 * 
 	 * @param modsToLoad List of mods to load
@@ -898,6 +930,9 @@ public final class LiteLoader
 	{
 		LiteLoader.logInfo("Initialising mod %s version %s", mod.getName(), mod.getVersion());
 		
+		// register mod config panel if configurable
+		this.configManager.registerMod(mod);
+		
 		try
 		{
 			this.handleModVersionUpgrade(mod);
@@ -907,6 +942,9 @@ public final class LiteLoader
 			LiteLoader.logWarning("Error performing settings upgrade for %s. Settings may not be properly migrated", mod.getName());
 		}
 		
+		// Init mod config if there is any
+		this.configManager.initConfig(mod);
+		
 		// initialise the mod
 		mod.init(this.commonConfigFolder); 
 		
@@ -915,9 +953,6 @@ public final class LiteLoader
 		
 		// add mod to permissions manager if permissible
 		this.permissionsManager.registerMod(mod);
-		
-		// register mod config panel if configurable
-		this.configPanelManager.registerMod(mod);
 		
 		this.loadedMods.add(mod);
 		this.loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
@@ -934,6 +969,11 @@ public final class LiteLoader
 		if (LiteLoaderBootstrap.VERSION.getLoaderRevision() > lastModVersion.getLoaderRevision())
 		{
 			LiteLoader.logInfo("Performing config upgrade for mod %s. Upgrading %s to %s...", mod.getName(), lastModVersion, LiteLoaderBootstrap.VERSION);
+			
+			// Migrate versioned config if any is present
+			this.configManager.migrateModConfig(mod, this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
+			
+			// Let the mod upgrade
 			mod.upgradeSettings(LiteLoaderBootstrap.VERSION.getMinecraftVersion(), this.versionConfigFolder, this.inflectVersionedConfigPath(lastModVersion));
 			
 			this.bootstrap.storeLastKnownModRevision(modKey);
@@ -1038,7 +1078,7 @@ public final class LiteLoader
 			// If we're at the main menu, prepare the overlay
 			if (this.modInfoScreen == null || this.modInfoScreen.getMenu() != this.minecraft.currentScreen)
 			{
-				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configPanelManager);
+				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configManager);
 			}
 
 			this.modInfoScreen.drawScreen(mouseX, mouseY, partialTicks);
@@ -1051,7 +1091,7 @@ public final class LiteLoader
 		}
 		else if (this.minecraft.currentScreen instanceof GuiMainMenu && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && Keyboard.isKeyDown(Keyboard.KEY_TAB))
 		{
-			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configPanelManager));
+			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configManager));
 		}			
 	}
 
@@ -1064,14 +1104,30 @@ public final class LiteLoader
 		// Tick the permissions manager
 		this.permissionsManager.onTick(this.minecraft, partialTicks, inGame);
 		
+		// Tick the config manager
+		this.configManager.onTick();
+		
 		this.checkAndStoreKeyBindings();
 		
 		if (this.modInfoScreen != null && this.minecraft.currentScreen != this.modInfoScreen)
 		{
 			this.modInfoScreen.updateScreen();
 		}
+		
+		if (!PrivateFields.gameIsRunning.get(this.minecraft))
+		{
+			this.onShutDown();
+		}
 	}
-	
+
+	private void onShutDown()
+	{
+		LiteLoader.logInfo("LiteLoader is shutting down, syncing configuration");
+		
+		this.storeBindings();
+		this.configManager.syncConfig();
+	}
+
 	/**
 	 * Register a key for a mod
 	 * 
