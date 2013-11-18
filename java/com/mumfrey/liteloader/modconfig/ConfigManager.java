@@ -106,10 +106,9 @@ public class ConfigManager
 	 */
 	public void migrateModConfig(LiteMod mod, File newConfigPath, File oldConfigPath)
 	{
-		Class<? extends Exposable> exposableClass = mod.getClass();
-		if (exposableClass != null && this.configWriters.containsKey(exposableClass))
+		if (this.configWriters.containsKey(mod))
 		{
-			ExposableConfigWriter writer = this.configWriters.get(exposableClass);
+			ExposableConfigWriter writer = this.configWriters.get(mod);
 			if (writer.isVersioned())
 			{
 				File newConfigFile = writer.getConfigFile();
