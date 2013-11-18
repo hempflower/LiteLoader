@@ -1,20 +1,19 @@
-package com.mumfrey.liteloader;
+package com.mumfrey.liteloader.modconfig;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.mumfrey.liteloader.modconfig.ConfigStrategy;
-
 /**
- * Annotation which can be a applied to mod classes to indicate they should be serialised with Gson
+ * Annotation which can be a applied to mod classes to indicate that members decorated with the Gson
+ * Expose annotation should be serialised with Gson
  *
  * @author Adam Mummery-Smith
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ExposeConfig
+public @interface ExposableOptions
 {
 	/**
 	 * Configuration strategy to use
@@ -25,4 +24,9 @@ public @interface ExposeConfig
 	 * Config file name, if not specified the mod class name is used
 	 */
 	String filename() default "";
+	
+	/**
+	 * Set to true to disable write anti-hammer for config file
+	 */
+	boolean aggressive() default false;
 }

@@ -38,6 +38,11 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	private final boolean versioned;
 	
 	/**
+	 * Disable anti-hammer and always save when requested 
+	 */
+	private final boolean aggressive; 
+
+	/**
 	 * Gson instance
 	 */
 	private final Gson gson;
@@ -56,16 +61,17 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 * It's possible that writes may be requested from different threads, lock object to prevent cross-thread derp
 	 */
 	private Object readWriteLock = new Object();
-
+	
 	/**
 	 * @param exposable
 	 * @param configFile
 	 */
-	private ExposableConfigWriter(Exposable exposable, File configFile, boolean versioned)
+	private ExposableConfigWriter(Exposable exposable, File configFile, boolean versioned, boolean aggressive)
 	{
 		this.exposable = exposable;
 		this.configFile = configFile;
 		this.versioned = versioned;
+		this.aggressive = aggressive;
 		
 		GsonBuilder gsonBuilder = new GsonBuilder();
 		gsonBuilder.setPrettyPrinting();
@@ -90,6 +96,14 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	boolean isVersioned()
 	{
 		return this.versioned;
+	}
+	
+	/**
+	 * Returns true if anti-hammer is disabled for this writer
+	 */
+	public boolean isAggressive()
+	{
+		return this.aggressive;
 	}
 	
 	/**
@@ -205,11 +219,14 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 */
 	void invalidate()
 	{
-		long sinceLastWrite = System.currentTimeMillis() - this.lastWrite;
-		if (sinceLastWrite < ANTI_HAMMER_DELAY)
+		if (!this.aggressive)
 		{
-			this.dirty = true;
-			return;
+			long sinceLastWrite = System.currentTimeMillis() - this.lastWrite;
+			if (sinceLastWrite < ANTI_HAMMER_DELAY)
+			{
+				this.dirty = true;
+				return;
+			}
 		}
 		
 		this.write();
@@ -220,7 +237,7 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 */
 	void onTick()
 	{
-		if (this.dirty)
+		if (!this.aggressive && this.dirty)
 		{
 			long sinceLastWrite = System.currentTimeMillis() - this.lastWrite;
 			if (sinceLastWrite >= ANTI_HAMMER_DELAY)
@@ -235,7 +252,7 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 */
 	void sync()
 	{
-		if (this.dirty)
+		if (this.dirty || this.aggressive)
 		{
 			this.write();
 		}
@@ -249,13 +266,13 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 * @param fileName
 	 * @return
 	 */
-	static ExposableConfigWriter create(Exposable exposable, ConfigStrategy strategy, String fileName)
+	static ExposableConfigWriter create(Exposable exposable, ConfigStrategy strategy, String fileName, boolean aggressive)
 	{
 		if (!fileName.toLowerCase().endsWith(".json"))
 			fileName = fileName + ".json";
 		
 		File configFile = strategy.getFileForStrategy(fileName);
-		ExposableConfigWriter writer = new ExposableConfigWriter(exposable, configFile, strategy == ConfigStrategy.Versioned);
+		ExposableConfigWriter writer = new ExposableConfigWriter(exposable, configFile, strategy == ConfigStrategy.Versioned, aggressive);
 
 		return writer;
 	}

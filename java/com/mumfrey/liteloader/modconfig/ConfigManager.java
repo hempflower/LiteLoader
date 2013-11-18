@@ -11,10 +11,9 @@ import com.google.common.base.Strings;
 import com.google.common.io.Files;
 import com.mumfrey.liteloader.Configurable;
 import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.ExposeConfig;
 
 /**
- * Registry where we keep the mod config panel classes
+ * Registry where we keep the mod config panel classes and config file writers
  *
  * @author Adam Mummery-Smith
  */
@@ -28,7 +27,7 @@ public class ConfigManager
 	/**
 	 * Mod config writers
 	 */
-	private Map<Class<? extends Exposable>, ExposableConfigWriter> configWriters = new HashMap<Class<? extends Exposable>, ExposableConfigWriter>();
+	private Map<Exposable, ExposableConfigWriter> configWriters = new HashMap<Exposable, ExposableConfigWriter>();
 	
 	/**
 	 * List of config writers, for faster iteration in onTick
@@ -51,18 +50,20 @@ public class ConfigManager
 
 	/**
 	 * @param exposable
+	 * @param fallbackFileName
+	 * @param ignoreMissingConfigAnnotation
 	 */
-	public void registerExposable(Exposable exposable, String fileName, boolean force)
+	public void registerExposable(Exposable exposable, String fallbackFileName, boolean ignoreMissingConfigAnnotation)
 	{
-		ExposeConfig exposeConfig = exposable.getClass().<ExposeConfig>getAnnotation(ExposeConfig.class);
-		if (exposeConfig != null)
+		ExposableOptions options = exposable.getClass().<ExposableOptions>getAnnotation(ExposableOptions.class);
+		if (options != null)
 		{
-			if (fileName == null) exposeConfig.filename();
-			this.initConfigWriter(exposable, fileName, exposeConfig.strategy());
+			if (fallbackFileName == null) fallbackFileName = options.filename();
+			this.initConfigWriter(exposable, fallbackFileName, options.strategy(), options.aggressive());
 		}
-		else if (force)
+		else if (ignoreMissingConfigAnnotation)
 		{
-			this.initConfigWriter(exposable, fileName, ConfigStrategy.Versioned);
+			this.initConfigWriter(exposable, fallbackFileName, ConfigStrategy.Versioned, false);
 		}
 	}
 
@@ -73,11 +74,11 @@ public class ConfigManager
 	 * @param fileName
 	 * @param strategy
 	 */
-	private void initConfigWriter(Exposable exposable, String fileName, ConfigStrategy strategy)
+	private void initConfigWriter(Exposable exposable, String fileName, ConfigStrategy strategy, boolean aggressive)
 	{
-		if (this.configWriters.containsKey(exposable.getClass()))
+		if (this.configWriters.containsKey(exposable))
 		{
-			throw new IllegalArgumentException("Cannot register multiple Exposable instances of the same class or the Exposable already registered");
+			return;
 		}
 		
 		if (Strings.isNullOrEmpty(fileName))
@@ -88,25 +89,11 @@ public class ConfigManager
 				fileName = fileName.substring(7);
 		}
 		
-		ExposableConfigWriter configWriter = ExposableConfigWriter.create(exposable, strategy, fileName);
+		ExposableConfigWriter configWriter = ExposableConfigWriter.create(exposable, strategy, fileName, aggressive);
 		if (configWriter != null)
 		{
-			this.configWriters.put(exposable.getClass(), configWriter);
+			this.configWriters.put(exposable, configWriter);
 			this.configWriterList.add(configWriter);
-		}
-	}
-
-	/**
-	 * Initialise the config writer for the specified mod
-	 * 
-	 * @param exposable
-	 */
-	public void initConfig(Exposable exposable)
-	{
-		Class<? extends Exposable> exposableClass = exposable.getClass();
-		if (exposableClass != null && this.configWriters.containsKey(exposableClass))
-		{
-			this.configWriters.get(exposableClass).init();
 		}
 	}
 	
@@ -179,16 +166,29 @@ public class ConfigManager
 	}
 
 	/**
+	 * Initialise the config writer for the specified mod
+	 * 
+	 * @param exposable
+	 */
+	public void initConfig(Exposable exposable)
+	{
+		if (this.configWriters.containsKey(exposable))
+		{
+			this.configWriters.get(exposable).init();
+		}
+	}
+
+	/**
 	 * Invalidate the specified mod config, cause it to be written to disk or scheduled for writing
 	 * if it has been written recent
 	 * 
-	 * @param exposableClass
+	 * @param exposable
 	 */
-	public void invalidateConfig(Class<? extends Exposable> exposableClass)
+	public void invalidateConfig(Exposable exposable)
 	{
-		if (exposableClass != null && this.configWriters.containsKey(exposableClass))
+		if (this.configWriters.containsKey(exposable))
 		{
-			this.configWriters.get(exposableClass).invalidate();
+			this.configWriters.get(exposable).invalidate();
 		}
 	}
 	

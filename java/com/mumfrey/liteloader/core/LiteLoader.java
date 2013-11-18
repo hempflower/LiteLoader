@@ -788,29 +788,18 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @param modClass
+	 * @param exposable
 	 */
-	public void writeConfig(LiteMod mod)
+	public void writeConfig(Exposable exposable)
 	{
-		if (mod != null)
-		{
-			this.writeConfig(mod.getClass());
-		}
-	}
-	
-	/**
-	 * @param exposableClass
-	 */
-	public void writeConfig(Class<? extends Exposable> exposableClass)
-	{
-		this.configManager.invalidateConfig(exposableClass);
+		this.configManager.invalidateConfig(exposable);
 	}
 	
 	/**
 	 * Register an arbitrary Exposable
 	 * 
 	 * @param exposable Exposable object to register
-	 * @param fileName
+	 * @param fileName Override config file name to use (leave null to use value from ExposableConfig specified value)
 	 */
 	public void registerExposable(Exposable exposable, String fileName)
 	{
@@ -1091,7 +1080,7 @@ public final class LiteLoader
 		}
 		else if (this.minecraft.currentScreen instanceof GuiMainMenu && Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && Keyboard.isKeyDown(Keyboard.KEY_TAB))
 		{
-			this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configManager));
+			this.displayModInfoScreen((GuiMainMenu)this.minecraft.currentScreen);
 		}			
 	}
 
@@ -1224,7 +1213,17 @@ public final class LiteLoader
 	{
 		return this.displayModInfoScreenTab;
 	}
-	
+
+	/**
+	 * Display the "mod info" overlay over the specified main menu GUI
+	 * 
+	 * @param parentScreen
+	 */
+	public void displayModInfoScreen(GuiMainMenu parentScreen)
+	{
+		this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, parentScreen, this, this.enabledModsList, this.configManager));
+	}
+
 	private static void logInfo(String string, Object... args)
 	{
 		LiteLoader.logger.info(String.format(string, args));
