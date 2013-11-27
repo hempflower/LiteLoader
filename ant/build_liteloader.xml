@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="liteloader" basedir="." default="rebuild">
 
-	<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
 	<property name="version" value="1.6.4" />
@@ -130,16 +130,20 @@
 	<target name="prepare" description="Prepare source for MCP" depends="preparemd5">
 		<echo level="info" message="Prepare sources for compile" />
 
+		<echo level="info" message="Contributing libs" />
 		<copy todir="${libs}" verbose="true" overwrite="true">
 			<fileset dir="${eclipse}/LiteLoader/lib">
-				<exclude name="**/launcher.jar" />
+				<exclude name="**/authlib*.jar" />
+				<exclude name="**/log4j*.jar" />
 			</fileset>
 		</copy>
 
+		<echo level="info" message="Contributing MC source" />
 		<copy todir="${src}" verbose="false" overwrite="true">
 			<fileset dir="${mc.src}" />
 		</copy>
 
+		<echo level="info" message="Contributing upstream projects" />
 		<foreach list="${upstream}" param="lib" target="contributesource" />
 
 		<antcall target="contributesource">
