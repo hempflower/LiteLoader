@@ -17,6 +17,7 @@ import joptsimple.internal.Strings;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.mumfrey.liteloader.launch.ClassPathInjector;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.resources.ModResourcePack;
 
@@ -94,6 +95,11 @@ public class ModFile extends File
 	private boolean injected;
 	
 	/**
+	 * True if this mod contains base class edits (dirty horribleness) inject at the TOP of the class path
+	 */
+	private boolean injectAtTop;
+	
+	/**
 	 * @param file
 	 * @param strVersion
 	 */
@@ -148,6 +154,7 @@ public class ModFile extends File
 		
 		this.tweakClassName = this.metaData.get("tweakClass");
 		this.classTransformerClassName = this.metaData.get("classTransformerClass");
+		this.injectAtTop = "top".equalsIgnoreCase(this.metaData.get("injectAt"));
 	}
 
 	protected String getDefaultName()
@@ -214,6 +221,11 @@ public class ModFile extends File
 	{
 		if (!this.injected)
 		{
+			if (this.injectAtTop)
+			{
+				ClassPathInjector.injectIntoClassPath(classLoader, this.toURI().toURL());
+			}
+
 			if (injectIntoParent)
 			{
 				LiteLoaderTweaker.addURLToParentClassLoader(this.toURI().toURL());
