@@ -11,7 +11,6 @@ import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.StreamHandler;
@@ -107,7 +106,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 * The mod enumerator instance
 	 */
 	private LiteLoaderEnumerator enumerator;
-
+	
 	/**
 	 * @param gameDirectory
 	 * @param assetsDirectory
@@ -231,17 +230,15 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 */
 	private void prepareLogger() throws SecurityException, IOException
 	{
-		Formatter logFormatter = new LiteLoaderLogFormatter();
-		
 		LiteLoaderBootstrap.logger.setUseParentHandlers(false);
 		LiteLoaderBootstrap.useStdOut = System.getProperty("liteloader.log", "stderr").equalsIgnoreCase("stdout") || this.localProperties.getProperty("log", "stderr").equalsIgnoreCase("stdout");
 		
 		StreamHandler consoleHandler = useStdOut ? new com.mumfrey.liteloader.util.log.ConsoleHandler() : new java.util.logging.ConsoleHandler();
-		consoleHandler.setFormatter(logFormatter);
+		consoleHandler.setFormatter(new LiteLoaderLogFormatter(false));
 		LiteLoaderBootstrap.logger.addHandler(consoleHandler);
 		
 		FileHandler logFileHandler = new FileHandler(this.logFile.getAbsolutePath());
-		logFileHandler.setFormatter(logFormatter);
+		logFileHandler.setFormatter(new LiteLoaderLogFormatter(true));
 		LiteLoaderBootstrap.logger.addHandler(logFileHandler);
 	}
 	

@@ -54,10 +54,12 @@ public abstract class Start
 	
 	private static void prepareLogger()
 	{
+		System.setProperty("liteloaderFormatLog", "true");
+		
 		for (Handler handler : Start.logger.getParent().getHandlers())
 		{
 			if (handler instanceof ConsoleHandler)
-				handler.setFormatter(new LiteLoaderLogFormatter());
+				handler.setFormatter(new LiteLoaderLogFormatter(false));
 		}
 	}
 }
