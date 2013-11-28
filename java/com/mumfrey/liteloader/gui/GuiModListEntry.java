@@ -163,6 +163,11 @@ public class GuiModListEntry extends Gui
 		return PANEL_HEIGHT + PANEL_SPACING;
 	}
 	
+	public int getHeight()
+	{
+		return PANEL_HEIGHT + PANEL_SPACING;
+	}
+	
 	/**
 	 * Draw this entry as the info page
 	 * 

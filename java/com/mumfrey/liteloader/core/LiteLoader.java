@@ -1062,12 +1062,12 @@ public final class LiteLoader
 	 */
 	void postRender(int mouseX, int mouseY, float partialTicks)
 	{
-		if (this.minecraft.currentScreen instanceof GuiMainMenu && this.displayModInfoScreenTab && !this.hideModInfoScreenTab)
+		if (this.minecraft.currentScreen instanceof GuiMainMenu && ((this.displayModInfoScreenTab && !this.hideModInfoScreenTab) || (this.modInfoScreen != null && this.modInfoScreen.isTweeningOrOpen())))
 		{
 			// If we're at the main menu, prepare the overlay
 			if (this.modInfoScreen == null || this.modInfoScreen.getMenu() != this.minecraft.currentScreen)
 			{
-				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configManager);
+				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, (GuiMainMenu)this.minecraft.currentScreen, this, this.enabledModsList, this.configManager, this.hideModInfoScreenTab);
 			}
 
 			this.modInfoScreen.drawScreen(mouseX, mouseY, partialTicks);
@@ -1221,7 +1221,8 @@ public final class LiteLoader
 	 */
 	public void displayModInfoScreen(GuiMainMenu parentScreen)
 	{
-		this.minecraft.displayGuiScreen(new GuiScreenModInfo(this.minecraft, parentScreen, this, this.enabledModsList, this.configManager));
+		this.modInfoScreen = new GuiScreenModInfo(this.minecraft, parentScreen, this, this.enabledModsList, this.configManager, this.hideModInfoScreenTab);
+		this.minecraft.displayGuiScreen(this.modInfoScreen);
 	}
 
 	private static void logInfo(String string, Object... args)

@@ -96,6 +96,8 @@ public class GuiScreenModInfo extends GuiScreen
 	 */
 	private float tabOpacity = 0.0F;
 	
+	private boolean hideTab = true;
+	
 	/**
 	 * List of enumerated mods
 	 */
@@ -149,11 +151,13 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param loader
 	 * @param enabledModsList
 	 */
-	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigManager configManager)
+	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigManager configManager, boolean hideTab)
 	{
 		this.mc = minecraft;
+		this.fontRenderer = minecraft.fontRenderer;
 		this.mainMenu = mainMenu;
 		this.configManager = configManager;
+		this.hideTab = hideTab;
 		
 		// Spawn the texture resource if we haven't already
 		if (aboutTexture == null)
@@ -220,7 +224,15 @@ public class GuiScreenModInfo extends GuiScreen
 	{
 		return this.mainMenu;
 	}
-	
+
+	/**
+	 * @return
+	 */
+	public boolean isTweeningOrOpen()
+	{
+		return this.tweenAmount > 0.0;
+	}
+
 	/* (non-Javadoc)
 	 * @see net.minecraft.src.GuiScreen#initGui()
 	 */
@@ -233,14 +245,25 @@ public class GuiScreenModInfo extends GuiScreen
 			this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
 		}
 		
-		int left = LEFT_EDGE + MARGIN + 4 + (this.width - LEFT_EDGE - MARGIN - MARGIN - 4) / 2;
+		int rightPanelLeftEdge = LEFT_EDGE + MARGIN + 4 + (this.width - LEFT_EDGE - MARGIN - MARGIN - 4) / 2;
 		
 		this.buttonList.clear();
-		this.buttonList.add(this.btnToggle = new GuiButton(0, left, this.height - PANEL_BOTTOM - 24, 90, 20, "Enable mod"));
-		this.buttonList.add(this.btnConfig = new GuiButton(1, left + 92, this.height - PANEL_BOTTOM - 24, 69, 20, "Settings..."));
-		this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
+		this.buttonList.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - PANEL_BOTTOM - 24, 90, 20, "Enable mod"));
+		this.buttonList.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - PANEL_BOTTOM - 24, 69, 20, "Settings..."));
+		if (!this.hideTab)
+		{
+			this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
+		}
 		
 		this.selectMod(this.selectedMod);
+
+		Keyboard.enableRepeatEvents(true);
+	}
+	
+	@Override
+	public void onGuiClosed()
+	{
+		Keyboard.enableRepeatEvents(false);
 	}
 	
 	/* (non-Javadoc)
@@ -273,8 +296,10 @@ public class GuiScreenModInfo extends GuiScreen
 		
 		if (this.mc.currentScreen == this)
 		{
+			this.mc.currentScreen = this.mainMenu;
 			this.mainMenu.updateScreen();
-			this.chkEnabled.checked = LiteLoader.getInstance().getDisplayModInfoScreenTab();
+			this.mc.currentScreen = this;
+			if (this.chkEnabled != null) this.chkEnabled.checked = LiteLoader.getInstance().getDisplayModInfoScreenTab();
 		}
 		
 		if (this.toggled)
@@ -310,17 +335,22 @@ public class GuiScreenModInfo extends GuiScreen
 
 		// Calculate the current tween position
 		float xOffset = (this.width - LEFT_EDGE) * this.calcTween(partialTicks, active) + 16.0F + (this.tabOpacity * -32.0F);
-		mouseX -= (int)xOffset;
+		int offsetMouseX = mouseX - (int)xOffset;
 		
 		// Handle mouse stuff here since we won't get mouse events when not the active GUI
-		boolean mouseOverTab = mouseX > LEFT_EDGE - TAB_WIDTH && mouseX < LEFT_EDGE && mouseY > TAB_TOP && mouseY < TAB_TOP + TAB_HEIGHT;
-		this.handleMouseClick(mouseX, mouseY, partialTicks, active, mouseOverTab);
+		boolean mouseOverTab = !this.hideTab && (offsetMouseX > LEFT_EDGE - TAB_WIDTH && offsetMouseX < LEFT_EDGE && mouseY > TAB_TOP && mouseY < TAB_TOP + TAB_HEIGHT);
+		this.handleMouseClick(offsetMouseX, mouseY, partialTicks, active, mouseOverTab);
 		
 		// Calculate the tab opacity, not framerate adjusted because we don't really care
-		this.tabOpacity = mouseOverTab || this.tweenAmount > 0.0 ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
+		this.tabOpacity = mouseOverTab || this.isTweeningOrOpen() ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
 		
 		// Draw the panel contents
-		this.drawPanel(mouseX, mouseY, partialTicks, active, xOffset);
+		this.drawPanel(offsetMouseX, mouseY, partialTicks, active, xOffset);
+		
+		if (mouseOverTab && this.tweenAmount < 0.01)
+		{
+			this.drawTooltip("LiteLoader Mods", mouseX, mouseY, this.width - TAB_WIDTH - 2, this.height, 0xFFFFFF, 0xB0000000);
+		}
 	}
 
 	/**
@@ -337,15 +367,23 @@ public class GuiScreenModInfo extends GuiScreen
 		
 		// Draw the background and left edge
 		drawRect(LEFT_EDGE, 0, this.width, this.height, 0xB0000000);
-		drawRect(LEFT_EDGE, 0, LEFT_EDGE + 1, TAB_TOP, 0xFFFFFFFF);
-		drawRect(LEFT_EDGE, TAB_TOP + TAB_HEIGHT, LEFT_EDGE + 1, this.height, 0xFFFFFFFF);
 		
-		// Draw the tab
-		this.mc.getTextureManager().bindTexture(aboutTextureResource);
-		glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH, TAB_TOP, TAB_WIDTH + 1, TAB_HEIGHT, 80, 80, 122, 160, 0.5F + this.tabOpacity);
-
+		if (!this.hideTab)
+		{
+			drawRect(LEFT_EDGE, 0, LEFT_EDGE + 1, TAB_TOP, 0xFFFFFFFF);
+			drawRect(LEFT_EDGE, TAB_TOP + TAB_HEIGHT, LEFT_EDGE + 1, this.height, 0xFFFFFFFF);
+			
+			this.mc.getTextureManager().bindTexture(aboutTextureResource);
+			glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH, TAB_TOP, TAB_WIDTH + 1, TAB_HEIGHT, 80, 80, 122, 160, 0.5F + this.tabOpacity);
+		}
+		else
+		{
+			drawRect(LEFT_EDGE, 0, LEFT_EDGE + 1, this.height, 0xFFFFFFFF);
+			this.mc.getTextureManager().bindTexture(aboutTextureResource);
+		}
+		
 		// Only draw the panel contents if we are actually open
-		if (this.tweenAmount > 0.0)
+		if (this.isTweeningOrOpen())
 		{
 			if (this.configPanel != null)
 			{
@@ -487,6 +525,18 @@ public class GuiScreenModInfo extends GuiScreen
 			this.btnConfig.drawButton = this.configManager.hasPanel(this.selectedMod.getModClass());
 		}
 	}
+
+	/**
+	 * Toggle the selected mod's enabled status
+	 */
+	public void toggleSelectedMod()
+	{
+		if (this.selectedMod != null)
+		{
+			this.selectedMod.toggleEnabled();
+			this.selectMod(this.selectedMod);
+		}
+	}
 	
 	/* (non-Javadoc)
 	 * @see net.minecraft.src.GuiScreen#actionPerformed(net.minecraft.src.GuiButton)
@@ -494,10 +544,9 @@ public class GuiScreenModInfo extends GuiScreen
 	@Override
 	protected void actionPerformed(GuiButton button)
 	{
-		if (button.id == 0 && this.selectedMod != null)
+		if (button.id == 0)
 		{
-			this.selectedMod.toggleEnabled();
-			this.selectMod(this.selectedMod);
+			this.toggleSelectedMod();
 		}
 		
 		if (button.id == 1)
@@ -505,7 +554,7 @@ public class GuiScreenModInfo extends GuiScreen
 			this.openConfigPanel();
 		}
 		
-		if (button.id == 2)
+		if (button.id == 2 && this.chkEnabled != null)
 		{
 			this.chkEnabled.checked = !this.chkEnabled.checked;
 			LiteLoader.getInstance().setDisplayModInfoScreenTab(this.chkEnabled.checked);
@@ -534,8 +583,52 @@ public class GuiScreenModInfo extends GuiScreen
 			this.onToggled();
 			return;
 		}
+		else if (keyCode == Keyboard.KEY_UP)
+		{
+			int selectedIndex = this.mods.indexOf(this.selectedMod) - 1;
+			if (selectedIndex > -1) this.selectMod(this.mods.get(selectedIndex));
+			this.scrollSelectedModIntoView();
+		}
+		else if (keyCode == Keyboard.KEY_DOWN)
+		{
+			int selectedIndex = this.mods.indexOf(this.selectedMod);
+			if (selectedIndex > -1 && selectedIndex < this.mods.size() - 1) this.selectMod(this.mods.get(selectedIndex + 1));
+			this.scrollSelectedModIntoView();
+		}
+		else if (keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RIGHT)
+		{
+			this.toggleSelectedMod();
+		}
 	}
 	
+	private void scrollSelectedModIntoView()
+	{
+		if (this.selectedMod == null) return;
+		
+		int yPos = 0;
+		for (GuiModListEntry mod : this.mods)
+		{
+			if (mod == this.selectedMod) break;
+			yPos += mod.getHeight();
+		}
+		
+		// Mod is above the top of the visible window
+		if (yPos < this.scrollBar.getValue())
+		{
+			this.scrollBar.setValue(yPos);
+			return;
+		}
+		
+		int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
+		int modHeight = this.selectedMod.getHeight();
+		
+		// Mod is below the bottom of the visible window
+		if (yPos - this.scrollBar.getValue() + modHeight > panelHeight)
+		{
+			this.scrollBar.setValue(yPos - panelHeight + modHeight);
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see net.minecraft.src.GuiScreen#mouseClicked(int, int, int)
 	 */
@@ -630,7 +723,7 @@ public class GuiScreenModInfo extends GuiScreen
 	public void handleMouseClick(int mouseX, int mouseY, float partialTicks, boolean active, boolean mouseOverTab)
 	{
 		boolean mouseDown = Mouse.isButtonDown(0);
-		if (((active && mouseX < LEFT_EDGE) || mouseOverTab) && !this.mouseDown && mouseDown)
+		if (((active && mouseX < LEFT_EDGE && this.tweenAmount > 0.75) || mouseOverTab) && !this.mouseDown && mouseDown)
 		{
 			this.mouseDown = true;
 			this.toggled = true;
@@ -654,7 +747,7 @@ public class GuiScreenModInfo extends GuiScreen
 		{
 			this.tweenAmount = Math.min(1.0, this.tweenAmount + ((tickValue - this.lastTick) * TWEEN_RATE));
 		}
-		else if (!active && this.tweenAmount > 0.0)
+		else if (!active && this.isTweeningOrOpen())
 		{
 			this.tweenAmount = Math.max(0.0, this.tweenAmount - ((tickValue - this.lastTick) * TWEEN_RATE));
 		}
@@ -705,6 +798,29 @@ public class GuiScreenModInfo extends GuiScreen
 			this.configPanel = null;
 		}
 	}
+	
+	/**
+	 * Draw a tooltip at the specified location and clip to screenWidth and screenHeight
+	 * 
+	 * @param fontRenderer
+	 * @param tooltipText
+	 * @param mouseX
+	 * @param mouseY
+	 * @param screenWidth
+	 * @param screenHeight
+	 * @param colour
+	 * @param backgroundColour
+	 */
+	protected void drawTooltip(String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight, int colour, int backgroundColour)
+	{
+		int textSize = this.fontRenderer.getStringWidth(tooltipText);
+		mouseX = Math.max(0, Math.min(screenWidth - textSize - 6, mouseX - 6));
+		mouseY = Math.max(0, Math.min(screenHeight - 16, mouseY - 18));
+		
+		drawRect(mouseX, mouseY, mouseX + textSize + 6, mouseY + 16, backgroundColour);
+		this.fontRenderer.drawStringWithShadow(tooltipText, mouseX + 3, mouseY + 4, colour);
+	}
+
 	
 	/**
 	 * @param x
