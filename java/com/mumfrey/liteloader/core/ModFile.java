@@ -95,9 +95,11 @@ public class ModFile extends File
 	private boolean injected;
 	
 	/**
-	 * True if this mod contains base class edits (dirty horribleness) inject at the TOP of the class path
+	 * Position to inject the mod file at in the class path, if blank injects at the bottom as usual, alternatively
+	 * the developer can specify "top" to inject at the top, "base" to inject above the game jar, or "above: name" to
+	 * inject above a specified other library matching "name".
 	 */
-	private boolean injectAtTop;
+	private String injectAt;
 	
 	/**
 	 * @param file
@@ -154,7 +156,7 @@ public class ModFile extends File
 		
 		this.tweakClassName = this.metaData.get("tweakClass");
 		this.classTransformerClassName = this.metaData.get("classTransformerClass");
-		this.injectAtTop = "top".equalsIgnoreCase(this.metaData.get("injectAt"));
+		this.injectAt = this.metaData.get("injectAt");
 	}
 
 	protected String getDefaultName()
@@ -221,9 +223,17 @@ public class ModFile extends File
 	{
 		if (!this.injected)
 		{
-			if (this.injectAtTop)
+			if ("top".equals(this.injectAt))
 			{
 				ClassPathInjector.injectIntoClassPath(classLoader, this.toURI().toURL());
+			}
+			else if ("base".equals(this.injectAt))
+			{
+				ClassPathInjector.injectIntoClassPath(classLoader, this.toURI().toURL(), LiteLoaderTweaker.getJarUrl());
+			}
+			else if (this.injectAt != null && this.injectAt.startsWith("above:"))
+			{
+				ClassPathInjector.injectIntoClassPath(classLoader, this.toURI().toURL(), this.injectAt.substring(6));
 			}
 
 			if (injectIntoParent)

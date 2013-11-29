@@ -52,6 +52,8 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private static Set<String> modTransformers = new HashSet<String>();
 	
+	private static URL jarUrl;
+	
 	private List<String> singularLaunchArgs = new ArrayList<String>();
 	
 	private Map<String, String> launchArgs;
@@ -103,6 +105,9 @@ public class LiteLoaderTweaker implements ITweaker
 		{
 			LiteLoaderTweaker.modsToLoad = this.modsOption.values(this.parsedOptions);
 		}
+		
+		URL[] urls = Launch.classLoader.getURLs();
+		LiteLoaderTweaker.jarUrl = urls[urls.length - 1];
 		
 		this.preInit();
 	}
@@ -344,5 +349,10 @@ public class LiteLoaderTweaker implements ITweaker
 			if (transformer.getClass().getName().contains("fml")) return true;
 		
 		return false;
+	}
+	
+	public static URL getJarUrl()
+	{
+		return LiteLoaderTweaker.jarUrl;
 	}
 }
