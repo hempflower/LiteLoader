@@ -1,6 +1,5 @@
 package com.mumfrey.liteloader.core.hooks.asm;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 import org.objectweb.asm.ClassReader;
@@ -146,7 +145,7 @@ public abstract class PacketTransformer implements IClassTransformer
 		method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 		
 		// Invoke the handler function with the args we just pushed onto the stack
-		method.instructions.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "com/mumfrey/liteloader/core/hooks/asm/ASMHookProxy", this.handlerMethodName, targetMethodSig));
+		method.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/hooks/asm/ASMHookProxy", this.handlerMethodName, targetMethodSig));
 		
 		// Return
 		method.instructions.add(new InsnNode(Opcodes.RETURN));
@@ -174,25 +173,5 @@ public abstract class PacketTransformer implements IClassTransformer
 		}
 		
 		return null;
-	}
-	
-	/**
-	 * Register the proxy (handler) for a packet
-	 * 
-	 * @param packetClass
-	 * @param proxy
-	 */
-	public static void registerProxy(Class<?> packetClass, ASMHookProxy proxy)
-	{
-		try
-		{
-			Field fProxy = packetClass.getDeclaredField("proxy");
-			fProxy.setAccessible(true);
-			fProxy.set(null, proxy);
-		}
-		catch (Exception ex)
-		{
-			ex.printStackTrace();
-		}
 	}
 }

@@ -11,10 +11,6 @@ import net.minecraft.src.Packet1Login;
 import net.minecraft.src.Packet250CustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.core.hooks.HookPluginChannels;
-import com.mumfrey.liteloader.core.hooks.asm.ASMHookProxy;
-import com.mumfrey.liteloader.core.hooks.asm.CustomPayloadPacketTransformer;
-import com.mumfrey.liteloader.core.hooks.asm.PacketTransformer;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 
 /**
@@ -29,11 +25,6 @@ public class PluginChannels
 	private static final String CHANNEL_UNREGISTER = "UNREGISTER";
 
 	/**
-	 * True if we have initialised the hook
-	 */
-	private boolean hookInitDone;
-	
-	/**
 	 * Mapping of plugin channel names to listeners
 	 */
 	private HashMap<String, LinkedList<PluginChannelListener>> pluginChannels = new HashMap<String, LinkedList<PluginChannelListener>>();
@@ -43,39 +34,12 @@ public class PluginChannels
 	 */
 	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
 	
-	private ASMHookProxy asmProxy;
-
 	/**
 	 * Package private
 	 */
-	PluginChannels(ASMHookProxy proxy)
+	PluginChannels()
 	{
-		this.asmProxy = proxy;
 	}
-
-	/**
-	 * 
-	 */
-	public void initHook()
-	{
-		// Plugin channels hook
-		if (this.pluginChannelListeners.size() > 0 && !this.hookInitDone)
-		{
-			if (CustomPayloadPacketTransformer.isInjected())
-			{
-				PacketTransformer.registerProxy(Packet250CustomPayload.class, this.asmProxy);
-			}
-			else
-			{
-				LiteLoader.getLogger().info("Callback injection failed for custom payload packet, injecting reflection hook");
-				HookPluginChannels.register();
-				HookPluginChannels.registerPacketHandler(this);
-			}
-			
-			this.hookInitDone = true;
-		}
-	}
-	
 	
 	/**
 	 * @param pluginChannelListener
@@ -85,8 +49,6 @@ public class PluginChannels
 		if (!this.pluginChannelListeners.contains(pluginChannelListener))
 		{
 			this.pluginChannelListeners.add(pluginChannelListener);
-			if (this.hookInitDone)
-				this.initHook();
 		}
 	}
 

@@ -35,7 +35,6 @@ import net.minecraft.src.SimpleReloadableResourceManager;
 import net.minecraft.src.World;
 
 import com.mumfrey.liteloader.*;
-import com.mumfrey.liteloader.core.hooks.asm.ASMHookProxy;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
 import com.mumfrey.liteloader.gui.GuiControlsPaginated;
@@ -151,11 +150,6 @@ public final class LiteLoader
 	private final LinkedList<ModFile> disabledMods = new LinkedList<ModFile>();
 	
 	/**
-	 * ASM hook proxy
-	 */
-	private final ASMHookProxy asmProxy = new ASMHookProxy();
-	
-	/**
 	 * Event manager
 	 */
 	private Events events;
@@ -163,7 +157,7 @@ public final class LiteLoader
 	/**
 	 * Plugin channel manager 
 	 */
-	private final PluginChannels pluginChannels = new PluginChannels(this.asmProxy);
+	private final PluginChannels pluginChannels = new PluginChannels();
 	
 	/**
 	 * Permission Manager
@@ -357,7 +351,7 @@ public final class LiteLoader
 		this.minecraft = minecraft;
 
 		// Create the event broker
-		this.events = new Events(this, this.minecraft, this.pluginChannels, this.asmProxy);
+		this.events = new Events(this, this.minecraft, this.pluginChannels);
 		
 		// Spawn mod instances
 		this.loadMods();

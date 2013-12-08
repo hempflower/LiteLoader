@@ -16,15 +16,17 @@ import net.minecraft.src.Packet3Chat;
  * 
  * @author Adam Mummery-Smith
  */
-public class ASMHookProxy
+public abstract class ASMHookProxy
 {
+	private ASMHookProxy() {}
+	
 	/**
 	 * Packet3Chat::processPacket()
 	 * 
 	 * @param netHandler
 	 * @param packet
 	 */
-	public void handleChatPacket(NetHandler netHandler, Packet3Chat packet)
+	public static void handleChatPacket(NetHandler netHandler, Packet3Chat packet)
 	{
 		Events events = LiteLoader.getEvents();
 		if (events.onChat(packet))
@@ -39,7 +41,7 @@ public class ASMHookProxy
 	 * @param netHandler
 	 * @param packet
 	 */
-	public void handleLoginPacket(NetHandler netHandler, Packet1Login packet)
+	public static void handleLoginPacket(NetHandler netHandler, Packet1Login packet)
 	{
 		Events events = LiteLoader.getEvents();
 		if (events.onPreLogin(netHandler, packet))
@@ -55,7 +57,7 @@ public class ASMHookProxy
 	 * @param netHandler
 	 * @param packet
 	 */
-	public void handleCustomPayloadPacket(NetHandler netHandler, Packet250CustomPayload packet)
+	public static void handleCustomPayloadPacket(NetHandler netHandler, Packet250CustomPayload packet)
 	{
 		netHandler.handleCustomPayload(packet);
 		
