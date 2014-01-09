@@ -4,7 +4,7 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.6.4" />
+	<property name="version" value="1.6.4_02" />
 	<property name="mcversion" value="1.6.4" />
 	<property name="author" value="Mumfrey" />
 
@@ -18,10 +18,8 @@
 	<property name="mcp.dir" location="../../.." />
 	<property name="build" location="${mcp.dir}/build" />
 	<property name="eclipse" location="${mcp.dir}/eclipse" />
-	<property name="src" location="${mcp.dir}/src/minecraft" />
 	<property name="temp" location="${mcp.dir}/temp" />
 	<property name="md5.dir" location="${mcp.dir}/md5" />
-	<property name="mc.src" location="${mcp.dir}/src/mcp" />
 	<property name="libs" location="${mcp.dir}/lib" />
 
 	<property name="dist.dir" location="${build}/dist" />
@@ -33,48 +31,34 @@
     <target name="findmcp">
         <echo level="info" message="Searching for clean MCP source..." />
         <condition property="mcpsrc.exists">
-            <available file="${mc.src}" type="dir"/>
+            <available file="${mcp.dir}/src/mcp" type="dir"/>
         </condition>
     </target>
     
 	<!-- Main target -->
-	<target name="rebuild" depends="findmcp" description="Entry point">
-		<antcall target="nobuild" />
-		<antcall target="build" />
+	<target name="rebuild" depends="findmcp, setdirsold, setdirsnew, build" description="Entry point" />
+
+	<target name="setdirsnew" description="Set the MCP source directories for the new layout" unless="mcpsrc.exists">
+		<echo level="info" message="Setting MCP source directories for NEW configuration" />
+	    <property name="src" location="${build}/src"/>
+	    <property name="mc.src" location="${mcp.dir}/src/minecraft" />
+		<echo append="false" file="${temp}/build.cfg" message="[OUTPUT]&#x0A;SrcClient  = build/src" />
     </target>
 
-	<target name="nobuild" description="Notify the user that they done goofed" unless="mcpsrc.exists">
-		<echo level="info" message="--------------------------------------------------------------------------------" />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message=" #NOPE!"                                                                          />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message=" LiteLoader build uses the MCP src/minecraft directory as the target for source"  />
-		<echo level="info" message=" aggregation so that MCP can be called without modifications. This means that"    />
-		<echo level="info" message=" before you start you MUST copy the decompiled sources to src/mcp so that the"    />
-		<echo level="info" message=" LiteLoader build script has a clean base to work from."                          />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message=" To rectify this problem and allow the loader to build:"                          />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message="   + Run the MCP decompile process so that clean sources end up in src/minecraft" />
-		<echo level="info" message="   + RENAME the src/minecraft folder to src/mcp"                                  />
-		<echo level="info" message="   + Run this builder again, the builder will create a clean MD5 set for the"     />
-		<echo level="info" message="     clean sources"                                                               />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message=" If you have already performed the above steps, and it's still not working, then" />
-		<echo level="info" message=" it's probably time to learn ant scripting and figure out why."                   />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message=" Never give up; never surrender!"                                                 />
-		<echo level="info" message=" "                                                                                />
-		<echo level="info" message="--------------------------------------------------------------------------------" />
+	<target name="setdirsold" description="Set the MCP source directories for the old layout" if="mcpsrc.exists">
+        <echo level="warning" message="--------------------------------------------------------------------------------" />
+        <echo level="warning" message=" "                                                                                />
+        <echo level="warning" message=" Setting MCP source directories for OLD configuration!"                           />
+        <echo level="warning" message=" "                                                                                />
+        <echo level="warning" message=" Renaming the MCP 'src' directory is no longer required and support for this"     />
+        <echo level="warning" message=" be removed in a future version."                                                 />
+        <echo level="warning" message=" "                                                                                />
+        <echo level="warning" message="--------------------------------------------------------------------------------" />
+	    <property name="src" location="${mcp.dir}/src/minecraft"/>
+	    <property name="mc.src" location="${mcp.dir}/src/mcp" />
     </target>
 
-	<target name="build" description="Perform all tasks for a build" if="mcpsrc.exists">
-		<antcall target="init" />
-		<antcall target="recompile" />
-        <antcall target="reobfuscate" />
-        <antcall target="savemd5" />
-        <antcall target="stage" />
-        <antcall target="zip" />
+	<target name="build" description="Perform all tasks for a build" depends="init, recompile, reobfuscate, savemd5, stage, zip" >
 	</target>
 
 	<target name="clean">
@@ -105,19 +89,26 @@
 		</copy>
 	</target>
 
-	<target name="findmd5">
-        <echo level="info" message="Searching for existing MD5 sets..." />
+	<target name="findmd5dir">
+        <echo level="info" message="Searching for existing MD5 directory..." />
 		<condition property="md5dir.exists">
 			<available file="${md5.dir}" type="dir"/>
 		</condition>
 	</target>
 
-	<target name="seedmd5" depends="findmd5" unless="md5dir.exists">
-        <echo level="info" message="MD5 sets not found, seeding..." />
-		<ant target="genmd5" antfile="seed_md5.xml" inheritall="false" />
+	<target name="findmd5" depends="findmd5dir">
+        <echo level="info" message="Searching for existing MD5 sets..." />
+        <condition property="md5set.exists">
+            <available file="${md5.dir}/client_${md5set}.md5" type="file"/>
+        </condition>
 	</target>
 
-    <target name="notifymd5ok" depends="findmd5" if="md5dir.exists">
+	<target name="seedmd5" depends="findmd5" unless="md5set.exists">
+        <echo level="info" message="MD5 sets not found, seeding..." />
+		<ant target="genmd5" antfile="seed_md5.xml" inheritall="true" />
+	</target>
+
+    <target name="notifymd5ok" depends="findmd5" if="md5set.exists">
     	<echo level="info" message="MD5 sets already exist, skipping MD5 set seeding" />
     </target>
 
@@ -168,6 +159,8 @@
 		<exec executable="${python}" dir="${mcp.dir}">
 			<arg value="runtime/recompile.py" />
 			<arg value="--client" />
+			<arg value="--config" />
+			<arg value="${temp}/build.cfg" />
 			<arg value="%*" />
 		</exec>
 	</target>
@@ -192,7 +185,9 @@
 		<echo level="info" message="Staging resources" />
 
 		<copy todir="${stage.dir}">
-			<fileset dir="${mcp.dir}/reobf/minecraft" excludes=".svn/**, *.txt" />
+			<fileset dir="${mcp.dir}/reobf/minecraft" excludes=".svn/**, *.txt">
+                <exclude name="/*.class" />
+			</fileset>
 		</copy>
 
 		<foreach list="${upstream}" param="lib" target="contributeresources" />
@@ -215,9 +210,18 @@
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Version" value="${version}" />
 				<attribute name="TweakClass" value="${tweakclass}" />
+				<attribute name="TweakName" value="LiteLoader" />
+				<attribute name="TweakVersion" value="${version}" />
+				<attribute name="TweakAuthor" value="${author}" />
 			</manifest>
 			<fileset dir="${stage.dir}" />
 		</jar>
 	</target>
-
+	
+	<property environment="env" />
+	
+	<target name="deploy" depends="rebuild" description="Deploy artifact to local minecraft installation in APPDATA">
+		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2"/>
+		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
+	</target>
 </project>
