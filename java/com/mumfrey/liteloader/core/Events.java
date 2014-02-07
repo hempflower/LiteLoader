@@ -724,8 +724,6 @@ public class Events
 			this.worldHashCode = 0;
 			this.loader.onWorldChanged(null);
 		}
-
-		this.minecraft.mcProfiler.endSection();
 	}
 	
 	/**
