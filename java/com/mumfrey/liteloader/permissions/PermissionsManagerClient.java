@@ -10,14 +10,15 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.eq2online.permissions.ReplicatedPermissionsContainer;
-import net.minecraft.src.Minecraft;
-import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet1Login;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.S01PacketJoinGame;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.Permissible;
 import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.core.PluginChannels;
+import com.mumfrey.liteloader.core.ClientPluginChannels;
+import com.mumfrey.liteloader.core.PluginChannels.ChannelPolicy;
 
 /**
  * This class manages permissions on the client, it is a singleton class which can manage permissions for multiple 
@@ -175,10 +176,10 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	}
 
 	/* (non-Javadoc)
-	 * @see net.eq2online.permissions.PermissionsManager#onLogin(net.minecraft.src.NetHandler, net.minecraft.src.Packet1Login)
+	 * @see com.mumfrey.liteloader.permissions.PermissionsManager#onLogin(net.minecraft.network.INetHandler, net.minecraft.network.play.server.S01PacketJoinGame)
 	 */
 	@Override
-	public void onLogin(NetHandler netHandler, Packet1Login loginPacket)
+	public void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket)
 	{
 		this.clearServerPermissions();
 		this.scheduleRefresh();
@@ -225,7 +226,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	{
 		String modName = mod.getPermissibleModName();
 		
-		if (this.minecraft != null && this.minecraft.thePlayer != null && this.minecraft.theWorld != null && this.minecraft.theWorld.isRemote)
+		if (this.minecraft != null && this.minecraft.thePlayer != null && this.minecraft.theWorld != null && this.minecraft.theWorld.isClient)
 		{
 			if (!this.registeredClientMods.containsValue(mod))
 			{
@@ -242,7 +243,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 				if (!query.modName.equals("all") || query.permissions.size() > 0)
 				{
 					byte[] data = query.getBytes();
-					PluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, data);
+					ClientPluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, data, ChannelPolicy.DISPATCH_ALWAYS);
 				}
 			}
 		}
@@ -253,7 +254,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	}
 
 	/* (non-Javadoc)
-	 * @see net.eq2online.permissions.PermissionsManager#onTick(net.minecraft.src.Minecraft, float, boolean)
+	 * @see com.mumfrey.liteloader.permissions.PermissionsManager#onTick(net.minecraft.client.Minecraft, float, boolean)
 	 */
 	@Override
 	public void onTick(Minecraft minecraft, float partialTicks, boolean inGame)

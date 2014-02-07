@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader;
 
-import net.minecraft.src.Minecraft;
+import net.minecraft.client.Minecraft;
 
 import com.mumfrey.liteloader.core.LiteLoader;
 

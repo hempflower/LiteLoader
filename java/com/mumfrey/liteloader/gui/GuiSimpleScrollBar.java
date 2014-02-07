@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.gui;
 
-import net.minecraft.src.Gui;
+import net.minecraft.client.gui.Gui;
 
 /**
  * Extremely simple scrollbar implementation

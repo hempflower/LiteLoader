@@ -2,9 +2,9 @@ package com.mumfrey.liteloader.crashreport;
 
 import java.util.concurrent.Callable;
 
-import com.mumfrey.liteloader.core.LiteLoader;
+import net.minecraft.crash.CrashReport;
 
-import net.minecraft.src.CrashReport;
+import com.mumfrey.liteloader.core.LiteLoader;
 
 public class CallableLiteLoaderMods implements Callable<String>
 {

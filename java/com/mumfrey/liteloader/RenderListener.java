@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader;
 
-import net.minecraft.src.GuiScreen;
+import net.minecraft.client.gui.GuiScreen;
 
 /**
  * Interface for objects which want a pre-render callback

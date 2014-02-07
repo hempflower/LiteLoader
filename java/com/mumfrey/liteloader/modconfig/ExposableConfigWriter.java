@@ -79,6 +79,11 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 		gsonBuilder.excludeFieldsWithoutExposeAnnotation();
 		gsonBuilder.registerTypeAdapter(exposable.getClass(), this);
 		
+		if (this.exposable instanceof AdvancedExposable)
+		{
+			((AdvancedExposable)this.exposable).setupGsonSerialiser(gsonBuilder);
+		}
+		
 		this.gson = gsonBuilder.create();
 	}
 	
@@ -272,6 +277,16 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 			fileName = fileName + ".json";
 		
 		File configFile = strategy.getFileForStrategy(fileName);
+		
+		if (exposable instanceof AdvancedExposable)
+		{
+			File customConfigFile = ((AdvancedExposable)exposable).getConfigFile(configFile, configFile.getParentFile(), fileName);
+			if (customConfigFile != null)
+			{
+				configFile = customConfigFile;
+			}
+		}
+		
 		ExposableConfigWriter writer = new ExposableConfigWriter(exposable, configFile, strategy == ConfigStrategy.Versioned, aggressive);
 
 		return writer;

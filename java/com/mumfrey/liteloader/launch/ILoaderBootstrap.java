@@ -18,19 +18,24 @@ public interface ILoaderBootstrap
 	 * 
 	 * @param classLoader
 	 * @param loadTweaks
+	 * @param modsToLoad
 	 */
-	public abstract void preInit(LaunchClassLoader classLoader, boolean loadTweaks);
+	public abstract void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad);
 	
 	/**
 	 * Init, create the loader instance and load mods
-	 * 
-	 * @param modsToLoad
 	 * @param classLoader
 	 */
-	public abstract void init(List<String> modsToLoad, LaunchClassLoader classLoader);
+	public abstract void init(LaunchClassLoader classLoader);
 	
 	/**
 	 * Post-init, initialise loaded mods
 	 */
 	public abstract void postInit();
+
+	public abstract void setBooleanProperty(String propertyName, boolean value);
+
+	public abstract boolean getBooleanProperty(String propertyName);
+
+	public abstract boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue);
 }

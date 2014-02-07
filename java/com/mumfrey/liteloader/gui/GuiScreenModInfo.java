@@ -2,14 +2,22 @@ package com.mumfrey.liteloader.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import java.awt.image.BufferedImage;
 import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.imageio.ImageIO;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiIngameMenu;
+import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.GuiOptions;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
@@ -18,17 +26,10 @@ import org.lwjgl.input.Mouse;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.core.EnabledModsList;
 import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.core.ModFile;
-import com.mumfrey.liteloader.modconfig.ConfigPanel;
+import com.mumfrey.liteloader.core.LiteLoaderVersion;
+import com.mumfrey.liteloader.core.Loadable;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
-
-import net.minecraft.src.DynamicTexture;
-import net.minecraft.src.GuiButton;
-import net.minecraft.src.GuiMainMenu;
-import net.minecraft.src.GuiScreen;
-import net.minecraft.src.Minecraft;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.Tessellator;
+import com.mumfrey.liteloader.modconfig.ConfigPanel;
 
 /**
  * GUI screen which displays info about loaded mods and also allows them to be enabled and
@@ -57,14 +58,13 @@ public class GuiScreenModInfo extends GuiScreen
 	 */
 	private static DoubleBuffer doubleBuffer = BufferUtils.createByteBuffer(64).asDoubleBuffer();
 	
-	// Texture resources for the "about mods" screen, we load the texture directly anyway so it won't be from an RP
-	public static ResourceLocation aboutTextureResource;
-	private static DynamicTexture aboutTexture;
+	// Texture resources for the "about mods" screen
+	public static ResourceLocation aboutTextureResource = new ResourceLocation("liteloader", "textures/gui/about.png");
 
 	/**
 	 * Reference to the main menu which this screen is either overlaying or using as its background
 	 */
-	private GuiMainMenu mainMenu;
+	private GuiScreen mainMenu;
 	
 	/**
 	 * Tick number (update counter) used for tweening
@@ -111,7 +111,7 @@ public class GuiScreenModInfo extends GuiScreen
 	/**
 	 * Text to display under the header
 	 */
-	private String activeModText = "0 mod(s) loaded";
+	private String activeModText, versionText;
 	
 	/**
 	 * Height of all the items in the list
@@ -143,7 +143,7 @@ public class GuiScreenModInfo extends GuiScreen
 	/**
 	 * Configuration panel
 	 */
-	private GuiConfigPanelContainer configPanel;
+	private ModInfoScreenPanel currentPanel;
 	
 	/**
 	 * @param minecraft
@@ -151,27 +151,17 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param loader
 	 * @param enabledModsList
 	 */
-	public GuiScreenModInfo(Minecraft minecraft, GuiMainMenu mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigManager configManager, boolean hideTab)
+	public GuiScreenModInfo(Minecraft minecraft, GuiScreen mainMenu, LiteLoader loader, EnabledModsList enabledModsList, ConfigManager configManager, boolean hideTab)
 	{
 		this.mc = minecraft;
-		this.fontRenderer = minecraft.fontRenderer;
+		this.fontRendererObj = minecraft.fontRenderer;
 		this.mainMenu = mainMenu;
 		this.configManager = configManager;
 		this.hideTab = hideTab;
 		
-		// Spawn the texture resource if we haven't already
-		if (aboutTexture == null)
-		{
-			try
-			{
-				BufferedImage aboutImage = ImageIO.read(GuiScreenModInfo.class.getResourceAsStream("/assets/liteloader/textures/gui/about.png"));
-				aboutTexture = new DynamicTexture(aboutImage);
-				aboutTextureResource = minecraft.getTextureManager().getDynamicTextureLocation("about_assets", aboutTexture);
-			}
-			catch (Exception ex) {}
-		}
-		
-		this.enumerateMods(loader, enabledModsList);
+		this.versionText = I18n.format("gui.about.versiontext", LiteLoader.getVersion());
+
+		this.populateModList(loader, enabledModsList);
 	}
 	
 	/**
@@ -180,9 +170,9 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param loader
 	 * @param enabledModsList
 	 */
-	private void enumerateMods(LiteLoader loader, EnabledModsList enabledModsList)
+	private void populateModList(LiteLoader loader, EnabledModsList enabledModsList)
 	{
-		this.activeModText = String.format("%d mod(s) loaded", loader.getLoadedMods().size());
+		this.activeModText = I18n.format("gui.about.modsloaded", loader.getLoadedMods().size());
 		
 		// Add mods to this treeset first, in order to sort them
 		Map<String, GuiModListEntry> sortedMods = new TreeMap<String, GuiModListEntry>();
@@ -195,12 +185,19 @@ public class GuiScreenModInfo extends GuiScreen
 		}
 		
 		// Disabled mods
-		for (ModFile disabledMod : loader.getDisabledMods())
+		for (Loadable<?> disabledMod : loader.getDisabledMods())
 		{
 			GuiModListEntry modListEntry = new GuiModListEntry(loader, enabledModsList, this.mc.fontRenderer, disabledMod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 
+		// Injected tweaks
+		for (Loadable<?> injectedTweak : loader.getInjectedTweaks())
+		{
+			GuiModListEntry modListEntry = new GuiModListEntry(loader, enabledModsList, this.mc.fontRenderer, injectedTweak);
+			sortedMods.put(modListEntry.getKey(), modListEntry);
+		}
+		
 		// Add the sorted mods to the mods list
 		this.mods.addAll(sortedMods.values());
 		
@@ -220,7 +217,7 @@ public class GuiScreenModInfo extends GuiScreen
 	/**
 	 * Get the parent menu
 	 */
-	public GuiMainMenu getMenu()
+	public GuiScreen getScreen()
 	{
 		return this.mainMenu;
 	}
@@ -234,26 +231,28 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#initGui()
+	 * @see net.minecraft.client.gui.GuiScreen#initGui()
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void initGui()
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
-			this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
+			this.currentPanel.setSize(this.width - LEFT_EDGE, this.height);
 		}
 		
 		int rightPanelLeftEdge = LEFT_EDGE + MARGIN + 4 + (this.width - LEFT_EDGE - MARGIN - MARGIN - 4) / 2;
 		
 		this.buttonList.clear();
-		this.buttonList.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - PANEL_BOTTOM - 24, 90, 20, "Enable mod"));
-		this.buttonList.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - PANEL_BOTTOM - 24, 69, 20, "Settings..."));
+		this.buttonList.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - PANEL_BOTTOM - 24, 90, 20, I18n.format("gui.enablemod")));
+		this.buttonList.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - PANEL_BOTTOM - 24, 69, 20, I18n.format("gui.modsettings")));
 		if (!this.hideTab)
 		{
-			this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, "Show LiteLoader tab on main menu"));
+			this.buttonList.add(this.chkEnabled = new GuiCheckbox(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, I18n.format("gui.about.showtabmessage")));
 		}
+		
+		this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50, this.fontRendererObj, I18n.format("gui.about.checkupdates")));
 		
 		this.selectMod(this.selectedMod);
 
@@ -267,7 +266,7 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#setWorldAndResolution(net.minecraft.src.Minecraft, int, int)
+	 * @see net.minecraft.client.gui.GuiScreen#setWorldAndResolution(net.minecraft.client.Minecraft, int, int)
 	 */
 	@Override
 	public void setWorldAndResolution(Minecraft minecraft, int width, int height)
@@ -282,14 +281,14 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#updateScreen()
+	 * @see net.minecraft.client.gui.GuiScreen#updateScreen()
 	 */
 	@Override
 	public void updateScreen()
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
-			this.configPanel.onTick();
+			this.currentPanel.onTick();
 		}
 		
 		this.tickNumber++;
@@ -312,7 +311,7 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#drawScreen(int, int, float)
+	 * @see net.minecraft.client.gui.GuiScreen#drawScreen(int, int, float)
 	 */
 	@Override
 	public void drawScreen(int mouseX, int mouseY, float partialTicks)
@@ -349,7 +348,8 @@ public class GuiScreenModInfo extends GuiScreen
 		
 		if (mouseOverTab && this.tweenAmount < 0.01)
 		{
-			this.drawTooltip("LiteLoader Mods", mouseX, mouseY, this.width - TAB_WIDTH - 2, this.height, 0xFFFFFF, 0xB0000000);
+			GuiScreenModInfo.drawTooltip(this.fontRendererObj, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height, 0xFFFFFF, 0xB0000000);
+			GuiScreenModInfo.drawTooltip(this.fontRendererObj, this.activeModText, mouseX, mouseY + 13, this.width, this.height, 0xCCCCCC, 0xB0000000);
 		}
 	}
 
@@ -381,25 +381,37 @@ public class GuiScreenModInfo extends GuiScreen
 			drawRect(LEFT_EDGE, 0, LEFT_EDGE + 1, this.height, 0xFFFFFFFF);
 			this.mc.getTextureManager().bindTexture(aboutTextureResource);
 		}
-		
+
 		// Only draw the panel contents if we are actually open
 		if (this.isTweeningOrOpen())
 		{
-			if (this.configPanel != null)
+			if (this.currentPanel != null && this.currentPanel.isCloseRequested())
 			{
-				this.drawConfigPanel(mouseX, mouseY, partialTicks);
+				this.closeCurrentPanel();
+			}
+
+			if (this.currentPanel != null)
+			{
+				this.drawCurrentPanel(mouseX, mouseY, partialTicks);
 			}
 			else
 			{
-				this.drawInfoPanel(mouseX, mouseY, partialTicks);
+				this.drawInfoPanel(mouseX, mouseY, partialTicks, LEFT_EDGE, PANEL_BOTTOM);
+				
+				int innerWidth = this.width - LEFT_EDGE - MARGIN - MARGIN - 4;
+				int panelWidth = innerWidth / 2;
+				int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
+				
+				this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+				this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
 				
 				// Draw other controls inside the transform so that they slide properly
 				super.drawScreen(mouseX, mouseY, partialTicks);
 			}
 		}
-		else if (this.configPanel != null)
+		else if (this.currentPanel != null)
 		{
-			this.closeConfigPanel();
+			this.closeCurrentPanel();
 		}
 		
 		glPopMatrix();
@@ -410,18 +422,12 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param mouseY
 	 * @param partialTicks
 	 */
-	public void drawConfigPanel(int mouseX, int mouseY, float partialTicks)
+	private void drawCurrentPanel(int mouseX, int mouseY, float partialTicks)
 	{
-		if (this.configPanel.isCloseRequested())
-		{
-			this.closeConfigPanel();
-			return;
-		}
-		
 		glPushMatrix();
 		glTranslatef(LEFT_EDGE, 0, 0);
 		
-		this.configPanel.draw(mouseX - LEFT_EDGE, mouseY, partialTicks);
+		this.currentPanel.draw(mouseX - LEFT_EDGE, mouseY, partialTicks);
 		
 		glPopMatrix();
 	}
@@ -431,26 +437,21 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param mouseY
 	 * @param partialTicks
 	 */
-	public void drawInfoPanel(int mouseX, int mouseY, float partialTicks)
+	protected void drawInfoPanel(int mouseX, int mouseY, float partialTicks, int left, int bottom)
 	{
+		int right = this.width - MARGIN - LEFT_EDGE + left;
+		
 		// Draw the header pieces
-		glDrawTexturedRect(LEFT_EDGE + MARGIN, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
-		glDrawTexturedRect(this.width - 32 - MARGIN, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
+		glDrawTexturedRect(left + MARGIN, 12, 128, 40, 0, 0, 256, 80, 1.0F); // liteloader logo
+		glDrawTexturedRect(right - 32, 12, 32, 45, 0, 80, 64, 170, 1.0F); // chicken
 		
 		// Draw header text
-		this.fontRenderer.drawString("Version " + LiteLoader.getVersion(), LEFT_EDGE + MARGIN + 38, 50, 0xFFFFFFFF);
-		this.fontRenderer.drawString(this.activeModText, LEFT_EDGE + MARGIN + 38, 60, 0xFFAAAAAA);
+		this.fontRendererObj.drawString(this.versionText, left + MARGIN + 38, 50, 0xFFFFFFFF);
+		this.fontRendererObj.drawString(this.activeModText, left + MARGIN + 38, 60, 0xFFAAAAAA);
 		
 		// Draw top and bottom horizontal rules
-		drawRect(LEFT_EDGE + MARGIN, 80, this.width - MARGIN, 81, 0xFF999999);
-		drawRect(LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 2, this.width - MARGIN, this.height - PANEL_BOTTOM + 3, 0xFF999999);
-		
-		int innerWidth = this.width - LEFT_EDGE - MARGIN - MARGIN - 4;
-		int panelWidth = innerWidth / 2;
-		int panelHeight = this.height - PANEL_BOTTOM - PANEL_TOP;
-		
-		this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
-		this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+		drawRect(left + MARGIN, 80, right, 81, 0xFF999999);
+		drawRect(left + MARGIN, this.height - bottom + 2, right, this.height - bottom + 3, 0xFF999999);
 	}
 
 	/**
@@ -460,7 +461,7 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param width
 	 * @param height
 	 */
-	public void drawModsList(int mouseX, int mouseY, float partialTicks, int width, int height)
+	private void drawModsList(int mouseX, int mouseY, float partialTicks, int width, int height)
 	{
 		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, LEFT_EDGE + MARGIN + width - SCROLLBAR_WIDTH, PANEL_TOP, SCROLLBAR_WIDTH, height, this.listHeight);
 
@@ -480,6 +481,12 @@ public class GuiScreenModInfo extends GuiScreen
 			yPos += mod.drawListEntry(mouseX, mouseY, partialTicks, LEFT_EDGE + MARGIN, yPos, width - 6, mod == this.selectedMod);
 		}
 		
+		yPos = 0;
+		for (GuiModListEntry mod : this.mods)
+		{
+			yPos += mod.postRenderListEntry(mouseX, mouseY, partialTicks, LEFT_EDGE + MARGIN, yPos, width - 6, mod == this.selectedMod);
+		}
+		
 		glPopMatrix();
 		glDisableClipping();
 		
@@ -494,15 +501,16 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param width
 	 * @param height
 	 */
-	public void drawSelectedMod(int mouseX, int mouseY, float partialTicks, int width, int height)
+	private void drawSelectedMod(int mouseX, int mouseY, float partialTicks, int width, int height)
 	{
 		if (this.selectedMod != null)
 		{
 			int left = LEFT_EDGE + MARGIN + width;
 			int right = this.width - MARGIN;
-
-			glEnableClipping(left, right, PANEL_TOP, this.height - PANEL_BOTTOM - 28);
-			this.selectedMod.drawInfo(mouseX, mouseY, partialTicks, left, PANEL_TOP, right - left);
+			
+			int spaceForButtons = this.btnConfig.field_146125_m || this.btnToggle.field_146125_m ? 28 : 0;
+			glEnableClipping(left, right, PANEL_TOP, this.height - PANEL_BOTTOM - spaceForButtons);
+			this.selectedMod.drawInfo(mouseX, mouseY, partialTicks, left, PANEL_TOP, right - left, height - spaceForButtons);
 			glDisableClipping();
 		}
 	}
@@ -511,25 +519,30 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param mod
 	 * @return
 	 */
-	public void selectMod(GuiModListEntry mod)
+	private void selectMod(GuiModListEntry mod)
 	{
+		if (this.selectedMod != null)
+		{
+			this.selectedMod.mouseReleased();
+		}
+		
 		this.selectedMod = mod;
-		this.btnToggle.drawButton = false;
-		this.btnConfig.drawButton = false;
+		this.btnToggle.field_146125_m = false;
+		this.btnConfig.field_146125_m = false;
 		
 		if (this.selectedMod != null && this.selectedMod.canBeToggled())
 		{
-			this.btnToggle.drawButton = true;
-			this.btnToggle.displayString = this.selectedMod.willBeEnabled() ? "Disable mod" : "Enable mod";
+			this.btnToggle.field_146125_m = true;
+			this.btnToggle.displayString = this.selectedMod.willBeEnabled() ? I18n.format("gui.disablemod") : I18n.format("gui.enablemod");
 			
-			this.btnConfig.drawButton = this.configManager.hasPanel(this.selectedMod.getModClass());
+			this.btnConfig.field_146125_m = this.configManager.hasPanel(this.selectedMod.getModClass());
 		}
 	}
 
 	/**
 	 * Toggle the selected mod's enabled status
 	 */
-	public void toggleSelectedMod()
+	private void toggleSelectedMod()
 	{
 		if (this.selectedMod != null)
 		{
@@ -539,7 +552,7 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#actionPerformed(net.minecraft.src.GuiButton)
+	 * @see net.minecraft.client.gui.GuiScreen#actionPerformed(net.minecraft.client.gui.GuiButton)
 	 */
 	@Override
 	protected void actionPerformed(GuiButton button)
@@ -561,20 +574,25 @@ public class GuiScreenModInfo extends GuiScreen
 			
 			if (!this.chkEnabled.checked)
 			{
-				this.chkEnabled.displayString = "Show LiteLoader tab on main menu \247e(use \2479CTRL\247e+\2479SHIFT\247e+\2479TAB\247e)";
+				this.chkEnabled.displayString = I18n.format("gui.about.showtabmessage") + I18n.format("gui.about.keystrokehint");
 			}
+		}
+		
+		if (button.id == 3)
+		{
+			this.setCurrentPanel(new GuiCheckUpdatePanel(this.mc, LiteLoaderVersion.getUpdateSite(), "LiteLoader"));
 		}
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#keyTyped(char, int)
+	 * @see net.minecraft.client.gui.GuiScreen#keyTyped(char, int)
 	 */
 	@Override
 	protected void keyTyped(char keyChar, int keyCode)
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
-			this.configPanel.keyPressed(keyChar, keyCode);
+			this.currentPanel.keyPressed(keyChar, keyCode);
 			return;
 		}
 		
@@ -598,6 +616,14 @@ public class GuiScreenModInfo extends GuiScreen
 		else if (keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RIGHT)
 		{
 			this.toggleSelectedMod();
+		}
+		else if (keyCode == Keyboard.KEY_F3)
+		{
+			this.setCurrentPanel(new GuiLiteLoaderLog(this.mc));
+		}
+		else if (keyCode == Keyboard.KEY_F1)
+		{
+			this.setCurrentPanel(new GuiAboutPanel(this.mc, this));
 		}
 	}
 	
@@ -630,14 +656,14 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#mouseClicked(int, int, int)
+	 * @see net.minecraft.client.gui.GuiScreen#mouseClicked(int, int, int)
 	 */
 	@Override
 	protected void mouseClicked(int mouseX, int mouseY, int button)
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
-			this.configPanel.mousePressed(mouseX - LEFT_EDGE, mouseY, button);
+			this.currentPanel.mousePressed(mouseX - LEFT_EDGE, mouseY, button);
 			return;
 		}
 		
@@ -654,18 +680,23 @@ public class GuiScreenModInfo extends GuiScreen
 				
 				for (GuiModListEntry mod : this.mods)
 				{
-					if (mod.mouseWasOver())
+					if (mod.mouseWasOverListEntry())
 					{
 						this.selectMod(mod);
 						
 						// handle double-click
-						if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.drawButton)
+						if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.field_146125_m)
 						{
 							this.actionPerformed(this.btnConfig);
 						}
 						
 						this.doubleClickTime = 5;
 					}
+				}
+				
+				if (this.selectedMod != null && this.selectedMod == lastSelectedMod)
+				{
+					this.selectedMod.mousePressed();
 				}
 			}
 		}
@@ -674,17 +705,17 @@ public class GuiScreenModInfo extends GuiScreen
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#mouseMovedOrUp(int, int, int)
+	 * @see net.minecraft.client.gui.GuiScreen#mouseMovedOrUp(int, int, int)
 	 */
 	@Override
 	protected void mouseMovedOrUp(int mouseX, int mouseY, int button)
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
 			if (button == -1)
-				this.configPanel.mouseMoved(mouseX - LEFT_EDGE, mouseY);
+				this.currentPanel.mouseMoved(mouseX - LEFT_EDGE, mouseY);
 			else
-				this.configPanel.mouseReleased(mouseX - LEFT_EDGE, mouseY, button);
+				this.currentPanel.mouseReleased(mouseX - LEFT_EDGE, mouseY, button);
 			
 			return;
 		}
@@ -692,13 +723,18 @@ public class GuiScreenModInfo extends GuiScreen
 		if (button == 0)
 		{
 			this.scrollBar.setDragging(false);
+			
+			if (this.selectedMod != null)
+			{
+				this.selectedMod.mouseReleased();
+			}
 		}
 		
 		super.mouseMovedOrUp(mouseX, mouseY, button);
 	}
 	
 	/* (non-Javadoc)
-	 * @see net.minecraft.src.GuiScreen#handleMouseInput()
+	 * @see net.minecraft.client.gui.GuiScreen#handleMouseInput()
 	 */
 	@Override
 	public void handleMouseInput()
@@ -706,13 +742,24 @@ public class GuiScreenModInfo extends GuiScreen
 		int mouseWheelDelta = Mouse.getEventDWheel();
 		if (mouseWheelDelta != 0)
 		{
-			if (this.configPanel != null)
-				this.configPanel.mouseWheelScrolled(mouseWheelDelta);
+			if (this.currentPanel != null)
+				this.currentPanel.mouseWheelScrolled(mouseWheelDelta);
 			else
-				this.scrollBar.offsetValue(-mouseWheelDelta / 8);
+				mouseWheelScrolled(mouseWheelDelta / 8);
 		}
 		
 		super.handleMouseInput();
+	}
+
+	/**
+	 * @param mouseWheelDelta
+	 */
+	private void mouseWheelScrolled(int mouseWheelDelta)
+	{
+		if (this.selectedMod == null || !this.selectedMod.mouseWheelScrolled(mouseWheelDelta))
+		{
+			this.scrollBar.offsetValue(-mouseWheelDelta);
+		}
 	}
 
 	/**
@@ -775,28 +822,42 @@ public class GuiScreenModInfo extends GuiScreen
 			ConfigPanel panel = this.configManager.getPanel(this.selectedMod.getModClass());
 			if (panel != null)
 			{
-				if (this.configPanel != null)
-				{
-					this.configPanel.onHidden();
-				}
-				
-				this.configPanel = new GuiConfigPanelContainer(panel, this.selectedMod.getModInstance());
-				this.configPanel.setSize(this.width - LEFT_EDGE, this.height);
-				this.configPanel.onShown();
+				this.setCurrentPanel(new GuiConfigPanelContainer(this.mc, panel, this.selectedMod.getModInstance()));
 			}
 		}
+	}
+
+	/**
+	 * @param newPanel
+	 */
+	private void setCurrentPanel(ModInfoScreenPanel newPanel)
+	{
+		this.closeCurrentPanel();
+		
+		this.currentPanel = newPanel;
+		this.currentPanel.setSize(this.width - LEFT_EDGE, this.height);
+		this.currentPanel.onShown();
 	}
 
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#close()
 	 */
-	private void closeConfigPanel()
+	private void closeCurrentPanel()
 	{
-		if (this.configPanel != null)
+		if (this.currentPanel != null)
 		{
-			this.configPanel.onHidden();
-			this.configPanel = null;
+			this.currentPanel.onHidden();
+			this.currentPanel = null;
 		}
+	}
+	
+	public final static boolean isSupportedOnScreen(GuiScreen guiScreen)
+	{
+		return (
+			guiScreen instanceof GuiMainMenu ||
+			guiScreen instanceof GuiIngameMenu ||
+			guiScreen instanceof GuiOptions
+		);
 	}
 	
 	/**
@@ -811,14 +872,13 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param colour
 	 * @param backgroundColour
 	 */
-	protected void drawTooltip(String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight, int colour, int backgroundColour)
+	protected static void drawTooltip(FontRenderer fontRenderer, String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight, int colour, int backgroundColour)
 	{
-		int textSize = this.fontRenderer.getStringWidth(tooltipText);
-		mouseX = Math.max(0, Math.min(screenWidth - textSize - 6, mouseX - 6));
-		mouseY = Math.max(0, Math.min(screenHeight - 16, mouseY - 18));
-		
-		drawRect(mouseX, mouseY, mouseX + textSize + 6, mouseY + 16, backgroundColour);
-		this.fontRenderer.drawStringWithShadow(tooltipText, mouseX + 3, mouseY + 4, colour);
+		int textSize = fontRenderer.getStringWidth(tooltipText);
+		mouseX = Math.max(0, Math.min(screenWidth - 4, mouseX - 4));
+		mouseY = Math.max(0, Math.min(screenHeight - 16, mouseY));
+		drawRect(mouseX - textSize - 2, mouseY, mouseX + 2, mouseY + 12, backgroundColour);
+		fontRenderer.drawStringWithShadow(tooltipText, mouseX - textSize, mouseY + 2, colour);
 	}
 
 	
@@ -833,7 +893,7 @@ public class GuiScreenModInfo extends GuiScreen
 	 * @param v2
 	 * @param alpha
 	 */
-	private static void glDrawTexturedRect(int x, int y, int width, int height, int u, int v, int u2, int v2, float alpha)
+	static void glDrawTexturedRect(int x, int y, int width, int height, int u, int v, int u2, int v2, float alpha)
 	{
 		glDisable(GL_LIGHTING);
 		glEnable(GL_BLEND);

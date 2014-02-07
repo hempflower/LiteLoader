@@ -2,9 +2,9 @@ package com.mumfrey.liteloader.crashreport;
 
 import java.util.concurrent.Callable;
 
-import com.mumfrey.liteloader.core.LiteLoader;
+import net.minecraft.crash.CrashReport;
 
-import net.minecraft.src.CrashReport;
+import com.mumfrey.liteloader.core.LiteLoader;
 
 public class CallableLiteLoaderBrand implements Callable<String>
 {
@@ -21,7 +21,7 @@ public class CallableLiteLoaderBrand implements Callable<String>
 	@Override
 	public String call() throws Exception
 	{
-		String brand = LiteLoader.getInstance().getBranding();
+		String brand = LiteLoader.getBranding();
 		return brand == null ? "Unknown / None" : brand;
 	}
 }

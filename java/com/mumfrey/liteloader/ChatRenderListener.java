@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader;
 
-import net.minecraft.src.GuiNewChat;
+import net.minecraft.client.gui.GuiNewChat;
 
 /**
  * Interface for mods which want to alter the chat display

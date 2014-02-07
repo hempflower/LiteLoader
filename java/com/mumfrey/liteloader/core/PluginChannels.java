@@ -1,38 +1,54 @@
 package com.mumfrey.liteloader.core;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import net.minecraft.src.Minecraft;
-import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet1Login;
-import net.minecraft.src.Packet250CustomPayload;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
+import net.minecraft.network.INetHandler;
 
 /**
  * Manages plugin channel connections and subscriptions for LiteLoader
  *
  * @author Adam Mummery-Smith
  */
-public class PluginChannels
+public abstract class PluginChannels<L extends CommonPluginChannelListener>
 {
 	// reserved channel consts
-	private static final String CHANNEL_REGISTER = "REGISTER";
-	private static final String CHANNEL_UNREGISTER = "UNREGISTER";
+	protected static final String CHANNEL_REGISTER = "REGISTER";
+	protected static final String CHANNEL_UNREGISTER = "UNREGISTER";
+	
+	/**
+	 * Number of faults for a specific listener before a warning is generated
+	 */
+	protected static final int WARN_FAULT_THRESHOLD = 1000;
 
 	/**
 	 * Mapping of plugin channel names to listeners
 	 */
-	private HashMap<String, LinkedList<PluginChannelListener>> pluginChannels = new HashMap<String, LinkedList<PluginChannelListener>>();
+	protected HashMap<String, LinkedList<L>> pluginChannels = new HashMap<String, LinkedList<L>>();
 	
 	/**
 	 * List of mods which implement PluginChannelListener interface
 	 */
-	private LinkedList<PluginChannelListener> pluginChannelListeners = new LinkedList<PluginChannelListener>();
+	protected LinkedList<L> pluginChannelListeners = new LinkedList<L>();
+	
+	/**
+	 * Plugin channels that we know the server supports
+	 */
+	protected Set<String> remotePluginChannels = new HashSet<String>();
+	
+	/**
+	 * Keep track of faulting listeners so that we can periodically log a message if a listener is throwing LOTS of exceptions
+	 */
+	protected Map<L, Integer> faultingPluginChannelListeners = new HashMap<L, Integer>();
 	
 	/**
 	 * Package private
@@ -42,68 +58,82 @@ public class PluginChannels
 	}
 	
 	/**
+	 * Get the current set of registered client-side channels
+	 */
+	public Set<String> getLocalChannels()
+	{
+		return Collections.unmodifiableSet(this.pluginChannels.keySet());
+	}
+	
+	/**
+	 * Get the current set of registered server channels
+	 */
+	public Set<String> getRemoteChannels()
+	{
+		return Collections.unmodifiableSet(this.remotePluginChannels);
+	}
+	
+	/**
+	 * Check whether a server plugin channel is registered
+	 * 
+	 * @param channel
+	 * @return
+	 */
+	public boolean isRemoteChannelRegistered(String channel)
+	{
+		return this.remotePluginChannels.contains(channel);
+	}
+	
+	/**
 	 * @param pluginChannelListener
 	 */
-	public void addPluginChannelListener(PluginChannelListener pluginChannelListener)
+	void addPluginChannelListener(L pluginChannelListener)
 	{
 		if (!this.pluginChannelListeners.contains(pluginChannelListener))
 		{
 			this.pluginChannelListeners.add(pluginChannelListener);
 		}
 	}
-
-	/**
-	 * @param netHandler
-	 * @param loginPacket
-	 */
-	public void onConnectToServer(NetHandler netHandler, Packet1Login loginPacket)
-	{
-		this.setupPluginChannels();
-	}
-
-	/**
-	 * Callback for the plugin channel hook
-	 * 
-	 * @param customPayload
-	 */
-	public void onPluginChannelMessage(Packet250CustomPayload customPayload)
-	{
-		if (customPayload != null && customPayload.channel != null && this.pluginChannels.containsKey(customPayload.channel))
-		{
-			try
-			{
-				PermissionsManagerClient permissionsManager = LiteLoader.getPermissionsManager();
-				if (permissionsManager != null)
-				{
-					permissionsManager.onCustomPayload(customPayload.channel, customPayload.length, customPayload.data);
-				}
-			}
-			catch (Exception ex) {}
-			
-			for (PluginChannelListener pluginChannelListener : this.pluginChannels.get(customPayload.channel))
-			{
-				try
-				{
-					pluginChannelListener.onCustomPayload(customPayload.channel, customPayload.length, customPayload.data);
-				}
-				catch (Exception ex) {}
-			}
-		}
-	}
 	
 	/**
-	 * Query loaded mods for registered channels
+	 * Connecting to a new server, clear plugin channels
+	 * 
+	 * @param netHandler
 	 */
-	protected void setupPluginChannels()
+	protected void clearPluginChannels(INetHandler netHandler)
 	{
-		// Clear any channels from before
 		this.pluginChannels.clear();
-		
-		// Add the permissions manager channels
-		this.addPluginChannelsFor(LiteLoader.getPermissionsManager());
-		
+		this.remotePluginChannels.clear();
+		this.faultingPluginChannelListeners.clear();
+	}
+
+	/**
+	 * @param data
+	 */
+	protected void onRegisterPacketReceived(byte[] data)
+	{
+		try
+		{
+			String channels = new String(data, "UTF8");
+			for (String channel : channels.split("\u0000"))
+			{
+				this.remotePluginChannels.add(channel);
+			}
+		}
+		catch (UnsupportedEncodingException ex)
+		{
+			LiteLoaderLogger.warning(ex, "Error decoding REGISTER packet from remote host %s", ex.getClass().getSimpleName());
+		}
+	}
+
+	/**
+	 * @return 
+	 * 
+	 */
+	protected byte[] getRegistrationData()
+	{
 		// Enumerate mods for plugin channels
-		for (PluginChannelListener pluginChannelListener : this.pluginChannelListeners)
+		for (L pluginChannelListener : this.pluginChannelListeners)
 		{
 			this.addPluginChannelsFor(pluginChannelListener);
 		}
@@ -121,9 +151,10 @@ public class PluginChannels
 				separator = true;
 			}
 			
-			byte[] registrationData = channelList.toString().getBytes(Charset.forName("UTF8"));
-			PluginChannels.dispatch(new Packet250CustomPayload(CHANNEL_REGISTER, registrationData));
+			return channelList.toString().getBytes(Charset.forName("UTF8"));
 		}
+		
+		return null;
 	}
 	
 	/**
@@ -132,7 +163,7 @@ public class PluginChannels
 	 * 
 	 * @param pluginChannelListener
 	 */
-	private void addPluginChannelsFor(PluginChannelListener pluginChannelListener)
+	protected void addPluginChannelsFor(L pluginChannelListener)
 	{
 		List<String> channels = pluginChannelListener.getChannels();
 		
@@ -145,7 +176,7 @@ public class PluginChannels
 				
 				if (!this.pluginChannels.containsKey(channel))
 				{
-					this.pluginChannels.put(channel, new LinkedList<PluginChannelListener>());
+					this.pluginChannels.put(channel, new LinkedList<L>());
 				}
 				
 				this.pluginChannels.get(channel).add(pluginChannelListener);
@@ -158,29 +189,57 @@ public class PluginChannels
 	 * 
 	 * @param channel Channel to send, must not be a reserved channel name
 	 * @param data
+	 * 
+	 * @deprecated Use ClientPluginChannels.sendMessage instead
 	 */
-	public static void sendMessage(String channel, byte[] data)
+	@Deprecated
+	public static boolean sendMessage(String channel, byte[] data, ChannelPolicy policy)
 	{
-		if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
-			throw new RuntimeException("Invalid channel name specified"); 
-		
-		Packet250CustomPayload payload = new Packet250CustomPayload(channel, data);
-		PluginChannels.dispatch(payload);
+		return ClientPluginChannels.sendMessage(channel, data, policy);
 	}
-
+	
 	/**
-	 * @param channel
-	 * @param data
+	 * Policy for dispatching plugin channel packets
+	 *
+	 * @author Adam Mummery-Smith
 	 */
-	private static void dispatch(Packet250CustomPayload payload)
+	public enum ChannelPolicy
 	{
-		try
+		/**
+		 * Dispatch the message, throw an exception if the channel is not registered 
+		 */
+		DISPATCH,
+		
+		/**
+		 * Dispatch the message, return false if the channel is not registered 
+		 */
+		DISPATCH_IF_REGISTERED,
+		
+		/**
+		 * Dispatch the message 
+		 */
+		DISPATCH_ALWAYS;
+		
+		/**
+		 * True if this policy allows outbound traffic on the specified channel
+		 * 
+		 * @param channel
+		 * @return
+		 */
+		public boolean allows(PluginChannels<?> channels, String channel)
 		{
-			Minecraft minecraft = Minecraft.getMinecraft();
-			
-			if (minecraft.thePlayer != null && minecraft.thePlayer.sendQueue != null)
-				minecraft.thePlayer.sendQueue.addToSendQueue(payload);
+			if (this == ChannelPolicy.DISPATCH_ALWAYS) return true;
+			return channels.isRemoteChannelRegistered(channel);
 		}
-		catch (Exception ex) {}
+		
+		/**
+		 * True if this policy does not throw an exception for unregistered outbound channels
+		 * 
+		 * @return
+		 */
+		public boolean isSilent()
+		{
+			return (this != ChannelPolicy.DISPATCH_IF_REGISTERED);
+		}
 	}
 }

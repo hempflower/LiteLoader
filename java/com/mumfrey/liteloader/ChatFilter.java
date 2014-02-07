@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader;
 
-import net.minecraft.src.ChatMessageComponent;
-import net.minecraft.src.Packet3Chat;
+import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.util.IChatComponent;
+
 
 /**
  * Interface for mods which can filter inbound chat
@@ -18,5 +19,5 @@ public interface ChatFilter extends LiteMod
 	 * @param message Chat message parsed from the chat message component
 	 * @return True to keep the packet, false to discard
 	 */
-	public abstract boolean onChat(Packet3Chat chatPacket, ChatMessageComponent chat, String message);
+	public abstract boolean onChat(S02PacketChat chatPacket, IChatComponent chat, String message);
 }

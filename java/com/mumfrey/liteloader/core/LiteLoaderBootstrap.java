@@ -6,20 +6,21 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.logging.StreamHandler;
+
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.Logger;
+import org.apache.logging.log4j.core.appender.FileAppender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.launch.ILoaderBootstrap;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogFormatter;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * LiteLoaderBootstrap is a proxy class which handles the early part of the LiteLoader startup process which
@@ -39,18 +40,8 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	/**
 	 * Liteloader version
 	 */
-	public static final LiteLoaderVersion VERSION = LiteLoaderVersion.MC_1_6_4_R2;
+	public static final LiteLoaderVersion VERSION = LiteLoaderVersion.CURRENT;
 
-	/**
-	 * Local logger reference
-	 */
-	private static final Logger logger = Logger.getLogger("liteloader");
-
-	/**
-	 * True to use stdout instead of stderr
-	 */
-	private static boolean useStdOut;
-	
 	/**
 	 * Base game directory, passed in from the tweaker
 	 */
@@ -72,6 +63,11 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	private final File modsFolder;
 	
 	/**
+	 * "Mods" folder to use
+	 */
+	private final File versionedModsFolder;
+	
+	/**
 	 * Base "liteconfig" folder under which all other lite mod configs and liteloader configs are placed 
 	 */
 	private final File configBaseFolder;
@@ -85,6 +81,11 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 * File containing the properties
 	 */
 	private File propertiesFile;
+	
+	/**
+	 * JSON file containing the list of enabled/disabled mods by profile
+	 */
+	private File enabledModsFile;
 
 	/**
 	 * Internal properties loaded from inside the jar
@@ -108,22 +109,30 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	private LiteLoaderEnumerator enumerator;
 	
 	/**
+	 * List of mods passed into the command line
+	 */
+	private EnabledModsList enabledModsList;
+	
+	/**
 	 * @param gameDirectory
 	 * @param assetsDirectory
 	 * @param profile
 	 */
 	public LiteLoaderBootstrap(File gameDirectory, File assetsDirectory, String profile)
 	{
-		this.gameDirectory    = gameDirectory;
-		this.assetsDirectory  = assetsDirectory;
-		this.profile          = profile;
+		this.gameDirectory       = gameDirectory;
+		this.assetsDirectory     = assetsDirectory;
+		this.profile             = profile;
 		
-		this.modsFolder       = new File(this.gameDirectory,    "mods");
-		this.configBaseFolder = new File(this.gameDirectory,    "liteconfig");
-		this.logFile          = new File(this.configBaseFolder, "liteloader.log");
-		this.propertiesFile   = new File(this.configBaseFolder, "liteloader.properties");
+		this.modsFolder          = new File(this.gameDirectory,    "mods");
+		this.versionedModsFolder = new File(this.modsFolder,       LiteLoaderVersion.CURRENT.getMinecraftVersion());
+		this.configBaseFolder    = new File(this.gameDirectory,    "liteconfig");
+		this.logFile             = new File(this.configBaseFolder, "liteloader.log");
+		this.propertiesFile      = new File(this.configBaseFolder, "liteloader.properties");
+		this.enabledModsFile     = new File(this.configBaseFolder, "liteloader.profiles.json");
 
 		if (!this.modsFolder.exists()) this.modsFolder.mkdirs();
+		if (!this.versionedModsFolder.exists()) this.versionedModsFolder.mkdirs();
 		if (!this.configBaseFolder.exists()) this.configBaseFolder.mkdirs();
 	}
 	
@@ -131,45 +140,43 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
 	 */
 	@Override
-	public void preInit(LaunchClassLoader classLoader, boolean loadTweaks)
+	public void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad)
 	{
+		LiteLoaderLogger.info("LiteLoader begin PREINIT...");
+
 		// Set up the bootstrap
 		if (!this.prepare()) return;
 		
-		LiteLoaderBootstrap.logInfo("LiteLoader %s starting up...", LiteLoaderBootstrap.VERSION.getLoaderVersion());
+		LiteLoaderLogger.info("LiteLoader %s starting up...", LiteLoaderVersion.CURRENT.getLoaderVersion());
 		
 		// Print the branding version if any was provided
 		if (this.branding != null)
 		{
-			LiteLoaderBootstrap.logInfo("Active Pack: %s", this.branding);
+			LiteLoaderLogger.info("Active Pack: %s", this.branding);
 		}
 		
-		LiteLoaderBootstrap.logInfo("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase());
+		LiteLoaderLogger.info("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase());
 		
-		this.enumerator = new LiteLoaderEnumerator(this, classLoader, loadTweaks);
-		this.enumerator.discoverMods();
+		this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
+		this.enabledModsList.processModsList(this.profile, modsToLoad);
 
-		LiteLoaderBootstrap.logInfo("LiteLoader PreInit completed");
+		this.enumerator = new LiteLoaderEnumerator(this, classLoader, this.enabledModsList, loadTweaks);
+		this.enumerator.discoverMods();
+		
+		LiteLoaderLogger.info("LiteLoader PREINIT complete");
 	}
 	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#init(java.util.List, net.minecraft.launchwrapper.LaunchClassLoader)
 	 */
 	@Override
-	public void init(List<String> modsToLoad, LaunchClassLoader classLoader)
+	public void init(LaunchClassLoader classLoader)
 	{
 		// PreInit failed
 		if (this.enumerator == null) return;
 		
-		try
-		{
-			if (LiteLoaderBootstrap.logger.getHandlers().length < 1)
-				this.prepareLogger();
-		}
-		catch (Exception ex) {}
-
-		LiteLoaderBootstrap.logger.info("Beginning LiteLoader Init...");
-		LiteLoader.init(this, this.enumerator, modsToLoad, classLoader);
+		LiteLoaderLogger.info("LiteLoader begin INIT...");
+		LiteLoader.init(this, this.enumerator, this.enabledModsList, classLoader);
 	}
 
 	/* (non-Javadoc)
@@ -181,15 +188,8 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 		// PreInit failed
 		if (this.enumerator == null) return;
 		
-		try
-		{
-			if (LiteLoaderBootstrap.logger.getHandlers().length < 1)
-				this.prepareLogger();
-		}
-		catch (Exception ex) {}
-		
-		LiteLoaderBootstrap.logger.info("Beginning LiteLoader PostInit...");
-		LiteLoader.postInit();
+		LiteLoaderLogger.info("LiteLoader begin POSTINIT...");
+		LiteLoader.getInstance().postInit();
 	}
 
 	/**
@@ -217,7 +217,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 		}
 		catch (Throwable th)
 		{
-			LiteLoaderBootstrap.logger.log(Level.SEVERE, "Error initialising LiteLoader Bootstrap", th);
+			LiteLoaderLogger.severe(th, "Error initialising LiteLoader Bootstrap");
 			return false;
 		}
 		
@@ -230,26 +230,11 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 */
 	private void prepareLogger() throws SecurityException, IOException
 	{
-		LiteLoaderBootstrap.logger.setUseParentHandlers(false);
-		LiteLoaderBootstrap.useStdOut = System.getProperty("liteloader.log", "stderr").equalsIgnoreCase("stdout") || this.localProperties.getProperty("log", "stderr").equalsIgnoreCase("stdout");
-		
-		StreamHandler consoleHandler = useStdOut ? new com.mumfrey.liteloader.util.log.ConsoleHandler() : new java.util.logging.ConsoleHandler();
-		consoleHandler.setFormatter(new LiteLoaderLogFormatter(false));
-		LiteLoaderBootstrap.logger.addHandler(consoleHandler);
-		
-		FileHandler logFileHandler = new FileHandler(this.logFile.getAbsolutePath());
-		logFileHandler.setFormatter(new LiteLoaderLogFormatter(true));
-		LiteLoaderBootstrap.logger.addHandler(logFileHandler);
-	}
-	
-	/**
-	 * Get the output stream which we are using for console output
-	 * 
-	 * @return
-	 */
-	public static final PrintStream getConsoleStream()
-	{
-		return LiteLoaderBootstrap.useStdOut ? System.out : System.err;
+		Logger logger = LiteLoaderLogger.getLogger();
+		Layout<? extends Serializable> layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level]: %msg%n", logger.getContext().getConfiguration(), null, "UTF-8", "True");
+		FileAppender fileAppender = FileAppender.createAppender(this.logFile.getAbsolutePath(), "False", "False", "LiteLoader", "True", "True", "True", layout, null, "False", "", logger.getContext().getConfiguration());
+		fileAppender.start();
+		logger.addAppender(fileAppender);
 	}
 
 	/**
@@ -314,11 +299,11 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	{
 		try
 		{
-			this.localProperties.store(new FileWriter(this.propertiesFile), String.format("Properties for LiteLoader %s", LiteLoaderBootstrap.VERSION));
+			this.localProperties.store(new FileWriter(this.propertiesFile), String.format("Properties for LiteLoader %s", LiteLoaderVersion.CURRENT));
 		}
 		catch (Throwable th)
 		{
-			LiteLoaderBootstrap.logger.log(Level.WARNING, "Error writing liteloader properties", th);
+			LiteLoaderLogger.warning(th, "Error writing liteloader properties");
 		}
 	}
 
@@ -355,6 +340,14 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	}
 
 	/**
+	 * Get the mods folder
+	 */
+	public File getVersionedModsFolder()
+	{
+		return this.versionedModsFolder;
+	}
+	
+	/**
 	 * Get the base "liteconfig" folder
 	 */
 	public File getConfigBaseFolder()
@@ -369,6 +362,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	 * @param defaultValue
 	 * @return
 	 */
+	@Override
 	public boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue)
 	{
 		boolean result = this.localProperties.getProperty(propertyName, String.valueOf(defaultValue)).equalsIgnoreCase("true");
@@ -377,11 +371,25 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	}
 	
 	/**
+	 * Get a boolean propery from the properties file and also write the new value back to the properties file
+	 * 
+	 * @param propertyName
+	 * @param defaultValue
+	 * @return
+	 */
+	@Override
+	public boolean getBooleanProperty(String propertyName)
+	{
+		return this.localProperties.getProperty(propertyName, "false").equalsIgnoreCase("true");
+	}
+	
+	/**
 	 * Set a boolean property
 	 * 
 	 * @param propertyName
 	 * @param value
 	 */
+	@Override
 	public void setBooleanProperty(String propertyName, boolean value)
 	{
 		this.localProperties.setProperty(propertyName, String.valueOf(value));
@@ -396,7 +404,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 	{
 		if (this.localProperties != null)
 		{
-			this.localProperties.setProperty(modKey, String.valueOf(LiteLoaderBootstrap.VERSION.getLoaderRevision()));
+			this.localProperties.setProperty(modKey, String.valueOf(LiteLoaderVersion.CURRENT.getLoaderRevision()));
 			this.writeProperties();
 		}
 	}
@@ -458,16 +466,7 @@ class LiteLoaderBootstrap implements ILoaderBootstrap
 		}
 		catch (Throwable th)
 		{
-			LiteLoaderBootstrap.logger.log(Level.WARNING, "Setting branding failed", th);
+			LiteLoaderLogger.warning(th, "Setting branding failed");
 		}
-	}
-	
-	/**
-	 * @param string
-	 * @param args
-	 */
-	private static void logInfo(String string, Object... args)
-	{
-		LiteLoaderBootstrap.logger.info(String.format(string, args));
 	}
 }

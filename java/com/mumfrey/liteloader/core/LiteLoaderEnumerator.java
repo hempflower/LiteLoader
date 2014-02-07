@@ -1,36 +1,24 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeSet;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
+import java.util.Set;
 
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.core.exceptions.OutdatedLoaderException;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * The enumerator performs all mod discovery functions for LiteLoader, this includes locating mod files to load
@@ -38,24 +26,12 @@ import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
  *
  * @author Adam Mummery-Smith
  */
-class LiteLoaderEnumerator implements FilenameFilter
+public class LiteLoaderEnumerator implements PluggableEnumerator
 {
-	private static final String OPTION_SEARCH_ZIPFILES  = "search.zipfiles";
-	private static final String OPTION_SEARCH_JARFILES  = "search.jarfiles";
 	private static final String OPTION_SEARCH_MODS      = "search.mods";
 	private static final String OPTION_SEARCH_JAR       = "search.jar";
 	private static final String OPTION_SEARCH_CLASSPATH = "search.classpath";
 
-	/**
-	 * Maximum recursion depth for mod discovery
-	 */
-	private static final int MAX_DISCOVERY_DEPTH = 16;
-
-	/**
-	 * Local logger reference
-	 */
-	private static Logger logger = Logger.getLogger("liteloader");
-	
 	/**
 	 * Reference to the bootstrap agent 
 	 */
@@ -67,64 +43,189 @@ class LiteLoaderEnumerator implements FilenameFilter
 	private final LaunchClassLoader classLoader;
 
 	/**
-	 * Array of class path entries specified to the JVM instance 
+	 * 
 	 */
-	private final String[] classPathEntries;
-
+	private final EnabledModsList enabledModsList;
+	
 	/**
 	 * Classes to load, mapped by class name 
 	 */
 	private final Map<String, Class<? extends LiteMod>> modsToLoad = new HashMap<String, Class<? extends LiteMod>>();
 	
 	/**
-	 * URLs to add once init is completed
+	 * Mod containers which are disabled 
 	 */
-	private final List<ModFile> allModFiles = new ArrayList<ModFile>();
-	
-	/**
-	 * Mod metadata from version file 
-	 */
-	private final Map<String, ModFile> modFiles = new HashMap<String, ModFile>();
-	
-	/**
-	 * True if the loader is allowed to load tweak classes from mod files 
-	 */
-	private final boolean loadTweaks;
-	
-	/**
-	 * True if liteloader should also search files ending with .zip
-	 */
-	private boolean readZipFiles = false;
-	
-	/**
-	 * True if liteloader should also search files ending with .jar
-	 */
-	private boolean readJarFiles = true;
+	private final Map<String, LoadableMod<?>> disabledMods = new HashMap<String, LoadableMod<?>>();
 
+	/**
+	 * Mapping of identifiers to mod containers 
+	 */
+	private final Map<String, LoadableMod<?>> containers = new HashMap<String, LoadableMod<?>>();
+	
+	/**
+	 * Mapping of mods to mod containers 
+	 */
+	private final Map<String, LoadableMod<?>> modContainers = new HashMap<String, LoadableMod<?>>();
+	
+	/**
+	 * Tweaks to inject 
+	 */
+	private final List<TweakContainer<File>> tweakContainers = new ArrayList<TweakContainer<File>>();
+	
+	/**
+	 * Other tweak-containing jars which we have injected 
+	 */
+	private final List<Loadable<File>> injectedTweaks = new ArrayList<Loadable<File>>();
+	
+	/**
+	 * 
+	 */
+	private final List<EnumeratorModule<?>> modules = new ArrayList<EnumeratorModule<?>>();
+	
 	private boolean searchModsFolder = true;
 	private boolean searchProtectionDomain = true;
 	private boolean searchClassPath = true;
 	
 	/**
+	 * @param classLoader
+	 * @param enabledModsList 
+	 * @param loadTweaks
 	 * @param properties
 	 * @param gameFolder
-	 * @param classLoader
-	 * @param loadTweaks
 	 */
-	public LiteLoaderEnumerator(LiteLoaderBootstrap bootstrap, LaunchClassLoader classLoader, boolean loadTweaks)
+	public LiteLoaderEnumerator(LiteLoaderBootstrap bootstrap, LaunchClassLoader classLoader, EnabledModsList enabledModsList, boolean loadTweaks)
 	{
-		this.bootstrap   = bootstrap;
-		this.classLoader = classLoader;
-		this.loadTweaks  = loadTweaks;
-
-		// Read the JVM class path into the local array
-		this.classPathEntries = this.readClassPath();
+		this.bootstrap       = bootstrap;
+		this.classLoader     = classLoader;
+		this.enabledModsList = enabledModsList;
 		
+		this.initModules(loadTweaks);
+		
+		// Initialise the shared mod list if we haven't already
+        this.getSharedModList();
+	}
+
+	/**
+	 * Initialise the discovery modules
+	 * 
+	 * @param loadTweaks 
+	 */
+	private void initModules(boolean loadTweaks)
+	{
 		// Read the discovery settings from the properties 
 		this.readSettings();
 		
-		// Write settings back to the properties file, in case they changed 
+		if (this.searchClassPath)
+		{
+			this.registerModule(new EnumeratorModuleClassPath(loadTweaks));
+		}
+		
+		if (this.searchProtectionDomain)
+		{
+			LiteLoaderLogger.info("Protection domain searching is no longer required or supported, protection domain search has been disabled");
+			this.searchProtectionDomain = false;
+//			this.registerModule(new EnumeratorModuleProtectionDomain(loadTweaks));
+		}
+		
+		if (this.searchModsFolder)
+		{
+			File modsFolder = this.bootstrap.getModsFolder();
+			this.registerModule(new EnumeratorModuleFolder(modsFolder, loadTweaks, true));
+			
+			File versionedModsFolder = this.bootstrap.getVersionedModsFolder();
+			this.registerModule(new EnumeratorModuleFolder(versionedModsFolder, loadTweaks, false));
+		}
+		
 		this.writeSettings();
+	}
+
+	/**
+	 * Initialise the "shared" mod list if it's not already been created
+	 * @return 
+	 */
+	public Map<String, Map<String, String>> getSharedModList()
+	{
+		try
+		{
+			@SuppressWarnings("unchecked")
+			Map<String, Map<String,String>> sharedModList = (Map<String, Map<String, String>>) Launch.blackboard.get("modList");
+			
+			if (sharedModList == null)
+			{
+			    sharedModList = new HashMap<String, Map<String,String>>();
+			    Launch.blackboard.put("modList", sharedModList);
+			}
+			
+			return sharedModList;
+		}
+		catch (Exception ex)
+		{
+			LiteLoaderLogger.warning("Shared mod list was invalid or not accessible, this isn't especially bad but something isn't quite right");
+			return null;
+		}
+	}
+	
+	/**
+	 * Get the discovery settings from the properties file
+	 */
+	private void readSettings()
+	{
+		this.searchModsFolder       = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_MODS,      true);
+		this.searchProtectionDomain = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_JAR,       false);
+		this.searchClassPath        = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_CLASSPATH, true);
+		
+		if (!this.searchModsFolder && !this.searchProtectionDomain && !this.searchClassPath)
+		{
+			LiteLoaderLogger.warning("Invalid configuration, no search locations defined. Enabling all search locations.");
+			
+			this.searchModsFolder       = true;
+			this.searchClassPath        = true;
+		}
+	}
+
+	/**
+	 * Write settings
+	 */
+	private void writeSettings()
+	{
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_MODS,      this.searchModsFolder);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_JAR,       this.searchProtectionDomain);
+		this.bootstrap.setBooleanProperty(OPTION_SEARCH_CLASSPATH, this.searchClassPath);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.core.PluggableEnumerator#registerModule(com.mumfrey.liteloader.core.EnumeratorModule)
+	 */
+	@Override
+	public void registerModule(EnumeratorModule<?> module)
+	{
+		if (module != null && !this.modules.contains(module))
+		{
+			LiteLoaderLogger.info("Registering %s: %s", module.getClass().getSimpleName(), module);
+			this.modules.add(module);
+			module.init(this);
+		}
+	}
+	
+	/**
+	 * @param propertyName
+	 * @param defaultValue
+	 * @return
+	 */
+	@Override
+	public boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue)
+	{
+		return this.bootstrap.getAndStoreBooleanProperty(propertyName, defaultValue);
+	}
+
+	/**
+	 * @param propertyName
+	 * @param value
+	 */
+	@Override
+	public void setBooleanProperty(String propertyName, boolean value)
+	{
+		this.bootstrap.setBooleanProperty(propertyName, value);
 	}
 
 	/**
@@ -133,6 +234,22 @@ class LiteLoaderEnumerator implements FilenameFilter
 	public Collection<Class<? extends LiteMod>> getModsToLoad()
 	{
 		return this.modsToLoad.values();
+	}
+	
+	/**
+	 * @return
+	 */
+	public Collection<LoadableMod<?>> getDisabledMods()
+	{
+		return this.disabledMods.values();
+	}
+	
+	/**
+	 * Get the list of injected tweak containers
+	 */
+	public List<Loadable<File>> getInjectedTweaks()
+	{
+		return this.injectedTweaks;
 	}
 
 	/**
@@ -161,63 +278,38 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 */
 	public String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue)
 	{
-		ModFile modFile = this.getModFile(modClass);
-		return modFile != null ? modFile.getMetaValue(metaDataKey, defaultValue) : defaultValue;
+		return this.getModContainer(modClass).getMetaValue(metaDataKey, defaultValue);
 	}
 	
 	/**
 	 * @param mod
 	 * @return
 	 */
-	public ModFile getModFile(Class<? extends LiteMod> modClass)
+	public LoadableMod<?> getContainer(String identifier)
 	{
-		return this.modFiles.get(modClass.getSimpleName());
+		return this.containers.get(identifier);
+	}
+	
+	/**
+	 * @param mod
+	 * @return
+	 */
+	public LoadableMod<?> getModContainer(Class<? extends LiteMod> modClass)
+	{
+		return this.modContainers.containsKey(modClass.getSimpleName()) ? this.modContainers.get(modClass.getSimpleName()) : LoadableMod.NONE;
 	}
 
 	/**
-	 * Get the mod "name" metadata key, this is used for versioning, exclusivity, and enablement checks
+	 * Get the mod identifier (metadata key), this is used for versioning, exclusivity, and enablement checks
 	 * 
 	 * @param modClass
 	 * @return
 	 */
-	public String getModMetaName(Class<? extends LiteMod> modClass)
+	public String getModIdentifier(Class<? extends LiteMod> modClass)
 	{
 		String modClassName = modClass.getSimpleName();
-		if (!this.modFiles.containsKey(modClassName)) return null;
-		return this.modFiles.get(modClassName).getModName().toLowerCase();
-	}
-	
-	/**
-	 * Get the discovery settings from the properties file
-	 */
-	private void readSettings()
-	{
-		this.readZipFiles           = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_ZIPFILES,  false);
-		this.readJarFiles           = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_JARFILES,  true);
-		this.searchModsFolder       = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_MODS,      true);
-		this.searchProtectionDomain = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_JAR,       true);
-		this.searchClassPath        = this.bootstrap.getAndStoreBooleanProperty(OPTION_SEARCH_CLASSPATH, true);
-		
-		if (!this.searchModsFolder && !this.searchProtectionDomain && !this.searchClassPath)
-		{
-			LiteLoaderEnumerator.logWarning("Invalid configuration, no search locations defined. Enabling all search locations.");
-			
-			this.searchModsFolder       = true;
-			this.searchProtectionDomain = true;
-			this.searchClassPath        = true;
-		}
-	}
-
-	/**
-	 * Write settings
-	 */
-	private void writeSettings()
-	{
-		this.bootstrap.setBooleanProperty(OPTION_SEARCH_ZIPFILES,  this.readZipFiles);
-		this.bootstrap.setBooleanProperty(OPTION_SEARCH_JARFILES,  this.readJarFiles);
-		this.bootstrap.setBooleanProperty(OPTION_SEARCH_MODS,      this.searchModsFolder);
-		this.bootstrap.setBooleanProperty(OPTION_SEARCH_JAR,       this.searchProtectionDomain);
-		this.bootstrap.setBooleanProperty(OPTION_SEARCH_CLASSPATH, this.searchClassPath);
+		if (!this.modContainers.containsKey(modClassName)) return LiteLoaderEnumerator.getModClassName(modClass);
+		return this.modContainers.get(modClassName).getIdentifier();
 	}
 
 	/**
@@ -225,29 +317,14 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 */
 	protected void discoverMods()
 	{
-		if (this.searchClassPath)
+		for (EnumeratorModule<?> module : this.modules)
 		{
-			this.findTweaksInClassPath();
+			module.enumerate(this, this.enabledModsList, this.bootstrap.getProfile());
 		}
 		
-		if (this.searchModsFolder)
+		for (TweakContainer<File> tweakContainer : this.tweakContainers)
 		{
-			// Find and enumerate the "mods" folder
-			File modsFolder = this.bootstrap.getModsFolder();
-			if (modsFolder.exists() && modsFolder.isDirectory())
-			{
-				LiteLoaderEnumerator.logInfo("Mods folder found, searching %s", modsFolder.getPath());
-				this.findModFiles(modsFolder, false);
-				
-				File versionedModsFolder = new File(modsFolder, LiteLoaderBootstrap.VERSION.getMinecraftVersion());
-				if (versionedModsFolder.exists() && versionedModsFolder.isDirectory())
-				{
-					LiteLoaderEnumerator.logInfo("Versioned mods folder found, searching %s", versionedModsFolder.getPath());
-					this.findModFiles(versionedModsFolder, true);
-				}
-				
-				LiteLoaderEnumerator.logInfo("Found %d mod file(s)", this.allModFiles.size());
-			}
+			this.addTweaksFrom(tweakContainer);
 		}
 	}
 	
@@ -258,257 +335,96 @@ class LiteLoaderEnumerator implements FilenameFilter
 	{
 		try
 		{
-			// Inject mod files discovered earlier into the class loader
-			this.injectDiscoveredModFiles();
-			
-			// then search through all sources to find mod classes
-			this.findModClasses();
+			for (EnumeratorModule<?> module : this.modules)
+			{
+				module.injectIntoClassLoader(this, this.classLoader, this.enabledModsList, this.bootstrap.getProfile());
+			}
+
+			for (EnumeratorModule<?> module : this.modules)
+			{
+				module.registerMods(this, this.classLoader);
+			}
+
+			LiteLoaderLogger.info("Mod class discovery completed");
 		}
 		catch (Throwable th)
 		{
-			LiteLoaderEnumerator.logger.log(Level.WARNING, "Mod class discovery failed", th);
+			LiteLoaderLogger.warning(th, "Mod class discovery failed");
 			return;
 		}
 	}
 
-	/**
-	 * Injects all external mod files into the launch classloader's class path
-	 */
-	private void injectDiscoveredModFiles()
+	@Override
+	public boolean isContainerEnabled(LoadableMod<?> container)
 	{
-		LiteLoaderEnumerator.logInfo("Injecting external mods into class path...");
-		
-		for (ModFile file : this.allModFiles)
+		if (container != null)
 		{
-			try
+			if (container.isEnabled(this.enabledModsList, this.bootstrap.getProfile()) && this.checkDependencies(container))
 			{
-				if (file.injectIntoClassPath(this.classLoader, false))
-				{
-					LiteLoaderEnumerator.logInfo("Successfully injected mod file '%s' into classpath", file.getAbsolutePath());
-				}
+				this.containers.put(container.getIdentifier(), container);
 			}
-			catch (MalformedURLException ex)
+			else
 			{
-				LiteLoaderEnumerator.logWarning("Error injecting '%s' into classPath. The mod will not be loaded", file.getAbsolutePath());
+				this.disabledMods.put(container.getIdentifier(), container);
+				return false;
 			}
 		}
-	}
 
-	/**
-	 * Reads the class path entries that were supplied to the JVM and returns them as an array
-	 */
-	private String[] readClassPath()
-	{
-		LiteLoaderEnumerator.logInfo("Enumerating class path...");
-		
-		String classPath = System.getProperty("java.class.path");
-		String classPathSeparator = System.getProperty("path.separator");
-		String[] classPathEntries = classPath.split(classPathSeparator);
-		
-		LiteLoaderEnumerator.logInfo("Class path separator=\"%s\"", classPathSeparator);
-		LiteLoaderEnumerator.logInfo("Class path entries=(\n   classpathEntry=%s\n)", classPath.replace(classPathSeparator, "\n   classpathEntry="));
-		return classPathEntries;
-	}
-
-	/**
-	 * Search class path entries for mod class path entries which contain tweaks, mainly for dev environment purposes
-	 */
-	private void findTweaksInClassPath()
-	{
-		LiteLoaderEnumerator.logInfo("Discovering tweaks on class path...");
-
-		for (String classPathPart : this.classPathEntries)
-		{
-			File packagePath = new File(classPathPart);
-			ClassPathMod classPathMod = new ClassPathMod(packagePath, null);
-			
-			if (classPathMod.hasTweakClass() || classPathMod.hasClassTransformer())
-			{
-				this.addTweaksFromMod(classPathMod);
-			}
-		}
+		return true;
 	}
 	
-	/**
-	 * For FilenameFilter interface
-	 * 
-	 * @see java.io.FilenameFilter#accept(java.io.File, java.lang.String)
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.core.PluggableEnumerator#addTweaksFrom(com.mumfrey.liteloader.core.TweakContainer)
 	 */
 	@Override
-	public boolean accept(File dir, String fileName)
+	public void registerTweakContainer(TweakContainer<File> container)
 	{
-		fileName = fileName.toLowerCase();
-		return                       fileName.endsWith(".litemod")
-			|| (this.readZipFiles && fileName.endsWith(".zip"))
-			|| (this.readJarFiles && fileName.endsWith(".jar"));
+		if (!container.isEnabled(this.enabledModsList, this.bootstrap.getProfile()))
+		{
+			LiteLoaderLogger.info("Mod %s is disabled for profile %s, not injecting tranformers", container.getIdentifier(), this.bootstrap.getProfile());
+			return;
+		}
+
+		this.tweakContainers.add(container);
 	}
 
 	/**
-	 * Find mod files in the "mods" folder
-	 * 
-	 * @param modFolder Folder to search
-	 * @param isVersionedModFolder This is true if we will also allow non-metadata-containing jars to be examined for tweaks
+	 * @param tweakContainer
 	 */
-	protected void findModFiles(File modFolder, boolean isVersionedModFolder)
+	private void addTweaksFrom(TweakContainer<File> tweakContainer)
 	{
-		Map<String, TreeSet<ModFile>> versionOrderingSets = new HashMap<String, TreeSet<ModFile>>();
-		
-		for (File modFile : modFolder.listFiles(this))
+		if (this.checkDependencies(tweakContainer))
 		{
-			try
+			if (tweakContainer.hasTweakClass())
 			{
-				ZipFile modZip = new ZipFile(modFile);
-				ZipEntry versionEntry = modZip.getEntry("litemod.json");
-				ZipEntry legacyVersionEntry = modZip.getEntry("version.txt");
-
-				// Check for a version file
-				if (versionEntry != null)
-				{
-					String strVersion = null;
-					try
-					{
-						strVersion = ModFile.zipEntryToString(modZip, versionEntry);
-					}
-					catch (IOException ex)
-					{
-						LiteLoaderEnumerator.logWarning("Error reading version data from %s", modZip.getName());
-					}
-					
-					if (strVersion != null)
-					{
-						ModFile modFileInfo = new ModFile(modFile, strVersion);
-						
-						if (modFileInfo.isValid())
-						{
-							// Only add the mod if the version matches, we add candidates to the versionOrderingSets in
-							// order to determine the most recent version available.
-							if (LiteLoaderBootstrap.VERSION.isVersionSupported(modFileInfo.getVersion()))
-							{
-								if (!versionOrderingSets.containsKey(modFileInfo.getName()))
-								{
-									versionOrderingSets.put(modFileInfo.getModName(), new TreeSet<ModFile>());
-								}
-								
-								LiteLoaderEnumerator.logInfo("Considering valid mod file: %s", modFileInfo.getAbsolutePath());
-								versionOrderingSets.get(modFileInfo.getModName()).add(modFileInfo);
-							}
-							else
-							{
-								LiteLoaderEnumerator.logInfo("Not adding invalid or outdated mod file: %s", modFile.getAbsolutePath());
-							}
-						}
-					}
-				}
-				else if (legacyVersionEntry != null)
-				{
-					LiteLoaderEnumerator.logWarning("version.txt is no longer supported, ignoring outdated mod file: %s", modFile.getAbsolutePath());
-				}
-				else if (isVersionedModFolder && this.loadTweaks && this.readJarFiles && modFile.getName().toLowerCase().endsWith(".jar"))
-				{
-					this.addTweaksFromJar(modFile);
-				}
-				
-				modZip.close();
+				this.addTweakFrom(tweakContainer);
 			}
-			catch (Exception ex)
-			{
-				LiteLoaderEnumerator.logInfo("Error enumerating '%s': Invalid zip file or error reading file", modFile.getAbsolutePath());
-			}
-		}
-
-		// Copy the first entry in every version set into the modfiles list
-		for (Entry<String, TreeSet<ModFile>> modFileEntry : versionOrderingSets.entrySet())
-		{
-			ModFile newestVersion = modFileEntry.getValue().iterator().next();
-
-			LiteLoaderEnumerator.logInfo("Adding newest valid mod file '%s' at revision %.4f: ", newestVersion.getAbsolutePath(), newestVersion.getRevision());
-			this.allModFiles.add(newestVersion);
 			
-			if (this.loadTweaks)
+			if (tweakContainer.hasClassTransformers())
 			{
-				try
-				{
-					this.addTweaksFromMod(newestVersion);
-				}
-				catch (Throwable th)
-				{
-					LiteLoaderEnumerator.logWarning("Error adding tweaks from '%s'", newestVersion.getAbsolutePath());
-				}
+				this.addClassTransformersFrom(tweakContainer, tweakContainer.getClassTransformerClassNames());
 			}
-		}
-	}
-	
-	private void addTweaksFromMod(ModFile modFile)
-	{
-		if (modFile.hasTweakClass())
-		{
-			this.addTweakFrom(modFile, modFile.getTweakClassName(), null);
-		}
-		else if (modFile.isFile())
-		{
-			this.addTweaksFromJar(modFile);
-		}
-		
-		if (modFile.hasClassTransformer())
-		{
-			this.addClassTransformerFrom(modFile, modFile.getClassTransformerClassName());
 		}
 	}
 
-	/**
-	 * @param jarFile
-	 * @throws IOException
-	 */
-	private void addTweaksFromJar(File jarFile)
+	private void addTweakFrom(TweakContainer<File> container)
 	{
-		JarFile jar = null;
-		
 		try
 		{
-			jar = new JarFile(jarFile);
-			if (jar.getManifest() != null)
+			String tweakClass = container.getTweakClassName();
+			int tweakPriority = container.getTweakPriority();
+			LiteLoaderLogger.info("Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d", container.getName(), tweakClass, tweakPriority);
+			if (LiteLoaderTweaker.addCascadedTweaker(tweakClass, tweakPriority))
 			{
-				LiteLoaderEnumerator.logInfo("Searching for tweaks in '%s'", jarFile.getName());
-				Attributes manifestAttributes = jar.getManifest().getMainAttributes();
+				LiteLoaderLogger.info("tweakClass '%s' was successfully added", tweakClass);
+				container.injectIntoClassPath(this.classLoader, true);
 				
-				String tweakClass = manifestAttributes.getValue("TweakClass");
-				if (tweakClass != null)
+				if (container.isExternalJar())
 				{
-					String[] classPathEntries = null;
-					String classPath = manifestAttributes.getValue("Class-Path");
-					if (classPath != null)
-					{
-						classPathEntries = classPath.split(" ");
-					}
-					
-					this.addTweakFrom(jarFile, tweakClass, classPathEntries);
+					this.injectedTweaks.add(container);
 				}
-			}
-		}
-		catch (Exception ex)
-		{
-			LiteLoaderEnumerator.logWarning("Error parsing tweak class manifest entry in '%s'", jarFile.getAbsolutePath());
-		}
-		finally
-		{
-			try
-			{
-				if (jar != null) jar.close();
-			}
-			catch (IOException ex) {}
-		}
-	}
-	
-	private void addTweakFrom(File jarFile, String tweakClass, String[] classPathEntries)
-	{
-		try
-		{
-			LiteLoaderEnumerator.logInfo("Mod file '%s' provides tweakClass '%s', adding to Launch queue", jarFile.getName(), tweakClass);
-			if (LiteLoaderTweaker.addTweaker(tweakClass))
-			{
-				LiteLoaderEnumerator.logInfo("tweakClass '%s' was successfully added", tweakClass);
-				this.injectIntoClassLoader(jarFile);
 				
+				String[] classPathEntries = container.getClassPathEntries();
 				if (classPathEntries != null)
 				{
 					for (String classPathEntry : classPathEntries)
@@ -518,7 +434,7 @@ class LiteLoaderEnumerator implements FilenameFilter
 							File classPathJar = new File(this.bootstrap.getGameDirectory(), classPathEntry);
 							URL classPathJarUrl = classPathJar.toURI().toURL();
 							
-							LiteLoaderEnumerator.logInfo("Adding Class-Path entry: %s", classPathEntry); 
+							LiteLoaderLogger.info("Adding Class-Path entry: %s", classPathEntry); 
 							LiteLoaderTweaker.addURLToParentClassLoader(classPathJarUrl);
 							this.classLoader.addURL(classPathJarUrl);
 						}
@@ -532,176 +448,59 @@ class LiteLoaderEnumerator implements FilenameFilter
 		}
 	}
 
-	private void addClassTransformerFrom(File jarFile, String classTransformerClass)
+	private void addClassTransformersFrom(TweakContainer<File> container, List<String> classTransformerClasses)
 	{
 		try
 		{
-			LiteLoaderEnumerator.logInfo("Mod file '%s' provides classTransformer '%s', adding to class loader", jarFile.getName(), classTransformerClass);
-			if (LiteLoaderTweaker.addClassTransformer(classTransformerClass))
+			for (String classTransformerClass : classTransformerClasses)
 			{
-				LiteLoaderEnumerator.logInfo("classTransformer '%s' was successfully added", classTransformerClass);
-				this.injectIntoClassLoader(jarFile);
+				LiteLoaderLogger.info("Mod file '%s' provides classTransformer '%s', adding to class loader", container.getName(), classTransformerClass);
+				if (LiteLoaderTweaker.getTransformerManager().injectTransformer(classTransformerClass))
+				{
+					LiteLoaderLogger.info("classTransformer '%s' was successfully added", classTransformerClass);
+					container.injectIntoClassPath(this.classLoader, true);
+				}
 			}
 		}
 		catch (MalformedURLException ex)
 		{
 		}
 	}
-	
-	/**
-	 * @param jarFile
-	 * @throws MalformedURLException
-	 */
-	private void injectIntoClassLoader(File jarFile) throws MalformedURLException
-	{
-		if (jarFile instanceof ModFile)
-		{
-			((ModFile)jarFile).injectIntoClassPath(this.classLoader, true);
-		}
-		else
-		{
-			LiteLoaderTweaker.addURLToParentClassLoader(jarFile.toURI().toURL());
-			this.classLoader.addURL(jarFile.toURI().toURL());
-		}
-	}
-	
-	/**
-	 * Find mod classes in the class path and enumerated mod files list
-	 * @param classPathEntries Java class path split into string entries
-	 */
-	private void findModClasses()
-	{
-		if (this.searchProtectionDomain || this.searchClassPath)
-			LiteLoaderEnumerator.logInfo("Discovering mods on class path...");
-		
-		if (this.searchProtectionDomain)
-		{
-			try
-			{
-				this.findModsInProtectionDomain();
-			}
-			catch (Throwable th)
-			{
-				LiteLoaderEnumerator.logWarning("Error loading from local class path: %s", th.getMessage());
-			}
-		}
-		
-		if (this.searchClassPath)
-		{
-			// Search through the class path and find mod classes
-			this.findModsInClassPath();
-		}
-		
-		// Search through mod files and find mod classes
-		this.findModsInFiles();
-		
-		LiteLoaderEnumerator.logInfo("Mod class discovery completed");
-	}
 
-	/**
-	 * @param modsToLoad
-	 * @throws MalformedURLException
-	 * @throws URISyntaxException
-	 * @throws UnsupportedEncodingException
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.core.PluggableEnumerator#registerMods(com.mumfrey.liteloader.core.LoadableMod, boolean)
 	 */
-	@SuppressWarnings("unchecked")
-	private void findModsInProtectionDomain() throws MalformedURLException, URISyntaxException, UnsupportedEncodingException
+	@Override
+	public void registerModsFrom(LoadableMod<?> container, boolean registerContainer)
 	{
-		LiteLoaderEnumerator.logInfo("Searching protection domain code source...");
-		
-		File packagePath = null;
-		
-		URL protectionDomainLocation = LiteLoaderEnumerator.class.getProtectionDomain().getCodeSource().getLocation();
-		if (protectionDomainLocation != null)
+		LinkedList<Class<? extends LiteMod>> modClasses = LiteLoaderEnumerator.<LiteMod>getSubclassesFor(container, this.classLoader, LiteMod.class, PluggableEnumerator.MOD_CLASS_PREFIX);
+		for (Class<? extends LiteMod> mod : modClasses)
 		{
-			if (protectionDomainLocation.toString().indexOf('!') > -1 && protectionDomainLocation.toString().startsWith("jar:"))
-			{
-				protectionDomainLocation = new URL(protectionDomainLocation.toString().substring(4, protectionDomainLocation.toString().indexOf('!')));
-			}
-			
-			packagePath = new File(protectionDomainLocation.toURI());
-		}
-		else
-		{
-			// Fix (?) for forge and other mods which mangle the protection domain
-			String reflectionClassPath = LiteLoaderEnumerator.class.getResource("/com/mumfrey/liteloader/core/LiteLoader.class").getPath();
-			
-			if (reflectionClassPath.indexOf('!') > -1)
-			{
-				reflectionClassPath = URLDecoder.decode(reflectionClassPath, "UTF-8");
-				packagePath = new File(reflectionClassPath.substring(5, reflectionClassPath.indexOf('!')));
-			}
+			this.registerMod(mod, registerContainer ? container : null);
 		}
 		
-		if (packagePath != null)
+		if (modClasses.size() > 0)
 		{
-			LinkedList<Class<?>> modClasses = LiteLoaderEnumerator.getSubclassesFor(packagePath, this.classLoader, LiteMod.class, "LiteMod");
-			
-			for (Class<?> mod : modClasses)
-			{
-				if (this.modsToLoad.containsKey(mod.getSimpleName()))
-				{
-					LiteLoaderEnumerator.logWarning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getSimpleName());
-				}
-				
-				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
-			}
-			
-			if (modClasses.size() > 0)
-				LiteLoaderEnumerator.logInfo("Found %s potential matches", modClasses.size());
+			LiteLoaderLogger.info("Found %s potential matches", modClasses.size());
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private void findModsInClassPath()
-	{
-		for (String classPathPart : this.classPathEntries)
-		{
-			LiteLoaderEnumerator.logInfo("Searching %s...", classPathPart);
-			
-			File packagePath = new File(classPathPart);
-			LinkedList<Class<?>> modClasses = LiteLoaderEnumerator.getSubclassesFor(packagePath, this.classLoader, LiteMod.class, "LiteMod");
-			
-			for (Class<?> mod : modClasses)
-			{
-				if (this.modsToLoad.containsKey(mod.getSimpleName()))
-				{
-					LiteLoaderEnumerator.logWarning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getSimpleName());
-				}
-				
-				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
-				this.modFiles.put(mod.getSimpleName(), new ClassPathMod(packagePath, mod.getSimpleName().substring(7).toLowerCase()));
-			}
-			
-			if (modClasses.size() > 0)
-				LiteLoaderEnumerator.logInfo("Found %s potential matches", modClasses.size());
-		}
-	}
-
-	/**
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.core.PluggableEnumerator#addMod(java.lang.Class, com.mumfrey.liteloader.core.LoadableMod)
 	 */
-	@SuppressWarnings("unchecked")
-	private void findModsInFiles()
+	@Override
+	public void registerMod(Class<? extends LiteMod> mod, LoadableMod<?> container)
 	{
-		for (ModFile modFile : this.allModFiles)
+		if (this.modsToLoad.containsKey(mod.getSimpleName()))
 		{
-			LiteLoaderEnumerator.logInfo("Searching %s...", modFile.getAbsolutePath());
-			
-			LinkedList<Class<?>> modClasses = LiteLoaderEnumerator.getSubclassesFor(modFile, this.classLoader, LiteMod.class, "LiteMod");
-			
-			for (Class<?> mod : modClasses)
-			{
-				if (this.modsToLoad.containsKey(mod.getSimpleName()))
-				{
-					LiteLoaderEnumerator.logWarning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getSimpleName());
-				}
-				
-				this.modsToLoad.put(mod.getSimpleName(), (Class<? extends LiteMod>)mod);
-				this.modFiles.put(mod.getSimpleName(), modFile);
-			}
-			
-			if (modClasses.size() > 0)
-				LiteLoaderEnumerator.logInfo("Found %s potential matches", modClasses.size());
+			LiteLoaderLogger.warning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getSimpleName());
+		}
+		
+		this.modsToLoad.put(mod.getSimpleName(), mod);
+		if (container != null)
+		{
+			this.modContainers.put(mod.getSimpleName(), container);
+			container.addContainedMod(LiteLoaderEnumerator.getModClassName(mod));
 		}
 	}
 
@@ -712,122 +511,36 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 * @param superClass
 	 * @return
 	 */
-	private static LinkedList<Class<?>> getSubclassesFor(File packagePath, ClassLoader classloader, Class<?> superClass, String prefix)
+	private static <T> LinkedList<Class<? extends T>> getSubclassesFor(LoadableMod<?> container, ClassLoader classloader, Class<T> superClass, String prefix)
 	{
-		LinkedList<Class<?>> classes = new LinkedList<Class<?>>();
+		LinkedList<Class<? extends T>> classes = new LinkedList<Class<? extends T>>();
 		
-		try
+		if (container != null)
 		{
-			if (packagePath.isDirectory())
+			try
 			{
-				LiteLoaderEnumerator.enumerateDirectory(prefix, superClass, classloader, classes, packagePath);
+				for (String fullClassName : container.getContainedClassNames())
+				{
+					boolean isDefaultPackage = fullClassName.lastIndexOf('.') == -1;
+					String className = isDefaultPackage ? fullClassName : fullClassName.substring(fullClassName.lastIndexOf('.') + 1);
+					if (prefix == null || className.startsWith(prefix))
+					{
+						LiteLoaderEnumerator.<T>checkAndAddClass(classloader, superClass, classes, fullClassName);
+					}
+				}
 			}
-			else if (packagePath.isFile() && (packagePath.getName().endsWith(".jar") || packagePath.getName().endsWith(".zip") || packagePath.getName().endsWith(".litemod")))
+			catch (OutdatedLoaderException ex)
 			{
-				LiteLoaderEnumerator.enumerateCompressedPackage(prefix, superClass, classloader, classes, packagePath);
+				classes.clear();
+				LiteLoaderLogger.info("Error searching in '%s', missing API component '%s', your loader is probably out of date", container, ex.getMessage());
 			}
-		}
-		catch (OutdatedLoaderException ex)
-		{
-			classes.clear();
-			LiteLoaderEnumerator.logWarning("Error searching in '%s', missing API component '%s', your loader is probably out of date", packagePath, ex.getMessage());
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderEnumerator.logger.log(Level.WARNING, "Enumeration error", th);
+			catch (Throwable th)
+			{
+				LiteLoaderLogger.warning(th, "Enumeration error");
+			}
 		}
 		
 		return classes;
-	}
-
-	/**
-	 * @param superClass
-	 * @param classloader
-	 * @param classes
-	 * @param packagePath
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 */
-	private static void enumerateCompressedPackage(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath) throws FileNotFoundException, IOException
-	{
-		FileInputStream fileinputstream = new FileInputStream(packagePath);
-		ZipInputStream zipinputstream = new ZipInputStream(fileinputstream);
-		
-		ZipEntry zipentry = null;
-		
-		do
-		{
-			zipentry = zipinputstream.getNextEntry();
-			
-			if (zipentry != null && zipentry.getName().endsWith(".class"))
-			{
-				String classFileName = zipentry.getName();
-				String className = classFileName.lastIndexOf('/') > -1 ? classFileName.substring(classFileName.lastIndexOf('/') + 1) : classFileName;
-				
-				if (prefix == null || className.startsWith(prefix))
-				{
-					try
-					{
-						String fullClassName = classFileName.substring(0, classFileName.length() - 6).replaceAll("/", ".");
-						LiteLoaderEnumerator.checkAndAddClass(classloader, superClass, classes, fullClassName);
-					}
-					catch (Exception ex) {}
-				}
-			}
-		} while (zipentry != null);
-		
-		fileinputstream.close();
-	}
-
-	/**
-	 * Recursive function to enumerate classes inside a classpath folder
-	 * 
-	 * @param superClass
-	 * @param classloader
-	 * @param classes
-	 * @param packagePath
-	 * @param packageName
-	 * @throws OutdatedLoaderException 
-	 */
-	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath) throws OutdatedLoaderException
-	{
-		LiteLoaderEnumerator.enumerateDirectory(prefix, superClass, classloader, classes, packagePath, "", 0);
-	}
-
-	/**
-	 * Recursive function to enumerate classes inside a classpath folder
-	 * 
-	 * @param superClass
-	 * @param classloader
-	 * @param classes
-	 * @param packagePath
-	 * @param packageName
-	 * @throws OutdatedLoaderException 
-	 */
-	private static void enumerateDirectory(String prefix, Class<?> superClass, ClassLoader classloader, LinkedList<Class<?>> classes, File packagePath, String packageName, int depth) throws OutdatedLoaderException
-	{
-		// Prevent crash due to broken recursion
-		if (depth > MAX_DISCOVERY_DEPTH)
-			return;
-		
-		File[] classFiles = packagePath.listFiles();
-		
-		for (File classFile : classFiles)
-		{
-			if (classFile.isDirectory())
-			{
-				LiteLoaderEnumerator.enumerateDirectory(prefix, superClass, classloader, classes, classFile, packageName + classFile.getName() + ".", depth + 1);
-			}
-			else
-			{
-				if (classFile.getName().endsWith(".class") && (prefix == null || classFile.getName().startsWith(prefix)))
-				{
-					String classFileName = classFile.getName();
-					String className = packageName + classFileName.substring(0, classFileName.length() - 6);
-					LiteLoaderEnumerator.checkAndAddClass(classloader, superClass, classes, className);
-				}
-			}
-		}
 	}
 
 	/**
@@ -837,7 +550,7 @@ class LiteLoaderEnumerator implements FilenameFilter
 	 * @param className
 	 * @throws OutdatedLoaderException 
 	 */
-	private static void checkAndAddClass(ClassLoader classloader, Class<?> superClass, LinkedList<Class<?>> classes, String className) throws OutdatedLoaderException
+	private static <T> void checkAndAddClass(ClassLoader classloader, Class<T> superClass, LinkedList<Class<? extends T>> classes, String className) throws OutdatedLoaderException
 	{
 		if (className.indexOf('$') > -1)
 			return;
@@ -848,31 +561,101 @@ class LiteLoaderEnumerator implements FilenameFilter
 			
 			if (subClass != null && !superClass.equals(subClass) && superClass.isAssignableFrom(subClass) && !subClass.isInterface() && !classes.contains(subClass))
 			{
-				classes.add(subClass);
+				@SuppressWarnings("unchecked")
+				Class<? extends T> matchingClass = (Class<? extends T>)subClass;
+				classes.add(matchingClass);
 			}
 		}
 		catch (Throwable th)
 		{
-			String missingClassName = th.getCause().getMessage();
-			if (th.getCause() instanceof NoClassDefFoundError && missingClassName != null)
+			if (th.getCause() != null)
 			{
-				if (missingClassName.startsWith("com/mumfrey/liteloader/"))
+				String missingClassName = th.getCause().getMessage();
+				if (th.getCause() instanceof NoClassDefFoundError && missingClassName != null)
 				{
-					throw new OutdatedLoaderException(missingClassName.substring(missingClassName.lastIndexOf('/') + 1));
+					if (missingClassName.startsWith("com/mumfrey/liteloader/"))
+					{
+						throw new OutdatedLoaderException(missingClassName.substring(missingClassName.lastIndexOf('/') + 1));
+					}
 				}
 			}
 			
-			LiteLoaderEnumerator.logger.log(Level.WARNING, "checkAndAddClass error", th);
+			LiteLoaderLogger.warning(th, "checkAndAddClass error");
 		}
 	}
 
-	private static void logInfo(String string, Object... args)
+	@Override
+	@SuppressWarnings("unchecked")
+	public boolean checkDependencies(TweakContainer<File> tweakContainer)
 	{
-		LiteLoaderEnumerator.logger.info(String.format(string, args));
+		if (tweakContainer instanceof LoadableMod)
+		{
+			return this.checkDependencies((LoadableMod<File>)tweakContainer);
+		}
+		
+		return true;
 	}
 
-	private static void logWarning(String string, Object... args)
+	@Override
+	public boolean checkDependencies(LoadableMod<?> base)
 	{
-		LiteLoaderEnumerator.logger.warning(String.format(string, args));
+		if (base == null || !base.hasDependencies()) return true;
+		
+		HashSet<String> circularDependencySet = new HashSet<String>();
+		circularDependencySet.add(base.getIdentifier());
+		
+		boolean result = this.checkDependencies(base, base, circularDependencySet);
+		LiteLoaderLogger.info("Dependency check for %s %s", base.getIdentifier(), result ? "passed" : "failed");
+		
+		return result;
+	}
+
+	private boolean checkDependencies(LoadableMod<?> base, LoadableMod<?> container, Set<String> circularDependencySet)
+	{
+		if (container.getDependencies().size() == 0)
+			return true;
+		
+		boolean result = true;
+		
+		for (String dependency : container.getDependencies())
+		{
+			if (!circularDependencySet.contains(dependency))
+			{
+				circularDependencySet.add(dependency);
+				
+				LoadableMod<?> dependencyContainer = this.getContainer(dependency);
+				if (dependencyContainer != null)
+				{
+					if (this.enabledModsList.isEnabled(this.bootstrap.getProfile(), dependency))
+					{
+						result &= this.checkDependencies(base, dependencyContainer, circularDependencySet);
+					}
+					else
+					{
+//						LiteLoaderLogger.warning("Dependency %s required by %s is currently disabled", dependency, base.getIdentifier());
+						base.registerMissingDependency(dependency);
+						result = false;
+					}
+				}
+				else
+				{
+//					LiteLoaderLogger.info("Dependency %s for %s is was not located, no container ", dependency, base.getIdentifier());
+					base.registerMissingDependency(dependency);
+					result = false;
+				}
+			}
+		}
+		
+		return result;
+	}
+
+	public static String getModClassName(LiteMod mod)
+	{
+		return LiteLoaderEnumerator.getModClassName(mod.getClass());
+	}
+
+	public static String getModClassName(Class<? extends LiteMod> mod)
+	{
+		return mod.getSimpleName().substring(7);
 	}
 }

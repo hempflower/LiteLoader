@@ -1,21 +1,14 @@
 package com.mumfrey.liteloader;
 
-import java.util.List;
+import com.mumfrey.liteloader.core.CommonPluginChannelListener;
 
 /**
  * Interface for mods which want to use plugin channels
  *
  * @author Adam Mummery-Smith
  */
-public interface PluginChannelListener extends LoginListener
+public interface PluginChannelListener extends CommonPluginChannelListener, JoinGameListener
 {
-	/**
-	 * Return a list of the plugin channels the mod wants to register
-	 * 
-	 * @return
-	 */
-	public abstract List<String> getChannels();
-	
 	/**
 	 * Called when a custom payload packet arrives on a channel this mod has registered
 	 * 

@@ -54,33 +54,33 @@ public class EnabledModsList
 	 * Check whether a particular mod is enabled
 	 * 
 	 * @param profileName
-	 * @param name
+	 * @param identifier
 	 * @return
 	 */
-	public boolean isEnabled(String profileName, String name)
+	public boolean isEnabled(String profileName, String identifier)
 	{
 		Map<String, Boolean> profile = this.getProfile(profileName);
-		name = name.toLowerCase().trim();
+		identifier = identifier.toLowerCase().trim();
 		
-		if (!profile.containsKey(name))
+		if (!profile.containsKey(identifier))
 		{
-			profile.put(name, this.defaultEnabledValue);
+			profile.put(identifier, this.defaultEnabledValue);
 		}
 		
-		return profile.get(name);
+		return profile.get(identifier);
 	}
 
 	/**
 	 * Set the enablement state of a mod in the specified profile
 	 * 
 	 * @param profileName
-	 * @param name
+	 * @param identifier
 	 * @param enabled
 	 */
-	public void setEnabled(String profileName, String name, boolean enabled)
+	public void setEnabled(String profileName, String identifier, boolean enabled)
 	{
 		Map<String, Boolean> profile = this.getProfile(profileName);
-		profile.put(name.toLowerCase().trim(), Boolean.valueOf(enabled));
+		profile.put(identifier.toLowerCase().trim(), Boolean.valueOf(enabled));
 
 		this.allowSave = true;
 	}

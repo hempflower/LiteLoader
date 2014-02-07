@@ -1,22 +1,43 @@
 package com.mumfrey.liteloader.core;
 
 import java.util.LinkedList;
-import java.util.logging.Level;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.command.ICommandManager;
+import net.minecraft.command.ServerCommandManager;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.login.INetHandlerLoginClient;
+import net.minecraft.network.login.server.S02PacketLoginSuccess;
+import net.minecraft.network.play.INetHandlerPlayServer;
+import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.profiler.Profiler;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.Timer;
+import net.minecraft.world.WorldSettings;
 
 import org.lwjgl.input.Mouse;
 
-import net.minecraft.src.*;
-
+import com.mojang.authlib.GameProfile;
 import com.mumfrey.liteloader.*;
-import com.mumfrey.liteloader.Tickable;
-import com.mumfrey.liteloader.core.hooks.HookProfiler;
+import com.mumfrey.liteloader.core.gen.GenProfiler;
+import com.mumfrey.liteloader.core.overlays.IMinecraft;
 import com.mumfrey.liteloader.util.PrivateFields;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  *
  * @author Adam Mummery-Smith
  */
-public class Events implements IPlayerUsage
+public class Events
 {
 	/**
 	 * Reference to the loader instance
@@ -29,9 +50,14 @@ public class Events implements IPlayerUsage
 	private final Minecraft minecraft;
 	
 	/**
-	 * Plugin channel manager
+	 * Client plugin channel manager
 	 */
-	private final PluginChannels pluginChannels;
+	private final ClientPluginChannels clientPluginChannels;
+	
+	/**
+	 * Server plugin channel manager
+	 */
+	private final ServerPluginChannels serverPluginChannels;
 	
 	/**
 	 * Reference to the minecraft timer
@@ -41,12 +67,12 @@ public class Events implements IPlayerUsage
 	/**
 	 * Flags which keep track of whether hooks have been applied
 	 */
-	private boolean hookInitDone, lateInitDone, tickHooked;
+	private boolean hookInitDone, lateInitDone, profilerHooked;
 	
 	/**
 	 * Profiler hook objects
 	 */
-	private final HookProfiler profilerHook = new HookProfiler(this);
+	private Profiler genProfiler = null;
 	
 	/**
 	 * ScaledResolution used by the pre-chat and post-chat render callbacks
@@ -117,16 +143,41 @@ public class Events implements IPlayerUsage
 	private LinkedList<ChatFilter> chatFilters = new LinkedList<ChatFilter>();
 	
 	/**
-	 * List of mods which implement LoginListener interface and will receive
-	 * client login events
+	 * List of mods which implement PostLoginListener and want to be notified post login
 	 */
-	private LinkedList<LoginListener> loginListeners = new LinkedList<LoginListener>();
+	private LinkedList<PostLoginListener> postLoginListeners = new LinkedList<PostLoginListener>();
 	
 	/**
 	 * List of mods which implement LoginListener interface and will receive
 	 * client login events
 	 */
-	private LinkedList<PreLoginListener> preLoginListeners = new LinkedList<PreLoginListener>();
+	private LinkedList<JoinGameListener> joinGameListeners = new LinkedList<JoinGameListener>();
+	
+	/**
+	 * List of mods which implement LoginListener interface and will receive
+	 * client login events
+	 */
+	private LinkedList<PreJoinGameListener> preJoinGameListeners = new LinkedList<PreJoinGameListener>();
+	
+	/**
+	 * List of mods which can filter server chat
+	 */
+	private LinkedList<ServerChatFilter> serverChatFilters = new LinkedList<ServerChatFilter>();
+	
+	/**
+	 * List of mods which provide server commands
+	 */
+	private LinkedList<ServerCommandProvider> serverCommandProviders = new LinkedList<ServerCommandProvider>();
+	
+	/**
+	 * List of mods which monitor server player events
+	 */
+	private LinkedList<ServerPlayerListener> serverPlayerListeners = new LinkedList<ServerPlayerListener>();
+	
+	/**
+	 * List of mods which monitor outbound chat
+	 */
+	private LinkedList<OutboundChatListener> outboundChatListeners = new LinkedList<OutboundChatListener>();
 	
 	/**
 	 * Hash code of the current world. We don't store the world reference here because we don't want
@@ -141,11 +192,23 @@ public class Events implements IPlayerUsage
 	 * @param minecraft
 	 * @param pluginChannels
 	 */
-	Events(LiteLoader loader, Minecraft minecraft, PluginChannels pluginChannels)
+	Events(LiteLoader loader, Minecraft minecraft, ClientPluginChannels pluginChannels, ServerPluginChannels serverPluginChannels, boolean genMappings)
 	{
 		this.loader = loader;
 		this.minecraft = minecraft;
-		this.pluginChannels = pluginChannels;
+		this.clientPluginChannels = pluginChannels;
+		this.serverPluginChannels = serverPluginChannels;
+		try
+		{
+			if (genMappings)
+			{
+				this.genProfiler = GenProfiler.class.newInstance();
+			}
+		}
+		catch (Throwable th)
+		{
+//			th.printStackTrace();
+		}
 	}
 
 	/**
@@ -189,7 +252,7 @@ public class Events implements IPlayerUsage
 		{
 			if (listener instanceof ChatFilter)
 			{
-				LiteLoader.getLogger().warning(String.format("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", listener.getName()));
+				LiteLoaderLogger.warning("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", listener.getName());
 			}
 			else
 			{
@@ -207,47 +270,69 @@ public class Events implements IPlayerUsage
 			this.addHUDRenderListener((HUDRenderListener)listener);
 		}
 		
-		if (listener instanceof PreLoginListener)
+		if (listener instanceof PreJoinGameListener)
 		{
-			this.addPreLoginListener((PreLoginListener)listener);
+			this.addPreJoinGameListener((PreJoinGameListener)listener);
 		}
 		
-		if (listener instanceof LoginListener)
+		if (listener instanceof JoinGameListener)
 		{
-			this.addLoginListener((LoginListener)listener);
+			this.addJoinGameListener((JoinGameListener)listener);
 		}
 		
-		if (listener instanceof PluginChannelListener)
+		if (listener instanceof ServerChatFilter)
 		{
-			this.pluginChannels.addPluginChannelListener((PluginChannelListener)listener);
+			this.addServerChatFilter((ServerChatFilter)listener);
+		}
+		
+		if (listener instanceof ServerCommandProvider)
+		{
+			this.addServerCommandProvider((ServerCommandProvider)listener);
+		}
+		
+		if (listener instanceof ServerPlayerListener)
+		{
+			this.addServerPlayerListener((ServerPlayerListener)listener);
+		}
+		
+		if (listener instanceof OutboundChatListener)
+		{
+			this.addOutboundChatListener((OutboundChatListener)listener);
+		}
+		
+		this.clientPluginChannels.addListener(listener);
+		this.serverPluginChannels.addListener(listener);
+		
+		if (listener instanceof CommonPluginChannelListener && !(listener instanceof PluginChannelListener) && !(listener instanceof ServerPluginChannelListener))
+		{
+			LiteLoaderLogger.warning("Interface error for mod '%1s'. Implementing CommonPluginChannelListener has no effect! Use PluginChannelListener or ServerPluginChannelListener instead", listener.getName());
 		}
 	}
 	
 	/**
-	 * Initialise mod hooks
+	 * Initialise hooks
 	 */
 	public void initHooks()
 	{
-		try
+		if (this.genProfiler != null)
 		{
-			LiteLoader.getLogger().info("Event manager is registering hooks");
-			
-			// Tick hook
-			if (!this.tickHooked)
+			try
 			{
-				this.tickHooked = true;
-				PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
+				LiteLoaderLogger.info("Event manager is registering the mapping generator hook");
+				
+				// Tick hook
+				if (!this.profilerHooked)
+				{
+					this.profilerHooked = true;
+					PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.genProfiler);
+				}
 			}
-			
-			// Sanity hook
-			PlayerUsageSnooper snooper = this.minecraft.getPlayerUsageSnooper();
-			PrivateFields.playerStatsCollector.setFinal(snooper, this);
-		}
-		catch (Exception ex)
-		{
-			LiteLoader.getLogger().log(Level.WARNING, "Error creating hooks", ex);
-			ex.printStackTrace();
-		}
+			catch (Exception ex)
+			{
+				LiteLoaderLogger.warning(ex, "Error creating hook");
+				ex.printStackTrace();
+			}
+		}	
 		
 		this.hookInitDone = true;
 	}
@@ -325,8 +410,6 @@ public class Events implements IPlayerUsage
 		if (!this.chatFilters.contains(chatFilter))
 		{
 			this.chatFilters.add(chatFilter);
-			if (this.hookInitDone)
-				this.initHooks();
 		}
 	}
 	
@@ -338,8 +421,6 @@ public class Events implements IPlayerUsage
 		if (!this.chatListeners.contains(chatListener))
 		{
 			this.chatListeners.add(chatListener);
-			if (this.hookInitDone)
-				this.initHooks();
 		}
 	}
 	
@@ -370,28 +451,79 @@ public class Events implements IPlayerUsage
 	}
 	
 	/**
-	 * @param loginListener
+	 * @param postLoginListener
 	 */
-	public void addPreLoginListener(PreLoginListener loginListener)
+	public void addPreJoinGameListener(PostLoginListener postLoginListener)
 	{
-		if (!this.preLoginListeners.contains(loginListener))
+		if (!this.postLoginListeners.contains(postLoginListener))
 		{
-			this.preLoginListeners.add(loginListener);
-			if (this.hookInitDone)
-				this.initHooks();
+			this.postLoginListeners.add(postLoginListener);
 		}
 	}
 	
 	/**
-	 * @param loginListener
+	 * @param joinGameListener
 	 */
-	public void addLoginListener(LoginListener loginListener)
+	public void addPreJoinGameListener(PreJoinGameListener joinGameListener)
 	{
-		if (!this.loginListeners.contains(loginListener))
+		if (!this.preJoinGameListeners.contains(joinGameListener))
 		{
-			this.loginListeners.add(loginListener);
-			if (this.hookInitDone)
-				this.initHooks();
+			this.preJoinGameListeners.add(joinGameListener);
+		}
+	}
+	
+	/**
+	 * @param joinGameListener
+	 */
+	public void addJoinGameListener(JoinGameListener joinGameListener)
+	{
+		if (!this.joinGameListeners.contains(joinGameListener))
+		{
+			this.joinGameListeners.add(joinGameListener);
+		}
+	}
+
+	/**
+	 * @param serverChatFilter
+	 */
+	public void addServerChatFilter(ServerChatFilter serverChatFilter)
+	{
+		if (!this.serverChatFilters.contains(serverChatFilter))
+		{
+			this.serverChatFilters.add(serverChatFilter);
+		}
+	}
+
+	/**
+	 * @param serverCommandProvider
+	 */
+	public void addServerCommandProvider(ServerCommandProvider serverCommandProvider)
+	{
+		if (!this.serverCommandProviders.contains(serverCommandProvider))
+		{
+			this.serverCommandProviders.add(serverCommandProvider);
+		}
+	}
+
+	/**
+	 * @param serverPlayerListener
+	 */
+	public void addServerPlayerListener(ServerPlayerListener serverPlayerListener)
+	{
+		if (!this.serverPlayerListeners.contains(serverPlayerListener))
+		{
+			this.serverPlayerListeners.add(serverPlayerListener);
+		}
+	}
+
+	/**
+	 * @param outboundChatListener
+	 */
+	private void addOutboundChatListener(OutboundChatListener outboundChatListener)
+	{
+		if (!this.outboundChatListeners.contains(outboundChatListener))
+		{
+			this.outboundChatListeners.add(outboundChatListener);
 		}
 	}
 
@@ -410,12 +542,12 @@ public class Events implements IPlayerUsage
 			{
 				try
 				{
-					LiteLoader.getLogger().info("Calling late init for mod " + initMod.getName());
+					LiteLoaderLogger.info("Calling late init for mod " + initMod.getName());
 					initMod.onInitCompleted(this.minecraft, this.loader);
 				}
 				catch (Throwable th)
 				{
-					LiteLoader.getLogger().log(Level.WARNING, "Error initialising mod " + initMod.getName(), th);
+					LiteLoaderLogger.warning(th, "Error initialising mod %s", initMod.getName());
 				}
 			}
 		}
@@ -431,8 +563,6 @@ public class Events implements IPlayerUsage
 		this.currentResolution = new ScaledResolution(this.minecraft.gameSettings, this.minecraft.displayWidth, this.minecraft.displayHeight);
 		this.screenWidth = this.currentResolution.getScaledWidth();
 		this.screenHeight = this.currentResolution.getScaledHeight();
-		
-		this.loader.onRender();
 		
 		for (RenderListener renderListener : this.renderListeners)
 			renderListener.onRender();
@@ -463,10 +593,13 @@ public class Events implements IPlayerUsage
 	/**
 	 * Called immediately before the current GUI is rendered
 	 */
-	public void preRenderGUI()
+	public void preRenderGUI(int ref)
 	{
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onRenderGui(this.minecraft.currentScreen);
+		if (!this.minecraft.skipRenderWorld && ref == (this.minecraft.theWorld == null ? 1 : 2))
+		{
+			for (RenderListener renderListener : this.renderListeners)
+				renderListener.onRenderGui(this.minecraft.currentScreen);
+		}
 	}
 	
 	/**
@@ -538,15 +671,16 @@ public class Events implements IPlayerUsage
 	 * 
 	 * @param clock True if this is a new tick (otherwise it's just a new frame)
 	 */
-	public void onTick(Profiler profiler, boolean clock)
+	public void onTick(boolean clock)
 	{
+		this.minecraft.mcProfiler.startSection("litemods");
 		float partialTicks = 0.0F;
 		
 		// Try to get the minecraft timer object and determine the value of the
 		// partialTicks
 		if (clock || this.minecraftTimer == null)
 		{
-			this.minecraftTimer = PrivateFields.minecraftTimer.get(this.minecraft);
+			this.minecraftTimer = ((IMinecraft)this.minecraft).getTimer();
 		}
 		
 		// Hooray, we got the timer reference
@@ -559,21 +693,21 @@ public class Events implements IPlayerUsage
 		// Flag indicates whether we are in game at the moment
 		boolean inGame = this.minecraft.renderViewEntity != null && this.minecraft.renderViewEntity.worldObj != null;
 		
-		if (clock)
-		{
-			this.loader.onTick(partialTicks, inGame);
-		}
+		this.minecraft.mcProfiler.startSection("loader");
+		this.loader.onTick(clock, partialTicks, inGame);
 
 		int mouseX = Mouse.getX() * this.screenWidth / this.minecraft.displayWidth;
 		int mouseY = this.screenHeight - Mouse.getY() * this.screenHeight / this.minecraft.displayHeight - 1;
+		this.minecraft.mcProfiler.endStartSection("postrender");
 		this.loader.postRender(mouseX, mouseY, partialTicks);
+		this.minecraft.mcProfiler.endSection();
 		
 		// Iterate tickable mods
 		for (Tickable tickable : this.tickListeners)
 		{
-			profiler.startSection(tickable.getClass().getSimpleName());
+			this.minecraft.mcProfiler.startSection(tickable.getClass().getSimpleName().toLowerCase());
 			tickable.onTick(this.minecraft, partialTicks, inGame, clock);
-			profiler.endSection();
+			this.minecraft.mcProfiler.endSection();
 		}
 		
 		// Detected world change
@@ -590,21 +724,23 @@ public class Events implements IPlayerUsage
 			this.worldHashCode = 0;
 			this.loader.onWorldChanged(null);
 		}
+
+		this.minecraft.mcProfiler.endSection();
 	}
 	
 	/**
-	 * Callback from the reflective chat hook
+	 * Callback from the chat hook
 	 * 
 	 * @param chatPacket
 	 * @return
 	 */
-	public boolean onChat(Packet3Chat chatPacket)
+	public boolean onChat(S02PacketChat chatPacket)
 	{
-		if (chatPacket.message == null)
+		if (chatPacket.func_148915_c() == null)
 			return true;
 		
-		ChatMessageComponent chat = ChatMessageComponent.createFromJson(chatPacket.message);
-		String message = chat.toStringWithFormatting(true);
+		IChatComponent chat = chatPacket.func_148915_c();
+		String message = chat.getUnformattedText();
 		
 		// Chat filters get a stab at the chat first, if any filter returns
 		// false the chat is discarded
@@ -612,8 +748,8 @@ public class Events implements IPlayerUsage
 		{
 			if (chatFilter.onChat(chatPacket, chat, message))
 			{
-				chat = ChatMessageComponent.createFromJson(chatPacket.message);
-				message = chat.toStringWithFormatting(true);
+				chat = chatPacket.func_148915_c();
+				message = chat.getUnformattedText();
 			}
 			else
 			{
@@ -627,99 +763,157 @@ public class Events implements IPlayerUsage
 		
 		return true;
 	}
+
+	/**
+	 * @param packet
+	 * @param message
+	 */
+	public void onSendChatMessage(C01PacketChatMessage packet, String message)
+	{
+		for (OutboundChatListener outboundChatListener : this.outboundChatListeners)
+		{
+			outboundChatListener.onSendChatMessage(packet, message);
+		}
+	}
+
+	/**
+	 * @param netHandler
+	 * @param loginPacket
+	 */
+	public void onPostLogin(INetHandlerLoginClient netHandler, S02PacketLoginSuccess loginPacket)
+	{
+		this.clientPluginChannels.onPostLogin(netHandler, loginPacket);
+
+		for (PostLoginListener loginListener : this.postLoginListeners)
+			loginListener.onPostLogin(netHandler, loginPacket);
+	}
 	
 	/**
-	 * Pre-login callback from the login hook
+	 * Pre join game callback from the login hook
 	 * 
 	 * @param netHandler
 	 * @param hookLogin
 	 * @return
 	 */
-	public boolean onPreLogin(NetHandler netHandler, Packet1Login loginPacket)
+	public boolean onPreJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
 	{
 		boolean cancelled = false;
 		
-		for (PreLoginListener loginListener : this.preLoginListeners)
+		for (PreJoinGameListener joinGameListener : this.preJoinGameListeners)
 		{
-			cancelled |= !loginListener.onPreLogin(netHandler, loginPacket);
+			cancelled |= !joinGameListener.onPreJoinGame(netHandler, loginPacket);
 		}
 		
 		return !cancelled;
 	}
 	
 	/**
-	 * Callback from the login hook
+	 * Callback from the join game hook
 	 * 
 	 * @param netHandler
 	 * @param loginPacket
 	 */
-	public void onConnectToServer(NetHandler netHandler, Packet1Login loginPacket)
+	public void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
 	{
-		this.loader.onLogin(netHandler, loginPacket);
+		this.loader.onJoinGame(netHandler, loginPacket);
+		this.clientPluginChannels.onJoinGame(netHandler, loginPacket);
 		
-		for (LoginListener loginListener : this.loginListeners)
-			loginListener.onLogin(netHandler, loginPacket);
-		
-		this.pluginChannels.onConnectToServer(netHandler, loginPacket);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.minecraft.src.IPlayerUsage#addServerStatsToSnooper(net.minecraft.
-	 * src.PlayerUsageSnooper)
-	 */
-	@Override
-	public void addServerStatsToSnooper(PlayerUsageSnooper var1)
-	{
-		this.minecraft.addServerStatsToSnooper(var1);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * net.minecraft.src.IPlayerUsage#addServerTypeToSnooper(net.minecraft.src
-	 * .PlayerUsageSnooper)
-	 */
-	@Override
-	public void addServerTypeToSnooper(PlayerUsageSnooper var1)
-	{
-		this.sanityCheck();
-		this.minecraft.addServerTypeToSnooper(var1);
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.IPlayerUsage#isSnooperEnabled()
-	 */
-	@Override
-	public boolean isSnooperEnabled()
-	{
-		return this.minecraft.isSnooperEnabled();
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see net.minecraft.src.IPlayerUsage#getLogAgent()
-	 */
-	@Override
-	public ILogAgent getLogAgent()
-	{
-		return this.minecraft.getLogAgent();
+		for (JoinGameListener joinGameListener : this.joinGameListeners)
+			joinGameListener.onJoinGame(netHandler, loginPacket);
 	}
 	
 	/**
-	 * Check that the profiler hook hasn't been overridden by something else
+	 * Callback from the chat hook
+	 * @param netHandler 
+	 * 
+	 * @param chatPacket
+	 * @return
 	 */
-	private void sanityCheck()
+	public boolean onServerChat(INetHandlerPlayServer netHandler, C01PacketChatMessage chatPacket)
 	{
-		if (this.tickHooked && this.minecraft.mcProfiler != this.profilerHook)
+		EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
+		
+		for (ServerChatFilter chatFilter : this.serverChatFilters)
 		{
-			PrivateFields.minecraftProfiler.setFinal(this.minecraft, this.profilerHook);
+			if (!chatFilter.onChat(player, chatPacket, chatPacket.func_149439_c()))
+			{
+				return false;
+			}
 		}
+
+		return true;
+	}
+
+	/**
+	 * @param instance
+	 * @param folderName
+	 * @param worldName
+	 * @param worldSettings
+	 */
+	public void onStartIntegratedServer(IntegratedServer instance, String folderName, String worldName, WorldSettings worldSettings)
+	{
+		ICommandManager commandManager = instance.getCommandManager();
+		
+		if (commandManager instanceof ServerCommandManager)
+		{
+			ServerCommandManager serverCommandManager = (ServerCommandManager)commandManager;
+			
+			for (ServerCommandProvider commandProvider : this.serverCommandProviders)
+				commandProvider.provideCommands(serverCommandManager);
+		}
+	}
+
+	/**
+	 * @param scm
+	 * @param player
+	 * @param profile
+	 */
+	public void onSpawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, GameProfile profile)
+	{
+		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
+			serverPlayerListener.onPlayerConnect(player, profile);
+	}
+	
+	/**
+	 * @param scm
+	 * @param player
+	 */
+	public void onPlayerLogin(ServerConfigurationManager scm, EntityPlayerMP player)
+	{
+		this.serverPluginChannels.onPlayerJoined(player);
+	}
+	
+	/**
+	 * @param scm
+	 * @param netManager
+	 * @param player
+	 */
+	public void onInitializePlayerConnection(ServerConfigurationManager scm, NetworkManager netManager, EntityPlayerMP player)
+	{
+		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
+			serverPlayerListener.onPlayerLoggedIn(player);
+	}
+
+	/**
+	 * @param scm
+	 * @param player
+	 * @param oldPlayer
+	 * @param dimension
+	 * @param copy
+	 */
+	public void onRespawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, EntityPlayerMP oldPlayer, int dimension, boolean won)
+	{
+		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
+			serverPlayerListener.onPlayerRespawn(player, oldPlayer, dimension, won);
+	}
+
+	/**
+	 * @param scm
+	 * @param player
+	 */
+	public void onPlayerLogout(ServerConfigurationManager scm, EntityPlayerMP player)
+	{
+		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
+			serverPlayerListener.onPlayerLogout(player);
 	}
 }

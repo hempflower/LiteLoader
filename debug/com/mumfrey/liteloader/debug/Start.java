@@ -1,23 +1,22 @@
 package com.mumfrey.liteloader.debug;
 import java.io.File;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.Handler;
-import java.util.logging.Logger;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.launchwrapper.Launch;
 
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogFormatter;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Wrapper class for LaunchWrapper Main class, which logs into minecraft.net first so that online shizzle can be tested
  * 
  * @author Adam Mummery-Smith
- * @version 0.6
+ * @version 0.6.2
  */
 public abstract class Start
 {
-	private static Logger logger = Logger.getLogger("liteloader");
+	private static final String FML_TWEAKER_NAME = "cpw.mods.fml.common.launcher.FMLTweaker";
 	
 	/**
 	 * Entry point.
@@ -26,8 +25,21 @@ public abstract class Start
 	 */
 	public static void main(String[] args)
 	{
-		Start.prepareLogger();
+		System.setProperty("mcpenv", "true");
 		
+		boolean fmlDetected = false;
+		List<String> argsList = new ArrayList<String>();
+
+		// Detect the FML tweaker specified on the command line, this likely means someone has pulled us
+		// into a Forge MCP workspace
+		for (String arg : args) fmlDetected |= FML_TWEAKER_NAME.equals(arg);
+		
+		if (fmlDetected)
+		{
+			args = new String[0];
+			argsList.add("--tweakClass");argsList.add(FML_TWEAKER_NAME);
+		}
+
 		String usernameFromCmdLine = (args.length > 0) ? args[0] : null;
 		String passwordFromCmdLine = (args.length > 1) ? args[1] : null;
 		
@@ -35,31 +47,19 @@ public abstract class Start
 		LoginManager loginManager = new LoginManager(loginJson);
 		loginManager.login(usernameFromCmdLine, passwordFromCmdLine, 5);
 
-		Start.logger.info(String.format("Launching game as %s", loginManager.getProfileName()));
+		LiteLoaderLogger.info("Launching game as %s", loginManager.getProfileName());
 		
 		File gameDir = new File(System.getProperty("user.dir"));
-		File assetsDir = new File(gameDir, "assets");
+		File assetsDir = new File(gameDir, "assets/virtual/legacy");
+
+		argsList.add("--tweakClass");  argsList.add(LiteLoaderTweaker.class.getName());
+		argsList.add("--username");    argsList.add(loginManager.getProfileName());
+		argsList.add("--uuid");        argsList.add(loginManager.getUUID());
+		argsList.add("--accessToken"); argsList.add(loginManager.getAuthenticatedToken());
+		argsList.add("--version");     argsList.add("mcp");
+		argsList.add("--gameDir");     argsList.add(gameDir.getAbsolutePath());
+		argsList.add("--assetsDir");   argsList.add(assetsDir.getAbsolutePath());
 		
-		args = new String[] {
-			"--tweakClass", LiteLoaderTweaker.class.getName(),
-			"--username",   loginManager.getProfileName(),
-			"--session",    loginManager.getAuthenticatedToken(),
-			"--version",    "mcp",
-			"--gameDir",    gameDir.getAbsolutePath(),
-			"--assetsDir",  assetsDir.getAbsolutePath()
-		};
-		
-		Launch.main(args);
-	}
-	
-	private static void prepareLogger()
-	{
-		System.setProperty("liteloaderFormatLog", "true");
-		
-		for (Handler handler : Start.logger.getParent().getHandlers())
-		{
-			if (handler instanceof ConsoleHandler)
-				handler.setFormatter(new LiteLoaderLogFormatter(false));
-		}
+		Launch.main(argsList.toArray(args));
 	}
 }

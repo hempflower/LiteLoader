@@ -2,11 +2,11 @@ package com.mumfrey.liteloader.permissions;
 
 import java.util.List;
 
-import com.mumfrey.liteloader.Permissible;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.S01PacketJoinGame;
 
-import net.minecraft.src.Minecraft;
-import net.minecraft.src.NetHandler;
-import net.minecraft.src.Packet1Login;
+import com.mumfrey.liteloader.Permissible;
 
 /**
  * Interface for permissions manager implementations
@@ -36,9 +36,9 @@ public interface PermissionsManager
 	 * permissions ready to receive new permissions from the server
 	 * 
 	 * @param netHandler
-	 * @param loginPacket
+	 * @param joinGamePacket
 	 */
-	public abstract void onLogin(NetHandler netHandler, Packet1Login loginPacket);
+	public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket);
 
 	/**
 	 * Handler for tick event

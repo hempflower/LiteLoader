@@ -1,0 +1,57 @@
+# This file MUST be saved as UTF-8
+
+key.categories.litemods=§eMod Keys
+
+gui.about.modsloaded=%d mod(s) loaded
+gui.about.versiontext=Version %s
+
+gui.about.checkupdates=§nCheck for updates
+
+gui.about.showtabmessage=Show LiteLoader tab
+gui.about.keystrokehint= §e(use §9CTRL§e+§9SHIFT§e+§9TAB§e)
+
+gui.about.authors=Authors
+
+gui.disablemod=Disable mod
+gui.enablemod=Enable mod
+gui.modsettings=Settings...
+
+gui.unknown=Unknown
+
+gui.status.loaded=Loaded
+gui.status.active=Active
+gui.status.disabled=Disabled
+gui.status.pending.enabled=Enabled on next startup 
+gui.status.pending.disabled=Disabled on next startup
+gui.status.missingdeps=Missing dependencies
+gui.description.missingdeps=Missing dependencies:
+
+gui.mod.providestweak=Provides Tweak
+gui.mod.providestransformer=Provides Transformer
+
+gui.settings.title=%s Settings
+gui.saveandclose=Save & Close
+
+gui.updates.title=Check for updates for %s
+gui.updates.status.idle=§7No update check in progress
+gui.updates.status.checking=Contacting update site... %s
+gui.updates.status.success=§asuccess!
+gui.updates.status.failed=§cfailed!
+
+gui.updates.available.title=§nAvailable Update Info
+gui.updates.available.nonewversion=§7No newer version available
+gui.updates.available.newversion=§aNew version available
+gui.updates.available.version=Version: §a%s
+gui.updates.available.date=Release date: §a%s
+
+gui.checknow=Check now
+gui.installupdate=Install now
+gui.downloadupdate=Download now
+
+gui.log.title=LiteLoader Log Viewer
+gui.log.scalecheckbox=Use native resolution
+gui.log.postlog=Upload Log
+gui.log.uploading=Uploading log to pastebin...
+gui.log.uploadfailed=Upload failed
+gui.log.uploadsuccess=Upload succeeded, log available at
+gui.log.closedialog=Close

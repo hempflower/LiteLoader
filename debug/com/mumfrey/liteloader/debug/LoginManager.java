@@ -8,7 +8,6 @@ import java.net.Proxy;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
 
@@ -22,6 +21,7 @@ import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Manages login requests against Yggdrasil for use in MCP
@@ -30,11 +30,6 @@ import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
  */
 public class LoginManager
 {
-	/**
-	 * Logger instance
-	 */
-	private static Logger logger = Logger.getLogger("liteloader");
-	
 	/**
 	 * Gson instance for serialising and deserialising the authentication data
 	 */
@@ -120,7 +115,7 @@ public class LoginManager
 				
 				if (authData != null && authData.validate())
 				{
-					this.logInfo("Initialising Yggdrasil authentication service with client token: %s", authData.getClientToken());
+					LiteLoaderLogger.info("Initialising Yggdrasil authentication service with client token: %s", authData.getClientToken());
 					this.authService = new YggdrasilAuthenticationService(Proxy.NO_PROXY, authData.getClientToken());
 					this.authentication = new YggdrasilUserAuthentication(this.authService, Agent.MINECRAFT);
 					authData.loadFromStorage(this.authentication);
@@ -187,30 +182,30 @@ public class LoginManager
 	{
 		if (this.offline || remainingTries == 0)
 		{
-			this.logInfo("LoginManager is set to work offline, skipping login");
+			LiteLoaderLogger.info("LoginManager is set to work offline, skipping login");
 			return false;
 		}
 		
-		this.logInfo("Remaining login tries: %s", remainingTries > 0 ? remainingTries : "unlimited");
+		LiteLoaderLogger.info("Remaining login tries: %s", remainingTries > 0 ? remainingTries : "unlimited");
 		
 		try
 		{
-			this.logInfo("Attempting login, contacting Mojang auth servers...");
+			LiteLoaderLogger.info("Attempting login, contacting Mojang auth servers...");
 			
 			this.authentication.logIn();
 			
 			if (this.authentication.isLoggedIn())
 			{
-				this.logInfo("LoginManager logged in successfully. Can play online = %s", this.authentication.canPlayOnline());
+				LiteLoaderLogger.info("LoginManager logged in successfully. Can play online = %s", this.authentication.canPlayOnline());
 				this.save();
 				return true;
 			}
 			
-			this.logInfo("LoginManager failed to log in, unspecified status.");
+			LiteLoaderLogger.info("LoginManager failed to log in, unspecified status.");
 		}
 		catch (InvalidCredentialsException ex)
 		{
-			this.logInfo("Authentication agent reported invalid credentials: %s", ex.getMessage());
+			LiteLoaderLogger.info("Authentication agent reported invalid credentials: %s", ex.getMessage());
 			this.resetAuth();
 
 			if (remainingTries > 1)
@@ -229,7 +224,7 @@ public class LoginManager
 					
 					if (!dialogResult)
 					{
-						this.logInfo("User cancelled login dialog");
+						LiteLoaderLogger.info("User cancelled login dialog");
 						return false;
 					}
 					
@@ -292,6 +287,15 @@ public class LoginManager
 	}
 	
 	/**
+	 * Get the profile name (minecraft player name) from login
+	 */
+	public String getUUID()
+	{
+		GameProfile selectedProfile = this.authentication.getSelectedProfile();
+		return selectedProfile != null ? selectedProfile.getId() : this.defaultDisplayName;
+	}
+	
+	/**
 	 * Get the session token
 	 */
 	public String getAuthenticatedToken()
@@ -300,11 +304,6 @@ public class LoginManager
 		return accessToken != null ? accessToken : "-";
 	}
 	
-	private void logInfo(String message, Object... params)
-	{
-		LoginManager.logger.info(String.format(message, params));
-	}
-
 	/**
 	 * Struct for Gson serialisation of authenticaion settings
 	 * 

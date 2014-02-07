@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="liteloader" basedir="." default="rebuild">
+<project name="liteloader" basedir="." default="development">
 
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.6.4_02" />
-	<property name="mcversion" value="1.6.4" />
+	<property name="version" value="1.7.2_02" />
+	<property name="mcversion" value="1.7.2" />
 	<property name="author" value="Mumfrey" />
 
 	<!-- Project definitions and dependencies -->
@@ -28,41 +28,51 @@
 
 	<property name="python" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
 
-    <target name="findmcp">
-        <echo level="info" message="Searching for clean MCP source..." />
-        <condition property="mcpsrc.exists">
-            <available file="${mcp.dir}/src/mcp" type="dir"/>
-        </condition>
-    </target>
-    
+	<target name="findmcp">
+		<echo level="info" message="Searching for clean MCP source..." />
+		<condition property="mcpsrc.exists">
+			<available file="${mcp.dir}/src/mcp" type="dir"/>
+		</condition>
+	</target>
+	
+	<target name="setup_development">
+	    <property name="skipremoval" value="DEV" />
+	</target>
+	
+	<target name="setup_production">
+	    <property name="skipremoval" value="" />
+	</target>
+	
 	<!-- Main target -->
-	<target name="rebuild" depends="findmcp, setdirsold, setdirsnew, build" description="Entry point" />
+	<target name="development" depends="setup_development, findmcp, setdirsold, setdirsnew, build" description="Entry point for MCP and upstream builds" />
+	
+	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build" description="Entry point for production builds" />
 
 	<target name="setdirsnew" description="Set the MCP source directories for the new layout" unless="mcpsrc.exists">
 		<echo level="info" message="Setting MCP source directories for NEW configuration" />
-	    <property name="src" location="${build}/src"/>
-	    <property name="mc.src" location="${mcp.dir}/src/minecraft" />
+		<property name="src" location="${build}/src"/>
+		<property name="mc.src" location="${mcp.dir}/src/minecraft" />
 		<echo append="false" file="${temp}/build.cfg" message="[OUTPUT]&#x0A;SrcClient  = build/src" />
-    </target>
+	</target>
 
 	<target name="setdirsold" description="Set the MCP source directories for the old layout" if="mcpsrc.exists">
-        <echo level="warning" message="--------------------------------------------------------------------------------" />
-        <echo level="warning" message=" "                                                                                />
-        <echo level="warning" message=" Setting MCP source directories for OLD configuration!"                           />
-        <echo level="warning" message=" "                                                                                />
-        <echo level="warning" message=" Renaming the MCP 'src' directory is no longer required and support for this"     />
-        <echo level="warning" message=" be removed in a future version."                                                 />
-        <echo level="warning" message=" "                                                                                />
-        <echo level="warning" message="--------------------------------------------------------------------------------" />
-	    <property name="src" location="${mcp.dir}/src/minecraft"/>
-	    <property name="mc.src" location="${mcp.dir}/src/mcp" />
-    </target>
+		<echo level="warning" message="--------------------------------------------------------------------------------" />
+		<echo level="warning" message=" "                                                                                />
+		<echo level="warning" message=" Setting MCP source directories for OLD configuration!"                           />
+		<echo level="warning" message=" "                                                                                />
+		<echo level="warning" message=" Renaming the MCP 'src' directory is no longer required and support for this"     />
+		<echo level="warning" message=" be removed in a future version."                                                 />
+		<echo level="warning" message=" "                                                                                />
+		<echo level="warning" message="--------------------------------------------------------------------------------" />
+		<property name="src" location="${mcp.dir}/src/minecraft"/>
+		<property name="mc.src" location="${mcp.dir}/src/mcp" />
+	</target>
 
 	<target name="build" description="Perform all tasks for a build" depends="init, recompile, reobfuscate, savemd5, stage, zip" >
 	</target>
 
 	<target name="clean">
-        <echo level="info" message="Cleaning output directories" />
+		<echo level="info" message="Cleaning output directories" />
 		
 		<delete dir="${src}" />
 		<delete dir="${mcp.dir}/reobf" />
@@ -76,41 +86,46 @@
 				<exclude name="**/debug/*.java" />
 			</fileset>
 			<fileset dir="${eclipse}/${lib}/src" />
+			<filterchain>
+				<linecontains negate="true">
+					<contains value="@MCPONLY${skipremoval}" />
+				</linecontains>
+			</filterchain>
 		</copy>
 	</target>
 
 	<target name="contributeresources" description="Contribute resources to the staging path">
 		<echo level="info" message="Contributing project resources for ${lib}" />
 		<copy todir="${stage.dir}" verbose="false" failonerror="false">
-            <fileset dir="${eclipse}/${lib}/resources" excludes=".svn/**">
-                <exclude name="**/Thumbs.db" />
-                <exclude name="**/minecraft.key" />
-            </fileset>
+			<fileset dir="${eclipse}/${lib}/resources" excludes=".svn/**">
+				<exclude name="**/Thumbs.db" />
+				<exclude name="**/minecraft.key" />
+			</fileset>
 		</copy>
 	</target>
 
 	<target name="findmd5dir">
-        <echo level="info" message="Searching for existing MD5 directory..." />
+		<echo level="info" message="Searching for existing MD5 directory..." />
 		<condition property="md5dir.exists">
 			<available file="${md5.dir}" type="dir"/>
 		</condition>
 	</target>
 
 	<target name="findmd5" depends="findmd5dir">
-        <echo level="info" message="Searching for existing MD5 sets..." />
-        <condition property="md5set.exists">
-            <available file="${md5.dir}/client_${md5set}.md5" type="file"/>
-        </condition>
+		<echo level="info" message="Searching for existing MD5 sets..." />
+		<condition property="md5set.exists">
+			<available file="${md5.dir}/client_${md5set}.md5" type="file"/>
+		</condition>
 	</target>
 
 	<target name="seedmd5" depends="findmd5" unless="md5set.exists">
-        <echo level="info" message="MD5 sets not found, seeding..." />
+		<echo level="info" message="MD5 sets not found, seeding..." />
 		<ant target="genmd5" antfile="seed_md5.xml" inheritall="true" />
 	</target>
 
-    <target name="notifymd5ok" depends="findmd5" if="md5set.exists">
-    	<echo level="info" message="MD5 sets already exist, skipping MD5 set seeding" />
-    </target>
+	<target name="notifymd5ok" depends="findmd5" if="md5set.exists">
+		<echo level="info" message="MD5 sets already exist, skipping MD5 set seeding" />
+	</target>
 
 	<target name="preparemd5" description="Copy patched MD5 to the temp directory" depends="seedmd5, notifymd5ok, clean">
 		<echo level="info" message="Prepare exclusion MD5s, using exclusion set &quot;${md5set}&quot;" />
@@ -186,7 +201,8 @@
 
 		<copy todir="${stage.dir}">
 			<fileset dir="${mcp.dir}/reobf/minecraft" excludes=".svn/**, *.txt">
-                <exclude name="/*.class" />
+				<exclude name="/*.class" />
+				<exclude name="/com/mumfrey/liteloader/core/gen/**" />
 			</fileset>
 		</copy>
 
@@ -220,7 +236,7 @@
 	
 	<property environment="env" />
 	
-	<target name="deploy" depends="rebuild" description="Deploy artifact to local minecraft installation in APPDATA">
+	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
 		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2"/>
 		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
 	</target>

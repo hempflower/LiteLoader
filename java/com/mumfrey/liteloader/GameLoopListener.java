@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader;
 
-import net.minecraft.src.Minecraft;
+import net.minecraft.client.Minecraft;
 
 /**
  * Interface for mods which want a frame notification every single game loop

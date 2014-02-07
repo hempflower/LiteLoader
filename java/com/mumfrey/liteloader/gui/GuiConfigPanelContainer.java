@@ -1,15 +1,12 @@
 package com.mumfrey.liteloader.gui;
 
+import static com.mumfrey.liteloader.gui.GuiScreenModInfo.*;
 import static org.lwjgl.opengl.GL11.*;
-import static com.mumfrey.liteloader.gui.GuiScreenModInfo.glEnableClipping;
-import static com.mumfrey.liteloader.gui.GuiScreenModInfo.glDisableClipping;
 
-import java.util.LinkedList;
-import java.util.List;
 
-import net.minecraft.src.Gui;
-import net.minecraft.src.GuiButton;
-import net.minecraft.src.Minecraft;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.resources.I18n;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
@@ -21,17 +18,8 @@ import com.mumfrey.liteloader.modconfig.ConfigPanelHost;
  *
  * @author Adam Mummery-Smith
  */
-public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
+public class GuiConfigPanelContainer extends ModInfoScreenPanel implements ConfigPanelHost
 {
-	private static final int TOP    = 26;
-	private static final int BOTTOM = 40;
-	private static final int MARGIN = 12;
-	
-	/**
-	 * Minecraft
-	 */
-	private Minecraft mc;
-	
 	/**
 	 * Panel we are hosting
 	 */
@@ -43,34 +31,9 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	private LiteMod mod;
 	
 	/**
-	 * Buttons
-	 */
-	private List<GuiButton> controls = new LinkedList<GuiButton>();
-
-	/**
 	 * Scroll bar for the panel
 	 */
-	private GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
-	
-	/**
-	 * Current available width
-	 */
-	private int width = 0;
-	
-	/**
-	 * Current available height
-	 */
-	private int height = 0;
-	
-	/**
-	 * Current panel width (width - margins)
-	 */
-	private int panelWidth = 0;
-	
-	/**
-	 * Current panel visible height (height - chrome)
-	 */
-	private int panelHeight = 0;
+	GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
 	
 	/**
 	 * Panel's internal height (for scrolling)
@@ -78,24 +41,15 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	private int totalHeight = -1;
 	
 	/**
-	 * Panel Y position (for scroll)
-	 */
-	private int panelTop = TOP;
-	
-	/**
-	 * True if the client wants to close the panel 
-	 */
-	private boolean closeRequested;
-	
-	/**
 	 * @param parent
 	 * @param minecraft
 	 * @param panel
 	 * @param mod
 	 */
-	GuiConfigPanelContainer(ConfigPanel panel, LiteMod mod)
+	GuiConfigPanelContainer(Minecraft minecraft, ConfigPanel panel, LiteMod mod)
 	{
-		this.mc    = Minecraft.getMinecraft();
+		super(minecraft);
+		
 		this.panel = panel;
 		this.mod   = mod;
 	}
@@ -103,10 +57,10 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	/**
 	 * @return
 	 */
-	protected String getPanelTitle()
+	String getPanelTitle()
 	{
 		String panelTitle = this.panel.getPanelTitle();
-		return panelTitle != null ? panelTitle : String.format("%s Settings", this.mod.getName());
+		return panelTitle != null ? panelTitle : I18n.format("gui.settings.title", this.mod.getName());
 	}
 
 	/* (non-Javadoc)
@@ -125,7 +79,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	@Override
 	public int getWidth()
 	{
-		return this.panelWidth;
+		return this.innerWidth;
 	}
 
 	/* (non-Javadoc)
@@ -134,24 +88,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	@Override
 	public int getHeight()
 	{
-		return this.panelHeight;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.modconfig.ConfigPanelHost#close()
-	 */
-	@Override
-	public void close()
-	{
-		this.closeRequested = true;
-	}
-	
-	/**
-	 * Get whether the client wants to close the panel
-	 */
-	boolean isCloseRequested()
-	{
-		return this.closeRequested;
+		return this.innerHeight;
 	}
 	
 	/**
@@ -160,23 +97,19 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	 * @param width
 	 * @param height
 	 */
+	@Override
 	void setSize(int width, int height)
 	{
-		this.width = width;
-		this.height = height;
-		
-		this.panelHeight = this.height - TOP - BOTTOM;
-		this.panelWidth = this.width - (MARGIN * 2) - 6;
+		super.setSize(width, height);
 		
 		this.panel.onPanelResize(this);
-		
-		this.controls.clear();
-		this.controls.add(new GuiButton(0, this.width - 99 - MARGIN, this.height - BOTTOM + 9, 100, 20, "Save & Close"));
+		this.controls.add(new GuiButton(0, this.width - 99 - MARGIN, this.height - BOTTOM + 9, 100, 20, I18n.format("gui.saveandclose")));
 	}
 	
 	/**
 	 * Callback from parent screen when panel is displayed
 	 */
+	@Override
 	void onShown()
 	{
 		this.panel.onPanelShown(this);
@@ -185,6 +118,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	/**
 	 * Callback from parent screen when panel is hidden
 	 */
+	@Override
 	void onHidden()
 	{
 		this.panel.onPanelHidden();
@@ -193,6 +127,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	/**
 	 * Callback from parent screen every tick
 	 */
+	@Override
 	void onTick()
 	{
 		this.panel.onTick(this);
@@ -205,10 +140,11 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	 * @param mouseY
 	 * @param partialTicks
 	 */
+	@Override
 	void draw(int mouseX, int mouseY, float partialTicks)
 	{
 		// Scroll position
-		this.panelTop = TOP - this.scrollBar.getValue();
+		this.innerTop = TOP - this.scrollBar.getValue();
 	
 		// Draw panel title
 		this.mc.fontRenderer.drawString(this.getPanelTitle(), MARGIN, TOP - 14, 0xFFFFFFFF);
@@ -222,10 +158,10 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 		
 		// Offset by scroll
 		glPushMatrix();
-		glTranslatef(MARGIN, this.panelTop, 0.0F);
+		glTranslatef(MARGIN, this.innerTop, 0.0F);
 		
 		// Draw panel contents
-		this.panel.drawPanel(this, mouseX - MARGIN - (this.mouseOverPanel(mouseX, mouseY) ? 0 : 99999), mouseY - this.panelTop, partialTicks);
+		this.panel.drawPanel(this, mouseX - MARGIN - (this.mouseOverPanel(mouseX, mouseY) ? 0 : 99999), mouseY - this.innerTop, partialTicks);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		
 		// Disable clip rect
@@ -238,36 +174,27 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 		this.totalHeight = Math.max(-1, this.panel.getContentHeight());
 		
 		// Update and draw scroll bar
-		this.scrollBar.setMaxValue(this.totalHeight - this.panelHeight);
-		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.width - MARGIN - 5, TOP, 5, this.panelHeight, Math.max(this.panelHeight, this.totalHeight));
+		this.scrollBar.setMaxValue(this.totalHeight - this.innerHeight);
+		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.width - MARGIN - 5, TOP, 5, this.innerHeight, Math.max(this.innerHeight, this.totalHeight));
 		
 		// Draw other buttons
-		for (GuiButton control : this.controls)
-			control.drawButton(this.mc, mouseX, mouseY);
+		super.draw(mouseX, mouseY, partialTicks);
 	}
 
 	/**
 	 * @param control
 	 */
-	private void actionPerformed(GuiButton control)
+	@Override
+	void actionPerformed(GuiButton control)
 	{
 		if (control.id == 0) this.close();
 	}
 
 	/**
-	 * @param mouseX
-	 * @param mouseY
-	 * @return
-	 */
-	private boolean mouseOverPanel(int mouseX, int mouseY)
-	{
-		return mouseX > MARGIN && mouseX <= this.width - MARGIN && mouseY > TOP && mouseY <= this.height - BOTTOM;
-	}
-
-	/**
 	 * @param mouseWheelDelta
 	 */
-	public void mouseWheelScrolled(int mouseWheelDelta)
+	@Override
+	void mouseWheelScrolled(int mouseWheelDelta)
 	{
 		this.scrollBar.offsetValue(-mouseWheelDelta / 8);
 	}
@@ -277,26 +204,20 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	 * @param mouseY
 	 * @param mouseButton
 	 */
+	@Override
 	void mousePressed(int mouseX, int mouseY, int mouseButton)
 	{
 		if (mouseButton == 0)
 		{
 			if (this.scrollBar.wasMouseOver())
 				this.scrollBar.setDragging(true);
-			
-			for (GuiButton control : this.controls)
-			{
-				if (control.mousePressed(this.mc, mouseX, mouseY))
-				{
-					this.mc.sndManager.playSoundFX("random.click", 1.0F, 1.0F);
-					this.actionPerformed(control);
-				}
-			}
 		}
+		
+		super.mousePressed(mouseX, mouseY, mouseButton);
 		
 		if (this.mouseOverPanel(mouseX, mouseY))
 		{
-			this.panel.mousePressed(this, mouseX - MARGIN, mouseY - this.panelTop, mouseButton);
+			this.panel.mousePressed(this, mouseX - MARGIN, mouseY - this.innerTop, mouseButton);
 		}
 	}
 	
@@ -305,6 +226,7 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 	 * @param mouseY
 	 * @param mouseButton
 	 */
+	@Override
 	void mouseReleased(int mouseX, int mouseY, int mouseButton)
 	{
 		if (mouseButton == 0)
@@ -312,22 +234,24 @@ public class GuiConfigPanelContainer extends Gui implements ConfigPanelHost
 			this.scrollBar.setDragging(false);
 		}
 		
-		this.panel.mouseReleased(this, mouseX - MARGIN, mouseY - this.panelTop, mouseButton);
+		this.panel.mouseReleased(this, mouseX - MARGIN, mouseY - this.innerTop, mouseButton);
 	}
 	
 	/**
 	 * @param mouseX
 	 * @param mouseY
 	 */
+	@Override
 	void mouseMoved(int mouseX, int mouseY)
 	{
-		this.panel.mouseMoved(this, mouseX - MARGIN, mouseY - this.panelTop);
+		this.panel.mouseMoved(this, mouseX - MARGIN, mouseY - this.innerTop);
 	}
 	
 	/**
 	 * @param keyChar
 	 * @param keyCode
 	 */
+	@Override
 	void keyPressed(char keyChar, int keyCode)
 	{
 		this.panel.keyPressed(this, keyChar, keyCode);

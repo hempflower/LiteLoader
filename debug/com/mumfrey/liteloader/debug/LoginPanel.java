@@ -1,40 +1,23 @@
 package com.mumfrey.liteloader.debug;
 
-import javax.swing.JPanel;
+import static javax.swing.WindowConstants.*;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.BorderLayout;
-
-import javax.swing.JLabel;
-
-import java.awt.Font;
-
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.TitledBorder;
-import javax.swing.JDialog;
-import javax.swing.UIManager;
-import javax.swing.JCheckBox;
-
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.FocusTraversalPolicy;
-import java.awt.TextField;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-
-import javax.swing.JButton;
-
-import java.awt.event.ActionListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 /**
  * JPanel displayed in a JDialog to prompt the user for login credentials for minecraft
