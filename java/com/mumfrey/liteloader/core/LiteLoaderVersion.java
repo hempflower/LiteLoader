@@ -29,7 +29,7 @@ public enum LiteLoaderVersion
 	MC_1_6_4_R2(19, 1380796916, "1.6.4", "1.6.4_02", "1.6.4", "1.6.r4"),
 	MC_1_7_2_R0(20, 1386027226, "1.7.2", "1.7.2",    "1.7.2", "1.7.r1"),
 	MC_1_7_2_R1(21, 1388455995, "1.7.2", "1.7.2_01", "1.7.2_01"),
-	MC_1_7_2_R2(22, 1391811889, "1.7.2", "1.7.2_02", "1.7.2_02");
+	MC_1_7_2_R2(22, 1391813831, "1.7.2", "1.7.2_02", "1.7.2_02");
 	
 	/**
 	 * Current loader version
@@ -42,19 +42,20 @@ public enum LiteLoaderVersion
 	
 	private static final UpdateSite updateSite = new UpdateSite(UPDATE_SITE_URL, UPDATE_SITE_VERSIONS_JSON, LiteLoaderVersion.CURRENT.getMinecraftVersion(), UPDATE_SITE_ARTEFACT_NAME, LiteLoaderVersion.CURRENT.getReleaseTimestamp());
 	
-	private int revision;
+	private final int revision;
 	
-	private long timestamp;
+	private final long timestamp;
 	
-	private String minecraftVersion;
+	private final String minecraftVersion;
 	
-	private String loaderVersion;
+	private final String loaderVersion;
 	
-	private Set<String> supportedVersions = new HashSet<String>();
+	private final Set<String> supportedVersions = new HashSet<String>();
 
 	private LiteLoaderVersion(int revision, long timestamp, String minecraftVersion, String loaderVersion, String... supportedVersions)
 	{
 		this.revision = revision;
+		this.timestamp = timestamp;
 		this.minecraftVersion = minecraftVersion;
 		this.loaderVersion = loaderVersion;
 		
