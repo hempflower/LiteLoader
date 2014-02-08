@@ -1113,9 +1113,11 @@ public final class LiteLoader
 			{
 				this.onShutDown();
 			}
+			
+			this.minecraft.mcProfiler.endSection();
 		}
 
-		this.minecraft.mcProfiler.endStartSection("keybindings");
+		this.minecraft.mcProfiler.startSection("keybindings");
 		this.input.onTick(clock);
 		this.minecraft.mcProfiler.endSection();
 	}

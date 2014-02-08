@@ -9,7 +9,7 @@ import com.mumfrey.liteloader.update.UpdateSite;
  * LiteLoader version table
  *
  * @author Adam Mummery-Smith
- * @version 1.7.2_02
+ * @version 1.7.2_03
  */
 public enum LiteLoaderVersion
 {
@@ -29,12 +29,13 @@ public enum LiteLoaderVersion
 	MC_1_6_4_R2(19, 1380796916, "1.6.4", "1.6.4_02", "1.6.4", "1.6.r4"),
 	MC_1_7_2_R0(20, 1386027226, "1.7.2", "1.7.2",    "1.7.2", "1.7.r1"),
 	MC_1_7_2_R1(21, 1388455995, "1.7.2", "1.7.2_01", "1.7.2_01"),
-	MC_1_7_2_R2(22, 1391815963, "1.7.2", "1.7.2_02", "1.7.2_02");
+	MC_1_7_2_R2(22, 1391815963, "1.7.2", "1.7.2_02", "1.7.2_02"),
+	MC_1_7_2_R3(23, 0,          "1.7.2", "1.7.2_03", "1.7.2_02", "1.7.2_03");
 	
 	/**
 	 * Current loader version
 	 */
-	public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_7_2_R2;
+	public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_7_2_R3;
 
 	private static final String UPDATE_SITE_URL = "http://dl.liteloader.com/versions/";
 	private static final String UPDATE_SITE_VERSIONS_JSON = "versions.json";
