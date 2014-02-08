@@ -111,13 +111,13 @@ public abstract class PacketTransformer implements IClassTransformer
 	@Override
 	public final byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
-		if (this.packetClass.equals(name) || this.packetClassObf.equals(name))
+		if (this.packetClass.equals(transformedName) || this.packetClassObf.equals(transformedName))
 		{
 			LiteLoaderLogger.info("PacketTransformer: Running transformer %s for %s", this.getClass().getName(), name);
 			
 			try
 			{
-				byte[] transformedClass = this.transformClass(name, basicClass);
+				byte[] transformedClass = this.transformClass(transformedName, basicClass);
 				this.notifyInjected();
 				return transformedClass;
 			}
@@ -143,10 +143,14 @@ public abstract class PacketTransformer implements IClassTransformer
 		// Try and transform obfuscated first
 		if (!this.tryTransformMethod(className, classNode, Obf.processPacket.obf, Obf.INetHandler.obf))
 		{
-			// Try to transform non-obf for use in dev env
-			if (!this.tryTransformMethod(className, classNode, Obf.processPacket.name, Obf.INetHandler.ref))
+			// Try to transform srg for use with fml
+			if (!this.tryTransformMethod(className, classNode, Obf.processPacket.srg, Obf.INetHandler.ref))
 			{
-				LiteLoaderLogger.warning("PacketTransformer: failed transforming class '%s' (%s)", this.packetClass, this.packetClassObf);
+				// Try to transform non-obf for use in dev env
+				if (!this.tryTransformMethod(className, classNode, Obf.processPacket.name, Obf.INetHandler.ref))
+				{
+					LiteLoaderLogger.warning("PacketTransformer: failed transforming class '%s' (%s)", this.packetClass, this.packetClassObf);
+				}
 			}
 		}
 		
