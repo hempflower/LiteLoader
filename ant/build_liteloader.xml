@@ -4,7 +4,7 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.7.2_02" />
+	<property name="version" value="1.7.2_03" />
 	<property name="mcversion" value="1.7.2" />
 	<property name="author" value="Mumfrey" />
 
@@ -37,10 +37,12 @@
 	
 	<target name="setup_development">
 	    <property name="skipremoval" value="DEV" />
+		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}.md5" />
 	</target>
 	
 	<target name="setup_production">
 	    <property name="skipremoval" value="" />
+		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
 	</target>
 	
 	<!-- Main target -->
@@ -193,7 +195,7 @@
 	<target name="savemd5" description="Put post-obfuscation MD5 to stored md5 set" if="outmd5set">
 		<echo level="info" message="Storing obfuscated MD5s" />
 
-		<copy file="${temp}/client_reobf.md5" tofile="${md5.dir}/client_${outmd5set}.md5" overwrite="true" verbose="true" />
+		<copy file="${temp}/client_reobf.md5" tofile="${md5.outfile}" overwrite="true" verbose="true" />
 	</target>
 
 	<target name="stage" description="Stage resources into staging directory">

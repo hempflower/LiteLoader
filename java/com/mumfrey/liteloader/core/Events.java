@@ -740,7 +740,7 @@ public class Events
 			return true;
 		
 		IChatComponent chat = chatPacket.func_148915_c();
-		String message = chat.getUnformattedText();
+		String message = chat.getFormattedText();
 		
 		// Chat filters get a stab at the chat first, if any filter returns
 		// false the chat is discarded
@@ -749,7 +749,7 @@ public class Events
 			if (chatFilter.onChat(chatPacket, chat, message))
 			{
 				chat = chatPacket.func_148915_c();
-				message = chat.getUnformattedText();
+				message = chat.getFormattedText();
 			}
 			else
 			{

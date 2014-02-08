@@ -1074,6 +1074,7 @@ public final class LiteLoader
 				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, this.minecraft.currentScreen, this, this.enabledModsList, this.configManager, this.hideModInfoScreenTab);
 			}
 
+			this.minecraft.entityRenderer.setupOverlayRendering();
 			this.modInfoScreen.drawScreen(mouseX, mouseY, partialTicks);
 		}
 		else if (this.minecraft.currentScreen != this.modInfoScreen && this.modInfoScreen != null)
