@@ -7,6 +7,7 @@ import java.util.*;
 import javax.activity.InvalidActivityException;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
@@ -38,7 +39,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * lightweight mods
  * 
  * @author Adam Mummery-Smith
- * @version 1.7.2_02
+ * @version 1.7.2_04
  */
 public final class LiteLoader
 {
@@ -244,7 +245,7 @@ public final class LiteLoader
 		return new File(this.configBaseFolder, String.format("config.%s", version.getMinecraftVersion()));
 	}
 	
-		/**
+	/**
 	 * Set up reflection methods required by the loader
 	 */
 	void init()
@@ -1066,12 +1067,14 @@ public final class LiteLoader
 	 */
 	void postRender(int mouseX, int mouseY, float partialTicks)
 	{
-		if (GuiScreenModInfo.isSupportedOnScreen(this.minecraft.currentScreen) && ((this.displayModInfoScreenTab && !this.hideModInfoScreenTab) || (this.modInfoScreen != null && this.modInfoScreen.isTweeningOrOpen())))
+		boolean tabHidden = this.hideModInfoScreenTab && this.minecraft.currentScreen instanceof GuiMainMenu;
+		
+		if (GuiScreenModInfo.isSupportedOnScreen(this.minecraft.currentScreen) && ((this.displayModInfoScreenTab && !tabHidden) || (this.modInfoScreen != null && this.modInfoScreen.isTweeningOrOpen())))
 		{
 			// If we're at the main menu, prepare the overlay
 			if (this.modInfoScreen == null || this.modInfoScreen.getScreen() != this.minecraft.currentScreen)
 			{
-				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, this.minecraft.currentScreen, this, this.enabledModsList, this.configManager, this.hideModInfoScreenTab);
+				this.modInfoScreen = new GuiScreenModInfo(this.minecraft, this.minecraft.currentScreen, this, this.enabledModsList, this.configManager, tabHidden);
 			}
 
 			this.minecraft.entityRenderer.setupOverlayRendering();
