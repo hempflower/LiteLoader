@@ -38,21 +38,35 @@
 	<target name="recompile" description="MCP recompile">
 		<echo level="info" message="Compiling MCP sources" />
 
-		<exec executable="${python}" dir="${mcp.dir}">
+		<exec executable="${python_windows}" dir="${mcp.dir}" osfamily="windows">
 			<arg value="runtime/recompile.py" />
 			<arg value="--client" />
 			<arg value="%*" />
 		</exec>
+
+		<exec executable="${python_linux}" dir="${mcp.dir}" osfamily="unix">
+			<arg value="runtime/recompile.py" />	
+			<arg value="--client" />	
+			<arg value="%*" />	
+		</exec>
+
 	</target>
 
 	<target name="reobfuscate" description="MCP reobfuscate">
 		<echo level="info" message="Obfuscating classes" />
 
-		<exec executable="${python}" dir="${mcp.dir}">
+		<exec executable="${python_windows}" dir="${mcp.dir}" osfamily="windows">
 			<arg value="runtime/reobfuscate.py" />
 			<arg value="--client" />
 			<arg value="%*" />
 		</exec>
+
+		<exec executable="${python_linux}" dir="${mcp.dir}" osfamily="unix">
+			<arg value="runtime/reobfuscate.py" />
+			<arg value="--client" />
+			<arg value="%*" />
+		</exec>
+
 	</target>
 	
 	<target name="savemd5" description="Put post-obfuscation MD5 to stored md5 set" if="outmd5set">

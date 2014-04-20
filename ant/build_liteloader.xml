@@ -26,8 +26,9 @@
 	<property name="stage.dir" location="${build}/stage/${ant.project.name}/${version}" />
 	<property name="filetype" value="jar" />
 
-	<property name="python" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
-
+	<property name="python_windows" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
+	<property name="python_linux" location="/usr/bin/python" />
+	
 	<target name="findmcp">
 		<echo level="info" message="Searching for clean MCP source..." />
 		<condition property="mcpsrc.exists">
@@ -173,7 +174,15 @@
 	<target name="recompile" description="MCP recompile">
 		<echo level="info" message="Compiling projects" />
 
-		<exec executable="${python}" dir="${mcp.dir}">
+		<exec executable="${python_windows}" dir="${mcp.dir}" osfamily="windows">
+			<arg value="runtime/recompile.py" />
+			<arg value="--client" />
+			<arg value="--config" />
+			<arg value="${temp}/build.cfg" />
+			<arg value="%*" />
+		</exec>
+
+		<exec executable="${python_linux}" dir="${mcp.dir}" osfamily="unix">
 			<arg value="runtime/recompile.py" />
 			<arg value="--client" />
 			<arg value="--config" />
@@ -185,11 +194,19 @@
 	<target name="reobfuscate" description="MCP reobfuscate">
 		<echo level="info" message="Obfuscating classes" />
 
-		<exec executable="${python}" dir="${mcp.dir}">
+		<exec executable="${python_windows}" dir="${mcp.dir}" osfamily="windows">
 			<arg value="runtime/reobfuscate.py" />
 			<arg value="--client" />
 			<arg value="%*" />
 		</exec>
+
+		<exec executable="${python_linux}" dir="${mcp.dir}" osfamily="unix">
+			<arg value="runtime/reobfuscate.py" />
+			<arg value="--client" />
+			<arg value="%*" />
+		</exec>				
+			
+		
 	</target>
 
 	<target name="savemd5" description="Put post-obfuscation MD5 to stored md5 set" if="outmd5set">
@@ -201,9 +218,11 @@
 	<target name="stage" description="Stage resources into staging directory">
 		<echo level="info" message="Staging resources" />
 
-		<copy todir="${stage.dir}">
+		<copy todir="${stage.dir}" overwrite="true">
 			<fileset dir="${mcp.dir}/reobf/minecraft" excludes=".svn/**, *.txt">
-				<exclude name="/*.class" />
+				<exclude name="?.class" />
+				<exclude name="??.class" />
+				<exclude name="???.class" />
 				<exclude name="/com/mumfrey/liteloader/core/gen/**" />
 			</fileset>
 		</copy>
