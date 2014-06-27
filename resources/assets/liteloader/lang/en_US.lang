@@ -4,11 +4,17 @@ key.categories.litemods=§eMod Keys
 
 gui.about.modsloaded=%d mod(s) loaded
 gui.about.versiontext=Version %s
+gui.about.poweredbyversion=v%s§r powered by LiteLoader v%s
 
 gui.about.checkupdates=§nCheck for updates
 
-gui.about.showtabmessage=Show LiteLoader tab
-gui.about.keystrokehint= §e(use §9CTRL§e+§9SHIFT§e+§9TAB§e)
+gui.settings.showtab.label=Show LiteLoader Panel Tab
+gui.settings.showtab.help1=If you disable this option, use CTRL+SHIFT+TAB
+gui.settings.showtab.help2=to open the LiteLoader panel
+gui.settings.notabhide.label=LiteLoader Tab Always Expanded
+gui.settings.notabhide.help1=Only applies if the above option is also checked
+
+gui.about.taboptions=§nLiteLoader Panel Options
 
 gui.about.authors=Authors
 
@@ -24,10 +30,13 @@ gui.status.disabled=Disabled
 gui.status.pending.enabled=Enabled on next startup 
 gui.status.pending.disabled=Disabled on next startup
 gui.status.missingdeps=Missing dependencies
-gui.description.missingdeps=Missing dependencies:
+gui.status.missingapis=Missing required APIs
+gui.description.missingdeps=Missing dependencies: %s
+gui.description.missingapis=Missing APIs: %s
 
 gui.mod.providestweak=Provides Tweak
 gui.mod.providestransformer=Provides Transformer
+gui.mod.usingapi=Uses additional API
 
 gui.settings.title=%s Settings
 gui.saveandclose=Save & Close
@@ -48,6 +57,7 @@ gui.checknow=Check now
 gui.installupdate=Install now
 gui.downloadupdate=Download now
 
+gui.log.button=LiteLoader Log
 gui.log.title=LiteLoader Log Viewer
 gui.log.scalecheckbox=Use native resolution
 gui.log.postlog=Upload Log

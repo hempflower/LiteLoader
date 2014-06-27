@@ -17,8 +17,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.UserType;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
+import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -292,7 +294,7 @@ public class LoginManager
 	public String getUUID()
 	{
 		GameProfile selectedProfile = this.authentication.getSelectedProfile();
-		return selectedProfile != null ? selectedProfile.getId() : this.defaultDisplayName;
+		return selectedProfile != null ? selectedProfile.getId().toString().replace("-", "") : this.defaultDisplayName;
 	}
 	
 	/**
@@ -302,6 +304,18 @@ public class LoginManager
 	{
 		String accessToken = this.authentication.getAuthenticatedToken();
 		return accessToken != null ? accessToken : "-";
+	}
+	
+	public String getUserType()
+	{
+		UserType userType = this.authentication.getUserType();
+		return (userType != null ? userType : UserType.LEGACY).toString().toLowerCase();
+	}
+	
+	public String getUserProperties()
+	{
+		PropertyMap userProperties = this.authentication.getUserProperties();
+		return userProperties != null ? userProperties.toString() : "{}";
 	}
 	
 	/**
@@ -318,7 +332,7 @@ public class LoginManager
 		private boolean workOffline;
 		
 		@SerializedName("authData")
-		private Map<String, String> credentials;
+		private Map<String, Object> credentials;
 		
 		public AuthData()
 		{
@@ -344,7 +358,7 @@ public class LoginManager
 		public boolean validate()
 		{
 			if (this.clientToken == null) this.clientToken = UUID.randomUUID().toString();
-			if (this.credentials == null) this.credentials = new HashMap<String, String>();
+			if (this.credentials == null) this.credentials = new HashMap<String, Object>();
 			return true;
 		}
 
@@ -370,12 +384,12 @@ public class LoginManager
 
 		public String getUsername()
 		{
-			return this.credentials != null ? this.credentials.get("username") : null;
+			return this.credentials != null ? this.credentials.get("username").toString() : null;
 		}
 		
 		public String getDisplayName()
 		{
-			return this.credentials != null && this.credentials.containsKey("displayName") ? this.credentials.get("displayName") : System.getProperty("user.name");
+			return this.credentials != null && this.credentials.containsKey("displayName") ? this.credentials.get("displayName").toString() : System.getProperty("user.name");
 		}
 	}
 }

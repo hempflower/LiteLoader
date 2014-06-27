@@ -4,8 +4,8 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.7.2_04" />
-	<property name="mcversion" value="1.7.2" />
+	<property name="version" value="1.7.10" />
+	<property name="mcversion" value="1.7.10" />
 	<property name="author" value="Mumfrey" />
 
 	<!-- Project definitions and dependencies -->
@@ -97,6 +97,21 @@
 		</copy>
 	</target>
 
+	<target name="contributeloadersource" description="Contribute a liteloader source code set to the source path">
+		<echo level="info" message="Contributing source set '${set}' for project ${lib}" />
+		<copy todir="${src}" verbose="false" overwrite="true" failonerror="false">
+			<fileset dir="${eclipse}/${lib}/java/${set}">
+				<exclude name="**/debug" />
+				<exclude name="**/debug/*.java" />
+			</fileset>
+			<filterchain>
+				<linecontains negate="true">
+					<contains value="@MCPONLY${skipremoval}" />
+				</linecontains>
+			</filterchain>
+		</copy>
+	</target>
+
 	<target name="contributeresources" description="Contribute resources to the staging path">
 		<echo level="info" message="Contributing project resources for ${lib}" />
 		<copy todir="${stage.dir}" verbose="false" failonerror="false">
@@ -155,8 +170,14 @@
 		<echo level="info" message="Contributing upstream projects" />
 		<foreach list="${upstream}" param="lib" target="contributesource" />
 
-		<antcall target="contributesource">
+		<antcall target="contributeloadersource">
 			<param name="lib" value="${project}" />
+			<param name="set" value="common" />
+		</antcall>
+		
+		<antcall target="contributeloadersource">
+			<param name="lib" value="${project}" />
+			<param name="set" value="client" />
 		</antcall>
 	</target>
 
@@ -258,8 +279,8 @@
 	<property environment="env" />
 	
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
-		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2"/>
-		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/1.7.2" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
+		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}"/>
+		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
 		<copy todir="${eclipse}/Installer/src/main/resources" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
 	</target>
 </project>
