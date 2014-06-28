@@ -46,6 +46,7 @@ public class Obf
 	public static final Obf         EntityClientPlayerMP = new Obf("net.minecraft.client.entity.EntityClientPlayerMP",           "bjk" );
 	public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "ajn" );
 	public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ade" );
+	public static final Obf                  FrameBuffer = new Obf("net.minecraft.client.shader.Framebuffer",                    "bmg" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -82,6 +83,8 @@ public class Obf
 	public static final Obf            startServerThread = new Obf("func_71256_s",                                               "w"   );
 	public static final Obf              sendChatMessage = new Obf("func_71165_d",                                               "a"   );
 	public static final Obf        updateFramebufferSize = new Obf("func_147119_ah",                                             "an"  );
+	public static final Obf            framebufferRender = new Obf("func_147615_c",                                              "c"   );
+	public static final Obf       bindFramebufferTexture = new Obf("func_147612_c",                                              "c"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;

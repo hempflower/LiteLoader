@@ -2,6 +2,8 @@ package com.mumfrey.liteloader.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
@@ -39,6 +41,10 @@ public class CallbackProxyClient
 	private static boolean clock = false;
 	
 	private static ClientEvents events;
+
+	private static boolean fboEnabled;
+
+	private static boolean renderingFBO;
 	
 	public static void handleLoginSuccessPacket(INetHandler netHandler, S02PacketLoginSuccess packet)
 	{
@@ -261,9 +267,40 @@ public class CallbackProxyClient
 	{
 		CallbackProxyClient.events.onSendChatMessage(e, message);
 	}
+	
+	public static void onResize(EventInfo<Minecraft> e)
+	{
+		CallbackProxyClient.events.onResize(e.getSource());
+	}
+	
+	public static void preRenderFBO(EventInfo<Minecraft> e)
+	{
+		CallbackProxyClient.fboEnabled = OpenGlHelper.isFramebufferEnabled();
+		
+		if (CallbackProxyClient.fboEnabled)
+		{
+			CallbackProxyClient.renderingFBO = true;
+			CallbackProxyClient.events.preRenderFBO(e.getSource().getFramebuffer());
+		}
+	}
+	
+	public static void postRenderFBO(EventInfo<Minecraft> e)
+	{
+		CallbackProxyClient.renderingFBO = false;
 
-    public static void onResize(EventInfo<Minecraft> e)
-    {
-    	CallbackProxyClient.events.onResize(e.getSource());
-    }
+		if (CallbackProxyClient.fboEnabled)
+		{
+			CallbackProxyClient.events.postRenderFBO(e.getSource().getFramebuffer());
+		}
+	}
+	
+	public static void renderFBO(EventInfo<Framebuffer> e, int width, int height)
+	{
+		if (CallbackProxyClient.renderingFBO)
+		{
+			CallbackProxyClient.events.onRenderFBO(e.getSource(), width, height);
+		}
+		
+		CallbackProxyClient.renderingFBO = false;
+	}
 }

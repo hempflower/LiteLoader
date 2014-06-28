@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.login.INetHandlerLoginClient;
 import net.minecraft.network.login.server.S02PacketLoginSuccess;
@@ -159,6 +160,11 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 * List of mods which monitor changes in the viewport
 	 */
 	private LinkedList<ViewportListener> viewportListeners = new LinkedList<ViewportListener>();
+	
+	/**
+	 * List of mods which interact with the main minecraft FBO
+	 */
+	private LinkedList<FrameBufferListener> frameBufferListeners = new LinkedList<FrameBufferListener>();
 
 	/**
 	 * Hash code of the current world. We don't store the world reference here because we don't want
@@ -212,6 +218,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		delegate.registerInterface(OutboundChatListener.class);
 		delegate.registerInterface(OutboundChatFilter.class);
 		delegate.registerInterface(ViewportListener.class);
+		delegate.registerInterface(FrameBufferListener.class);
 	}
 	
 	/**
@@ -435,6 +442,17 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		if (!this.viewportListeners.contains(viewportListener))
 		{
 			this.viewportListeners.add(viewportListener);
+		}
+	}
+	
+	/**
+	 * @param frameBufferListener
+	 */
+	public void addFrameBufferListener(FrameBufferListener frameBufferListener)
+	{
+		if (!this.frameBufferListeners.contains(frameBufferListener))
+		{
+			this.frameBufferListeners.add(frameBufferListener);
 		}
 	}
 
@@ -777,5 +795,23 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		
 		for (JoinGameListener joinGameListener : this.joinGameListeners)
 			joinGameListener.onJoinGame(netHandler, loginPacket);
+	}
+
+	void preRenderFBO(Framebuffer framebuffer)
+	{
+		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
+			frameBufferListener.preRenderFBO(framebuffer);
+	}
+
+	void onRenderFBO(Framebuffer framebuffer, int width, int height)
+	{
+		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
+			frameBufferListener.onRenderFBO(framebuffer, width, height);
+	}
+
+	void postRenderFBO(Framebuffer framebuffer)
+	{
+		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
+			frameBufferListener.postRenderFBO(framebuffer);
 	}
 }
