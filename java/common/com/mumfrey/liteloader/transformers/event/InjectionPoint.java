@@ -205,4 +205,15 @@ public abstract class InjectionPoint
 	{
 		return new InjectionPoint.Shift(point, -1);
 	}
+	
+	/**
+	 * Returns an injection point which returns all insns offset by the specified "count" from insns from the supplied injection point
+	 * 
+	 * @param point
+	 * @return
+	 */
+	public static InjectionPoint shift(InjectionPoint point, int count)
+	{
+		return new InjectionPoint.Shift(point, count);
+	}
 }

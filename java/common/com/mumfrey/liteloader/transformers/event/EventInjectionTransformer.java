@@ -19,6 +19,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * EventInjectionTransformer is the spiritual successor to the CallbackInjectionTransformer and is a more advanced
@@ -226,6 +227,8 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 					
 					Event head = events.iterator().next();
 					MethodNode handler = head.inject(insn, cancellable, this.globalEventID);
+
+					LiteLoaderLogger.info("Injecting event %s with %d handlers in method %s in class %s", head.getName(), events.size(), method.name, classNode.name.replace('/', '.'));
 					
 					for (Event event : events)
 						event.addToHandler(handler);
