@@ -211,6 +211,8 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
+		Launch.classLoader.addClassLoaderExclusion("com.google.common.");
+		
 		LiteLoaderTweaker.instance = this;
 		
 		this.initArgs(args, gameDirectory, assetsDirectory);
