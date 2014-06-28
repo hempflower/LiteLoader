@@ -97,21 +97,6 @@
 		</copy>
 	</target>
 
-	<target name="contributeloadersource" description="Contribute a liteloader source code set to the source path">
-		<echo level="info" message="Contributing source set '${set}' for project ${lib}" />
-		<copy todir="${src}" verbose="false" overwrite="true" failonerror="false">
-			<fileset dir="${eclipse}/${lib}/java/${set}">
-				<exclude name="**/debug" />
-				<exclude name="**/debug/*.java" />
-			</fileset>
-			<filterchain>
-				<linecontains negate="true">
-					<contains value="@MCPONLY${skipremoval}" />
-				</linecontains>
-			</filterchain>
-		</copy>
-	</target>
-
 	<target name="contributeresources" description="Contribute resources to the staging path">
 		<echo level="info" message="Contributing project resources for ${lib}" />
 		<copy todir="${stage.dir}" verbose="false" failonerror="false">
@@ -170,14 +155,8 @@
 		<echo level="info" message="Contributing upstream projects" />
 		<foreach list="${upstream}" param="lib" target="contributesource" />
 
-		<antcall target="contributeloadersource">
+		<antcall target="contributesource">
 			<param name="lib" value="${project}" />
-			<param name="set" value="common" />
-		</antcall>
-		
-		<antcall target="contributeloadersource">
-			<param name="lib" value="${project}" />
-			<param name="set" value="client" />
 		</antcall>
 	</target>
 
