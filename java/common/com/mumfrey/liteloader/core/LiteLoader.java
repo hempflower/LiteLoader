@@ -281,17 +281,25 @@ public final class LiteLoader
 		this.properties.writeProperties();
 	}
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ICustomResourcePackManager#registerModResourcePack(net.minecraft.client.resources.ResourcePack)
+	/**
+	 * @param resourcePack
+	 * @return
+	 * 
+	 * @deprecated Use LiteLoader.getGameEngine().registerResourcePack() instead
 	 */
+	@Deprecated
 	public boolean registerModResourcePack(IResourcePack resourcePack)
 	{
 		return this.engine.registerResourcePack(resourcePack);
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ICustomResourcePackManager#unRegisterModResourcePack(net.minecraft.client.resources.ResourcePack)
+
+	/**
+	 * @param resourcePack
+	 * @return
+	 * 
+	 * @deprecated Use LiteLoader.getGameEngine().unRegisterResourcePack() instead
 	 */
+	@Deprecated
 	public boolean unRegisterModResourcePack(IResourcePack resourcePack)
 	{
 		return this.engine.unRegisterResourcePack(resourcePack);
@@ -434,6 +442,11 @@ public final class LiteLoader
 	public static PermissionsManagerServer getServerPermissionsManager()
 	{
 		return LiteLoader.instance.permissionsManagerServer;
+	}
+	
+	public static GameEngine<?, ?> getGameEngine()
+	{
+		return LiteLoader.instance.engine;
 	}
 	
 	/**

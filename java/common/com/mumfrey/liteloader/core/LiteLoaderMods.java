@@ -447,7 +447,7 @@ public class LiteLoaderMods
 			{
 				container.initResourcePack(modName);
 				
-				if (container.hasResourcePack() && this.loader.registerModResourcePack((IResourcePack)container.getResourcePack()))
+				if (container.hasResourcePack() && LiteLoader.getGameEngine().registerResourcePack((IResourcePack)container.getResourcePack()))
 				{
 					LiteLoaderLogger.info("Successfully added \"%s\" to active resource pack set", container.getLocation());
 				}

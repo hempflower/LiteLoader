@@ -56,7 +56,7 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
 		}
 
 		// Add self as a resource pack for texture/lang resources
-		LiteLoader.getInstance().registerModResourcePack(new InternalResourcePack("LiteLoader", LiteLoader.class, "liteloader"));
+		LiteLoader.getGameEngine().registerResourcePack(new InternalResourcePack("LiteLoader", LiteLoader.class, "liteloader"));
 	}
 	
 	@Override
