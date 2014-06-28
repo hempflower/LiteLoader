@@ -175,6 +175,16 @@ public class BeforeInvoke extends InjectionPoint
 		this.methodOwners = method.getOwners();
 		this.methodSignatures = method.getDescriptors();
 		this.ordinal = ordinal;
+		
+		for (int i = 0; i < this.methodOwners.length; i++)
+		{
+			if (this.methodOwners[i] != null) this.methodOwners[i] = this.methodOwners[i].replace('.', '/');
+		}
+		
+		for (int i = 0; i < this.methodSignatures.length; i++)
+		{
+			if (this.methodSignatures[i] != null) this.methodSignatures[i] = this.methodSignatures[i].replace('.', '/');
+		}
 	}
 	
 	public void setLogging(boolean logging)
@@ -200,23 +210,25 @@ public class BeforeInvoke extends InjectionPoint
 			{
 				MethodInsnNode node = (MethodInsnNode)insn;
 				
-				if (this.logging) LiteLoaderLogger.info("BeforeInvokeStrategy is considering invokation NAME=" + node.name + " DESC=" + node.desc + " OWNER=" + node.owner);
+				if (this.logging) LiteLoaderLogger.info("BeforeInvoke is considering invokation NAME=" + node.name + " DESC=" + node.desc + " OWNER=" + node.owner);
 				
 				int index = BeforeInvoke.arrayIndexOf(this.methodNames, node.name, -1);
-				if (index > -1 && this.logging) LiteLoaderLogger.info("BeforeInvokeStrategy found a matching invoke, checking owner/signature...");
+				if (index > -1 && this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke, checking owner/signature...");
 				
-				if (index > -1 && BeforeInvoke.arrayIndexOf(this.methodOwners, node.owner, index) == index && BeforeInvoke.arrayIndexOf(this.methodSignatures, node.desc, index) == index)
+				int ownerIndex = BeforeInvoke.arrayIndexOf(this.methodOwners, node.owner, index);
+				int descIndex = BeforeInvoke.arrayIndexOf(this.methodSignatures, node.desc, index);
+				if (index > -1 && ownerIndex == index && descIndex == index)
 				{
-					if (this.logging) LiteLoaderLogger.info("BeforeInvokeStrategy found a matching invoke, checking ordinal...");
+					if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke, checking ordinal...");
 					if (this.ordinal == -1)
 					{
-						if (this.logging) LiteLoaderLogger.info("BeforeInvokeStrategy found a matching invoke at ordinal %d", ordinal);
+						if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke at ordinal %d", ordinal);
 						nodes.add(node);
 						found = true;
 					}
 					else if (this.ordinal == ordinal)
 					{
-						if (this.logging) LiteLoaderLogger.info("BeforeInvokeStrategy found a matching invoke at ordinal %d", ordinal);
+						if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke at ordinal %d", ordinal);
 						nodes.add(node);
 						return true;
 					}
@@ -240,10 +252,11 @@ public class BeforeInvoke extends InjectionPoint
 	private static int arrayIndexOf(String[] haystack, String needle, int pos)
 	{
 		if (haystack == null) return pos;
+		if (pos > -1 && pos < haystack.length && needle.equals(haystack[pos])) return pos;
+		
 		for (int index = 0; index < haystack.length; index++)
-		{
 			if (needle.equals(haystack[index])) return index;
-		}
-		return pos;
+		
+		return -1;
 	}
 }
