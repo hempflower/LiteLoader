@@ -294,7 +294,7 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 		}
 		
 		// Generate the callback method descriptor
-		String callbackMethodDesc = String.format("(%s%s%s%s)%s", callbackReturnValueArg, hasReturnRef ? "I" : "", classInstanceArg, CallbackInjectionTransformer.getMethodArgs(methodNode), callbackReturnType);
+		String callbackMethodDesc = String.format("(%s%s%s%s)%s", hasReturnRef ? callbackReturnValueArg : "", hasReturnRef ? "I" : "", classInstanceArg, CallbackInjectionTransformer.getMethodArgs(methodNode), callbackReturnType);
 		
 		// Add the callback method insn to the injected instructions list
 		injected.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.getCallbackClass(), callback.getCallbackMethod(), callbackMethodDesc, false));
