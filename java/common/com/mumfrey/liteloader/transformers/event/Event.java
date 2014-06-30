@@ -36,9 +36,9 @@ public class Event implements Comparable<Event>
 	 */
 	private static final Set<Event> events = new HashSet<Event>();
 	
-	private static final Map<MethodNode, List<Event>> handlerMethods = new LinkedHashMap<MethodNode, List<Event>>();
+	private static final List<Map<MethodNode, List<Event>>> proxyHandlerMethods = new ArrayList<Map<MethodNode, List<Event>>>();
 
-	private static boolean generatedProxy = false;
+	private static int proxyInnerClassIndex = 1;
 	
 	/**
 	 * The name of this event
@@ -239,11 +239,6 @@ public class Event implements Comparable<Event>
 		{
 			throw new IllegalStateException("Attempted to inject the event " + this.name + " but the event is not attached!");
 		}
-		
-		if (Event.generatedProxy)
-		{
-			throw new IllegalStateException("Attempted to inject the event " + this.name + " but the event proxy was already generated!");
-		}
 	}
 
 	/**
@@ -264,9 +259,9 @@ public class Event implements Comparable<Event>
 		
 		// Create the handler delegate method
 		MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID), this.eventDescriptor, null, null);
-		Event.handlerMethods.put(handler, new ArrayList<Event>());
+		Event.addMethodToActiveProxy(handler);
 		
-		LiteLoaderLogger.debug("Event %s is spawning handler %s", this.name, handler.name);
+		LiteLoaderLogger.debug("Event %s is spawning handler %s in class %s", this.name, handler.name, Event.getActiveProxyRef());
 
 		Type[] argumentTypes = Type.getArgumentTypes(this.method.desc);
 		int ctorMAXS = 0, invokeMAXS = argumentTypes.length;
@@ -286,7 +281,7 @@ public class Event implements Comparable<Event>
 		// Call the event handler method in the proxy
 		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
 		Event.pushArgs(argumentTypes, insns, this.methodIsStatic);
-		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, handler.name, handler.desc, false));
+		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc, false));
 		
 		if (cancellable)
 		{
@@ -300,7 +295,7 @@ public class Event implements Comparable<Event>
 		
 		return handler;
 	}
-	
+
 	/**
 	 * if (e.isCancelled()) return e.getReturnValue();
 	 * 
@@ -360,11 +355,7 @@ public class Event implements Comparable<Event>
 	{
 		LiteLoaderLogger.debug("Adding event %s to handler %s", this.name, handler.name);
 		
-		List<Event> handlerEvents = Event.handlerMethods.get(handler);
-		if (handlerEvents != null)
-		{
-			handlerEvents.add(this);
-		}
+		Event.getEventsForHandlerMethod(handler).add(this);
 	}
 
 	/**
@@ -426,18 +417,22 @@ public class Event implements Comparable<Event>
 	 * Populates the event proxy class with delegating methods for all injected events 
 	 * 
 	 * @param classNode
+	 * @param proxyIndex TODO
 	 * @return
 	 */
-	static ClassNode populateProxy(final ClassNode classNode)
+	static ClassNode populateProxy(final ClassNode classNode, int proxyIndex)
 	{
-		Event.generatedProxy = true;
-		
 		int handlerCount = 0;
 		int invokeCount = 0;
-		int lineNumber = 210; // From EventProxy.java, this really is only to try and make stack traces a bit easier to read
+		int lineNumber = proxyIndex < 2 ? 210 : 10; // From EventProxy.java, this really is only to try and make stack traces a bit easier to read
+
+		LiteLoaderLogger.info("Generating new Event Handler Proxy Class %s", classNode.name.replace('/', '.'));
+		
+		Map<MethodNode, List<Event>> handlerMethods = Event.proxyHandlerMethods.get(Event.proxyInnerClassIndex); 
+		Event.proxyInnerClassIndex++;
 		
 		// Loop through all handlers and inject a method for each one
-		for (Entry<MethodNode, List<Event>> handler : Event.handlerMethods.entrySet())
+		for (Entry<MethodNode, List<Event>> handler : handlerMethods.entrySet())
 		{
 			MethodNode handlerMethod = handler.getKey();
 			List<Event> handlerEvents = handler.getValue();
@@ -503,11 +498,37 @@ public class Event implements Comparable<Event>
 		return classNode;
 	}
 
+	private static List<Event> addMethodToActiveProxy(MethodNode handlerMethod)
+	{
+		while (Event.proxyHandlerMethods.size() < Event.proxyInnerClassIndex + 1)
+			Event.proxyHandlerMethods.add(new LinkedHashMap<MethodNode, List<Event>>());
+		
+		ArrayList<Event> events = new ArrayList<Event>();
+		Event.proxyHandlerMethods.get(Event.proxyInnerClassIndex).put(handlerMethod, events);
+		return events;
+	}
+	
+	private static List<Event> getEventsForHandlerMethod(MethodNode handlerMethod)
+	{
+		for (Map<MethodNode, List<Event>> handlers : Event.proxyHandlerMethods)
+		{
+			List<Event> events = handlers.get(handlerMethod);
+			if (events != null) return events;
+		}
+		
+		return Event.addMethodToActiveProxy(handlerMethod);
+	}
+
 	private static String getHandlerName(int globalEventID)
 	{
 		return String.format("$event%05x", globalEventID);
 	}
 
+	private static String getActiveProxyRef()
+	{
+		return Obf.EventProxy.ref + (Event.proxyInnerClassIndex > 1 ? "$" + Event.proxyInnerClassIndex : "");
+	}
+	
 	/**
 	 * @param args
 	 * @param insns

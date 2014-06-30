@@ -147,9 +147,21 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 	{
 		if (EventInjectionTransformer.master == this)
 		{
-			if (Obf.EventProxy.name.equals(transformedName))
+			if (transformedName != null && transformedName.startsWith(Obf.EventProxy.name))
 			{
-				return this.transformEventProxy(basicClass);
+				int dollarPos = transformedName.indexOf('$');
+				int proxyIndex = (dollarPos > -1) ? Integer.parseInt(transformedName.substring(dollarPos + 1)) : 0;
+				if (proxyIndex != 1)
+				{
+					try
+					{
+						return this.transformEventProxy(transformedName, basicClass, proxyIndex);
+					}
+					catch (Throwable th)
+					{
+						th.printStackTrace();
+					}
+				}
 			}
 			
 			if (basicClass != null && EventInjectionTransformer.eventMappings.containsKey(transformedName))
@@ -161,21 +173,34 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		return basicClass;
 	}
 
-	private byte[] transformEventProxy(byte[] basicClass)
+	private byte[] transformEventProxy(String transformedName, byte[] basicClass, int proxyIndex)
 	{
-		ClassNode classNode = this.readClass(basicClass, true);
-		
-		for (MethodNode method : classNode.methods)
+		ClassNode classNode = this.getProxyByteCode(transformedName, basicClass, proxyIndex);
+		return this.writeClass(Event.populateProxy(classNode, proxyIndex == 0 ? 1 : proxyIndex));
+	}
+
+	private ClassNode getProxyByteCode(String transformedName, byte[] basicClass, int proxyIndex)
+	{
+		if (proxyIndex == 0 || basicClass != null)
 		{
-			// Strip the sanity code out of the EventProxy class initialiser
-			if ("<clinit>".equals(method.name))
+			ClassNode classNode = this.readClass(basicClass, true);
+
+			for (MethodNode method : classNode.methods)
 			{
-				method.instructions.clear();
-				method.instructions.add(new InsnNode(Opcodes.RETURN));
-			}
-		}		
+				// Strip the sanity code out of the EventProxy class initialiser
+				if ("<clinit>".equals(method.name))
+				{
+					method.instructions.clear();
+					method.instructions.add(new InsnNode(Opcodes.RETURN));
+				}
+			}		
+			
+			return classNode;
+		}
 		
-		return this.writeClass(Event.populateProxy(classNode));
+		ClassNode classNode = new ClassNode();
+		classNode.visit(50, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, transformedName.replace('.', '/'), null, "java/lang/Object", null);
+		return classNode;
 	}
 
 	private byte[] injectEvents(byte[] basicClass, Map<String, Map<Event, InjectionPoint>> mappings)

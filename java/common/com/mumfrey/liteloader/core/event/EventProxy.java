@@ -56,8 +56,7 @@ public final class EventProxy
 	//      }
 	//  }
 	
-	@SuppressWarnings("unused")
-	private static void onMissingClass(Error err, EventInfo<?> e)
+	protected static void onMissingClass(Error err, EventInfo<?> e)
 	{
 		EventProxy.error = "Missing Event Handler Class!";
 		EventProxy.errorDetails = new StringBuilder(); 
@@ -83,8 +82,7 @@ public final class EventProxy
 		throw new RuntimeErrorException(err, "Missing event handler class for event " + e.getName() + ", see crash report for details");
 	}
 
-	@SuppressWarnings("unused")
-	private static void onMissingHandler(Error err, EventInfo<?> e)
+	protected static void onMissingHandler(Error err, EventInfo<?> e)
 	{
 		String descriptor = err.getMessage();
 		int dotPos = descriptor.lastIndexOf('.');
