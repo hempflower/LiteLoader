@@ -13,27 +13,29 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 	@Override
 	protected void addEvents()
 	{
-		InjectionPoint head = new MethodHead();
+		MethodInfo runGameLoop            = new MethodInfo(Obf.Minecraft,            Obf.runGameLoop,            Void.TYPE);
+		MethodInfo updateFramebufferSize  = new MethodInfo(Obf.Minecraft,            Obf.updateFramebufferSize,  Void.TYPE);
+		MethodInfo framebufferRender      = new MethodInfo(Obf.FrameBuffer,          Obf.framebufferRender,      Void.TYPE, Integer.TYPE, Integer.TYPE);
+		MethodInfo bindFramebufferTexture = new MethodInfo(Obf.FrameBuffer,          Obf.bindFramebufferTexture, Void.TYPE);
+		MethodInfo sendChatMessage        = new MethodInfo(Obf.EntityClientPlayerMP, Obf.sendChatMessage,        Void.TYPE, String.class);
+
+		InjectionPoint methodHead         = new MethodHead();
+		InjectionPoint beforeFBORender    = new BeforeInvoke(framebufferRender);
+		InjectionPoint beforeBindFBOTex   = new BeforeInvoke(bindFramebufferTexture);
 		
-		Event sendChatMessage = Event.getOrCreate("sendChatMessage", true);
-		MethodInfo sendChatMessageTarget = new MethodInfo(Obf.EntityClientPlayerMP, Obf.sendChatMessage, Void.TYPE, String.class);
-		this.addEvent(sendChatMessage, sendChatMessageTarget, head).addListener(new MethodInfo(Obf.CallbackProxyClient, "onOutboundChat"));
+		this.addEvent(Event.getOrCreate("sendChatMessage", true), sendChatMessage, methodHead)
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "onOutboundChat"));
 		
-		Event updateFramebufferSize = Event.getOrCreate("updateFramebufferSize", false);
-		MethodInfo updateFramebufferSizeTarget = new MethodInfo(Obf.Minecraft, Obf.updateFramebufferSize, Void.TYPE);
-		this.addEvent(updateFramebufferSize, updateFramebufferSizeTarget, head).addListener(new MethodInfo(Obf.CallbackProxyClient, "onResize"));
+		this.addEvent(Event.getOrCreate("updateFramebufferSize", false), updateFramebufferSize, methodHead)
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "onResize"));
 		
-		MethodInfo framebufferRender = new MethodInfo(Obf.FrameBuffer, Obf.framebufferRender, "(II)V");
-		BeforeInvoke beforeFramebufferRender = new BeforeInvoke(framebufferRender);
+		this.addEvent(Event.getOrCreate("preRenderFBO", false), runGameLoop, beforeFBORender)
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "preRenderFBO"));
 		
-		Event preRenderFBO = Event.getOrCreate("preRenderFBO", false);
-		MethodInfo runGameLoop = new MethodInfo(Obf.Minecraft, Obf.runGameLoop, Void.TYPE);
-		this.addEvent(preRenderFBO, runGameLoop, beforeFramebufferRender).addListener(new MethodInfo(Obf.CallbackProxyClient, "preRenderFBO"));
+		this.addEvent(Event.getOrCreate("renderFBO", false), framebufferRender, beforeBindFBOTex)
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "renderFBO"));
 		
-		Event renderFBO = Event.getOrCreate("renderFBO", false);
-		this.addEvent(renderFBO, framebufferRender, new BeforeInvoke(new MethodInfo(Obf.FrameBuffer, Obf.bindFramebufferTexture, Void.TYPE))).addListener(new MethodInfo(Obf.CallbackProxyClient, "renderFBO"));
-		
-		Event postRenderFBO = Event.getOrCreate("postRenderFBO", false);
-		this.addEvent(postRenderFBO, runGameLoop, InjectionPoint.after(beforeFramebufferRender)).addListener(new MethodInfo(Obf.CallbackProxyClient, "postRenderFBO"));;
+		this.addEvent(Event.getOrCreate("postRenderFBO", false), runGameLoop, InjectionPoint.after(beforeFBORender))
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "postRenderFBO"));;
 	}
 }
