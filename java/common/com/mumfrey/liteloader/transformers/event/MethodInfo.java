@@ -290,7 +290,7 @@ public class MethodInfo
 		
 	public boolean matches(String method, String desc, String className)
 	{
-		if ((className == null || this.owner.equals(className)) && (this.name.equals(method) || this.nameSrg.equals(method)))
+		if ((className == null || this.ownerRef.equals(className)) && (this.name.equals(method) || this.nameSrg.equals(method)))
 		{
 			return this.desc == null || this.desc.equals(desc);
 		}

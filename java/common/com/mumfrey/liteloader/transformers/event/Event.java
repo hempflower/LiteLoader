@@ -93,6 +93,8 @@ public class Event implements Comparable<Event>
 
 	protected String eventInfoClass;
 	
+	protected Set<MethodInfo> pendingInjections;
+	
 	Event(String name, boolean cancellable, int priority)
 	{
 		this.name = name.toLowerCase();
@@ -224,6 +226,38 @@ public class Event implements Comparable<Event>
 	void detach()
 	{
 		this.method = null;
+	}
+	
+	void addPendingInjection(MethodInfo targetMethod)
+	{
+		if (this.pendingInjections == null)
+		{
+			this.pendingInjections = new HashSet<MethodInfo>();
+		}
+		
+		this.pendingInjections.add(targetMethod);
+	}
+	
+	void notifyInjected(String method, String desc, String className)
+	{
+		MethodInfo thisInjection = null;
+		
+		if (this.pendingInjections != null)
+		{
+			for (MethodInfo pendingInjection : this.pendingInjections)
+			{
+				if (pendingInjection.matches(method, desc, className))
+				{
+					thisInjection = pendingInjection;
+					break;
+				}
+			}
+		}
+		
+		if (thisInjection != null)
+		{
+			this.pendingInjections.remove(thisInjection);
+		}
 	}
 	
 	/**
@@ -369,6 +403,11 @@ public class Event implements Comparable<Event>
 		if (listener.hasDesc())
 		{
 			throw new IllegalArgumentException("Descriptor is not allowed for listener methods");
+		}
+		
+		if (this.pendingInjections != null && this.pendingInjections.size() == 0)
+		{
+			throw new EventAlreadyInjectedException("The event " + this.name + " was already injected and has 0 pending injections, addListener() is not allowed at this point");
 		}
 		
 		this.listeners.add(listener);

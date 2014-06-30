@@ -77,7 +77,14 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 			EventInjectionTransformer.master = this;
 		}
 		
-		this.addEvents();
+		try
+		{
+			this.addEvents();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 	/**
@@ -119,6 +126,8 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		this.addEvent(event, targetMethod.owner, targetMethod.sig, injectionPoint);
 		this.addEvent(event, targetMethod.owner, targetMethod.sigSrg, injectionPoint);
 		this.addEvent(event, targetMethod.ownerObf, targetMethod.sigObf, injectionPoint);
+		
+		event.addPendingInjection(targetMethod);
 		
 		return event;
 	}
@@ -215,56 +224,7 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 			Map<Event, InjectionPoint> methodInjections = mappings.get(signature);
 			if (methodInjections != null)
 			{
-				ReadOnlyInsnList insns = new ReadOnlyInsnList(method.instructions);
-				Map<AbstractInsnNode, Set<Event>> injectionPoints = new LinkedHashMap<AbstractInsnNode, Set<Event>>();
-				Collection<AbstractInsnNode> nodes = new ArrayList<AbstractInsnNode>(32);
-				for (Entry<Event, InjectionPoint> eventEntry : methodInjections.entrySet())
-				{
-					Event event = eventEntry.getKey();
-					event.attach(method);
-					InjectionPoint injectionPoint = eventEntry.getValue();
-					nodes.clear();
-					if (injectionPoint.find(method.desc, insns, nodes, event))
-					{
-						for (AbstractInsnNode node : nodes)
-						{
-							Set<Event> nodeEvents = injectionPoints.get(node);
-							if (nodeEvents == null)
-							{
-								nodeEvents = new TreeSet<Event>();
-								injectionPoints.put(node, nodeEvents);
-							}
-							
-							nodeEvents.add(event);
-						}
-					}
-				}
-				
-				for (Entry<AbstractInsnNode, Set<Event>> injectionPoint : injectionPoints.entrySet())
-				{
-					AbstractInsnNode insn = injectionPoint.getKey();
-					Set<Event> events = injectionPoint.getValue();
-
-					// Injection is cancellable if ANY of the events on this insn are cancellable
-					boolean cancellable = false;
-					for (Event event : events)
-						cancellable |= event.isCancellable();
-					
-					Event head = events.iterator().next();
-					MethodNode handler = head.inject(insn, cancellable, this.globalEventID);
-
-					LiteLoaderLogger.info("Injecting event %s with %d handlers in method %s in class %s", head.getName(), events.size(), method.name, classNode.name.replace('/', '.'));
-					
-					for (Event event : events)
-						event.addToHandler(handler);
-					
-					this.globalEventID++;
-				}
-
-				for (Event event : methodInjections.keySet())
-				{
-					event.detach();
-				}
+				this.injectIntoMethod(classNode, signature, method, methodInjections);
 			}
 		}
 		
@@ -275,5 +235,89 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		}
 		
 		return this.writeClass(classNode);
+	}
+
+	/**
+	 * @param classNode
+	 * @param signature
+	 * @param method
+	 * @param methodInjections
+	 */
+	void injectIntoMethod(ClassNode classNode, String signature, MethodNode method, Map<Event, InjectionPoint> methodInjections)
+	{
+		Map<AbstractInsnNode, Set<Event>> injectionPoints = this.findInjectionPoints(classNode, method, methodInjections);
+		
+		for (Entry<AbstractInsnNode, Set<Event>> injectionPoint : injectionPoints.entrySet())
+		{
+			this.injectEventsAt(classNode, method, injectionPoint.getKey(), injectionPoint.getValue());
+		}
+
+		for (Event event : methodInjections.keySet())
+		{
+			event.notifyInjected(method.name, method.desc, classNode.name);
+			event.detach();
+		}
+	}
+
+	/**
+	 * @param classNode
+	 * @param method
+	 * @param methodInjections
+	 * @return
+	 */
+	private Map<AbstractInsnNode, Set<Event>> findInjectionPoints(ClassNode classNode, MethodNode method, Map<Event, InjectionPoint> methodInjections)
+	{
+		ReadOnlyInsnList insns = new ReadOnlyInsnList(method.instructions);
+		Collection<AbstractInsnNode> nodes = new ArrayList<AbstractInsnNode>(32);
+		Map<AbstractInsnNode, Set<Event>> injectionPoints = new LinkedHashMap<AbstractInsnNode, Set<Event>>();
+		for (Entry<Event, InjectionPoint> eventEntry : methodInjections.entrySet())
+		{
+			Event event = eventEntry.getKey();
+			event.attach(method);
+			InjectionPoint injectionPoint = eventEntry.getValue();
+			nodes.clear();
+			if (injectionPoint.find(method.desc, insns, nodes, event))
+			{
+				for (AbstractInsnNode node : nodes)
+				{
+					Set<Event> nodeEvents = injectionPoints.get(node);
+					if (nodeEvents == null)
+					{
+						nodeEvents = new TreeSet<Event>();
+						injectionPoints.put(node, nodeEvents);
+					}
+					
+					nodeEvents.add(event);
+				}
+			}
+		}
+		
+		return injectionPoints;
+	}
+
+	/**
+	 * @param classNode
+	 * @param method
+	 * @param injectionPoint
+	 * @param events
+	 */
+	private void injectEventsAt(ClassNode classNode, MethodNode method, AbstractInsnNode injectionPoint, Set<Event> events)
+	{
+		// Injection is cancellable if ANY of the events on this insn are cancellable
+		boolean cancellable = false;
+		for (Event event : events)
+			cancellable |= event.isCancellable();
+		
+		Event head = events.iterator().next();
+		MethodNode handler = head.inject(injectionPoint, cancellable, this.globalEventID);
+
+		LiteLoaderLogger.info("Injecting event %s with %d handlers in method %s in class %s", head.getName(), events.size(), method.name, classNode.name.replace('/', '.'));
+		
+		for (Event event : events)
+		{
+			event.addToHandler(handler);
+		}
+		
+		this.globalEventID++;
 	}
 }
