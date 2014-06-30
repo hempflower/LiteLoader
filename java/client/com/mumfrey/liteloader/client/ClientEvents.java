@@ -204,6 +204,8 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	@Override
 	public void registerInterfaces(InterfaceRegistrationDelegate delegate)
 	{
+		super.registerInterfaces(delegate);
+		
 		delegate.registerInterface(Tickable.class);
 		delegate.registerInterface(GameLoopListener.class);
 		delegate.registerInterface(InitCompleteListener.class);
