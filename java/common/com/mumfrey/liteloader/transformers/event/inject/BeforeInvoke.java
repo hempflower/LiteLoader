@@ -24,30 +24,30 @@ public class BeforeInvoke extends InjectionPoint
 	/**
 	 * Method name(s) to search for, usually this will contain the different names of the method for different obfuscations (mcp, srg, notch)
 	 */
-	private final String[] methodNames;
+	protected final String[] methodNames;
 	
 	/**
 	 * Method owner(s) to search for, the values in this array MUST much the equivalent indices in methodNames, if the array is NULL then
 	 * all owners are valid  
 	 */
-	private final String[] methodOwners;
+	protected final String[] methodOwners;
 	
 	/**
 	 * Method signature(s) to search for, the values in this array MUST much the equivalent indices in methodNames, if the array is NULL
 	 * then all signatures are valid  
 	 */
-	private final String[] methodSignatures;
+	protected final String[] methodSignatures;
 	
 	/**
 	 * This strategy can be used to identify a particular invokation if the same method is invoked at multiple points, if this value is -1
 	 * then the strategy returns ALL invokations of the method. 
 	 */
-	private final int ordinal;
+	protected final int ordinal;
 	
 	/**
 	 * True to turn on strategy debugging to the console
 	 */
-	private boolean logging = false;
+	protected boolean logging = false;
 	
 	/**
 	 * Match all occurrences of the specified method or methods
@@ -220,25 +220,34 @@ public class BeforeInvoke extends InjectionPoint
 				if (index > -1 && ownerIndex == index && descIndex == index)
 				{
 					if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke, checking ordinal...");
-					if (this.ordinal == -1)
+					if (this.matchesInsn(node, ordinal))
 					{
 						if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke at ordinal %d", ordinal);
 						nodes.add(node);
 						found = true;
-					}
-					else if (this.ordinal == ordinal)
-					{
-						if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke at ordinal %d", ordinal);
-						nodes.add(node);
-						return true;
+						
+						if (this.ordinal == ordinal)
+							break;
 					}
 					
 					ordinal++;
 				}
 			}
+
+			this.inspectInsn(desc, insns, insn);
 		}
 		
 		return found;
+	}
+
+	protected void inspectInsn(String desc, InsnList insns, AbstractInsnNode insn)
+	{
+		// stub for subclasses
+	}
+
+	protected boolean matchesInsn(MethodInsnNode node, int ordinal)
+	{
+		return this.ordinal == -1 || this.ordinal == ordinal;
 	}
 
 	/**
