@@ -4,7 +4,7 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.7.10" />
+	<property name="version" value="1.7.10_01" />
 	<property name="mcversion" value="1.7.10" />
 	<property name="author" value="Mumfrey" />
 

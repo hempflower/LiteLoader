@@ -58,7 +58,7 @@ public class CrashReportTransformer extends ClassTransformer
 	{
 		InsnList code = new InsnList();
 		code.add(new VarInsnNode(Opcodes.ALOAD, 1));
-		code.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/LiteLoader", "populateCrashReport", "(Ljava/lang/Object;)V", false));
+		code.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/LiteLoader", "populateCrashReport", "(Ljava/lang/Object;)V"));
 		
 		ListIterator<AbstractInsnNode> insns = ctor.instructions.iterator();
 		while (insns.hasNext())

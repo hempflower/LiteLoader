@@ -77,7 +77,7 @@ public class GenProfilerTransformer implements IClassTransformer
 			
 			for (Entry<MethodInsnNode, String> node : injectionNodes.entrySet())
 			{
-				method.instructions.insert(node.getKey(), new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/gen/GenProfiler", "storeSignature", "(Ljava/lang/String;)V", false));
+				method.instructions.insert(node.getKey(), new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/gen/GenProfiler", "storeSignature", "(Ljava/lang/String;)V"));
 				method.instructions.insert(node.getKey(), new LdcInsnNode(node.getValue()));
 			}
 		}

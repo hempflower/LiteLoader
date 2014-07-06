@@ -190,7 +190,7 @@ public abstract class PacketTransformer extends ClassTransformer
 			insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			
 			// Invoke the handler function with the args we just pushed onto the stack
-			insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, this.handlerClassName, this.handlerMethodName, targetMethodSig, false));
+			insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, this.handlerClassName, this.handlerMethodName, targetMethodSig));
 			
 			method.instructions.insert(method.instructions.getFirst(), insns);
 		}
@@ -217,7 +217,7 @@ public abstract class PacketTransformer extends ClassTransformer
 			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			
 			// Invoke the handler function with the args we just pushed onto the stack
-			method.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, this.handlerClassName, this.handlerMethodName, targetMethodSig, false));
+			method.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, this.handlerClassName, this.handlerMethodName, targetMethodSig));
 
 			// Return if no exception
 			method.instructions.add(new InsnNode(Opcodes.RETURN));

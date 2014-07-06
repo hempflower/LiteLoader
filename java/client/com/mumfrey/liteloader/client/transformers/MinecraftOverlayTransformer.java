@@ -66,8 +66,8 @@ public class MinecraftOverlayTransformer extends ClassOverlayTransformer
 					LiteLoaderLogger.info("MinecraftOverlayTransformer found INIT injection point, this is good.");
 					found = true;
 					
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_INIT, "()V", false));
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_POSTINIT, "()V", false));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_INIT, "()V"));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_POSTINIT, "()V"));
 				}
 			}
 			
@@ -78,11 +78,11 @@ public class MinecraftOverlayTransformer extends ClassOverlayTransformer
 					LdcInsnNode ldcInsn = (LdcInsnNode)insn;
 					if ("textures/blocks".equals(ldcInsn.cst))
 					{
-						insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "initTextures", "()V", false));
+						insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "initTextures", "()V"));
 					}
 				}
 
-				insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "incrementProgress", "()V", false));
+				insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "incrementProgress", "()V"));
 			}
 		}
 		

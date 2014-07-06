@@ -47,7 +47,7 @@
     <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/asm-debug-all-5.0.3.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/asm-debug-all-4.1.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
