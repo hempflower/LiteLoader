@@ -219,6 +219,8 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 			for (ServerCommandProvider commandProvider : this.serverCommandProviders)
 				commandProvider.provideCommands(serverCommandManager);
 		}
+
+		LiteLoader.getServerPluginChannels().onServerStartup();
 	}
 
 	/**

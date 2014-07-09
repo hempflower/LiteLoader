@@ -71,6 +71,12 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	void onServerStartup()
 	{
 		this.clearPluginChannels(null);
+		
+		// Enumerate mods for plugin channels
+		for (ServerPluginChannelListener pluginChannelListener : this.pluginChannelListeners)
+		{
+			this.addPluginChannelsFor(pluginChannelListener);
+		}
 	}
 
 	/**

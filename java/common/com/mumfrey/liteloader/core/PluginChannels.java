@@ -133,12 +133,6 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	 */
 	protected byte[] getRegistrationData()
 	{
-		// Enumerate mods for plugin channels
-		for (L pluginChannelListener : this.pluginChannelListeners)
-		{
-			this.addPluginChannelsFor(pluginChannelListener);
-		}
-		
 		// If any mods have registered channels, send the REGISTER packet
 		if (this.pluginChannels.keySet().size() > 0)
 		{

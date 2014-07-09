@@ -131,6 +131,12 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 		
 		try
 		{
+			// Enumerate mods for plugin channels
+			for (PluginChannelListener pluginChannelListener : this.pluginChannelListeners)
+			{
+				this.addPluginChannelsFor(pluginChannelListener);
+			}
+
 			byte[] registrationData = this.getRegistrationData();
 			if (registrationData != null)
 			{
