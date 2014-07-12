@@ -93,6 +93,16 @@ public class HttpStringRetriever extends Thread
 	}
 	
 	/**
+	 * Create a new string retriever to be used synchronously
+	 * 
+	 * @param url URL to download from
+	 */
+	public HttpStringRetriever()
+	{
+		this(null, null);
+	}
+	
+	/**
 	 * Get the string which was retrieved
 	 */
 	public String getString()

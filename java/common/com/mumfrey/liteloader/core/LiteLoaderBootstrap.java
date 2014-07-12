@@ -27,9 +27,12 @@ import com.mumfrey.liteloader.api.manager.APIRegistry;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.launch.ClassPathUtilities;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderBootstrap;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.launch.RealmsJsonUpdateThread;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -138,6 +141,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 */
 	private EnabledModsList enabledModsList;
 	
+	private RealmsJsonUpdateThread realmsJsonUpdateThread;
+	
 	/**
 	 * @param gameDirectory
 	 * @param assetsDirectory
@@ -172,6 +177,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		this.initAPIs(apisToLoad);
 		this.apiProvider = this.apiRegistry.getProvider();
 		this.apiAdapter = this.apiRegistry.getAdapter();
+		
+		this.setupRealmsVersionCheck(profile);
 	}
 	
 	/**
@@ -321,6 +328,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		if (this.enumerator == null) return;
 		
 		LiteLoader.invokePostInit();
+		
+		this.runRealmsVersionCheck();
 	}
 
 	/**
@@ -678,5 +687,37 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	public List<String> getPacketTransformers()
 	{
 		return this.apiAdapter.getPacketTransformers();
+	}
+
+	private void setupRealmsVersionCheck(String profile)
+	{
+		if (!this.getAndStoreBooleanProperty(LoaderProperties.OPTION_UPDATE_REALMS, true))
+		{
+			return;
+		}
+		
+		try
+		{
+			File realmsContainer = ClassPathUtilities.getPathToResource(LiteLoaderTweaker.class, "/net/minecraft/realms/Realms.class");
+			if (realmsContainer == null) return;
+
+			File versionsDir = realmsContainer.getParentFile().getParentFile();
+			if (versionsDir.exists() && "versions".equals(versionsDir.getName()))
+			{
+				this.realmsJsonUpdateThread = new RealmsJsonUpdateThread(versionsDir, profile, LiteLoaderTweaker.VERSION);
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	}
+
+	private void runRealmsVersionCheck()
+	{
+		if (this.realmsJsonUpdateThread != null)
+		{
+			this.realmsJsonUpdateThread.start();
+		}
 	}
 }
