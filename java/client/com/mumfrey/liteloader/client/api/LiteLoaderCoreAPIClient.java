@@ -22,9 +22,10 @@ import com.mumfrey.liteloader.interfaces.ObjectFactory;
  */
 public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 {
-	private static final String PKG_LITELOADER_CLIENT   = LiteLoaderCoreAPI.PKG_LITELOADER + ".client";
+	private static final String PKG_LITELOADER_CLIENT = LiteLoaderCoreAPI.PKG_LITELOADER + ".client";
 
 	private static final String[] requiredTransformers = {
+		LiteLoaderCoreAPI.PKG_LITELOADER + ".transformers.event.EventProxyTransformer",
 		LiteLoaderCoreAPI.PKG_LITELOADER + ".launch.LiteLoaderTransformer",
 		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.CrashReportTransformer"
 	};

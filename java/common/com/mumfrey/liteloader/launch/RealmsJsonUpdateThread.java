@@ -106,11 +106,7 @@ public class RealmsJsonUpdateThread extends Thread
 
 	private boolean writeLocalVersionJson(Map<String, ?> localJson)
 	{
-		File versionDir = new File(this.versionsDir, this.version);
-		if (!versionDir.exists() || !versionDir.isDirectory()) return false;
-		
-		File versionJsonFile = new File(versionDir, this.version + ".json");
-		
+		File versionJsonFile = this.getLocalVersionJsonFile();
 		FileWriter writer = null;
 				
 		try
@@ -227,11 +223,8 @@ public class RealmsJsonUpdateThread extends Thread
 	@SuppressWarnings("unchecked")
 	private Map<String, ?> getLocalVersionJson()
 	{
-		File versionDir = new File(this.versionsDir, this.version);
-		if (!versionDir.exists() || !versionDir.isDirectory()) return null;
-		
-		File versionJsonFile = new File(versionDir, this.version + ".json");
-		if (!versionJsonFile.exists()) return null;
+		File versionJsonFile = this.getLocalVersionJsonFile();
+		if (versionJsonFile == null || !versionJsonFile.exists()) return null;
 
 		FileReader reader = null; 
 		
@@ -254,13 +247,22 @@ public class RealmsJsonUpdateThread extends Thread
 
 	private boolean isLocalJsonUpToDate()
 	{
-		File versionDir = new File(this.versionsDir, this.version);
-		if (!versionDir.exists() || !versionDir.isDirectory()) return false;
-		
-		File versionJsonFile = new File(versionDir, this.version + ".json");
-		if (!versionJsonFile.exists()) return false;
+		File versionJsonFile = this.getLocalVersionJsonFile();
+		if (versionJsonFile == null || !versionJsonFile.exists()) return false;
 		
 		long deltaTime = System.currentTimeMillis() - versionJsonFile.lastModified();
 		return deltaTime < 86400000;
+	}
+
+	/**
+	 * @return
+	 */
+	private File getLocalVersionJsonFile()
+	{
+		File versionDir = new File(this.versionsDir, this.version);
+		if (!versionDir.exists() || !versionDir.isDirectory()) return null;
+		
+		File versionJsonFile = new File(versionDir, this.version + ".json");
+		return versionJsonFile;
 	}
 }

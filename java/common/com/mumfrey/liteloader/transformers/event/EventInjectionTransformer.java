@@ -10,14 +10,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
-import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -59,7 +56,7 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 	/**
 	 * Multiple event injection transformers may exist but to allow co-operation the events themselves are registered
 	 * statically. The first EventInjectionTransformer instance to be created becomes the "master" and is actually responsible
-	 * for injecting the events and transforming the EventProxy class.
+	 * for injecting the events
 	 */
 	private static EventInjectionTransformer master;
 	
@@ -156,23 +153,6 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 	{
 		if (EventInjectionTransformer.master == this)
 		{
-			if (transformedName != null && transformedName.startsWith(Obf.EventProxy.name))
-			{
-				int dollarPos = transformedName.indexOf('$');
-				int proxyIndex = (dollarPos > -1) ? Integer.parseInt(transformedName.substring(dollarPos + 1)) : 0;
-				if (proxyIndex != 1)
-				{
-					try
-					{
-						return this.transformEventProxy(transformedName, basicClass, proxyIndex);
-					}
-					catch (Throwable th)
-					{
-						th.printStackTrace();
-					}
-				}
-			}
-			
 			if (basicClass != null && EventInjectionTransformer.eventMappings.containsKey(transformedName))
 			{
 				return this.injectEvents(basicClass, EventInjectionTransformer.eventMappings.get(transformedName));
@@ -180,36 +160,6 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		}
 		
 		return basicClass;
-	}
-
-	private byte[] transformEventProxy(String transformedName, byte[] basicClass, int proxyIndex)
-	{
-		ClassNode classNode = this.getProxyByteCode(transformedName, basicClass, proxyIndex);
-		return this.writeClass(Event.populateProxy(classNode, proxyIndex == 0 ? 1 : proxyIndex));
-	}
-
-	private ClassNode getProxyByteCode(String transformedName, byte[] basicClass, int proxyIndex)
-	{
-		if (proxyIndex == 0 || basicClass != null)
-		{
-			ClassNode classNode = this.readClass(basicClass, true);
-
-			for (MethodNode method : classNode.methods)
-			{
-				// Strip the sanity code out of the EventProxy class initialiser
-				if ("<clinit>".equals(method.name))
-				{
-					method.instructions.clear();
-					method.instructions.add(new InsnNode(Opcodes.RETURN));
-				}
-			}		
-			
-			return classNode;
-		}
-		
-		ClassNode classNode = new ClassNode();
-		classNode.visit(50, Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, transformedName.replace('.', '/'), null, "java/lang/Object", null);
-		return classNode;
 	}
 
 	private byte[] injectEvents(byte[] basicClass, Map<String, Map<Event, InjectionPoint>> mappings)
