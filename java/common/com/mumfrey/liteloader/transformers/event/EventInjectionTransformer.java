@@ -178,7 +178,7 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 			}
 		}
 		
-		if (true || this.runValidator)
+		if (this.runValidator)
 		{
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 			classNode.accept(new CheckClassAdapter(writer));
