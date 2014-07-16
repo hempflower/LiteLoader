@@ -1,22 +1,39 @@
 package com.mumfrey.liteloader.debug;
+
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import net.minecraft.launchwrapper.Launch;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Wrapper class for LaunchWrapper Main class, which logs into minecraft.net first so that online shizzle can be tested
+ * Wrapper class for LaunchWrapper Main class, which logs in using Yggdrasil first so that online shizzle can be tested
  * 
  * @author Adam Mummery-Smith
  */
 public abstract class Start
 {
-	private static final String FML_TWEAKER_NAME = "cpw.mods.fml.common.launcher.FMLTweaker";
+	/**
+	 * Number of times to retry Yggdrasil login 
+	 */
+	private static final int LOGIN_RETRIES = 5;
+	
+	/**
+	 * Arguments which are allowed to have multiple occurrences
+	 */
+	private static final Set<String> MULTI_VALUE_ARGS = ImmutableSet.<String>of(
+		"tweakClass"
+	);
 	
 	/**
 	 * Entry point.
@@ -26,51 +43,125 @@ public abstract class Start
 	public static void main(String[] args)
 	{
 		System.setProperty("mcpenv", "true");
+		Launch.main(Start.processArgs(args));
+	}
+	
+	/**
+	 * Process the launch-time args, since we may be being launched by GradleStart we need to parse
+	 * out any values passed in and ensure we replace them with our own
+	 */
+	private static String[] processArgs(String[] args)
+	{
+		List<String> unqualifiedArgs = new ArrayList<String>();
+		Map<String, Set<String>> qualifiedArgs = new HashMap<String, Set<String>>();
 		
-		boolean fmlDetected = false;
-		List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+		Start.parseArgs(args, unqualifiedArgs, qualifiedArgs);
+		Start.addRequiredArgs(args, unqualifiedArgs, qualifiedArgs);
+		args = Start.combineArgs(args, unqualifiedArgs, qualifiedArgs);
+		
+		return args; 
+	}
 
-		// Detect the FML tweaker specified on the command line, this likely means someone has pulled us
-		// into a Forge MCP workspace
-		for (String arg : argsList) fmlDetected |= FML_TWEAKER_NAME.equals(arg);
-		
-		if (fmlDetected)
+	/**
+	 * Read the args from the command line into the qualified and unqualified collections
+	 */
+	private static void parseArgs(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
+	{
+		String qualifier = null;
+		for (String arg : args)
 		{
-			argsList.clear();
-			argsList.add("--tweakClass");argsList.add(FML_TWEAKER_NAME);
+			boolean isQualifier = arg.startsWith("-");
+			
+			if (isQualifier)
+			{
+				if (qualifier != null) unqualifiedArgs.add(qualifier);
+				qualifier = arg;
+			}
+			else if (qualifier != null)
+			{
+				Start.addArg(qualifiedArgs, qualifier, arg);
+				qualifier = null;
+			}
+			else
+			{
+				unqualifiedArgs.add(arg);
+			}
 		}
 		
-		String usernameFromCmdLine = null;
-		String passwordFromCmdLine = null;
-		
-		if (argsList.size() > 0 && !argsList.get(0).startsWith("-"))
-		{
-			usernameFromCmdLine = argsList.remove(0); 
+		if (qualifier != null) unqualifiedArgs.add(qualifier);
+	}
 
-			if (argsList.size() > 0 && !argsList.get(0).startsWith("-"))
-				passwordFromCmdLine = argsList.remove(0); 
-		}
-		
-		File loginJson = new File(new File(System.getProperty("user.dir")), ".auth.json");
-		LoginManager loginManager = new LoginManager(loginJson);
-		loginManager.login(usernameFromCmdLine, passwordFromCmdLine, 5);
-
-		LiteLoaderLogger.info("Launching game as %s", loginManager.getProfileName());
+	private static void addRequiredArgs(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
+	{
+		LoginManager loginManager = Start.doLogin(qualifiedArgs);
 		
 		File gameDir = new File(System.getProperty("user.dir"));
 		File assetsDir = new File(gameDir, "assets");
 
-		argsList.add("--tweakClass");     argsList.add(LiteLoaderTweaker.class.getName());
-		argsList.add("--username");       argsList.add(loginManager.getProfileName());
-		argsList.add("--uuid");           argsList.add(loginManager.getUUID());
-		argsList.add("--accessToken");    argsList.add(loginManager.getAuthenticatedToken());
-		argsList.add("--userType");       argsList.add(loginManager.getUserType());
-		argsList.add("--userProperties"); argsList.add(loginManager.getUserProperties());
-		argsList.add("--version");        argsList.add("mcp");
-		argsList.add("--gameDir");        argsList.add(gameDir.getAbsolutePath());
-		argsList.add("--assetIndex");     argsList.add(LiteLoaderTweaker.VERSION);
-		argsList.add("--assetsDir");      argsList.add(assetsDir.getAbsolutePath());
+		Start.addArg(qualifiedArgs, "--tweakClass",     LiteLoaderTweaker.class.getName());
+		Start.addArg(qualifiedArgs, "--username",       loginManager.getProfileName());
+		Start.addArg(qualifiedArgs, "--uuid",           loginManager.getUUID());
+		Start.addArg(qualifiedArgs, "--accessToken",    loginManager.getAuthenticatedToken());
+		Start.addArg(qualifiedArgs, "--userType",       loginManager.getUserType());
+		Start.addArg(qualifiedArgs, "--userProperties", loginManager.getUserProperties());
+		Start.addArg(qualifiedArgs, "--version",        "mcp");
+		Start.addArg(qualifiedArgs, "--gameDir",        gameDir.getAbsolutePath());
+		Start.addArg(qualifiedArgs, "--assetIndex",     LiteLoaderTweaker.VERSION);
+		Start.addArg(qualifiedArgs, "--assetsDir",      assetsDir.getAbsolutePath());
+	}
+
+	private static LoginManager doLogin(Map<String, Set<String>> qualifiedArgs)
+	{
+		File loginJson = new File(new File(System.getProperty("user.dir")), ".auth.json");
+		LoginManager loginManager = new LoginManager(loginJson);
 		
-		Launch.main(argsList.toArray(args));
+		String usernameFromCmdLine = Start.getArg(qualifiedArgs, "--username");
+		String passwordFromCmdLine = Start.getArg(qualifiedArgs, "--password");
+		
+		loginManager.login(usernameFromCmdLine, passwordFromCmdLine, Start.LOGIN_RETRIES);
+		
+		LiteLoaderLogger.info("Launching game as %s", loginManager.getProfileName());
+		
+		return loginManager;
+	}
+
+	private static void addArg(Map<String, Set<String>> qualifiedArgs, String qualifier, String arg)
+	{
+		Set<String> args = qualifiedArgs.get(qualifier);
+		
+		if (args == null)
+		{
+			args =  new HashSet<String>();
+			qualifiedArgs.put(qualifier, args);
+		}
+		
+		if (!Start.MULTI_VALUE_ARGS.contains(qualifier))
+			args.clear();
+		
+		args.add(arg);
+	}
+
+	private static String getArg(Map<String, Set<String>> qualifiedArgs, String arg)
+	{
+		if (qualifiedArgs.containsKey(arg))
+		{
+			return qualifiedArgs.get(arg).iterator().next();
+		}
+		
+		return null;
+	}
+
+	private static String[] combineArgs(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
+	{
+		for (Entry<String, Set<String>> qualifiedArg : qualifiedArgs.entrySet())
+		{
+			for (String argValue : qualifiedArg.getValue())
+			{
+				unqualifiedArgs.add(qualifiedArg.getKey());
+				if (!Strings.isNullOrEmpty(argValue)) unqualifiedArgs.add(argValue);
+			}
+		}
+		
+		return unqualifiedArgs.toArray(args);
 	}
 }
