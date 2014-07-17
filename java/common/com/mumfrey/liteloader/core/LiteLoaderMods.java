@@ -162,12 +162,14 @@ public class LiteLoaderMods
 	 */
 	public boolean isModInstalled(String modName)
 	{
-		for (LiteMod mod : this.allMods)
+		try
 		{
-			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(mod.getClass().getSimpleName())) return true;
+			return this.getMod(modName) != null;
 		}
-		
-		return true;
+		catch (IllegalArgumentException ex)
+		{
+			return false;
+		}
 	}
 
 	/**

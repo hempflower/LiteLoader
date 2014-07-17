@@ -156,7 +156,6 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 			if (twitterUserName != null)
 			{
 				URI twitterURI = URI.create("https://www.twitter.com/" + twitterUserName);
-				System.out.println(twitterURI);
 				this.openURI(twitterURI);
 			}
 		}
