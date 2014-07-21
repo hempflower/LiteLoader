@@ -270,11 +270,13 @@ public class CallbackProxyClient
 	
 	public static void onResize(EventInfo<Minecraft> e)
 	{
+		if (CallbackProxyClient.events == null) return;
 		CallbackProxyClient.events.onResize(e.getSource());
 	}
 	
 	public static void preRenderFBO(EventInfo<Minecraft> e)
 	{
+		if (CallbackProxyClient.events == null) return;
 		CallbackProxyClient.fboEnabled = OpenGlHelper.isFramebufferEnabled();
 		
 		if (CallbackProxyClient.fboEnabled)
@@ -286,6 +288,7 @@ public class CallbackProxyClient
 	
 	public static void postRenderFBO(EventInfo<Minecraft> e)
 	{
+		if (CallbackProxyClient.events == null) return;
 		CallbackProxyClient.renderingFBO = false;
 
 		if (CallbackProxyClient.fboEnabled)
@@ -296,6 +299,7 @@ public class CallbackProxyClient
 	
 	public static void renderFBO(EventInfo<Framebuffer> e, int width, int height)
 	{
+		if (CallbackProxyClient.events == null) return;
 		if (CallbackProxyClient.renderingFBO)
 		{
 			CallbackProxyClient.events.onRenderFBO(e.getSource(), width, height);
