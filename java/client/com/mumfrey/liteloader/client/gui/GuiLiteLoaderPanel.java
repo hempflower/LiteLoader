@@ -3,10 +3,13 @@ package com.mumfrey.liteloader.client.gui;
 import static org.lwjgl.opengl.GL11.*;
 
 import java.nio.DoubleBuffer;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.resources.I18n;
@@ -20,10 +23,12 @@ import org.lwjgl.input.Mouse;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.BrandingProvider;
+import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
@@ -54,6 +59,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 * Used for clipping
 	 */
 	private static DoubleBuffer doubleBuffer = BufferUtils.createByteBuffer(64).asDoubleBuffer();
+	
+	private static int clippingPlaneFlags = 0;
+	
+	private static boolean displayErrorToolTip = true;
 	
 	/**
 	 * Reference to the main menu which this screen is either overlaying or using as its background
@@ -108,7 +117,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	private ResourceLocation iconResource = LiteLoaderBrandingProvider.ABOUT_TEXTURE;
 	private IIcon iconCoords = LiteLoaderBrandingProvider.ICON_COORDS;
 	
+	private List<ModInfoDecorator> modInfoDecorators = new ArrayList<ModInfoDecorator>();
+	
 	private boolean mouseOverLogo = false;
+	
+	private int startupErrorCount = 0;
 	
 	/**
 	 * @param minecraft
@@ -127,8 +140,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		
 		this.initBranding();
 
-		this.currentPanel = this.modsPanel = new GuiPanelMods(this, minecraft, mods, environment, configManager, this.brandColour);
+		this.currentPanel = this.modsPanel = new GuiPanelMods(this, minecraft, mods, environment, configManager, this.brandColour, this.modInfoDecorators);
 		this.settingsPanel = new GuiPanelSettings(this, minecraft);
+		
+		this.startupErrorCount = mods.getStartupErrorCount();
 	}
 
 	/**
@@ -145,31 +160,38 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		for (LiteAPI api : LiteLoader.getAPIs())
 		{
 			BrandingProvider brandingProvider = LiteLoader.getCustomisationProvider(api, BrandingProvider.class);
-			if (brandingProvider == null) continue;
-			
-			if (brandingProvider.getBrandingColour() != 0 && brandingProvider.getPriority() > brandingColourProviderPriority)
+			if (brandingProvider != null)
 			{
-				brandingColourProviderPriority = brandingProvider.getPriority();
-				this.brandColour = 0xFF000000 | brandingProvider.getBrandingColour();
+				if (brandingProvider.getBrandingColour() != 0 && brandingProvider.getPriority() > brandingColourProviderPriority)
+				{
+					brandingColourProviderPriority = brandingProvider.getPriority();
+					this.brandColour = 0xFF000000 | brandingProvider.getBrandingColour();
+				}
+				
+				ResourceLocation logoResource = brandingProvider.getLogoResource();
+				IIcon logoCoords = brandingProvider.getLogoCoords();
+				if (logoResource != null && logoCoords != null && brandingProvider.getPriority() > logoProviderPriority)
+				{
+					logoProvider = api;
+					logoProviderPriority = brandingProvider.getPriority();
+					this.logoResource = logoResource;
+					this.logoCoords = logoCoords;
+				}
+				
+				ResourceLocation iconResource = brandingProvider.getIconResource();
+				IIcon iconCoords = brandingProvider.getIconCoords();
+				if (iconResource != null && iconCoords != null && brandingProvider.getPriority() > iconProviderPriority)
+				{
+					iconProviderPriority = brandingProvider.getPriority();
+					this.iconResource = iconResource;
+					this.iconCoords = iconCoords;
+				}
 			}
 			
-			ResourceLocation logoResource = brandingProvider.getLogoResource();
-			IIcon logoCoords = brandingProvider.getLogoCoords();
-			if (logoResource != null && logoCoords != null && brandingProvider.getPriority() > logoProviderPriority)
+			ModInfoDecorator modInfoDecorator = LiteLoader.getCustomisationProvider(api, ModInfoDecorator.class);
+			if (modInfoDecorator != null)
 			{
-				logoProvider = api;
-				logoProviderPriority = brandingProvider.getPriority();
-				this.logoResource = logoResource;
-				this.logoCoords = logoCoords;
-			}
-			
-			ResourceLocation iconResource = brandingProvider.getIconResource();
-			IIcon iconCoords = brandingProvider.getIconCoords();
-			if (iconResource != null && iconCoords != null && brandingProvider.getPriority() > iconProviderPriority)
-			{
-				iconProviderPriority = brandingProvider.getPriority();
-				this.iconResource = iconResource;
-				this.iconCoords = iconCoords;
+				this.modInfoDecorators.add(modInfoDecorator);
 			}
 		}
 		
@@ -218,6 +240,9 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	@Override
 	public void initGui()
 	{
+		// Hide the tooltip once the user opens the panel
+		GuiLiteLoaderPanel.displayErrorToolTip = false;
+		
 		this.currentPanel.setSize(this.width - LEFT_EDGE, this.height);
 
 		this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRendererObj, I18n.format("gui.about.taboptions"), this.brandColour));
@@ -312,16 +337,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		this.handleMouseClick(offsetMouseX, mouseY, partialTicks, active, mouseOverTab);
 		
 		// Calculate the tab opacity, not framerate adjusted because we don't really care
-		this.tabOpacity = mouseOverTab || alwaysExpandTab || this.isOpen() ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
+		this.tabOpacity = mouseOverTab || alwaysExpandTab || this.startupErrorCount > 0 || this.isOpen() ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
 		
 		// Draw the panel contents
 		this.drawPanel(offsetMouseX, mouseY, partialTicks, active, xOffset);
-		
-		if (mouseOverTab && this.tweenAmount < 0.01)
-		{
-			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height, 0xFFFFFF, 0xB0000000);
-			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.activeModText, mouseX, mouseY + 13, this.width, this.height, 0xCCCCCC, 0xB0000000);
-		}
+		this.drawTooltips(mouseX, mouseY, partialTicks, active, xOffset, mouseOverTab);
 	}
 
 	/**
@@ -348,6 +368,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			
 			this.mc.getTextureManager().bindTexture(LiteLoaderBrandingProvider.ABOUT_TEXTURE);
 			glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH, TAB_TOP, TAB_WIDTH + 1, TAB_HEIGHT, 80, 80, 122, 160, 0.5F + this.tabOpacity);
+			if (this.startupErrorCount > 0)
+			{
+				glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH + 7, TAB_TOP + 2, 12, 12, 134, 92, 134 + 12, 92 + 12, 0.5F + this.tabOpacity);
+			}
 		}
 		else
 		{
@@ -420,7 +444,30 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		this.mouseOverLogo = (mouseY > MARGIN && mouseY < MARGIN + this.logoCoords.getIconHeight() && mouseX > left && mouseX < left + this.logoCoords.getIconWidth());
 		return this.mouseOverLogo;
 	}
-	
+
+	private void drawTooltips(int mouseX, int mouseY, float partialTicks, boolean active, float xOffset, boolean mouseOverTab)
+	{
+		if (mouseOverTab && this.tweenAmount < 0.01)
+		{
+			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height, 0xFFFFFF, 0xB0000000);
+			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.activeModText, mouseX, mouseY + 13, this.width, this.height, 0xCCCCCC, 0xB0000000);
+			
+			if (this.startupErrorCount > 0)
+			{
+				this.drawErrorTooltip(mouseX, mouseY - 13);
+			}
+		}
+		else if (GuiLiteLoaderPanel.displayErrorToolTip && this.startupErrorCount > 0 && !active && this.parentScreen instanceof GuiMainMenu)
+		{
+		    this.drawErrorTooltip((int)xOffset + LEFT_EDGE - 12, TAB_TOP + 2);
+		}
+	}
+
+	private void drawErrorTooltip(int left, int top)
+	{
+		GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount), left, top, this.width, this.height, 0xFF5555, 0xB0330000);
+	}
+
 	/* (non-Javadoc)
 	 * @see net.minecraft.client.gui.GuiScreen#actionPerformed(net.minecraft.client.gui.GuiButton)
 	 */
@@ -461,6 +508,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	void showAboutPanel()
 	{
 		this.setCurrentPanel(new GuiPanelAbout(this.mc, this));
+	}
+
+	public void showErrorPanel(ModInfo<?> mod)
+	{
+		this.setCurrentPanel(new GuiPanelError(this.mc, this, mod));
 	}
 
 	/* (non-Javadoc)
@@ -688,6 +740,8 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 */
 	final static void glEnableClipping(int xLeft, int xRight, int yTop, int yBottom)
 	{
+		clippingPlaneFlags = 0;
+		
 		// Apply left edge clipping if specified
 		if (xLeft != -1)
 		{
@@ -695,6 +749,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			doubleBuffer.put(1).put(0).put(0).put(-xLeft).flip();
 			glClipPlane(GL_CLIP_PLANE2, doubleBuffer);
 			glEnable(GL_CLIP_PLANE2);
+			clippingPlaneFlags |= GL_CLIP_PLANE2;
 		}
 		
 		// Apply right edge clipping if specified
@@ -704,6 +759,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			doubleBuffer.put(-1).put(0).put(0).put(xRight).flip();
 			glClipPlane(GL_CLIP_PLANE3, doubleBuffer);
 			glEnable(GL_CLIP_PLANE3);
+			clippingPlaneFlags |= GL_CLIP_PLANE3;
 		}
 		
 		// Apply top edge clipping if specified
@@ -713,6 +769,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			doubleBuffer.put(0).put(1).put(0).put(-yTop).flip();
 			glClipPlane(GL_CLIP_PLANE4, doubleBuffer);
 			glEnable(GL_CLIP_PLANE4);
+			clippingPlaneFlags |= GL_CLIP_PLANE4;
 		}
 		
 		// Apply bottom edge clipping if specified
@@ -722,7 +779,19 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			doubleBuffer.put(0).put(-1).put(0).put(yBottom).flip();
 			glClipPlane(GL_CLIP_PLANE5, doubleBuffer);
 			glEnable(GL_CLIP_PLANE5);
+			clippingPlaneFlags |= GL_CLIP_PLANE5;
 		}
+	}
+	
+	/**
+	 * Enable clipping planes which were previously enabled 
+	 */
+	final static void glEnableClipping()
+	{
+		if ((clippingPlaneFlags & GL_CLIP_PLANE2) == GL_CLIP_PLANE2) glEnable(GL_CLIP_PLANE2);
+		if ((clippingPlaneFlags & GL_CLIP_PLANE3) == GL_CLIP_PLANE3) glEnable(GL_CLIP_PLANE3);
+		if ((clippingPlaneFlags & GL_CLIP_PLANE4) == GL_CLIP_PLANE4) glEnable(GL_CLIP_PLANE4);
+		if ((clippingPlaneFlags & GL_CLIP_PLANE5) == GL_CLIP_PLANE5) glEnable(GL_CLIP_PLANE5);
 	}
 	
 	/**

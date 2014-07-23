@@ -71,22 +71,24 @@ public class LiteLoaderMods
 	/**
 	 * Global list of mods which we can load
 	 */
-	protected final LinkedList<LiteMod> allMods = new LinkedList<LiteMod>();
+	protected final LinkedList<Mod> allMods = new LinkedList<Mod>();
 	
 	/**
 	 * Global list of mods which are still waiting for initialisiation
 	 */
-	protected final LinkedList<LiteMod> initMods = new LinkedList<LiteMod>();
+	protected final LinkedList<Mod> initMods = new LinkedList<Mod>();
 	
 	/**
 	 * Global list of mods which we have loaded
 	 */
-	protected final LinkedList<LiteMod> loadedMods = new LinkedList<LiteMod>();
+	protected final LinkedList<Mod> loadedMods = new LinkedList<Mod>();
 	
 	/**
 	 * Mods which are loaded but disabled
 	 */
-	protected final LinkedList<Loadable<?>> disabledMods = new LinkedList<Loadable<?>>();
+	protected final LinkedList<NonMod> disabledMods = new LinkedList<NonMod>();
+
+	private int startupErrorCount;
 
 	LiteLoaderMods(LiteLoader loader, LoaderEnvironment environment, LoaderProperties properties, ConfigManager configManager)
 	{
@@ -97,12 +99,13 @@ public class LiteLoaderMods
 		this.configManager    = configManager;
 	}
 
+	@SuppressWarnings("unchecked")
 	void init(List<ModLoadObserver> observers)
 	{
 		this.observers = observers;
-		this.disabledMods.addAll(this.enumerator.getDisabledContainers());
+		this.disabledMods.addAll((Collection<? extends NonMod>)this.enumerator.getDisabledContainers());
 	}
-
+	
 	void onPostInit()
 	{
 		this.updateSharedModList();
@@ -115,9 +118,9 @@ public class LiteLoaderMods
 		return this.environment.getEnabledModsList();
 	}
 
-	public LinkedList<LiteMod> getAllMods()
+	public List<Mod> getAllMods()
 	{
-		return this.allMods;
+		return Collections.unmodifiableList(this.allMods);
 	}
 	
 	/**
@@ -133,25 +136,41 @@ public class LiteLoaderMods
 	/**
 	 * Get a list containing all loaded mods
 	 */
-	public List<LiteMod> getLoadedMods()
+	public List<? extends ModInfo<LoadableMod<?>>> getLoadedMods()
 	{
-		return Collections.unmodifiableList(this.loadedMods);
+		return this.loadedMods;
 	}
 	
 	/**
 	 * Get a list containing all mod files which were NOT loaded
 	 */
-	public List<Loadable<?>> getDisabledMods()
+	public List<? extends ModInfo<Loadable<?>>> getDisabledMods()
 	{
-		return Collections.unmodifiableList(this.disabledMods);
+		return this.disabledMods;
 	}
 	
 	/**
 	 * Get the list of injected tweak containers
 	 */
-	public Collection<Loadable<File>> getInjectedTweaks()
+	public List<? extends ModInfo<Loadable<?>>> getInjectedTweaks()
 	{
-		return Collections.unmodifiableCollection(this.enumerator.getInjectedTweaks());
+		return this.enumerator.getInjectedTweaks();
+	}
+	
+	public int getStartupErrorCount()
+	{
+		return this.startupErrorCount;
+	}
+	
+	public ModInfo<?> getModInfo(LiteMod instance)
+	{
+		for (Mod mod : this.allMods)
+		{
+			if (instance == mod.getMod())
+				return mod;
+		}
+		
+		return null;
 	}
 
 	/**
@@ -186,13 +205,10 @@ public class LiteLoaderMods
 			throw new IllegalArgumentException("Attempted to get a reference to a mod without specifying a mod name");
 		}
 		
-		for (LiteMod mod : this.allMods)
+		for (Mod mod : this.allMods)
 		{
-			Class<? extends LiteMod> modClass = mod.getClass();
-			String modId = this.enumerator.getIdentifier(modClass);
-			
-			if (modName.equalsIgnoreCase(mod.getName()) || modName.equalsIgnoreCase(modId) || modName.equalsIgnoreCase(modClass.getSimpleName()))
-				return (T)mod;
+			if (mod.matchesName(modName))
+				return (T)mod.getMod();
 		}
 		
 		return null;
@@ -207,9 +223,9 @@ public class LiteLoaderMods
 	@SuppressWarnings("unchecked")
 	public <T extends LiteMod> T getMod(Class<T> modClass)
 	{
-		for (LiteMod mod : this.allMods)
+		for (Mod mod : this.allMods)
 		{
-			if (mod.getClass().equals(modClass))
+			if (mod.getModClass().equals(modClass))
 				return (T)mod;
 		}
 		
@@ -226,12 +242,10 @@ public class LiteLoaderMods
 	{
 		if (identifier == null) return null;
 		
-		for (LiteMod mod : this.allMods)
+		for (Mod mod : this.allMods)
 		{
-			if (identifier.equalsIgnoreCase(this.enumerator.getIdentifier(mod.getClass())))
-			{
-				return mod.getClass();
-			}
+			if (mod.matchesIdentifier(identifier))
+				return mod.getModClass();
 		}
 		
 		return null;
@@ -368,16 +382,14 @@ public class LiteLoaderMods
 	 * @param modName
 	 * @return
 	 */
-	public boolean isModActive(String modName)
+	public boolean isModActive(String identifier)
 	{
-		if (modName == null) return false;
+		if (identifier == null) return false;
 		
-		for (LiteMod mod : this.loadedMods)
+		for (Mod mod : this.loadedMods)
 		{
-			if (modName.equalsIgnoreCase(this.enumerator.getIdentifier(mod.getClass())))
-			{
+			if (mod.matchesIdentifier(identifier))
 				return true;
-			}
 		}
 		
 		return false;
@@ -392,14 +404,14 @@ public class LiteLoaderMods
 	{
 		LoadingProgress.incTotalLiteLoaderProgress(this.enumerator.getModsToLoad().size());
 		
-		for (Class<? extends LiteMod> mod : this.enumerator.getModsToLoad())
+		for (ModInfo<LoadableMod<?>> mod : this.enumerator.getModsToLoad())
 		{
-			LoadingProgress.incLiteLoaderProgress("Loading mod from %s...", mod.getName());
-			LoadableMod<?> container = this.enumerator.getContainer(mod);
+			LoadingProgress.incLiteLoaderProgress("Loading mod from %s...", mod.getModClassSimpleName());
+			LoadableMod<?> container = mod.getContainer();
 
 			try
 			{
-				String identifier = this.enumerator.getIdentifier(mod);
+				String identifier = mod.getIdentifier();
 				if (identifier == null || this.environment.getEnabledModsList().isEnabled(this.environment.getProfile(), identifier))
 				{
 					if (!this.enumerator.checkDependencies(container))
@@ -408,7 +420,14 @@ public class LiteLoaderMods
 						continue;
 					}
 					
-					this.loadMod(identifier, mod, container);
+					if (mod instanceof Mod)
+					{
+						this.loadMod((Mod)mod);
+					}
+					else
+					{
+						this.loadMod(identifier, mod.getModClass(), container);
+					}
 				}
 				else
 				{
@@ -417,33 +436,44 @@ public class LiteLoaderMods
 			}
 			catch (Throwable th)
 			{
-				this.onModLoadFailed(container, mod.getName(), "an error occurred", th);
+				this.onModLoadFailed(container, mod.getModClassName(), "an error occurred", th);
 			}
 		}
 	}
 
 	/**
 	 * @param identifier
-	 * @param mod
+	 * @param modClass
 	 * @param container 
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	void loadMod(String identifier, Class<? extends LiteMod> mod, LoadableMod<?> container) throws InstantiationException, IllegalAccessException
+	void loadMod(String identifier, Class<? extends LiteMod> modClass, LoadableMod<?> container) throws InstantiationException, IllegalAccessException
 	{
-		LiteLoaderLogger.info("Loading mod from %s", mod.getName());
+		Mod mod = new Mod(container, modClass, identifier);
+		this.loadMod(mod);
+	}
+	
+	/**
+	 * @param mod
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	void loadMod(Mod mod) throws InstantiationException, IllegalAccessException
+	{
+		LiteLoaderLogger.info("Loading mod from %s", mod.getModClassName());
 		
 		LiteMod newMod = mod.newInstance();
 		
-		this.onModLoaded(newMod);
+		this.onModLoaded(mod);
 		
-		String modName = newMod.getName();
-		if (modName == null && identifier != null) modName = identifier;
+		String modName = mod.getDisplayName();
 		LiteLoaderLogger.info("Successfully added mod %s version %s", modName, newMod.getVersion());
 		
 		// Register the mod as a resource pack if the container exists
-		if (container != null)
+		if (mod.hasContainer())
 		{
+			LoadableMod<?> container = mod.getContainer();
 			LiteLoaderLogger.info("Adding \"%s\" to active resource pack set", container.getLocation());
 			if (modName != null)
 			{
@@ -460,11 +490,11 @@ public class LiteLoaderMods
 	/**
 	 * @param mod
 	 */
-	void onModLoaded(LiteMod mod)
+	void onModLoaded(Mod mod)
 	{
 		for (ModLoadObserver observer : this.observers)
 		{
-			observer.onModLoaded(mod);
+			observer.onModLoaded(mod.getMod());
 		}
 
 		this.allMods.add(mod);
@@ -485,7 +515,7 @@ public class LiteLoaderMods
 		
 		if (container != LoadableMod.NONE && !this.disabledMods.contains(container))
 		{
-			this.disabledMods.add(container);
+			this.disabledMods.add(new NonMod(container, false));
 		}
 		
 		for (ModLoadObserver observer : this.observers)
@@ -504,7 +534,7 @@ public class LiteLoaderMods
 		
 		while (this.initMods.size() > 0)
 		{
-			LiteMod mod = this.initMods.removeFirst();
+			Mod mod = this.initMods.removeFirst();
 			
 			try
 			{
@@ -513,8 +543,8 @@ public class LiteLoaderMods
 			}
 			catch (Throwable th)
 			{
-				LiteLoaderLogger.warning(th, "Error initialising mod '%s'", mod.getName());
-				this.allMods.remove(mod);
+				this.registerModStartupError(mod, th);
+				LiteLoaderLogger.warning(th, "Error initialising mod '%s'", mod.getDisplayName());
 			}
 		}
 		
@@ -524,70 +554,73 @@ public class LiteLoaderMods
 	/**
 	 * @param mod
 	 */
-	private void initMod(LiteMod mod)
+	private void initMod(Mod mod)
 	{
-		LiteLoaderLogger.info("Initialising mod %s version %s", mod.getName(), mod.getVersion());
-		LoadingProgress.incLiteLoaderProgress("Initialising mod %s version %s...", mod.getName(), mod.getVersion());
+		LiteMod instance = mod.getMod();
 		
-		this.onPreInitMod(mod);
+		LiteLoaderLogger.info("Initialising mod %s version %s", instance.getName(), instance.getVersion());
+		LoadingProgress.incLiteLoaderProgress("Initialising mod %s version %s...", instance.getName(), instance.getVersion());
+		
+		this.onPreInitMod(instance);
 		
 		// initialise the mod
-		mod.init(LiteLoader.getCommonConfigFolder());
+		instance.init(LiteLoader.getCommonConfigFolder());
+
+		this.onPostInitMod(instance);
 		
-		this.onPostInitMod(mod);
+		this.loadedMods.add(mod);
+		this.loadedModsList += String.format("\n          - %s version %s", mod.getDisplayName(), mod.getVersion());
 	}
 	
 	/**
-	 * @param mod
+	 * @param instance
 	 */
-	private void onPreInitMod(LiteMod mod)
+	private void onPreInitMod(LiteMod instance)
 	{
 		for (ModLoadObserver observer : this.observers)
 		{
-			observer.onPreInitMod(mod);
+			observer.onPreInitMod(instance);
 		}
 		
 		// register mod config panel if configurable
-		this.configManager.registerMod(mod);
+		this.configManager.registerMod(instance);
 		
 		try
 		{
-			this.handleModVersionUpgrade(mod);
+			this.handleModVersionUpgrade(instance);
 		}
 		catch (Throwable th)
 		{
-			LiteLoaderLogger.warning("Error performing settings upgrade for %s. Settings may not be properly migrated", mod.getName());
+			LiteLoaderLogger.warning("Error performing settings upgrade for %s. Settings may not be properly migrated", instance.getName());
 		}
 		
 		// Init mod config if there is any
-		this.configManager.initConfig(mod);
+		this.configManager.initConfig(instance);
 	}
 
 	/**
-	 * @param mod
+	 * @param instance
 	 */
-	private void onPostInitMod(LiteMod mod)
+	private void onPostInitMod(LiteMod instance)
 	{
+		System.err.println("on post init mod " + instance.getName());
 		for (ModLoadObserver observer : this.observers)
 		{
-			observer.onPostInitMod(mod);
+			observer.onPostInitMod(instance);
 		}
 
 		// add the mod to all relevant listener queues
-		LiteLoader.getInterfaceManager().offer(mod);
+		LiteLoader.getInterfaceManager().offer(instance);
 
-		this.loader.onPostInitMod(mod);
-		
-		this.loadedMods.add(mod);
-		this.loadedModsList += String.format("\n          - %s version %s", mod.getName(), mod.getVersion());
+		this.loader.onPostInitMod(instance);
 	}
 	
 	/**
-	 * @param mod
+	 * @param instance
 	 */
-	private void handleModVersionUpgrade(LiteMod mod)
+	private void handleModVersionUpgrade(LiteMod instance)
 	{
-		String modKey = this.getModNameForConfig(mod.getClass(), mod.getName());
+		String modKey = this.getModNameForConfig(instance.getClass(), instance.getName());
 		
 		int currentRevision = LiteLoaderVersion.CURRENT.getLoaderRevision();
 		int lastKnownRevision = this.properties.getLastKnownModRevision(modKey);
@@ -598,25 +631,25 @@ public class LiteLoaderMods
 			File newConfigPath = LiteLoader.getConfigFolder();
 			File oldConfigPath = this.environment.inflectVersionedConfigPath(lastModVersion);
 
-			LiteLoaderLogger.info("Performing config upgrade for mod %s. Upgrading %s to %s...", mod.getName(), lastModVersion, LiteLoaderVersion.CURRENT);
+			LiteLoaderLogger.info("Performing config upgrade for mod %s. Upgrading %s to %s...", instance.getName(), lastModVersion, LiteLoaderVersion.CURRENT);
 			
 			for (ModLoadObserver observer : this.observers)
 			{
-				observer.onMigrateModConfig(mod, newConfigPath, oldConfigPath);
+				observer.onMigrateModConfig(instance, newConfigPath, oldConfigPath);
 			}
 
 			// Migrate versioned config if any is present
-			this.configManager.migrateModConfig(mod, newConfigPath, oldConfigPath);
+			this.configManager.migrateModConfig(instance, newConfigPath, oldConfigPath);
 			
 			// Let the mod upgrade
-			mod.upgradeSettings(LiteLoaderVersion.CURRENT.getMinecraftVersion(), newConfigPath, oldConfigPath);
+			instance.upgradeSettings(LiteLoaderVersion.CURRENT.getMinecraftVersion(), newConfigPath, oldConfigPath);
 			
 			this.properties.storeLastKnownModRevision(modKey);
-			LiteLoaderLogger.info("Config upgrade succeeded for mod %s", mod.getName());
+			LiteLoaderLogger.info("Config upgrade succeeded for mod %s", instance.getName());
 		}
-		else if (currentRevision < lastKnownRevision && ConfigManager.getConfigStrategy(mod) == ConfigStrategy.Unversioned)
+		else if (currentRevision < lastKnownRevision && ConfigManager.getConfigStrategy(instance) == ConfigStrategy.Unversioned)
 		{
-			LiteLoaderLogger.warning("Mod %s has config from unknown loader revision %d. This may cause unexpected behaviour.", mod.getName(), lastKnownRevision);
+			LiteLoaderLogger.warning("Mod %s has config from unknown loader revision %d. This may cause unexpected behaviour.", instance.getName(), lastKnownRevision);
 		}
 	}
 	
@@ -637,30 +670,49 @@ public class LiteLoaderMods
 		return String.format("version.%s", modName.toLowerCase().replaceAll("[^a-z0-9_\\-\\.]", ""));
 	}
 
+	/**
+	 * @param instance
+	 * @param th
+	 */
+	public void onLateInitFailed(LiteMod instance, Throwable th)
+	{
+		ModInfo<?> mod = this.getModInfo(instance);
+		if (mod != null)
+		{
+			this.registerModStartupError(mod, th);
+			this.registerModStartupError(mod, th);
+		}
+	}
+
+	private void registerModStartupError(ModInfo<?> mod, Throwable th)
+	{
+		this.startupErrorCount++;
+		mod.registerStartupError(th);
+	}
+
 	void updateSharedModList()
 	{
 		Map<String, Map<String, String>> modList = this.enumerator.getSharedModList();
 		if (modList == null) return;
 		
-		for (LiteMod mod : this.allMods)
+		for (Mod mod : this.allMods)
 		{
-			String modKey = String.format("%s:%s", LiteLoaderMods.MOD_SYSTEM, this.loader.getModIdentifier(mod));
+			String modKey = String.format("%s:%s", LiteLoaderMods.MOD_SYSTEM, mod.getIdentifier());
 			modList.put(modKey, this.packModInfoToMap(mod));
 		}
 	}
 
-	private Map<String, String> packModInfoToMap(LiteMod mod)
+	private Map<String, String> packModInfoToMap(Mod mod)
 	{
 		Map<String, String> modInfo = new HashMap<String, String>();
-		LoadableMod<?> container = this.loader.getModContainer(mod);
 		
 		modInfo.put("modsystem",   LiteLoaderMods.MOD_SYSTEM);
-		modInfo.put("id",          this.loader.getModIdentifier(mod));
+		modInfo.put("id",          mod.getIdentifier());
 		modInfo.put("version",     mod.getVersion());
-		modInfo.put("name",        mod.getName());
-		modInfo.put("url",         container.getMetaValue("url", ""));
-		modInfo.put("authors",     container.getAuthor());
-		modInfo.put("description", container.getDescription(LiteLoaderEnumerator.getModClassName(mod)));
+		modInfo.put("name",        mod.getDisplayName());
+		modInfo.put("url",         mod.getURL());
+		modInfo.put("authors",     mod.getAuthor());
+		modInfo.put("description", mod.getDescription());
 		
 		return modInfo;
 	}

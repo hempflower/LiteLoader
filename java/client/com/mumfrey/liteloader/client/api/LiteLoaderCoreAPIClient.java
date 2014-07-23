@@ -82,7 +82,8 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	{
 		return ImmutableList.<CustomisationProvider>of
 		(
-			new LiteLoaderBrandingProvider()
+			new LiteLoaderBrandingProvider(),
+			new LiteLoaderModInfoDecorator()
 		);
 	}
 

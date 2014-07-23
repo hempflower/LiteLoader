@@ -55,7 +55,8 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 * Profiler 
 	 */
 	protected final Profiler profiler;
-	
+
+	protected LiteLoaderMods mods;
 	
 	/**
 	 * List of mods which can filter server chat
@@ -83,6 +84,14 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 		this.loader   = loader;
 		this.engine   = engine;
 		this.profiler = engine.getProfiler();
+	}
+	
+	/**
+	 * @param mods
+	 */
+	void setMods(LiteLoaderMods mods)
+	{
+		this.mods = mods;
 	}
 
 	/**

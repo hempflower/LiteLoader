@@ -37,6 +37,7 @@ gui.description.missingapis=Missing APIs: %s
 gui.mod.providestweak=Provides Tweak
 gui.mod.providestransformer=Provides Transformer
 gui.mod.usingapi=Uses additional API
+gui.mod.startuperror=%d startup error(s)
 
 gui.settings.title=%s Settings
 gui.saveandclose=Save & Close
@@ -65,3 +66,7 @@ gui.log.uploading=Uploading log to pastebin...
 gui.log.uploadfailed=Upload failed
 gui.log.uploadsuccess=Upload succeeded, log available at
 gui.log.closedialog=Close
+
+gui.error.title=Startup errors for %s
+
+gui.error.tooltip=%d mod startup error(s) detected

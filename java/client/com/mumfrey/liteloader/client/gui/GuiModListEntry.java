@@ -11,16 +11,16 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.base.Strings;
 import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
-import com.mumfrey.liteloader.client.util.render.IconAbsolute;
-import com.mumfrey.liteloader.core.LiteLoaderEnumerator;
+import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
-import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.util.render.IconClickable;
+import com.mumfrey.liteloader.util.render.IconTextured;
 
 /**
  * Represents a mod in the mod info screen, keeps track of mod information and provides methods
@@ -41,6 +41,9 @@ public class GuiModListEntry extends Gui
 	private static final int API_COLOUR                = 0xFFAA00AA;
 	private static final int EXTERNAL_ENTRY_COLOUR     = 0xFF47D1AA;
 	private static final int MISSING_DEPENDENCY_COLOUR = 0xFFFFAA00;
+	private static final int ERROR_COLOUR              = 0xFFFF5555;
+	private static final int ERROR_GRADIENT_COLOUR     = 0xFFAA0000;
+	private static final int ERROR_GRADIENT_COLOUR2    = 0xFF550000;
 	
 	private static final int TITLE_COLOUR              = GuiModListEntry.WHITE;
 	private static final int VERSION_TEXT_COLOUR       = GuiModListEntry.GREY;
@@ -54,8 +57,6 @@ public class GuiModListEntry extends Gui
 	private static final int PANEL_HEIGHT              = 32;
 	private static final int PANEL_SPACING             = 4;
 	
-	private static final Set<String> BUILT_IN_APIS = ImmutableSet.of("liteloader");
-	
 	/**
 	 * For text display
 	 */
@@ -63,12 +64,12 @@ public class GuiModListEntry extends Gui
 	
 	private final int brandColour;
 	
+	private final List<ModInfoDecorator> decorators;
+	
 	private final LiteLoaderMods mods;
 
-	private LiteMod modInstance;
+	private ModInfo<?> modInfo;
 	
-	private Class<? extends LiteMod> modClass;
-
 	/**
 	 * The identifier of the mod, used as the enablement/disablement key
 	 */
@@ -108,6 +109,8 @@ public class GuiModListEntry extends Gui
 	
 	private boolean isMissingAPIs;
 	
+	private boolean isErrored;
+	
 	/**
 	 * True if the mod is missing a dependency which has caused it not to load
 	 */
@@ -134,12 +137,14 @@ public class GuiModListEntry extends Gui
 	 */
 	private boolean mouseOverListEntry, mouseOverInfo, mouseOverScrollBar;
 	
+	private IconClickable mouseOverIcon = null;
+	
 	/**
 	 * True if this is not a mod but an external jar 
 	 */
 	private boolean external;
 	
-	private List<IconAbsolute> modIcons = new ArrayList<IconAbsolute>();
+	private List<IconTextured> modIcons = new ArrayList<IconTextured>();
 
 	/**
 	 * Scroll bar control for the mod info
@@ -149,125 +154,49 @@ public class GuiModListEntry extends Gui
 	/**
 	 * Mod list entry for an ACTIVE mod
 	 * @param fontRenderer
-	 * @param modInstance
+	 * @param modInfo
 	 * @param enabledMods
 	 */
-	GuiModListEntry(LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, LiteMod modInstance)
+	GuiModListEntry(LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
 	{
-		this.mods            = mods;
-		this.fontRenderer    = fontRenderer;
-		this.brandColour     = brandColour;
+		this.mods          = mods;
+		this.fontRenderer  = fontRenderer;
+		this.brandColour   = brandColour;
+		this.decorators    = decorators;
+		this.modInfo       = modInfo;
+		
+		this.identifier    = modInfo.getIdentifier();
+		this.name          = modInfo.getDisplayName();
+		this.version       = modInfo.getVersion();
+		this.author        = modInfo.getAuthor();
+		this.enabled       = modInfo.isActive();
+		this.canBeToggled  = modInfo.isToggleable() && mods.getEnabledModsList().saveAllowed();
+		this.willBeEnabled = mods.isModEnabled(this.identifier);;
+		this.external      = modInfo.getContainer().isExternalJar();
+		this.description   = modInfo.getDescription();
+		this.url           = modInfo.getURL();
+		this.isErrored     = modInfo.getStartupErrors() != null && modInfo.getStartupErrors().size() > 0;
+		
+		if (!modInfo.isActive())
+		{
+			this.enabled = modInfo.getContainer().isEnabled(environment);
 
-		this.modInstance     = modInstance;
-		this.modClass        = modInstance.getClass();
-		this.identifier      = mods.getModIdentifier(this.modClass);
-		this.name            = modInstance.getName();
-		this.version         = modInstance.getVersion();
-		this.enabled         = true;
-		this.canBeToggled    = this.identifier != null && mods.getEnabledModsList().saveAllowed();
-		this.willBeEnabled   = this.identifier == null || mods.isModEnabled(this.identifier);;
-		
-		LoadableMod<?> modContainer = mods.getModContainer(this.modClass);
-		
-		this.author          = modContainer.getAuthor();
-		this.url             = modContainer.getMetaValue("url", null);
-		this.description     = modContainer.getDescription(LiteLoaderEnumerator.getModClassName(modInstance));
-		
-		boolean providesTweak       = false;
-		boolean providesTransformer = false;
-		boolean usingAPI            = this.checkUsingAPI(modContainer);
-
-		if (modContainer instanceof TweakContainer)
-		{
-			providesTweak       = ((TweakContainer<?>)modContainer).hasTweakClass();
-			providesTransformer = ((TweakContainer<?>)modContainer).hasClassTransformers();
-		}
- 			
-		this.initIcons(providesTweak, providesTransformer, usingAPI);
-	}
-	
-	/**
-	 * Mod list entry for a currently disabled mod
-	 * @param mods
-	 * @param fontRenderer
-	 * @param modContainer
-	 */
-	GuiModListEntry(LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, Loadable<?> modContainer)
-	{
-		this.mods            = mods;
-		this.fontRenderer    = fontRenderer;
-		this.brandColour     = brandColour;
-		
-		this.identifier      = modContainer.getIdentifier().toLowerCase();
-		this.name            = modContainer.getDisplayName();
-		this.version         = modContainer.getVersion();
-		this.author          = modContainer.getAuthor();
-		this.enabled         = modContainer.isEnabled(environment);
-		this.canBeToggled    = modContainer.isToggleable() && mods.getEnabledModsList().saveAllowed();
-		this.willBeEnabled   = mods.isModEnabled(this.identifier);
-		this.external        = modContainer.isExternalJar();
-		this.description     = modContainer.getDescription(null);
-
-		boolean providesTweak       = false;
-		boolean providesTransformer = false;
-		boolean usingAPI            = false;
-		
-		if (modContainer instanceof LoadableMod<?>)
-		{
-			LoadableMod<?> loadableMod = (LoadableMod<?>)modContainer;
-			
-			this.url                   = loadableMod.getMetaValue("url", null);
-			this.missingDependencies   = loadableMod.getMissingDependencies();
-			this.missingAPIs           = loadableMod.getMissingAPIs();
-			this.isMissingDependencies = this.missingDependencies.size() > 0;
-			this.isMissingAPIs         = this.missingAPIs.size() > 0;
-			
-			usingAPI = this.checkUsingAPI(loadableMod);
+			Loadable<?> modContainer = modInfo.getContainer();
+			if (modContainer instanceof LoadableMod<?>)
+			{
+				LoadableMod<?> loadableMod = (LoadableMod<?>)modContainer;
+				
+				this.missingDependencies   = loadableMod.getMissingDependencies();
+				this.missingAPIs           = loadableMod.getMissingAPIs();
+				this.isMissingDependencies = this.missingDependencies.size() > 0;
+				this.isMissingAPIs         = this.missingAPIs.size() > 0;
+			}
 		}
 		
-		if (modContainer instanceof TweakContainer)
+		for (ModInfoDecorator decorator : this.decorators)
 		{
-			TweakContainer<?> tweakContainer = (TweakContainer<?>)modContainer;
-			
-			providesTweak       = tweakContainer.hasTweakClass();
-			providesTransformer = tweakContainer.hasClassTransformers();
+			decorator.addIcons(modInfo, this.modIcons);
 		}
-		
-		this.initIcons(providesTweak, providesTransformer, usingAPI);
-	}
-
-	/**
-	 * @param providesTweak
-	 * @param providesTransformer
-	 * @param usingAPI
-	 */
-	protected void initIcons(boolean providesTweak, boolean providesTransformer, boolean usingAPI)
-	{
-		if (providesTweak)
-		{
-			this.modIcons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestweak"), 12, 12, 158, 80, 158 + 12, 80 + 12));
-		}
-		
-		if (providesTransformer)
-		{
-			this.modIcons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestransformer"), 12, 12, 170, 80, 170 + 12, 80 + 12));
-		}
-		
-		if (usingAPI)
-		{
-			this.modIcons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.usingapi"), 12, 12, 122, 92, 122 + 12, 92 + 12));
-		}
-	}
-
-	private boolean checkUsingAPI(LoadableMod<?> loadableMod)
-	{
-		for (String requiredAPI : loadableMod.getRequiredAPIs())
-		{
-			if (!GuiModListEntry.BUILT_IN_APIS.contains(requiredAPI))
-				return true;
-		}
-		
-		return false;
 	}
 
 	/**
@@ -305,7 +234,9 @@ public class GuiModListEntry extends Gui
 		xPosition += (width - 14);
 		yPosition += (GuiModListEntry.PANEL_HEIGHT - 14);
 		
-		for (IconAbsolute icon : this.modIcons)
+		this.mouseOverIcon = null;
+		
+		for (IconTextured icon : this.modIcons)
 		{
 			xPosition = this.drawPropertyIcon(xPosition, yPosition, icon, mouseX, mouseY);
 		}
@@ -313,7 +244,7 @@ public class GuiModListEntry extends Gui
 		return GuiModListEntry.PANEL_HEIGHT + GuiModListEntry.PANEL_SPACING;
 	}
 
-	protected int drawPropertyIcon(int xPosition, int yPosition, IconAbsolute icon, int mouseX, int mouseY)
+	protected int drawPropertyIcon(int xPosition, int yPosition, IconTextured icon, int mouseX, int mouseY)
 	{
 		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(icon.getTextureResource());
@@ -324,7 +255,15 @@ public class GuiModListEntry extends Gui
 
 		if (mouseX >= xPosition && mouseX <= xPosition + 12 && mouseY >= yPosition && mouseY <= yPosition + 12)
 		{
-			GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, icon.getIconName(), mouseX, mouseY, 4096, 4096, GuiModListEntry.WHITE, GuiModListEntry.BLEND_HALF & GuiModListEntry.BLACK);
+			String tooltipText = icon.getDisplayText();
+			if (tooltipText != null)
+			{
+				GuiLiteLoaderPanel.glDisableClipping();
+				GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, tooltipText, mouseX, mouseY, 4096, 4096, GuiModListEntry.WHITE, GuiModListEntry.BLEND_HALF & GuiModListEntry.BLACK);
+				GuiLiteLoaderPanel.glEnableClipping();
+			}
+			
+			if (icon instanceof IconClickable) this.mouseOverIcon = (IconClickable)icon;
 		}
 		
 		return xPosition - 14;
@@ -353,7 +292,7 @@ public class GuiModListEntry extends Gui
 		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModListEntry.DIVIDER_COLOUR); yPos += 4; // divider
 
 		this.fontRenderer.drawString(I18n.format("gui.about.authors") + ": \2477" + this.author, xPosition + 5, yPos, GuiModListEntry.AUTHORS_COLOUR); yPos += 10;
-		if (this.url != null)
+		if (!Strings.isNullOrEmpty(this.url))
 		{
 			this.fontRenderer.drawString(this.url, xPosition + 5, yPos, GuiModListEntry.BLEND_2THRDS & this.brandColour); yPos += 10;
 		}
@@ -423,7 +362,7 @@ public class GuiModListEntry extends Gui
 	 */
 	protected int getGradientColour(boolean selected)
 	{
-		return GuiModListEntry.BLEND_2THRDS & (selected ? (this.external ? GuiModListEntry.EXTERNAL_ENTRY_COLOUR : this.brandColour) : GuiModListEntry.BLACK);
+		return GuiModListEntry.BLEND_2THRDS & (this.isErrored ? (selected ? GuiModListEntry.ERROR_GRADIENT_COLOUR : GuiModListEntry.ERROR_GRADIENT_COLOUR2) : (selected ? (this.external ? GuiModListEntry.EXTERNAL_ENTRY_COLOUR : this.brandColour) : GuiModListEntry.BLACK));
 	}
 
 	/**
@@ -437,6 +376,7 @@ public class GuiModListEntry extends Gui
 	{
 		if (this.isMissingDependencies) return GuiModListEntry.MISSING_DEPENDENCY_COLOUR;
 		if (this.isMissingAPIs) return GuiModListEntry.API_COLOUR;
+		if (this.isErrored) return GuiModListEntry.ERROR_COLOUR;
 		if (!this.enabled) return GuiModListEntry.GREY;
 		return this.external ? GuiModListEntry.EXTERNAL_ENTRY_COLOUR : GuiModListEntry.WHITE;
 	}
@@ -497,17 +437,17 @@ public class GuiModListEntry extends Gui
 	
 	public String getKey()
 	{
-		return this.identifier + Integer.toHexString(this.hashCode());
+		return (this.isErrored ? "0000" : "") + this.identifier + Integer.toHexString(this.hashCode());
 	}
 	
 	public LiteMod getModInstance()
 	{
-		return this.modInstance;
+		return this.modInfo.getMod();
 	}
 	
 	public Class<? extends LiteMod> getModClass()
 	{
-		return this.modClass;
+		return this.modInfo.getModClass();
 	}
 	
 	public String getName()
@@ -545,11 +485,24 @@ public class GuiModListEntry extends Gui
 		return this.willBeEnabled;
 	}
 	
+	public boolean isMouseOverIcon()
+	{
+		return this.mouseOverListEntry && this.mouseOverIcon != null;
+	}
+
 	public boolean isMouseOver()
 	{
 		return this.mouseOverListEntry;
 	}
-
+	
+	public void iconClick(Object source)
+	{
+		if (this.mouseOverIcon != null)
+		{
+			this.mouseOverIcon.onClicked(source, this);
+		}
+	}
+		
 	public boolean mouseWheelScrolled(int mouseWheelDelta)
 	{
 		if (this.mouseOverInfo)

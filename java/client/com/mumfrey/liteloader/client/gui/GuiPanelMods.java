@@ -10,8 +10,11 @@ import java.util.TreeMap;
 import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.Loadable;
+import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
@@ -70,7 +73,7 @@ public class GuiPanelMods extends GuiPanel
 
 	private int brandColour;
 
-	public GuiPanelMods(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, int brandColour)
+	public GuiPanelMods(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, int brandColour, List<ModInfoDecorator> decorators)
 	{
 		super(minecraft);
 		
@@ -78,7 +81,7 @@ public class GuiPanelMods extends GuiPanel
 		this.configManager = configManager;
 		this.brandColour = brandColour;
 		
-		this.populateModList(mods, environment);
+		this.populateModList(mods, environment, decorators);
 	}
 	
 	/**
@@ -87,29 +90,29 @@ public class GuiPanelMods extends GuiPanel
 	 * @param mods
 	 * @param environment
 	 */
-	private void populateModList(LiteLoaderMods mods, LoaderEnvironment environment)
+	private void populateModList(LiteLoaderMods mods, LoaderEnvironment environment, List<ModInfoDecorator> decorators)
 	{
 		// Add mods to this treeset first, in order to sort them
 		Map<String, GuiModListEntry> sortedMods = new TreeMap<String, GuiModListEntry>();
 		
 		// Active mods
-		for (LiteMod mod : mods.getLoadedMods())
+		for (ModInfo<LoadableMod<?>> mod : mods.getLoadedMods())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, mod);
+			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, mod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 		
 		// Disabled mods
-		for (Loadable<?> disabledMod : mods.getDisabledMods())
+		for (ModInfo<Loadable<?>> disabledMod : mods.getDisabledMods())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, disabledMod);
+			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, disabledMod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 
 		// Injected tweaks
-		for (Loadable<?> injectedTweak : mods.getInjectedTweaks())
+		for (ModInfo<Loadable<?>> injectedTweak : mods.getInjectedTweaks())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, injectedTweak);
+			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, injectedTweak);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 		
@@ -178,10 +181,17 @@ public class GuiPanelMods extends GuiPanel
 					{
 						this.selectMod(mod);
 						
-						// handle double-click
-						if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.visible)
+						if (mod.isMouseOverIcon())
 						{
-							this.actionPerformed(this.btnConfig);
+							mod.iconClick(this.parentScreen);
+						}
+						else
+						{
+							// handle double-click
+							if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.visible)
+							{
+								this.actionPerformed(this.btnConfig);
+							}
 						}
 						
 						this.doubleClickTime = 5;

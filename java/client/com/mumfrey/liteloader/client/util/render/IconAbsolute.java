@@ -1,13 +1,14 @@
 package com.mumfrey.liteloader.client.util.render;
 
-import net.minecraft.util.IIcon;
+import com.mumfrey.liteloader.util.render.IconTextured;
+
 import net.minecraft.util.ResourceLocation;
 
-public class IconAbsolute implements IIcon
+public class IconAbsolute implements IconTextured
 {
 	private ResourceLocation textureResource;
 	
-	private String name;
+	private String displayText;
 	
 	private int texMapSize = 256; 
 	
@@ -21,15 +22,15 @@ public class IconAbsolute implements IIcon
 	private float vCoord;
 	private float vCoord2;
 	
-	public IconAbsolute(ResourceLocation textureResource, String name, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2)
+	public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2)
 	{
-		this(textureResource, name, width, height, uCoord, vCoord, uCoord2, vCoord2, 256);
+		this(textureResource, displayText, width, height, uCoord, vCoord, uCoord2, vCoord2, 256);
 	}
 	
-	public IconAbsolute(ResourceLocation textureResource, String name, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2, int texMapSize)
+	public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2, int texMapSize)
 	{
 		this.textureResource = textureResource;
-		this.name = name;
+		this.displayText = displayText;
 		this.width = width;
 		this.height = height;
 		
@@ -42,7 +43,14 @@ public class IconAbsolute implements IIcon
 		this.vCoord = vCoord / this.texMapSize;
 		this.vCoord2 = vCoord2 / this.texMapSize;
 	}
+	
+	@Override
+	public String getDisplayText()
+	{
+		return this.displayText;
+	}
 
+	@Override
 	public ResourceLocation getTextureResource()
 	{
 		return this.textureResource;
@@ -60,11 +68,13 @@ public class IconAbsolute implements IIcon
 		return this.height;
 	}
 	
+	@Override
 	public int getUPos()
 	{
 		return this.uPos;
 	}
 	
+	@Override
 	public int getVPos()
 	{
 		return this.vPos;
@@ -111,6 +121,6 @@ public class IconAbsolute implements IIcon
 	@Override
 	public String getIconName()
 	{
-		return this.name;
+		return this.displayText;
 	}
 }

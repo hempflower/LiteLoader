@@ -480,6 +480,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 				}
 				catch (Throwable th)
 				{
+					this.mods.onLateInitFailed(initMod, th);
 					LiteLoaderLogger.warning(th, "Error initialising mod %s", initMod.getName());
 				}
 			}

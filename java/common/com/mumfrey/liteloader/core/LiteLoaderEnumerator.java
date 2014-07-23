@@ -5,8 +5,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -76,27 +78,22 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	/**
 	 * Classes to load, mapped by class name 
 	 */
-	private final Map<String, Class<? extends LiteMod>> modsToLoad = new HashMap<String, Class<? extends LiteMod>>();
+	private final Set<ModInfo<LoadableMod<?>>> modsToLoad = new LinkedHashSet<ModInfo<LoadableMod<?>>>();
 	
 	/**
 	 * Mod containers which are disabled 
 	 */
-	private final Map<String, LoadableMod<?>> disabledContainers = new HashMap<String, LoadableMod<?>>();
+	private final Map<String, ModInfo<Loadable<?>>> disabledContainers = new HashMap<String, ModInfo<Loadable<?>>>();
 
 	/**
 	 * Mapping of identifiers to mod containers 
 	 */
-	private final Map<String, LoadableMod<?>> containers = new HashMap<String, LoadableMod<?>>();
+	private final Map<String, LoadableMod<?>> enabledContainers = new HashMap<String, LoadableMod<?>>();
 	
 	/**
 	 * Containers which have already been checked for potential mod candidates 
 	 */
 	private final Set<LoadableMod<?>> enumeratedContainers = new HashSet<LoadableMod<?>>();
-	
-	/**
-	 * Mapping of mods to mod containers 
-	 */
-	private final Map<String, LoadableMod<?>> modContainers = new HashMap<String, LoadableMod<?>>();
 	
 	/**
 	 * Tweaks to inject 
@@ -106,7 +103,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	/**
 	 * Other tweak-containing jars which we have injected 
 	 */
-	private final List<Loadable<File>> injectedTweaks = new ArrayList<Loadable<File>>();
+	private final List<ModInfo<Loadable<?>>> injectedTweaks = new ArrayList<ModInfo<Loadable<?>>>();
 	
 	/**
 	 * 
@@ -236,18 +233,18 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	 * Get the list of all enumerated mod classes to load
 	 */
 	@Override
-	public Collection<Class<? extends LiteMod>> getModsToLoad()
+	public Collection<? extends ModInfo<LoadableMod<?>>> getModsToLoad()
 	{
 		this.checkState(EnumeratorState.FINALISED, "getModsToLoad");
 		
-		return this.modsToLoad.values();
+		return Collections.unmodifiableSet(this.modsToLoad);
 	}
 	
 	/**
 	 * @return
 	 */
 	@Override
-	public Collection<LoadableMod<?>> getDisabledContainers()
+	public Collection<? extends ModInfo<Loadable<?>>> getDisabledContainers()
 	{
 		this.checkState(EnumeratorState.FINALISED, "getDisabledContainers");
 		
@@ -258,7 +255,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	 * Get the list of injected tweak containers
 	 */
 	@Override
-	public List<Loadable<File>> getInjectedTweaks()
+	public List<? extends ModInfo<Loadable<?>>> getInjectedTweaks()
 	{
 		this.checkState(EnumeratorState.FINALISED, "getInjectedTweaks");
 		
@@ -299,7 +296,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.FINALISED, "getContainer");
 		
-		return this.containers.get(identifier);
+		return this.enabledContainers.get(identifier);
 	}
 	
 	/**
@@ -311,7 +308,13 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.FINALISED, "getContainer");
 		
-		return this.modContainers.containsKey(modClass.getSimpleName()) ? this.modContainers.get(modClass.getSimpleName()) : LoadableMod.NONE;
+		for (ModInfo<LoadableMod<?>> mod : this.modsToLoad)
+		{
+			if (modClass.equals(mod.getModClass()))
+				return mod.getContainer();
+		}
+		
+		return LoadableMod.NONE;
 	}
 
 	/**
@@ -324,8 +327,14 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	public String getIdentifier(Class<? extends LiteMod> modClass)
 	{
 		String modClassName = modClass.getSimpleName();
-		if (!this.modContainers.containsKey(modClassName)) return LiteLoaderEnumerator.getModClassName(modClass);
-		return this.modContainers.get(modClassName).getIdentifier();
+
+		for (ModInfo<LoadableMod<?>> mod : this.modsToLoad)
+		{
+			if (modClassName.equals(mod.getModClassSimpleName()))
+				return mod.getIdentifier();
+		}
+		
+		return LiteLoaderEnumerator.getModClassName(modClass);
 	}
 	
 	@Override
@@ -447,7 +456,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		this.checkState(EnumeratorState.DISCOVER, "registerEnabledContainer");
 		
 		this.disabledContainers.remove(container.getIdentifier());
-		this.containers.put(container.getIdentifier(), container);
+		this.enabledContainers.put(container.getIdentifier(), container);
 	}
 
 	/**
@@ -457,8 +466,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.DISCOVER, "registerDisabledContainer");
 		
-		this.containers.remove(container.getIdentifier());
-		this.disabledContainers.put(container.getIdentifier(), container);
+		this.enabledContainers.remove(container.getIdentifier());
+		this.disabledContainers.put(container.getIdentifier(), new NonMod(container, false));
 	}
 	
 	/* (non-Javadoc)
@@ -514,7 +523,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 				
 				if (container.isExternalJar())
 				{
-					this.injectedTweaks.add(container);
+					this.injectedTweaks.add(new NonMod(container, true));
 				}
 				
 				String[] classPathEntries = container.getClassPathEntries();
@@ -582,9 +591,10 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		this.enumeratedContainers.add(container);
 		
 		LinkedList<Class<? extends LiteMod>> modClasses = LiteLoaderEnumerator.<LiteMod>getSubclassesFor(container, this.classLoader, LiteMod.class, this.supportedPrefixes);
-		for (Class<? extends LiteMod> mod : modClasses)
+		for (Class<? extends LiteMod> modClass : modClasses)
 		{
-			this.registerMod(mod, registerContainer ? container : null);
+			Mod mod = new Mod(container, modClass);
+			this.registerMod(mod);
 		}
 		
 		if (modClasses.size() > 0)
@@ -592,29 +602,24 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			LiteLoaderLogger.info("Found %d potential matches", modClasses.size());
 
 			this.disabledContainers.remove(container.getIdentifier());
-			this.containers.put(container.getIdentifier(), container);
+			this.enabledContainers.put(container.getIdentifier(), container);
 		}
 	}
 
 	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.PluggableEnumerator#addMod(java.lang.Class, com.mumfrey.liteloader.core.LoadableMod)
+	 * @see com.mumfrey.liteloader.interfaces.ModularEnumerator#registerMod(com.mumfrey.liteloader.interfaces.ModInfo)
 	 */
 	@Override
-	public void registerMod(Class<? extends LiteMod> mod, LoadableMod<?> container)
+	public void registerMod(ModInfo<LoadableMod<?>> mod)
 	{
 		this.checkState(EnumeratorState.REGISTER, "registerMod");
 		
-		if (this.modsToLoad.containsKey(mod.getSimpleName()))
+		if (this.modsToLoad.contains(mod))
 		{
-			LiteLoaderLogger.warning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getSimpleName());
+			LiteLoaderLogger.warning("Mod name collision for mod with class '%s', maybe you have more than one copy?", mod.getModClassSimpleName());
 		}
 		
-		this.modsToLoad.put(mod.getSimpleName(), mod);
-		if (container != null)
-		{
-			this.modContainers.put(mod.getSimpleName(), container);
-			container.addContainedMod(LiteLoaderEnumerator.getModClassName(mod));
-		}
+		this.modsToLoad.add(mod);
 	}
 
 	/**

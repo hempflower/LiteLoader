@@ -2,8 +2,8 @@ package com.mumfrey.liteloader.interfaces;
 
 import java.io.File;
 
-import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.EnumeratorModule;
+import com.mumfrey.liteloader.core.ModInfo;
 
 /**
  * Interface for the mod enumerator
@@ -39,7 +39,6 @@ public interface ModularEnumerator
 
 	/**
 	 * @param mod
-	 * @param container
 	 */
-	public abstract void registerMod(Class<? extends LiteMod> mod, LoadableMod<?> container);
+	public abstract void registerMod(ModInfo<LoadableMod<?>> mod);
 }

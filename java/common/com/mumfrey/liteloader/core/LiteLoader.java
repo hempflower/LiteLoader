@@ -2,6 +2,7 @@ package com.mumfrey.liteloader.core;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -602,7 +603,14 @@ public final class LiteLoader
 	 */
 	public List<LiteMod> getLoadedMods()
 	{
-		return this.mods.getLoadedMods();
+		List<LiteMod> loadedMods = new ArrayList<LiteMod>();
+		
+		for (ModInfo<LoadableMod<?>> loadedMod : this.mods.getLoadedMods())
+		{
+			loadedMods.add(loadedMod.getMod());
+		}
+		
+		return loadedMods;		
 	}
 	
 	/**
@@ -610,15 +618,30 @@ public final class LiteLoader
 	 */
 	public List<Loadable<?>> getDisabledMods()
 	{
-		return this.mods.getDisabledMods();
+		List<Loadable<?>> disabledMods = new ArrayList<Loadable<?>>();
+		
+		for (ModInfo<Loadable<?>> disabledMod : this.mods.getDisabledMods())
+		{
+			disabledMods.add(disabledMod.getContainer());
+		}
+		
+		return disabledMods;
 	}
 	
 	/**
 	 * Get the list of injected tweak containers
 	 */
+	@SuppressWarnings("unchecked")
 	public Collection<Loadable<File>> getInjectedTweaks()
 	{
-		return this.mods.getInjectedTweaks();
+		Collection<Loadable<File>> tweaks = new ArrayList<Loadable<File>>();
+		
+		for (ModInfo<Loadable<?>> tweak : this.mods.getInjectedTweaks())
+		{
+			tweaks.add((Loadable<File>)tweak.getContainer());
+		}
+		
+		return tweaks;
 	}
 
 	/**
@@ -840,6 +863,10 @@ public final class LiteLoader
 		
 		// Create the event broker
 		this.events = this.objectFactory.getEventBroker();
+		if (this.events != null)
+		{
+			this.events.setMods(this.mods);
+		}
 
 		// Get the mod panel manager
 		this.modPanelManager = this.objectFactory.getModPanelManager();

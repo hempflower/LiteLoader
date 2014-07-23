@@ -185,6 +185,12 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 			this.minecraft.displayGuiScreen(this.panelHost);
 		}
 	}
+	
+	@Override
+	public int getStartupErrorCount()
+	{
+		return this.mods.getStartupErrorCount();
+	}
 
 	private boolean isPanelSupportedOnScreen(GuiScreen guiScreen)
 	{

@@ -109,7 +109,14 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
 	@Override
 	void onShown()
 	{
-		this.panel.onPanelShown(this);
+		try
+		{
+			this.panel.onPanelShown(this);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 	/**
@@ -118,7 +125,14 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
 	@Override
 	void onHidden()
 	{
-		this.panel.onPanelHidden();
+		try
+		{
+			this.panel.onPanelHidden();
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
 	}
 	
 	/**

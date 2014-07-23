@@ -49,4 +49,9 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
 	 * @param parentScreen
 	 */
 	public abstract void displayLiteLoaderPanel(TParentScreen parentScreen);
+	
+	/**
+	 * @return
+	 */
+	public abstract int getStartupErrorCount();
 }

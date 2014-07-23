@@ -1,11 +1,11 @@
 package com.mumfrey.liteloader.interfaces;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.core.ModInfo;
 
 /**
  * Interface for the enumerator
@@ -69,7 +69,7 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * 
 	 * @return
 	 */
-	public abstract Collection<LoadableMod<?>> getDisabledContainers();
+	public abstract Collection<? extends ModInfo<Loadable<?>>> getDisabledContainers();
 	
 	/**
 	 * @param modClass
@@ -87,12 +87,12 @@ public interface LoaderEnumerator extends ModularEnumerator
 	/**
 	 * @return
 	 */
-	public abstract Collection<Class<? extends LiteMod>> getModsToLoad();
+	public abstract Collection<? extends ModInfo<LoadableMod<?>>> getModsToLoad();
 	
 	/**
 	 * @return
 	 */
-	public abstract List<Loadable<File>> getInjectedTweaks();
+	public abstract List<? extends ModInfo<Loadable<?>>> getInjectedTweaks();
 	
 	/**
 	 * @return
