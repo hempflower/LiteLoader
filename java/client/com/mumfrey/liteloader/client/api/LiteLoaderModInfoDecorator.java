@@ -54,4 +54,21 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 			});
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.api.ModInfoDecorator#modifyStatusText(com.mumfrey.liteloader.core.ModInfo, java.lang.String)
+	 */
+	@Override
+	public String modifyStatusText(ModInfo<?> mod, String statusText)
+	{
+		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.api.ModInfoDecorator#onDrawListEntry(int, int, float, int, int, int, int, boolean, com.mumfrey.liteloader.core.ModInfo, int, int, int)
+	 */
+	@Override
+	public void onDrawListEntry(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, int height, boolean selected, ModInfo<?> mod, int gradientColour, int titleColour, int statusColour)
+	{
+	}
 }

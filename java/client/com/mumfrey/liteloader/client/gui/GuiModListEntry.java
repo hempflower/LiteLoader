@@ -219,12 +219,27 @@ public class GuiModListEntry extends Gui
 		
 		this.drawGradientRect(xPosition, yPosition, xPosition + width, yPosition + GuiModListEntry.PANEL_HEIGHT, gradientColour, GuiModListEntry.GRADIENT_COLOUR2);
 		
-		this.fontRenderer.drawString(this.getTitleText(),   xPosition + 5, yPosition + 2,  titleColour);
-		this.fontRenderer.drawString(this.getVersionText(), xPosition + 5, yPosition + 12, GuiModListEntry.VERSION_TEXT_COLOUR);
-		this.fontRenderer.drawString(this.getStatusText(),  xPosition + 5, yPosition + 22, statusColour);
+		String titleText = this.getTitleText();
+		String versionText = this.getVersionText();
+		String statusText = this.getStatusText();
+
+		for (ModInfoDecorator decorator : this.decorators)
+		{
+			String newStatusText = decorator.modifyStatusText(this.modInfo, statusText);
+			if (newStatusText != null) statusText = newStatusText;
+		}
+			
+		this.fontRenderer.drawString(titleText,   xPosition + 5, yPosition + 2,  titleColour);
+		this.fontRenderer.drawString(versionText, xPosition + 5, yPosition + 12, GuiModListEntry.VERSION_TEXT_COLOUR);
+		this.fontRenderer.drawString(statusText,  xPosition + 5, yPosition + 22, statusColour);
 		
 		this.mouseOverListEntry = this.isMouseOver(mouseX, mouseY, xPosition, yPosition, width, PANEL_HEIGHT); 
 		drawRect(xPosition, yPosition, xPosition + 1, yPosition + PANEL_HEIGHT, this.mouseOverListEntry ? GuiModListEntry.HANGER_COLOUR_MOUSEOVER : GuiModListEntry.HANGER_COLOUR);
+		
+		for (ModInfoDecorator decorator : this.decorators)
+		{
+			decorator.onDrawListEntry(mouseX, mouseY, partialTicks, xPosition, yPosition, width, GuiModListEntry.PANEL_HEIGHT, selected, this.modInfo, gradientColour, titleColour, statusColour);
+		}
 		
 		return GuiModListEntry.PANEL_HEIGHT + GuiModListEntry.PANEL_SPACING;
 	}
@@ -344,6 +359,10 @@ public class GuiModListEntry extends Gui
 		{
 			statusText = "\247e" + I18n.format("gui.status.missingdeps");
 			if (this.canBeToggled && !this.willBeEnabled) statusText = "\247c" + I18n.format("gui.status.pending.disabled");
+		}
+		else if (this.isErrored)
+		{
+			statusText = "\247c" + I18n.format("gui.status.startuperror");
 		}
 		else if (this.canBeToggled)
 		{

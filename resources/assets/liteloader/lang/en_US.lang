@@ -31,6 +31,7 @@ gui.status.pending.enabled=Enabled on next startup
 gui.status.pending.disabled=Disabled on next startup
 gui.status.missingdeps=Missing dependencies
 gui.status.missingapis=Missing required APIs
+gui.status.startuperror=Startup errors detected
 gui.description.missingdeps=Missing dependencies: %s
 gui.description.missingapis=Missing APIs: %s
 
