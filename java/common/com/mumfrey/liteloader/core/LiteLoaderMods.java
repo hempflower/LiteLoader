@@ -680,7 +680,6 @@ public class LiteLoaderMods
 		if (mod != null)
 		{
 			this.registerModStartupError(mod, th);
-			this.registerModStartupError(mod, th);
 		}
 	}
 
