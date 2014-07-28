@@ -99,6 +99,9 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	protected void onStartupComplete()
 	{
+		LoadingProgress.setMessage("Checking mods...");
+		this.mods.onStartupComplete();
+		
 		LoadingProgress.setMessage("Initialising CoreProviders...");
 		this.loader.onStartupComplete();
 		

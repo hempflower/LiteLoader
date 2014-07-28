@@ -54,4 +54,9 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
 	 * @return
 	 */
 	public abstract int getStartupErrorCount();
+	
+	/**
+	 * @return
+	 */
+	public abstract int getCriticalErrorCount();
 }

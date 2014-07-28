@@ -121,7 +121,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	
 	private boolean mouseOverLogo = false;
 	
-	private int startupErrorCount = 0;
+	private int startupErrorCount = 0, criticalErrorCount = 0;
 	
 	/**
 	 * @param minecraft
@@ -144,6 +144,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		this.settingsPanel = new GuiPanelSettings(this, minecraft);
 		
 		this.startupErrorCount = mods.getStartupErrorCount();
+		this.criticalErrorCount = mods.getCriticalErrorCount();
 	}
 
 	/**
@@ -465,7 +466,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
 	private void drawErrorTooltip(int left, int top)
 	{
-		GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount), left, top, this.width, this.height, 0xFF5555, 0xB0330000);
+		GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount, this.criticalErrorCount), left, top, this.width, this.height, 0xFF5555, 0xB0330000);
 	}
 
 	/* (non-Javadoc)

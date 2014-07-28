@@ -70,4 +70,4 @@ gui.log.closedialog=Close
 
 gui.error.title=Startup errors for %s
 
-gui.error.tooltip=%d mod startup error(s) detected
+gui.error.tooltip=%d mod startup error(s) detected (%d critical)

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.activity.InvalidActivityException;
 
@@ -18,6 +19,9 @@ import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
+import com.mumfrey.liteloader.interfaces.TweakContainer;
+import com.mumfrey.liteloader.launch.ClassTransformerManager;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
@@ -88,7 +92,7 @@ public class LiteLoaderMods
 	 */
 	protected final LinkedList<NonMod> disabledMods = new LinkedList<NonMod>();
 
-	private int startupErrorCount;
+	private int startupErrorCount, criticalErrorCount;
 
 	LiteLoaderMods(LiteLoader loader, LoaderEnvironment environment, LoaderProperties properties, ConfigManager configManager)
 	{
@@ -160,6 +164,11 @@ public class LiteLoaderMods
 	public int getStartupErrorCount()
 	{
 		return this.startupErrorCount;
+	}
+	
+	public int getCriticalErrorCount()
+	{
+		return this.criticalErrorCount;
 	}
 	
 	public ModInfo<?> getModInfo(LiteMod instance)
@@ -670,6 +679,47 @@ public class LiteLoaderMods
 		return String.format("version.%s", modName.toLowerCase().replaceAll("[^a-z0-9_\\-\\.]", ""));
 	}
 
+	void onStartupComplete()
+	{
+		this.validateModTransformers();
+	}
+
+	/**
+	 * Check that all specified mod transformers were injected successfully, tag mods with failed transformers
+	 * as critically errored
+	 */
+	private void validateModTransformers()
+	{
+		ClassTransformerManager transformerManager = LiteLoaderTweaker.getTransformerManager();
+		Set<String> injectedTransformers = transformerManager.getInjectedTransformers();
+		
+		for (Mod mod : this.loadedMods)
+		{
+			if (mod.hasClassTransformers())
+			{
+				List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
+				for (String modTransformer : modTransformers)
+				{
+					if (!injectedTransformers.contains(modTransformer))
+					{
+						List<Throwable> throwables = transformerManager.getTransformerStartupErrors(modTransformer);
+						if (throwables != null)
+						{
+							for (Throwable th : throwables)
+							{
+								this.registerModStartupError(mod, th, true);
+							}
+						}
+						else
+						{
+							this.registerModStartupError(mod, new RuntimeException("Missing class transformer " + modTransformer), true);
+						}
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * @param instance
 	 * @param th
@@ -685,7 +735,33 @@ public class LiteLoaderMods
 
 	private void registerModStartupError(ModInfo<?> mod, Throwable th)
 	{
+		// This is a critical error if a mod has already injected a transformer, since it may have injected
+		// callbacks which it is not in a position to handle!
+		boolean critical = this.hasModInjectedTransformers(mod);
+		
+		this.registerModStartupError(mod, th, critical);
+	}
+	
+	private boolean hasModInjectedTransformers(ModInfo<?> mod)
+	{
+		if (!mod.hasClassTransformers()) return false;
+		
+		Set<String> injectedTransformers = LiteLoaderTweaker.getTransformerManager().getInjectedTransformers();
+		List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
+		
+		for (String modTransformer : modTransformers)
+		{
+			if (injectedTransformers.contains(modTransformer))
+				return true;
+		}
+
+		return false;
+	}
+
+	private void registerModStartupError(ModInfo<?> mod, Throwable th, boolean critical)
+	{
 		this.startupErrorCount++;
+		if (critical) this.criticalErrorCount++;
 		mod.registerStartupError(th);
 	}
 

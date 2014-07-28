@@ -1,18 +1,16 @@
 package com.mumfrey.liteloader.launch;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.lang.reflect.Field;
+import java.util.*;
 import java.util.Map.Entry;
+
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraft.launchwrapper.LogWrapper;
 
 import com.mumfrey.liteloader.transformers.PacketTransformer;
 import com.mumfrey.liteloader.util.SortableValue;
@@ -33,7 +31,7 @@ public class ClassTransformerManager
 	/**
 	 * Transformers to inject
 	 */
-	private Set<String> injectedTransformers = new HashSet<String>();
+	private Set<String> pendingTransformers = new HashSet<String>();
 	
 	/**
 	 * Transformers to inject after preInit but before the game starts, necessary for anything that needs to be downstream of forge
@@ -51,11 +49,60 @@ public class ClassTransformerManager
 	private final List<String> requiredTransformers;
 	
 	/**
+	 * Transformers successfully injected by us
+	 */
+	private final Set<String> injectedTransformers = new HashSet<String>();
+	
+	/**
+	 * Catalogue of transformer startup failures
+	 */
+	private final Map<String, List<Throwable>> transformerStartupErrors = new HashMap<String, List<Throwable>>();
+	
+	private Logger attachedLog;
+	
+	private String pendingTransformer;
+	
+	class ThrowableObserver extends AbstractAppender
+	{
+		public ThrowableObserver()
+		{
+			super("Throwable Observer", null, null);
+			this.start();
+		}
+		
+		@Override
+		public void append(LogEvent event)
+		{
+			ClassTransformerManager.this.observeThrowable(event.getThrown());
+		}
+	}
+	
+	/**
 	 * @param requiredTransformers
 	 */
 	public ClassTransformerManager(List<String> requiredTransformers)
 	{
 		this.requiredTransformers = requiredTransformers;
+		
+		this.appendObserver();
+	}
+
+	private void appendObserver()
+	{
+		try
+		{
+			Field fLogger = LogWrapper.class.getDeclaredField("myLog");
+			fLogger.setAccessible(true);
+			this.attachedLog = (Logger)fLogger.get(LogWrapper.log);
+			if (this.attachedLog instanceof org.apache.logging.log4j.core.Logger)
+			{
+				((org.apache.logging.log4j.core.Logger)this.attachedLog).addAppender(new ThrowableObserver());
+			}
+		}
+		catch (Exception ex)
+		{
+			LiteLoaderLogger.warning("Failed to append ThrowableObserver to LogWrapper, transformer startup exceptions may not be logged");
+		}
 	}
 
 	/**
@@ -66,7 +113,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.injectedTransformers.add(transformerClass);
+			this.pendingTransformers.add(transformerClass);
 			return true;
 		}
 		
@@ -81,7 +128,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.injectedTransformers.addAll(transformerClasses);
+			this.pendingTransformers.addAll(transformerClasses);
 			return true;
 		}
 		
@@ -96,7 +143,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.injectedTransformers.addAll(Arrays.asList(transformerClasses));
+			this.pendingTransformers.addAll(Arrays.asList(transformerClasses));
 			return true;
 		}
 		
@@ -108,12 +155,12 @@ public class ClassTransformerManager
 	 */
 	void injectUpstreamTransformers(LaunchClassLoader classLoader)
 	{
-		this.sieveAndSortPacketTransformers(classLoader, this.injectedTransformers);
+		this.sieveAndSortPacketTransformers(classLoader, this.pendingTransformers);
 		
 		for (String requiredTransformerClassName : this.requiredTransformers)
 		{
 			LiteLoaderLogger.info("Injecting required class transformer '%s'", requiredTransformerClassName);
-			classLoader.registerTransformer(requiredTransformerClassName);
+			this.injectTransformer(classLoader, requiredTransformerClassName);
 		}
 		
 		for (Entry<String, TreeSet<SortableValue<String>>> packetClassTransformers : this.packetTransformers.entrySet())
@@ -121,14 +168,15 @@ public class ClassTransformerManager
 			for (SortableValue<String> transformerInfo : packetClassTransformers.getValue())
 			{
 				String packetClass = packetClassTransformers.getKey();
+				String transformerClassName = transformerInfo.getValue();
 				if (packetClass.lastIndexOf('.') != -1) packetClass = packetClass.substring(packetClass.lastIndexOf('.') + 1);
-				LiteLoaderLogger.info("Injecting packet class transformer '%s' for packet class '%s' with priority %d", transformerInfo.getValue(), packetClass, transformerInfo.getPriority());
-				classLoader.registerTransformer(transformerInfo.getValue());
+				LiteLoaderLogger.info("Injecting packet class transformer '%s' for packet class '%s' with priority %d", transformerClassName, packetClass, transformerInfo.getPriority());
+				this.injectTransformer(classLoader, transformerClassName);
 			}
 		}
 		
 		// inject any transformers received after this point directly into the downstreamTransformers set
-		this.injectedTransformers = this.downstreamTransformers;
+		this.pendingTransformers = this.downstreamTransformers;
 	}
 
 	/**
@@ -142,7 +190,7 @@ public class ClassTransformerManager
 		for (String transformerClassName : this.downstreamTransformers)
 		{
 			LiteLoaderLogger.info("Injecting additional class transformer class '%s'", transformerClassName);
-			classLoader.registerTransformer(transformerClassName);
+			this.injectTransformer(classLoader, transformerClassName);
 		}
 		
 		this.downstreamTransformers.clear();
@@ -210,5 +258,59 @@ public class ClassTransformerManager
 		transformers.clear();
 		
 		LiteLoaderLogger.info("Added %d packet transformer classes to the transformer list", registeredTransformers);
+	}
+
+	private synchronized void injectTransformer(LaunchClassLoader classLoader, String transformerClassName)
+	{
+		// Assign pendingTransformer so that logged errors during transformer init can be put in the map
+		this.pendingTransformer = transformerClassName;
+		
+		// Register the transformer
+		classLoader.registerTransformer(transformerClassName);
+		
+		// Unassign pending transformer now init is completed
+		this.pendingTransformer = null;
+		
+		// Check whether the transformer was successfully injected, look for it in the transformer list
+		if (this.findTransformer(classLoader, transformerClassName) != null)
+		{
+			this.injectedTransformers.add(transformerClassName);
+		}
+	}
+
+	public void observeThrowable(Throwable th)
+	{
+		if (th != null && this.pendingTransformer != null)
+		{
+			List<Throwable> transformerErrors = this.transformerStartupErrors.get(this.pendingTransformer);
+			if (transformerErrors == null)
+			{
+				transformerErrors = new ArrayList<Throwable>();
+				this.transformerStartupErrors.put(this.pendingTransformer, transformerErrors);
+			}
+			transformerErrors.add(th);
+		}
+	}
+
+	private IClassTransformer findTransformer(LaunchClassLoader classLoader, String transformerClassName)
+	{
+		for (IClassTransformer transformer : classLoader.getTransformers())
+		{
+			if (transformer.getClass().getName().equals(transformerClassName))
+				return transformer;
+		}
+		
+		return null;
+	}
+	
+	public Set<String> getInjectedTransformers()
+	{
+		return Collections.unmodifiableSet(this.injectedTransformers);
+	}
+	
+	public List<Throwable> getTransformerStartupErrors(String transformerClassName)
+	{
+		List<Throwable> errorList = this.transformerStartupErrors.get(transformerClassName);
+		return errorList != null ? Collections.unmodifiableList(errorList) : null;
 	}
 }

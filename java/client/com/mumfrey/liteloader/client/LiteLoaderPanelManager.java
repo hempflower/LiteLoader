@@ -191,6 +191,12 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	{
 		return this.mods.getStartupErrorCount();
 	}
+	
+	@Override
+	public int getCriticalErrorCount()
+	{
+		return this.mods.getCriticalErrorCount();
+	}
 
 	private boolean isPanelSupportedOnScreen(GuiScreen guiScreen)
 	{
