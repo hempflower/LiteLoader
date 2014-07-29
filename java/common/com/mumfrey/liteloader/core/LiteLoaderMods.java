@@ -612,7 +612,6 @@ public class LiteLoaderMods
 	 */
 	private void onPostInitMod(LiteMod instance)
 	{
-		System.err.println("on post init mod " + instance.getName());
 		for (ModLoadObserver observer : this.observers)
 		{
 			observer.onPostInitMod(instance);
