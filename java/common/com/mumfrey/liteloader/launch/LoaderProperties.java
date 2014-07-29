@@ -69,7 +69,6 @@ public interface LoaderProperties
 	public static final String OPTION_NO_HIDE_TAB       = "tabAlwaysExpanded";
 	public static final String OPTION_BRAND             = "brand";
 	public static final String OPTION_LOADING_BAR       = "loadingbar";
-	public static final String OPTION_UPDATE_REALMS     = "realmsUpdateCheck";
 
 	// Enumerator properties
 	public static final String OPTION_SEARCH_MODS       = "search.mods";
