@@ -6,6 +6,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingFormatArgumentException;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -130,7 +131,14 @@ public class LiteLoaderLogger extends AbstractAppender
 	
 	private static void log(Level level, String format, Object... data)
 	{
-		LiteLoaderLogger.logger.log(level, String.format(format, data));
+		try
+		{
+			LiteLoaderLogger.logger.log(level, String.format(format, data));
+		}
+		catch (MissingFormatArgumentException ex)
+		{
+			LiteLoaderLogger.logger.log(level, format.replace('%', '@'));
+		}
 	}
 	
 	private static void log(Level level, Throwable th, String format, Object... data)

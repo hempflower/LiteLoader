@@ -3,26 +3,19 @@ package com.mumfrey.liteloader.client.gui;
 import static org.lwjgl.opengl.GL11.*;
 
 import java.net.URI;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-
-import org.lwjgl.input.Keyboard;
-
-
-
-
-
-
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.Session;
+
+import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
-import com.mumfrey.liteloader.util.net.PastebinUpload;
+import com.mumfrey.liteloader.util.net.LiteLoaderLogUpload;
 
 /**
  *
@@ -47,9 +40,9 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 	
 	private GuiButton btnUpload;
 	
-	private PastebinUpload logUpload;
+	private LiteLoaderLogUpload logUpload;
 	
-	private String pasteBinURL;
+	private String logURL;
 	
 	private int throb;
 
@@ -140,19 +133,19 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 		
 		if (this.logUpload != null && this.logUpload.isCompleted())
 		{
-			this.pasteBinURL = this.logUpload.getPasteUrl().trim();
+			this.logURL = this.logUpload.getLogUrl().trim();
 			this.logUpload = null;
 
 			int xMid = this.width / 2;
-			if (this.pasteBinURL.startsWith("http:"))
+			if (this.logURL.startsWith("http:"))
 			{
-				LiteLoaderLogger.info("Log file upload succeeded, url is %s", this.pasteBinURL);
-				int urlWidth = this.mc.fontRendererObj.getStringWidth(this.pasteBinURL);
-				this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRendererObj, "\247n" + this.pasteBinURL, this.parent.getBrandColour()));
+				LiteLoaderLogger.info("Log file upload succeeded, url is %s", this.logURL);
+				int urlWidth = this.mc.fontRendererObj.getStringWidth(this.logURL);
+				this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRendererObj, "\247n" + this.logURL, this.parent.getBrandColour()));
 			}
 			else
 			{
-				LiteLoaderLogger.info("Log file upload failed, reason is %s", this.pasteBinURL);
+				LiteLoaderLogger.info("Log file upload failed, reason is %s", this.logURL);
 			}
 			
 			this.controls.add(new GuiButton(4, xMid - 40, this.height - BOTTOM - MARGIN - 24, 80, 20, I18n.format("gui.log.closedialog")));
@@ -161,7 +154,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 		if (this.closeDialog)
 		{
 			this.closeDialog = false;
-			this.pasteBinURL = null;
+			this.logURL = null;
 			this.setSize(this.width, this.height);
 		}
 	}
@@ -188,7 +181,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 		int xMid = this.width / 2;
 		int yMid = this.height / 2;
 		
-		if (this.logUpload != null || this.pasteBinURL != null)
+		if (this.logUpload != null || this.logURL != null)
 		{
 			drawRect(MARGIN + MARGIN, TOP + MARGIN, this.width - MARGIN - MARGIN, this.height - BOTTOM - MARGIN, 0xC0000000);
 
@@ -199,7 +192,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 			}
 			else
 			{
-				if (this.pasteBinURL.startsWith("http:"))
+				if (this.logURL.startsWith("http:"))
 				{
 					this.drawCenteredString(this.mc.fontRendererObj, I18n.format("gui.log.uploadsuccess"), xMid, yMid - 14, 0xFF55FF55);
 				}
@@ -286,9 +279,9 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 			this.updateLog();
 		}
 		
-		if (control.id == 3 && this.pasteBinURL != null)
+		if (control.id == 3 && this.logURL != null)
 		{
-			this.openURI(URI.create(this.pasteBinURL));
+			this.openURI(URI.create(this.logURL));
 		}
 		
 		if (control.id == 4)
@@ -368,9 +361,9 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 			completeLog.append(logLine).append("\r\n");
 		}
 		
-		String pasteName = "LiteLoaderLog-" + DateFormat.getDateTimeInstance().format(new Date());
-		LiteLoaderLogger.info("Uploading log file %s to pastebin...", pasteName);
-		this.logUpload = new PastebinUpload("LiteLoader", pasteName, completeLog.toString(), PastebinUpload.UNLISTED);
+		LiteLoaderLogger.info("Uploading log file to liteloader...");
+		Session session = this.mc.getSession();
+		this.logUpload = new LiteLoaderLogUpload(session.getUsername(), session.getPlayerID(), completeLog.toString());
 		this.logUpload.start();
 	}
 
