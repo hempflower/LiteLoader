@@ -30,6 +30,7 @@ import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.launch.LoaderBootstrap;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.launch.StartupEnvironment;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -143,17 +144,17 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * @param assetsDirectory
 	 * @param profile
 	 */
-	public LiteLoaderBootstrap(int environmentTypeId, File gameDirectory, File assetsDirectory, String profile, List<String> apisToLoad)
+	public LiteLoaderBootstrap(StartupEnvironment env)
 	{
-		this.environmentType     = EnvironmentType.values()[environmentTypeId];
+		this.environmentType     = EnvironmentType.values()[env.getEnvironmentTypeId()];
 		
-		this.apiRegistry         = new APIRegistry(this, this);
+		this.apiRegistry         = new APIRegistry(this.getEnvironment(), this.getProperties());
 		
-		this.gameDirectory       = gameDirectory;
-		this.assetsDirectory     = assetsDirectory;
-		this.profile             = profile;
+		this.gameDirectory       = env.getGameDirectory();
+		this.assetsDirectory     = env.getAssetsDirectory();
+		this.profile             = env.getProfile();
+		this.modsFolder          = env.getModsFolder();
 		
-		this.modsFolder          = new File(this.gameDirectory,    "mods");
 		this.versionedModsFolder = new File(this.modsFolder,       LiteLoaderVersion.CURRENT.getMinecraftVersion());
 		this.configBaseFolder    = new File(this.gameDirectory,    "liteconfig");
 		this.logFile             = new File(this.configBaseFolder, "liteloader.log");
@@ -169,7 +170,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		if (!this.commonConfigFolder.exists()) this.commonConfigFolder.mkdirs();
 		if (!this.versionConfigFolder.exists()) this.versionConfigFolder.mkdirs();
 
-		this.initAPIs(apisToLoad);
+		this.initAPIs(env.getAPIsToLoad());
 		this.apiProvider = this.apiRegistry.getProvider();
 		this.apiAdapter = this.apiRegistry.getAdapter();
 	}
@@ -242,6 +243,18 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		return this.environmentType;
 	}
 	
+	@Override
+	public LoaderEnvironment getEnvironment()
+	{
+		return this;
+	}
+	
+	@Override
+	public LoaderProperties getProperties()
+	{
+		return this;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
 	 */
@@ -307,7 +320,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		// PreInit failed
 		if (this.enumerator == null) return;
 		
-		LiteLoader.createInstance(this, this, classLoader);
+		LiteLoader.createInstance(this.getEnvironment(), this.getProperties(), classLoader);
 		LiteLoader.invokeInit();
 	}
 

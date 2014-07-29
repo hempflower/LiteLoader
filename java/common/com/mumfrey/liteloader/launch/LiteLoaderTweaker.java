@@ -5,19 +5,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import joptsimple.ArgumentAcceptingOptionSpec;
-import joptsimple.NonOptionArgumentSpec;
-import joptsimple.OptionParser;
-import joptsimple.OptionSet;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
@@ -33,11 +25,13 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public class LiteLoaderTweaker implements ITweaker
 {
-	public static final String VERSION = "1.7.10";
+	public static final int ENV_TYPE_CLIENT = 0;
+	public static final int ENV_TYPE_DEDICATEDSERVER = 1;
 	
-	protected static final int ENV_TYPE_CLIENT = 0;
+	public static final String VERSION = "1.7.10";
 
-	protected static final int ENV_TYPE_DEDICATEDSERVER = 1;
+	protected static final String bootstrapClassName = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
+	protected static final String genTransformerClassName = "com.mumfrey.liteloader.client.gen.GenProfilerTransformer";
 
 	/**
 	 * Loader startup state
@@ -170,172 +164,159 @@ public class LiteLoaderTweaker implements ITweaker
 	
 	private static LiteLoaderTweaker instance;
 	
-	private URL jarUrl;
+	protected URL jarUrl;
 	
-	private List<String> singularLaunchArgs = new ArrayList<String>();
-	private Map<String, String> launchArgs;
-	
-	private ArgumentAcceptingOptionSpec<String> modsOption;
-	private ArgumentAcceptingOptionSpec<String> apisOption;
-	private OptionSet parsedOptions;
-	
-	private int tweakOrder = 0;
-	private Set<String> allCascadingTweaks = new HashSet<String>();
-	private Set<SortableValue<String>> sortedCascadingTweaks = new TreeSet<SortableValue<String>>();
+	protected int tweakOrder = 0;
+	protected Set<String> allCascadingTweaks = new HashSet<String>();
+	protected Set<SortableValue<String>> sortedCascadingTweaks = new TreeSet<SortableValue<String>>();
 
-	private boolean isPrimary;
+	protected boolean isPrimary;
+	
+	protected StartupEnvironment env;
 	
 	/**
 	 * Loader bootstrap object
 	 */
-	private LoaderBootstrap bootstrap;
+	protected LoaderBootstrap bootstrap;
 	
-	private LoaderProperties properties;
+	protected LoaderProperties properties;
 	
 	/**
 	 * Transformer manager
 	 */
-	private ClassTransformerManager transformerManager;
+	protected ClassTransformerManager transformerManager;
 	
-	private static final String bootstrapClassName = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
-	
-	private static final String genTransformerClassName = "com.mumfrey.liteloader.client.gen.GenProfilerTransformer";
-
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
 		Launch.classLoader.addClassLoaderExclusion("com.google.common.");
-		
 		LiteLoaderTweaker.instance = this;
 		
-		this.initArgs(args, gameDirectory, assetsDirectory);
-
-		List<String> modsToLoad = this.getModFilterList();
-		List<String> apisToLoad = this.getAPIsToLoad();
+		this.prepare(args, gameDirectory, assetsDirectory, profile);
 		
-		this.prepare(gameDirectory, assetsDirectory, profile, apisToLoad);
-		
-		this.preInit(modsToLoad);
+		this.preInit();
 	}
 
 	/**
-	 * @return
+	 * @param gameDirectory
+	 * @param assetsDirectory
+	 * @param profile
+	 * @param apisToLoad
 	 */
-	private List<String> getModFilterList()
+	private void prepare(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		return (this.parsedOptions.has(this.modsOption)) ? this.modsOption.values(this.parsedOptions) : null;
-	}
-
-	/**
-	 * @return
-	 */
-	private List<String> getAPIsToLoad()
-	{
-		List<String> apisToLoad = new ArrayList<String>();
-		this.registerCoreAPIs(apisToLoad);
-		if (this.parsedOptions.has(this.apisOption))
+		LiteLoaderLogger.info("Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
+		
+		try
 		{
-			apisToLoad.addAll(this.apisOption.values(this.parsedOptions));
+			this.initEnvironment(args, gameDirectory, assetsDirectory, profile);
+
+			this.bootstrap = this.spawnBootstrap(LiteLoaderTweaker.bootstrapClassName, Launch.classLoader);
+			this.properties = this.bootstrap.getProperties();
+			
+			this.transformerManager = new ClassTransformerManager(this.bootstrap.getRequiredTransformers());
+			this.transformerManager.injectTransformers(this.bootstrap.getPacketTransformers());
+			
+			StartupState.PREPARE.completed();
 		}
-		
-		return apisToLoad;
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error during LiteLoader PREPARE: %s %s", th.getClass().getName(), th.getMessage());
+		}
+	}
+
+	/**
+	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
+	 */
+	private void preInit()
+	{
+		StartupState.PREINIT.gotoState();
+
+		try
+		{
+			this.bootstrap.preInit(Launch.classLoader, true, this.env.getModFilterList());
+			
+			this.injectDiscoveredTweakClasses();
+			StartupState.PREINIT.completed();
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error during LiteLoader PREINIT: %s %s", th.getClass().getName(), th.getMessage());
+		}
 	}
 	
-	protected void registerCoreAPIs(List<String> apisToLoad)
+	public static void preBeginGame()
 	{
-		apisToLoad.add(0, "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient");
+		StartupState.BEGINGAME.gotoState();
+		try
+		{
+			LiteLoaderTweaker.instance.transformerManager.injectDownstreamTransformers(Launch.classLoader);
+			LiteLoaderTweaker.instance.bootstrap.preBeginGame();
+			StartupState.BEGINGAME.completed();
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error during LiteLoader BEGINGAME: %s %s", th.getClass().getName(), th.getMessage());
+		}
 	}
 
-	private void initJar()
+	/**
+	 * Do the second stage of loader startup
+	 */
+	public static void init()
 	{
+		StartupState.INIT.gotoState();
+		
+		try
+		{
+			LiteLoaderTweaker.instance.bootstrap.init(Launch.classLoader);
+			StartupState.INIT.completed();
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error during LiteLoader INIT: %s %s", th.getClass().getName(), th.getMessage());
+		}
+	}
+	
+	/**
+	 * Do the second stage of loader startup
+	 */
+	public static void postInit()
+	{
+		StartupState.POSTINIT.gotoState();
+
+		try
+		{
+			LiteLoaderTweaker.instance.bootstrap.postInit();
+			StartupState.POSTINIT.completed();
+
+			StartupState.DONE.gotoState();
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error during LiteLoader POSTINIT: %s %s", th.getClass().getName(), th.getMessage());
+		}
+	}
+
+	protected void initEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
+	{
+		this.env = new StartupEnvironment(args, gameDirectory, assetsDirectory, profile)
+		{
+			@Override
+			public void registerCoreAPIs(List<String> apisToLoad)
+			{
+				apisToLoad.add(0, "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient");
+			}
+
+			@Override
+			public int getEnvironmentTypeId()
+			{
+				return LiteLoaderTweaker.ENV_TYPE_CLIENT;
+			}
+		};
+
 		URL[] urls = Launch.classLoader.getURLs();
 		this.jarUrl = urls[urls.length - 1]; // probably?
-	}
-
-	/**
-	 * @param args
-	 * @param gameDirectory
-	 * @param assetsDirectory
-	 */
-	@SuppressWarnings("unchecked")
-	public void initArgs(List<String> args, File gameDirectory, File assetsDirectory)
-	{
-		OptionParser optionParser = new OptionParser();
-		this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load").withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
-		this.apisOption = optionParser.accepts("api", "Additional API classes to load").withRequiredArg().ofType(String.class);
-		optionParser.allowsUnrecognizedOptions();
-		NonOptionArgumentSpec<String> nonOptions = optionParser.nonOptions();
-		
-		this.parsedOptions = optionParser.parse(args.toArray(new String[args.size()]));
-		this.launchArgs = (Map<String, String>)Launch.blackboard.get("launchArgs");
-		if (this.launchArgs == null)
-		{
-			this.launchArgs = new HashMap<String, String>();			
-			Launch.blackboard.put("launchArgs", this.launchArgs);
-		}
-		
-		// Parse out the arguments ourself because joptsimple doesn't really provide a good way to
-		// add arguments to the unparsed argument list after parsing
-		this.parseArgs(this.parsedOptions.valuesOf(nonOptions));
-		
-		// Put required arguments to the blackboard if they don't already exist there
-		this.provideRequiredArgs(gameDirectory, assetsDirectory);
-	}
-
-	/**
-	 * @param gameDirectory
-	 * @param assetsDirectory
-	 */
-	public void provideRequiredArgs(File gameDirectory, File assetsDirectory)
-	{
-		if (!this.launchArgs.containsKey("--version"))
-			this.addClassifiedArg("--version", LiteLoaderTweaker.VERSION);
-		
-		if (!this.launchArgs.containsKey("--gameDir") && gameDirectory != null)
-			this.addClassifiedArg("--gameDir", gameDirectory.getAbsolutePath());
-		
-		if (!this.launchArgs.containsKey("--assetsDir") && assetsDirectory != null)
-			this.addClassifiedArg("--assetsDir", assetsDirectory.getAbsolutePath());
-	}
-
-	private void parseArgs(List<String> args)
-	{
-		String classifier = null;
-		
-		for (String arg : args)
-		{
-			if (arg.startsWith("-"))
-			{
-				if (classifier != null)
-				{
-					this.addClassifiedArg(classifier, "");
-					classifier = null;
-				}
-				else if (arg.contains("="))
-				{
-					this.addClassifiedArg(arg.substring(0, arg.indexOf('=')), arg.substring(arg.indexOf('=') + 1));
-				}
-				else
-				{
-					classifier = arg;
-				}
-			}
-			else
-			{
-				if (classifier != null)
-				{
-					this.addClassifiedArg(classifier, arg);
-					classifier = null;
-				}
-				else
-					this.singularLaunchArgs.add(arg);
-			}
-		}
-	}
-
-	private void addClassifiedArg(String classifiedArg, String arg)
-	{
-		this.launchArgs.put(classifiedArg, arg);
 	}
 
 	@Override
@@ -371,21 +352,7 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public String[] getLaunchArguments()
 	{
-		List<String> args = new ArrayList<String>();
-		
-		for (String singularArg : this.singularLaunchArgs)
-			args.add(singularArg);
-		
-		for (Entry<String, String> launchArg : this.launchArgs.entrySet())
-		{
-			args.add(launchArg.getKey().trim());
-			args.add(launchArg.getValue().trim());
-		}
-		
-		this.singularLaunchArgs.clear();
-		this.launchArgs.clear();
-		
-		return args.toArray(new String[args.size()]);
+		return this.env.getLaunchArguments();
 	}
 	
 	public static boolean addCascadedTweaker(String tweakClass, int priority)
@@ -485,21 +452,21 @@ public class LiteLoaderTweaker implements ITweaker
 		return false;
 	}
 
-	protected LoaderBootstrap spawnBootstrap(String bootstrapClassName, ClassLoader classLoader, File gameDirectory, File assetsDirectory, String profile, List<String> apisToLoad)
+	protected LoaderBootstrap spawnBootstrap(String bootstrapClassName, ClassLoader classLoader)
 	{
 		if (!StartupState.PREPARE.isInState())
 		{
-			throw new IllegalStateException("spawnBootstrap is not valid outside constructor");
+			throw new IllegalStateException("spawnBootstrap is not valid outside PREPARE");
 		}
 		
 		try
 		{
 			@SuppressWarnings("unchecked")
 			Class<? extends LoaderBootstrap> bootstrapClass = (Class<? extends LoaderBootstrap>)Class.forName(bootstrapClassName, false, classLoader);
-			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(Integer.TYPE, File.class, File.class, String.class, List.class);
+			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(StartupEnvironment.class);
 			bootstrapCtor.setAccessible(true);
 			
-			return bootstrapCtor.newInstance(this.getEnvironmentTypeId(), gameDirectory, assetsDirectory, profile, apisToLoad);
+			return bootstrapCtor.newInstance(this.env);
 		}
 		catch (Throwable th)
 		{
@@ -507,113 +474,6 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 		
 		return null;
-	}
-
-	protected int getEnvironmentTypeId()
-	{
-		return LiteLoaderTweaker.ENV_TYPE_CLIENT;
-	}
-
-	/**
-	 * @param gameDirectory
-	 * @param assetsDirectory
-	 * @param profile
-	 * @param apisToLoad
-	 */
-	private void prepare(File gameDirectory, File assetsDirectory, String profile, List<String> apisToLoad)
-	{
-		LiteLoaderLogger.info("Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
-		
-		try
-		{
-			this.registerCoreAPIs(apisToLoad);
-			this.initJar();
-
-			this.bootstrap = this.spawnBootstrap(LiteLoaderTweaker.bootstrapClassName, Launch.classLoader, gameDirectory, assetsDirectory, profile, apisToLoad);
-			this.properties = this.bootstrap instanceof LoaderProperties ? (LoaderProperties)this.bootstrap : null;
-			
-			this.transformerManager = new ClassTransformerManager(this.bootstrap.getRequiredTransformers());
-			this.transformerManager.injectTransformers(this.bootstrap.getPacketTransformers());
-			
-			StartupState.PREPARE.completed();
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderLogger.severe(th, "Error during LiteLoader PREPARE: %s %s", th.getClass().getName(), th.getMessage());
-		}
-	}
-
-	/**
-	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
-	 */
-	private void preInit(List<String> modsToLoad)
-	{
-		StartupState.PREINIT.gotoState();
-
-		try
-		{
-			this.bootstrap.preInit(Launch.classLoader, true, modsToLoad);
-			
-			this.injectDiscoveredTweakClasses();
-			StartupState.PREINIT.completed();
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderLogger.severe(th, "Error during LiteLoader PREINIT: %s %s", th.getClass().getName(), th.getMessage());
-		}
-	}
-	
-	public static void preBeginGame()
-	{
-		StartupState.BEGINGAME.gotoState();
-		try
-		{
-			LiteLoaderTweaker.instance.transformerManager.injectDownstreamTransformers(Launch.classLoader);
-			LiteLoaderTweaker.instance.bootstrap.preBeginGame();
-			StartupState.BEGINGAME.completed();
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderLogger.severe(th, "Error during LiteLoader BEGINGAME: %s %s", th.getClass().getName(), th.getMessage());
-		}
-	}
-
-	/**
-	 * Do the second stage of loader startup
-	 */
-	public static void init()
-	{
-		StartupState.INIT.gotoState();
-		
-		try
-		{
-			LiteLoaderTweaker.instance.bootstrap.init(Launch.classLoader);
-			StartupState.INIT.completed();
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderLogger.severe(th, "Error during LiteLoader INIT: %s %s", th.getClass().getName(), th.getMessage());
-		}
-	}
-	
-	/**
-	 * Do the second stage of loader startup
-	 */
-	public static void postInit()
-	{
-		StartupState.POSTINIT.gotoState();
-
-		try
-		{
-			LiteLoaderTweaker.instance.bootstrap.postInit();
-			StartupState.POSTINIT.completed();
-
-			StartupState.DONE.gotoState();
-		}
-		catch (Throwable th)
-		{
-			LiteLoaderLogger.severe(th, "Error during LiteLoader POSTINIT: %s %s", th.getClass().getName(), th.getMessage());
-		}
 	}
 	
 	public static URL getJarUrl()
