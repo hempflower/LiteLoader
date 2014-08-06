@@ -620,7 +620,7 @@ public final class LiteLoader
 	{
 		List<Loadable<?>> disabledMods = new ArrayList<Loadable<?>>();
 		
-		for (ModInfo<Loadable<?>> disabledMod : this.mods.getDisabledMods())
+		for (ModInfo<?> disabledMod : this.mods.getDisabledMods())
 		{
 			disabledMods.add(disabledMod.getContainer());
 		}

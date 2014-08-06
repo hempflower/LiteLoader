@@ -1,7 +1,6 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,9 +15,9 @@ import net.minecraft.client.resources.IResourcePack;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModLoadObserver;
 import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
+import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.ClassTransformerManager;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
@@ -90,7 +89,7 @@ public class LiteLoaderMods
 	/**
 	 * Mods which are loaded but disabled
 	 */
-	protected final LinkedList<NonMod> disabledMods = new LinkedList<NonMod>();
+	protected final LinkedList<ModInfo<?>> disabledMods = new LinkedList<ModInfo<?>>();
 
 	private int startupErrorCount, criticalErrorCount;
 
@@ -103,11 +102,10 @@ public class LiteLoaderMods
 		this.configManager    = configManager;
 	}
 
-	@SuppressWarnings("unchecked")
 	void init(List<ModLoadObserver> observers)
 	{
 		this.observers = observers;
-		this.disabledMods.addAll((Collection<? extends NonMod>)this.enumerator.getDisabledContainers());
+		this.disabledMods.addAll(this.enumerator.getDisabledContainers());
 	}
 	
 	void onPostInit()
@@ -148,7 +146,7 @@ public class LiteLoaderMods
 	/**
 	 * Get a list containing all mod files which were NOT loaded
 	 */
-	public List<? extends ModInfo<Loadable<?>>> getDisabledMods()
+	public List<? extends ModInfo<?>> getDisabledMods()
 	{
 		return this.disabledMods;
 	}
@@ -446,6 +444,7 @@ public class LiteLoaderMods
 			catch (Throwable th)
 			{
 				this.onModLoadFailed(container, mod.getModClassName(), "an error occurred", th);
+				this.registerModStartupError(mod, th);
 			}
 		}
 	}
@@ -522,7 +521,13 @@ public class LiteLoaderMods
 	{
 		LiteLoaderLogger.warning("Not loading mod %s, %s", identifier, reason);
 		
-		if (container != LoadableMod.NONE && !this.disabledMods.contains(container))
+		for (ModInfo<?> mod : this.disabledMods)
+		{
+			if (mod.getContainer().equals(container))
+				return;
+		}
+		
+		if (container != LoadableMod.NONE)
 		{
 			this.disabledMods.add(new NonMod(container, false));
 		}
@@ -762,6 +767,11 @@ public class LiteLoaderMods
 		this.startupErrorCount++;
 		if (critical) this.criticalErrorCount++;
 		mod.registerStartupError(th);
+		
+		if (!this.loadedMods.contains(mod) && !this.disabledMods.contains(mod))
+		{
+			this.disabledMods.add(mod);
+		}
 	}
 
 	void updateSharedModList()

@@ -103,7 +103,7 @@ public class GuiPanelMods extends GuiPanel
 		}
 		
 		// Disabled mods
-		for (ModInfo<Loadable<?>> disabledMod : mods.getDisabledMods())
+		for (ModInfo<?> disabledMod : mods.getDisabledMods())
 		{
 			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, disabledMod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
