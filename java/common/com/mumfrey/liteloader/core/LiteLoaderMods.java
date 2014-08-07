@@ -233,7 +233,7 @@ public class LiteLoaderMods
 		for (Mod mod : this.allMods)
 		{
 			if (mod.getModClass().equals(modClass))
-				return (T)mod;
+				return (T)mod.getMod();
 		}
 		
 		return null;

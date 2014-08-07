@@ -32,7 +32,7 @@ public abstract class Start
 	 * Arguments which are allowed to have multiple occurrences
 	 */
 	private static final Set<String> MULTI_VALUE_ARGS = ImmutableSet.<String>of(
-		"tweakClass"
+		"--tweakClass"
 	);
 	
 	/**
