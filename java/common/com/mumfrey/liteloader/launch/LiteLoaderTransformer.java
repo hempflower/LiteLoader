@@ -18,6 +18,8 @@ public class LiteLoaderTransformer extends ClassTransformer
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
+		if (basicClass == null) return basicClass;
+		
 		if (Obf.MinecraftMain.name.equals(transformedName))
 		{
 			return this.transformMain(basicClass);

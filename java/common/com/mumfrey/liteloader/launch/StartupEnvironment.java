@@ -35,11 +35,11 @@ public abstract class StartupEnvironment implements GameEnvironment
 	
 	public StartupEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		this.initArgs(args);
-		
 		this.gameDirectory = gameDirectory;
 		this.assetsDirectory = assetsDirectory;
 		this.profile = profile;
+		
+		this.initArgs(args);
 	}
 
 	public abstract void registerCoreAPIs(List<String> apisToLoad);
@@ -134,13 +134,13 @@ public abstract class StartupEnvironment implements GameEnvironment
 	 */
 	public void provideRequiredArgs()
 	{
-		if (!this.launchArgs.containsKey("--version"))
+		if (this.launchArgs.get("--version") == null)
 			this.addClassifiedArg("--version", LiteLoaderTweaker.VERSION);
 		
-		if (!this.launchArgs.containsKey("--gameDir") && this.gameDirectory != null)
+		if (this.launchArgs.get("--gameDir") == null && this.gameDirectory != null)
 			this.addClassifiedArg("--gameDir", this.gameDirectory.getAbsolutePath());
 		
-		if (!this.launchArgs.containsKey("--assetsDir") && this.assetsDirectory != null)
+		if (this.launchArgs.get("--assetsDir") == null && this.assetsDirectory != null)
 			this.addClassifiedArg("--assetsDir", this.assetsDirectory.getAbsolutePath());
 	}
 

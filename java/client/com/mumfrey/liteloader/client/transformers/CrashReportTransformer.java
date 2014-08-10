@@ -18,7 +18,7 @@ public class CrashReportTransformer extends ClassTransformer
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
-		if (Obf.CrashReport$6.name.equals(name) || Obf.CrashReport$6.obf.equals(name))
+		if (basicClass != null && (Obf.CrashReport$6.name.equals(name) || Obf.CrashReport$6.obf.equals(name)))
 		{
 			try
 			{

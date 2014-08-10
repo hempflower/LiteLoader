@@ -107,7 +107,7 @@ public abstract class PacketTransformer extends ClassTransformer
 	@Override
 	public final byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
-		if (this.packetClass.equals(transformedName) || this.packetClassObf.equals(transformedName))
+		if (basicClass != null && (this.packetClass.equals(transformedName) || this.packetClassObf.equals(transformedName)))
 		{
 			LiteLoaderLogger.info("PacketTransformer: Running transformer %s for %s", this.getClass().getName(), name);
 			

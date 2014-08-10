@@ -167,7 +167,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		{
 			throw new RuntimeException(String.format("%s is an overlay class and cannot be referenced directly", this.overlayClassName));
 		}
-		else if (this.remappingAgent)
+		else if (this.remappingAgent && basicClass != null)
 		{
 			return this.remapClass(transformedName, basicClass);
 		}
