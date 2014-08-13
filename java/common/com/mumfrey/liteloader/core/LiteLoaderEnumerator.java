@@ -284,7 +284,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.FINALISED, "getModMetaData");
 		
-		return this.getContainer(modClass).getMetaValue(metaDataKey, defaultValue);
+		return this.getContainerForMod(modClass).getMetaValue(metaDataKey, defaultValue);
 	}
 	
 	/**
@@ -296,7 +296,17 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.FINALISED, "getContainer");
 		
-		return this.enabledContainers.get(identifier);
+		return this.getContainerById(identifier);
+	}
+
+	/**
+	 * @param identifier
+	 * @return
+	 */
+	private LoadableMod<?> getContainerById(String identifier)
+	{
+		LoadableMod<?> container = this.enabledContainers.get(identifier);
+		return container != null ? container : LoadableMod.NONE;
 	}
 	
 	/**
@@ -308,6 +318,15 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.FINALISED, "getContainer");
 		
+		return this.getContainerForMod(modClass);
+	}
+
+	/**
+	 * @param modClass
+	 * @return
+	 */
+	private LoadableMod<?> getContainerForMod(Class<? extends LiteMod> modClass)
+	{
 		for (ModInfo<LoadableMod<?>> mod : this.modsToLoad)
 		{
 			if (modClass.equals(mod.getModClass()))
@@ -825,8 +844,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			{
 				circularDependencySet.add(dependency);
 				
-				LoadableMod<?> dependencyContainer = this.getContainer(dependency);
-				if (dependencyContainer != null)
+				LoadableMod<?> dependencyContainer = this.getContainerById(dependency);
+				if (dependencyContainer != LoadableMod.NONE)
 				{
 					if (this.environment.getEnabledModsList().isEnabled(this.environment.getProfile(), dependency))
 					{
