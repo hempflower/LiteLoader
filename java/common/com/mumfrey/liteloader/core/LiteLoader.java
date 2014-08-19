@@ -895,7 +895,8 @@ public final class LiteLoader
 	private void loadAndInitMods()
 	{
 		int totalMods = this.enumerator.modsToLoadCount();
-		LiteLoaderLogger.info("Discovered %d total mod(s)", totalMods);
+		int totalTweaks = this.enumerator.getInjectedTweaks().size();
+		LiteLoaderLogger.info("Discovered %d total mod(s), injected %d tweak(s)", totalMods, totalTweaks);
 		
 		if (totalMods > 0)
 		{
@@ -904,7 +905,7 @@ public final class LiteLoader
 		}
 		else
 		{
-			LiteLoaderLogger.info("Mod class discovery failed or no mod classes were found. Not loading any mods.");
+			LiteLoaderLogger.info("No mod classes were found. Not loading any mods.");
 		}
 		
 		// Initialises the required hooks for loaded mods
