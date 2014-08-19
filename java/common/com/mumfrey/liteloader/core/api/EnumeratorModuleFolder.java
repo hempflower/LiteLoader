@@ -114,6 +114,12 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	public boolean accept(File dir, String fileName)
 	{
 		fileName = fileName.toLowerCase();
+		
+		if (fileName.endsWith(".litemod.zip") && !this.readZipFiles)
+		{
+			LiteLoaderLogger.warning("Found %s with unsupported extension .litemod.zip. Please change file extension to .litemod to allow this file to be loaded!", fileName);
+		}
+		
 		return                       fileName.endsWith(".litemod")
 			|| (this.readZipFiles && fileName.endsWith(".zip"))
 			|| (this.readJarFiles && fileName.endsWith(".jar"));
@@ -139,7 +145,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	 */
 	private void findValidFiles(ModularEnumerator enumerator)
 	{
-		for (File candidateFile : this.directory.listFiles(this))
+		for (File candidateFile : this.directory.listFiles(this.getFilenameFilter()))
 		{
 			ZipFile candidateZip = null;
 			
@@ -193,6 +199,15 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return
+	 */
+	protected FilenameFilter getFilenameFilter()
+	{
+		// Stub for subclasses
+		return this;
 	}
 
 	/**
