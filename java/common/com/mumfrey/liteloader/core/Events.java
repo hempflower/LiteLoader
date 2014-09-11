@@ -1,7 +1,5 @@
 package com.mumfrey.liteloader.core;
 
-import java.util.LinkedList;
-
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.command.ICommandManager;
@@ -30,6 +28,7 @@ import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
+import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -61,17 +60,17 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	/**
 	 * List of mods which can filter server chat
 	 */
-	private LinkedList<ServerChatFilter> serverChatFilters = new LinkedList<ServerChatFilter>();
+	private HandlerList<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class);
 	
 	/**
 	 * List of mods which provide server commands
 	 */
-	private LinkedList<ServerCommandProvider> serverCommandProviders = new LinkedList<ServerCommandProvider>();
+	private HandlerList<ServerCommandProvider> serverCommandProviders = new HandlerList<ServerCommandProvider>(ServerCommandProvider.class);
 	
 	/**
 	 * List of mods which monitor server player events
 	 */
-	private LinkedList<ServerPlayerListener> serverPlayerListeners = new LinkedList<ServerPlayerListener>();
+	private HandlerList<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
 
 	/**
 	 * Package private ctor
@@ -169,10 +168,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void addServerCommandProvider(ServerCommandProvider serverCommandProvider)
 	{
-		if (!this.serverCommandProviders.contains(serverCommandProvider))
-		{
-			this.serverCommandProviders.add(serverCommandProvider);
-		}
+		this.serverCommandProviders.add(serverCommandProvider);
 	}
 
 	/**
@@ -180,10 +176,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void addServerPlayerListener(ServerPlayerListener serverPlayerListener)
 	{
-		if (!this.serverPlayerListeners.contains(serverPlayerListener))
-		{
-			this.serverPlayerListeners.add(serverPlayerListener);
-		}
+		this.serverPlayerListeners.add(serverPlayerListener);
 	}
 	
 	@Override
@@ -227,9 +220,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 		if (commandManager instanceof ServerCommandManager)
 		{
 			ServerCommandManager serverCommandManager = (ServerCommandManager)commandManager;
-			
-			for (ServerCommandProvider commandProvider : this.serverCommandProviders)
-				commandProvider.provideCommands(serverCommandManager);
+			this.serverCommandProviders.all().provideCommands(serverCommandManager);
 		}
 
 		LiteLoader.getServerPluginChannels().onServerStartup();
@@ -242,8 +233,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void onSpawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, GameProfile profile)
 	{
-		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
-			serverPlayerListener.onPlayerConnect(player, profile);
+		this.serverPlayerListeners.all().onPlayerConnect(player, profile);
 	}
 	
 	/**
@@ -262,8 +252,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void onInitializePlayerConnection(ServerConfigurationManager scm, NetworkManager netManager, EntityPlayerMP player)
 	{
-		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
-			serverPlayerListener.onPlayerLoggedIn(player);
+		this.serverPlayerListeners.all().onPlayerLoggedIn(player);
 	}
 
 	/**
@@ -275,8 +264,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void onRespawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, EntityPlayerMP oldPlayer, int dimension, boolean won)
 	{
-		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
-			serverPlayerListener.onPlayerRespawn(player, oldPlayer, dimension, won);
+		this.serverPlayerListeners.all().onPlayerRespawn(player, oldPlayer, dimension, won);
 	}
 
 	/**
@@ -285,15 +273,24 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void onPlayerLogout(ServerConfigurationManager scm, EntityPlayerMP player)
 	{
-		for (ServerPlayerListener serverPlayerListener : this.serverPlayerListeners)
-			serverPlayerListener.onPlayerLogout(player);
+		this.serverPlayerListeners.all().onPlayerLogout(player);
 	}
 
+	/**
+	 * @param clock
+	 * @param partialTicks
+	 * @param inGame
+	 */
 	protected void onTick(boolean clock, float partialTicks, boolean inGame)
 	{
 		this.loader.onTick(clock, partialTicks, inGame);
 	}
 
+	/**
+	 * @param mouseX
+	 * @param mouseY
+	 * @param partialTicks
+	 */
 	protected void onPostRender(int mouseX, int mouseY, float partialTicks)
 	{
 		this.loader.onPostRender(mouseX, mouseY, partialTicks);		

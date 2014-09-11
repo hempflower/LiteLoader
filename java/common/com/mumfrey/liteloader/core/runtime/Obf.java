@@ -17,6 +17,8 @@ public class Obf
 	public static final Obf          CallbackProxyClient = new Obf("com.mumfrey.liteloader.client.CallbackProxyClient"                 );
 	public static final Obf          CallbackProxyServer = new Obf("com.mumfrey.liteloader.server.CallbackProxyServer"                 );
 	public static final Obf                   EventProxy = new Obf("com.mumfrey.liteloader.core.event.EventProxy"                      );
+	public static final Obf                  HandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList"                     );
+	public static final Obf             BakedHandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList$BakedHandlerList"    );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );

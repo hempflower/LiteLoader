@@ -1,7 +1,5 @@
 package com.mumfrey.liteloader.client;
 
-import java.util.LinkedList;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.GuiNewChat;
@@ -29,6 +27,7 @@ import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.Events;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -76,101 +75,29 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 * 
 	 */
 	private boolean wasFullScreen = false;
-	
-	/**
-	 * List of mods which implement Tickable interface and will receive tick
-	 * events
-	 */
-	private LinkedList<Tickable> tickListeners = new LinkedList<Tickable>();
-	
-	/**
-	 * List of mods which implement the GameLoopListener interface and will
-	 * receive loop events
-	 */
-	private LinkedList<GameLoopListener> loopListeners = new LinkedList<GameLoopListener>();
-	
-	/**
-	 * 
-	 */
-	private LinkedList<InitCompleteListener> initListeners = new LinkedList<InitCompleteListener>();
-	
-	/**
-	 * List of mods which implement RenderListener interface and will receive
-	 * render events events
-	 */
-	private LinkedList<RenderListener> renderListeners = new LinkedList<RenderListener>();
-	
-	/**
-	 * List of mods which implement the PostRenderListener interface and want to
-	 * render entities
-	 */
-	private LinkedList<PostRenderListener> postRenderListeners = new LinkedList<PostRenderListener>();
-	
-	/**
-	 * List of mods which implement HUDRenderListener and want callbacks when HUD is rendered
-	 */
-	private LinkedList<HUDRenderListener> hudRenderListeners = new LinkedList<HUDRenderListener>();
-	
-	/**
-	 * List of mods which implement ChatRenderListener and want to know when
-	 * chat is rendered
-	 */
-	private LinkedList<ChatRenderListener> chatRenderListeners = new LinkedList<ChatRenderListener>();
-	
-	/**
-	 * List of mods which implement ChatListener interface and will receive chat
-	 * events
-	 */
-	private LinkedList<ChatListener> chatListeners = new LinkedList<ChatListener>();
-	
-	/**
-	 * List of mods which implement ChatFilter interface and will receive chat
-	 * filter events
-	 */
-	private LinkedList<ChatFilter> chatFilters = new LinkedList<ChatFilter>();
-	
-	/**
-	 * List of mods which implement PostLoginListener and want to be notified post login
-	 */
-	private LinkedList<PostLoginListener> postLoginListeners = new LinkedList<PostLoginListener>();
-	
-	/**
-	 * List of mods which implement LoginListener interface and will receive
-	 * client login events
-	 */
-	private LinkedList<JoinGameListener> joinGameListeners = new LinkedList<JoinGameListener>();
-	
-	/**
-	 * List of mods which implement LoginListener interface and will receive
-	 * client login events
-	 */
-	private LinkedList<PreJoinGameListener> preJoinGameListeners = new LinkedList<PreJoinGameListener>();
-	
-	/**
-	 * List of mods which monitor outbound chat
-	 */
-	private LinkedList<OutboundChatListener> outboundChatListeners = new LinkedList<OutboundChatListener>();
-	
-	/**
-	 * List of mods which filter outbound chat
-	 */
-	private LinkedList<OutboundChatFilter> outboundChatFilters = new LinkedList<OutboundChatFilter>();
-
-	/**
-	 * List of mods which monitor changes in the viewport
-	 */
-	private LinkedList<ViewportListener> viewportListeners = new LinkedList<ViewportListener>();
-	
-	/**
-	 * List of mods which interact with the main minecraft FBO
-	 */
-	private LinkedList<FrameBufferListener> frameBufferListeners = new LinkedList<FrameBufferListener>();
 
 	/**
 	 * Hash code of the current world. We don't store the world reference here because we don't want
 	 * to mess with world GC by mistake
 	 */
 	private int worldHashCode = 0;
+
+	private HandlerList<Tickable>             tickListeners         = new HandlerList<Tickable>(Tickable.class);
+	private HandlerList<GameLoopListener>     loopListeners         = new HandlerList<GameLoopListener>(GameLoopListener.class);
+	private HandlerList<RenderListener>       renderListeners       = new HandlerList<RenderListener>(RenderListener.class);
+	private HandlerList<PostRenderListener>   postRenderListeners   = new HandlerList<PostRenderListener>(PostRenderListener.class);
+	private HandlerList<HUDRenderListener>    hudRenderListeners    = new HandlerList<HUDRenderListener>(HUDRenderListener.class);
+	private HandlerList<ChatRenderListener>   chatRenderListeners   = new HandlerList<ChatRenderListener>(ChatRenderListener.class);
+	private HandlerList<ChatListener>         chatListeners         = new HandlerList<ChatListener>(ChatListener.class);
+	private HandlerList<PostLoginListener>    postLoginListeners    = new HandlerList<PostLoginListener>(PostLoginListener.class);
+	private HandlerList<JoinGameListener>     joinGameListeners     = new HandlerList<JoinGameListener>(JoinGameListener.class);
+	private HandlerList<OutboundChatListener> outboundChatListeners = new HandlerList<OutboundChatListener>(OutboundChatListener.class);
+	private HandlerList<ViewportListener>     viewportListeners     = new HandlerList<ViewportListener>(ViewportListener.class);
+	private HandlerList<FrameBufferListener>  frameBufferListeners  = new HandlerList<FrameBufferListener>(FrameBufferListener.class);
+	private HandlerList<InitCompleteListener> initListeners         = new HandlerList<InitCompleteListener>(InitCompleteListener.class);
+	private HandlerList<ChatFilter>           chatFilters           = new HandlerList<ChatFilter>(ChatFilter.class);
+	private HandlerList<PreJoinGameListener>  preJoinGameListeners  = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class);
+	private HandlerList<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class);
 
 	@SuppressWarnings("cast")
 	public ClientEvents(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
@@ -208,19 +135,20 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		
 		delegate.registerInterface(Tickable.class);
 		delegate.registerInterface(GameLoopListener.class);
-		delegate.registerInterface(InitCompleteListener.class);
 		delegate.registerInterface(RenderListener.class);
 		delegate.registerInterface(PostRenderListener.class);
-		delegate.registerInterface(ChatFilter.class);
-		delegate.registerInterface(ChatListener.class);
-		delegate.registerInterface(ChatRenderListener.class);
 		delegate.registerInterface(HUDRenderListener.class);
-		delegate.registerInterface(PreJoinGameListener.class);
+		delegate.registerInterface(ChatRenderListener.class);
+		delegate.registerInterface(ChatListener.class);
+		delegate.registerInterface(PostLoginListener.class);
 		delegate.registerInterface(JoinGameListener.class);
 		delegate.registerInterface(OutboundChatListener.class);
-		delegate.registerInterface(OutboundChatFilter.class);
 		delegate.registerInterface(ViewportListener.class);
 		delegate.registerInterface(FrameBufferListener.class);
+		delegate.registerInterface(InitCompleteListener.class);
+		delegate.registerInterface(ChatFilter.class);
+		delegate.registerInterface(PreJoinGameListener.class);
+		delegate.registerInterface(OutboundChatFilter.class);
 	}
 	
 	/**
@@ -269,10 +197,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addTickListener(Tickable tickable)
 	{
-		if (!this.tickListeners.contains(tickable))
-		{
-			this.tickListeners.add(tickable);
-		}
+		this.tickListeners.add(tickable);
 	}
 	
 	/**
@@ -280,10 +205,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addLoopListener(GameLoopListener loopListener)
 	{
-		if (!this.loopListeners.contains(loopListener))
-		{
-			this.loopListeners.add(loopListener);
-		}
+		this.loopListeners.add(loopListener);
 	}
 	
 	/**
@@ -291,10 +213,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addInitListener(InitCompleteListener initCompleteListener)
 	{
-		if (!this.initListeners.contains(initCompleteListener))
-		{
-			this.initListeners.add(initCompleteListener);
-		}
+		this.initListeners.add(initCompleteListener);
 	}
 	
 	/**
@@ -302,10 +221,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addRenderListener(RenderListener renderListener)
 	{
-		if (!this.renderListeners.contains(renderListener))
-		{
-			this.renderListeners.add(renderListener);
-		}
+		this.renderListeners.add(renderListener);
 	}
 	
 	/**
@@ -313,10 +229,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addPostRenderListener(PostRenderListener postRenderListener)
 	{
-		if (!this.postRenderListeners.contains(postRenderListener))
-		{
-			this.postRenderListeners.add(postRenderListener);
-		}
+		this.postRenderListeners.add(postRenderListener);
 	}
 	
 	/**
@@ -353,7 +266,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		{
 			LiteLoaderLogger.warning("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", chatListener.getName());
 		}
-		else if (!this.chatListeners.contains(chatListener))
+		else
 		{
 			this.chatListeners.add(chatListener);
 		}
@@ -364,10 +277,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addChatRenderListener(ChatRenderListener chatRenderListener)
 	{
-		if (!this.chatRenderListeners.contains(chatRenderListener))
-		{
-			this.chatRenderListeners.add(chatRenderListener);
-		}
+		this.chatRenderListeners.add(chatRenderListener);
 	}
 	
 	/**
@@ -375,10 +285,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addHUDRenderListener(HUDRenderListener hudRenderListener)
 	{
-		if (!this.hudRenderListeners.contains(hudRenderListener))
-		{
-			this.hudRenderListeners.add(hudRenderListener);
-		}
+		this.hudRenderListeners.add(hudRenderListener);
 	}
 	
 	/**
@@ -386,10 +293,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addPreJoinGameListener(PostLoginListener postLoginListener)
 	{
-		if (!this.postLoginListeners.contains(postLoginListener))
-		{
-			this.postLoginListeners.add(postLoginListener);
-		}
+		this.postLoginListeners.add(postLoginListener);
 	}
 	
 	/**
@@ -397,10 +301,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addPreJoinGameListener(PreJoinGameListener joinGameListener)
 	{
-		if (!this.preJoinGameListeners.contains(joinGameListener))
-		{
-			this.preJoinGameListeners.add(joinGameListener);
-		}
+		this.preJoinGameListeners.add(joinGameListener);
 	}
 	
 	/**
@@ -408,10 +309,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addJoinGameListener(JoinGameListener joinGameListener)
 	{
-		if (!this.joinGameListeners.contains(joinGameListener))
-		{
-			this.joinGameListeners.add(joinGameListener);
-		}
+		this.joinGameListeners.add(joinGameListener);
 	}
 
 	/**
@@ -419,10 +317,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addOutboundChatListener(OutboundChatListener outboundChatListener)
 	{
-		if (!this.outboundChatListeners.contains(outboundChatListener))
-		{
-			this.outboundChatListeners.add(outboundChatListener);
-		}
+		this.outboundChatListeners.add(outboundChatListener);
 	}
 	
 	/**
@@ -430,10 +325,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addOutboundChatFiler(OutboundChatFilter outboundChatFilter)
 	{
-		if (!this.outboundChatFilters.contains(outboundChatFilter))
-		{
-			this.outboundChatFilters.add(outboundChatFilter);
-		}
+		this.outboundChatFilters.add(outboundChatFilter);
 	}
 	
 	/**
@@ -441,10 +333,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addViewportListener(ViewportListener viewportListener)
 	{
-		if (!this.viewportListeners.contains(viewportListener))
-		{
-			this.viewportListeners.add(viewportListener);
-		}
+		this.viewportListeners.add(viewportListener);
 	}
 	
 	/**
@@ -452,10 +341,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	public void addFrameBufferListener(FrameBufferListener frameBufferListener)
 	{
-		if (!this.frameBufferListeners.contains(frameBufferListener))
-		{
-			this.frameBufferListeners.add(frameBufferListener);
-		}
+		this.frameBufferListeners.add(frameBufferListener);
 	}
 
 	/**
@@ -499,14 +385,11 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		
 		if (this.wasFullScreen != minecraft.isFullScreen())
 		{
-			for (ViewportListener viewportListener : this.viewportListeners)
-				viewportListener.onFullScreenToggled(minecraft.isFullScreen());
+			this.viewportListeners.all().onFullScreenToggled(minecraft.isFullScreen());
 		}
 		
 		this.wasFullScreen = minecraft.isFullScreen();
-		
-		for (ViewportListener viewportListener : this.viewportListeners)
-			viewportListener.onViewportResized(this.currentResolution, minecraft.displayWidth, minecraft.displayHeight);
+		this.viewportListeners.all().onViewportResized(this.currentResolution, minecraft.displayWidth, minecraft.displayHeight);
 	}
 	
 	/**
@@ -514,8 +397,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	void onRender()
 	{
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onRender();
+		this.renderListeners.all().onRender();
 	}
 	
 	/**
@@ -524,9 +406,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	void postRenderEntities()
 	{
 		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
-		
-		for (PostRenderListener renderListener : this.postRenderListeners)
-			renderListener.onPostRenderEntities(partialTicks);
+		this.postRenderListeners.all().onPostRenderEntities(partialTicks);
 	}
 	
 	/**
@@ -535,9 +415,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	void postRender()
 	{
 		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
-		
-		for (PostRenderListener renderListener : this.postRenderListeners)
-			renderListener.onPostRender(partialTicks);
+		this.postRenderListeners.all().onPostRender(partialTicks);
 	}
 	
 	/**
@@ -549,8 +427,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		
 		if (!minecraft.skipRenderWorld && ref == (minecraft.theWorld == null ? 1 : 2))
 		{
-			for (RenderListener renderListener : this.renderListeners)
-				renderListener.onRenderGui(this.engineClient.getCurrentScreen());
+			this.renderListeners.all().onRenderGui(this.engineClient.getCurrentScreen());
 		}
 	}
 	
@@ -559,8 +436,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	void onSetupCameraTransform()
 	{
-		for (RenderListener renderListener : this.renderListeners)
-			renderListener.onSetupCameraTransform();
+		this.renderListeners.all().onSetupCameraTransform();
 	}
 	
 	/**
@@ -569,9 +445,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	void onRenderChat()
 	{
 		GuiNewChat chat = this.engineClient.getChatGUI();
-		
-		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
-			chatRenderListener.onPreRenderChat(this.screenWidth, this.screenHeight, chat);
+		this.chatRenderListeners.all().onPreRenderChat(this.screenWidth, this.screenHeight, chat);
 	}
 	
 	/**
@@ -580,9 +454,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	void postRenderChat()
 	{
 		GuiNewChat chat = this.engineClient.getChatGUI();
-		
-		for (ChatRenderListener chatRenderListener : this.chatRenderListeners)
-			chatRenderListener.onPostRenderChat(this.screenWidth, this.screenHeight, chat);
+		this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chat);
 	}
 	
 	/**
@@ -592,8 +464,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	{
 		if (!this.engineClient.hideGUI() || this.engineClient.getCurrentScreen() != null)
 		{
-			for (HUDRenderListener hudRenderListener : this.hudRenderListeners)
-				hudRenderListener.onPreRenderHUD(this.screenWidth, this.screenHeight);
+			this.hudRenderListeners.all().onPreRenderHUD(this.screenWidth, this.screenHeight);
 		}
 	}
 	
@@ -604,8 +475,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	{
 		if (!this.engineClient.hideGUI() || this.engineClient.getCurrentScreen() != null)
 		{
-			for (HUDRenderListener hudRenderListener : this.hudRenderListeners)
-				hudRenderListener.onPostRenderHUD(this.screenWidth, this.screenHeight);
+			this.hudRenderListeners.all().onPostRenderHUD(this.screenWidth, this.screenHeight);
 		}
 	}
 	
@@ -615,9 +485,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	void onTimerUpdate()
 	{
 		Minecraft minecraft = this.engine.getClient();
-		
-		for (GameLoopListener loopListener : this.loopListeners)
-			loopListener.onRunGameLoop(minecraft);
+		this.loopListeners.all().onRunGameLoop(minecraft);
 	}
 	
 	/**
@@ -659,12 +527,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		this.profiler.endSection();
 		
 		// Iterate tickable mods
-		for (Tickable tickable : this.tickListeners)
-		{
-			this.profiler.startSection(tickable.getClass().getSimpleName().toLowerCase());
-			tickable.onTick(minecraft, partialTicks, inGame, clock);
-			this.profiler.endSection();
-		}
+		this.tickListeners.all().onTick(minecraft, partialTicks, inGame, clock);
 		
 		// Detected world change
 		if (minecraft.theWorld != null)
@@ -714,8 +577,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		}
 		
 		// Chat listeners get the chat if no filter removed it
-		for (ChatListener chatListener : this.chatListeners)
-			chatListener.onChat(chat, message);
+		this.chatListeners.all().onChat(chat, message);
 		
 		return true;
 	}
@@ -726,10 +588,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 */
 	void onSendChatMessage(C01PacketChatMessage packet, String message)
 	{
-		for (OutboundChatListener outboundChatListener : this.outboundChatListeners)
-		{
-			outboundChatListener.onSendChatMessage(packet, message);
-		}
+		this.outboundChatListeners.all().onSendChatMessage(packet, message);
 	}
 	
 	/**
@@ -756,8 +615,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 			((ClientPluginChannelsClient)clientPluginChannels).onPostLogin(netHandler, loginPacket);
 		}
 
-		for (PostLoginListener loginListener : this.postLoginListeners)
-			loginListener.onPostLogin(netHandler, loginPacket);
+		this.postLoginListeners.all().onPostLogin(netHandler, loginPacket);
 	}
 	
 	/**
@@ -796,25 +654,32 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 			((ClientPluginChannelsClient)clientPluginChannels).onJoinGame(netHandler, loginPacket);
 		}
 		
-		for (JoinGameListener joinGameListener : this.joinGameListeners)
-			joinGameListener.onJoinGame(netHandler, loginPacket);
+		this.joinGameListeners.all().onJoinGame(netHandler, loginPacket);
 	}
 
+	/**
+	 * @param framebuffer
+	 */
 	void preRenderFBO(Framebuffer framebuffer)
 	{
-		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
-			frameBufferListener.preRenderFBO(framebuffer);
+		this.frameBufferListeners.all().preRenderFBO(framebuffer);
 	}
 
+	/**
+	 * @param framebuffer
+	 * @param width
+	 * @param height
+	 */
 	void onRenderFBO(Framebuffer framebuffer, int width, int height)
 	{
-		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
-			frameBufferListener.onRenderFBO(framebuffer, width, height);
+		this.frameBufferListeners.all().onRenderFBO(framebuffer, width, height);
 	}
 
+	/**
+	 * @param framebuffer
+	 */
 	void postRenderFBO(Framebuffer framebuffer)
 	{
-		for (FrameBufferListener frameBufferListener : this.frameBufferListeners)
-			frameBufferListener.postRenderFBO(framebuffer);
+		this.frameBufferListeners.all().postRenderFBO(framebuffer);
 	}
 }
