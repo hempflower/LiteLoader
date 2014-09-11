@@ -43,6 +43,31 @@ public interface LoaderProperties
 	public abstract boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue);
 	
 	/**
+	 * Set an integer property in the properties file
+	 * 
+	 * @param propertyName
+	 * @param value
+	 */
+	public abstract void setIntegerProperty(String propertyName, int value);
+	
+	/**
+	 * Get an integer property from the properties file
+	 * 
+	 * @param propertyName
+	 * @return
+	 */
+	public abstract int getIntegerProperty(String propertyName);
+	
+	/**
+	 * Get an integer property but write and return the supplied default value if the property doesn't exist
+	 * 
+	 * @param propertyName
+	 * @param defaultValue
+	 * @return
+	 */
+	public abstract int getAndStoreIntegerProperty(String propertyName, int defaultValue);
+	
+	/**
 	 * Get a stored mod revision number from the properties file
 	 * 
 	 * @param modKey
@@ -69,6 +94,8 @@ public interface LoaderProperties
 	public static final String OPTION_NO_HIDE_TAB       = "tabAlwaysExpanded";
 	public static final String OPTION_BRAND             = "brand";
 	public static final String OPTION_LOADING_BAR       = "loadingbar";
+	public static final String OPTION_FORCE_UPDATE      = "allowForceUpdate";
+	public static final String OPTION_UPDATE_CHECK_INTR = "updateCheckInterval";
 
 	// Enumerator properties
 	public static final String OPTION_SEARCH_MODS       = "search.mods";

@@ -309,13 +309,13 @@ public class Event implements Comparable<Event>
 		insns.add(new LdcInsnNode(this.name)); ctorMAXS++;
 		insns.add(this.methodIsStatic ? new InsnNode(Opcodes.ACONST_NULL) : new VarInsnNode(Opcodes.ALOAD, 0)); ctorMAXS++;
 		insns.add(new InsnNode(cancellable ? Opcodes.ICONST_1 : Opcodes.ICONST_0)); ctorMAXS++;
-		insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor()));
+		insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
 		insns.add(new VarInsnNode(Opcodes.ASTORE, eventInfoVar));
 		
 		// Call the event handler method in the proxy
 		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
 		Event.pushArgs(argumentTypes, insns, this.methodIsStatic);
-		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc));
+		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc, false));
 		
 		if (cancellable)
 		{
@@ -340,7 +340,7 @@ public class Event implements Comparable<Event>
 	protected void injectCancellationCode(final InsnList insns, final AbstractInsnNode injectionPoint, int eventInfoVar)
 	{
 		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
-		insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, EventInfo.getIsCancelledMethodName(), EventInfo.getIsCancelledMethodSig()));
+		insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, EventInfo.getIsCancelledMethodName(), EventInfo.getIsCancelledMethodSig(), false));
 
 		LabelNode notCancelled = new LabelNode();
 		insns.add(new JumpInsnNode(Opcodes.IFEQ, notCancelled));
@@ -371,7 +371,7 @@ public class Event implements Comparable<Event>
 			insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
 			String accessor = ReturnEventInfo.getReturnAccessor(this.methodReturnType);
 			String descriptor = ReturnEventInfo.getReturnDescriptor(this.methodReturnType);
-			insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, accessor, descriptor));
+			insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, accessor, descriptor, false));
 			if (this.methodReturnType.getSort() == Type.OBJECT)
 			{
 				insns.add(new TypeInsnNode(Opcodes.CHECKCAST, this.methodReturnType.getInternalName()));
@@ -509,7 +509,7 @@ public class Event implements Comparable<Event>
 						insns.add(new LineNumberNode(++lineNumber, lineNumberLabel));
 						
 						Event.pushArgs(args, insns, true);
-						insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name), handlerMethod.desc));
+						insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name), handlerMethod.desc, false));
 					}
 					
 					insns.add(tryCatchEnd); // }
@@ -517,12 +517,12 @@ public class Event implements Comparable<Event>
 					
 					insns.add(tryCatchHandler1); // catch (NoSuchMethodError err) {
 					insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingHandler", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V"));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingHandler", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
 					insns.add(new JumpInsnNode(Opcodes.GOTO, tryCatchExit));
 					
 					insns.add(tryCatchHandler2); // } catch (NoClassDefFoundError err) {
 					insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingClass", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V"));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingClass", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
 					insns.add(new JumpInsnNode(Opcodes.GOTO, tryCatchExit));
 					
 					insns.add(tryCatchExit); // }

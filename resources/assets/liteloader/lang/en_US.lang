@@ -13,6 +13,9 @@ gui.settings.showtab.help1=If you disable this option, use CTRL+SHIFT+TAB
 gui.settings.showtab.help2=to open the LiteLoader panel
 gui.settings.notabhide.label=LiteLoader Tab Always Expanded
 gui.settings.notabhide.help1=Only applies if the above option is also checked
+gui.settings.forceupdate.label=Periodically Check For Updates
+gui.settings.forceupdate.help1=This option is §cexperimental§r and may not work properly 
+gui.settings.forceupdate.help2=yet, it also enables the "force update" capability. 
 
 gui.about.taboptions=§nLiteLoader Panel Options
 
@@ -55,9 +58,13 @@ gui.updates.available.newversion=§aNew version available
 gui.updates.available.version=Version: §a%s
 gui.updates.available.date=Release date: §a%s
 
+gui.updates.forced=Update forced, restart the game to apply update
+
 gui.checknow=Check now
 gui.installupdate=Install now
 gui.downloadupdate=Download now
+gui.forceupdate=Force update
+gui.exitgame=Exit Game
 
 gui.log.button=LiteLoader Log
 gui.log.title=LiteLoader Log Viewer
@@ -71,3 +78,5 @@ gui.log.closedialog=Close
 gui.error.title=Startup errors for %s
 
 gui.error.tooltip=%d mod startup error(s) detected (%d critical)
+
+gui.notifications.updateavailable=LiteLoader Update Available!

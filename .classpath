@@ -9,15 +9,15 @@
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/com/google/guava/guava/15.0/guava-15.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/commons-io/commons-io/2.4/commons-io-2.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/launchwrapper-1.9.jar" sourcepath="externals/launchwrapper/src"/>
+	<classpathentry exported="true" kind="lib" path="lib/launchwrapper-1.11.jar" sourcepath="externals/launchwrapper/src"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/apache/commons/commons-lang3/3.1/commons-lang3-3.1.jar"/>
 	<classpathentry kind="lib" path="/Client/jars/libraries/net/sf/jopt-simple/jopt-simple/4.5/jopt-simple-4.5.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/io/netty/netty-all/4.0.10.Final/netty-all-4.0.10.Final.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/apache/logging/log4j/log4j-api/2.0-beta9/log4j-api-2.0-beta9.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/apache/logging/log4j/log4j-core/2.0-beta9/log4j-core-2.0-beta9.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/net/java/jinput/jinput/2.0.5/jinput-2.0.5.jar"/>
-	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/com/mojang/authlib/1.5.13/authlib-1.5.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/com/mojang/authlib/1.5.16/authlib-1.5.16.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/lwjgl/lwjgl/lwjgl/2.9.1/lwjgl-2.9.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-4.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

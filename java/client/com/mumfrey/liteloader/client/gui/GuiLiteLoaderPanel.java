@@ -31,6 +31,7 @@ import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
 
@@ -69,6 +70,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 */
 	private GuiScreen parentScreen;
 	
+	@SuppressWarnings("unused")
+	private final LoaderEnvironment environment;
+	
+	private final LoaderProperties properties;
+
 	/**
 	 * Tick number (update counter) used for tweening
 	 */
@@ -87,7 +93,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	/**
 	 * Since we don't get real mouse events we have to simulate them by tracking the mouse state
 	 */
-	private boolean mouseDown, toggled;
+	private boolean mouseDown, toggled, toggleable;
 	
 	/**
 	 * Hover opacity for the tab
@@ -123,17 +129,24 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	
 	private int startupErrorCount = 0, criticalErrorCount = 0;
 	
+	private String notification;
+	
 	/**
 	 * @param minecraft
 	 * @param parentScreen
 	 * @param mods
 	 */
-	public GuiLiteLoaderPanel(Minecraft minecraft, GuiScreen parentScreen, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, boolean showTab)
+	public GuiLiteLoaderPanel(Minecraft minecraft, GuiScreen parentScreen, LiteLoaderMods mods, LoaderEnvironment environment, LoaderProperties properties, ConfigManager configManager, boolean showTab)
 	{
 		this.mc              = minecraft;
 		this.fontRendererObj = minecraft.fontRendererObj;
 		this.parentScreen    = parentScreen;
 		this.showTab         = showTab;
+		
+		this.environment     = environment;
+		this.properties      = properties;
+		
+		this.toggleable      = true;
 		
 		this.versionText = I18n.format("gui.about.versiontext", LiteLoader.getVersion());
 		this.activeModText = I18n.format("gui.about.modsloaded", mods.getLoadedMods().size());
@@ -233,6 +246,16 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	{
 		return this.tweenAmount > 0.0;
 	}
+	
+	public void setToggleable(boolean toggleable)
+	{
+		this.toggleable = toggleable;
+	}
+	
+	public void setNotification(String notification)
+	{
+		this.notification = notification;
+	}
 
 	/* (non-Javadoc)
 	 * @see net.minecraft.client.gui.GuiScreen#initGui()
@@ -247,7 +270,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		this.currentPanel.setSize(this.width - LEFT_EDGE, this.height);
 
 		this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRendererObj, I18n.format("gui.about.taboptions"), this.brandColour));
-		this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50, this.fontRendererObj, I18n.format("gui.about.checkupdates"), this.brandColour));
+		
+		if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.theWorld == null)
+		{
+			this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50, this.fontRendererObj, I18n.format("gui.about.checkupdates"), this.brandColour));
+		}
 
 		Keyboard.enableRepeatEvents(true);
 	}
@@ -290,7 +317,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			this.mc.currentScreen = this;
 		}
 		
-		if (this.toggled)
+		if (this.toggled && this.toggleable)
 		{
 			this.onToggled();
 		}
@@ -338,7 +365,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		this.handleMouseClick(offsetMouseX, mouseY, partialTicks, active, mouseOverTab);
 		
 		// Calculate the tab opacity, not framerate adjusted because we don't really care
-		this.tabOpacity = mouseOverTab || alwaysExpandTab || this.startupErrorCount > 0 || this.isOpen() ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
+		this.tabOpacity = mouseOverTab || alwaysExpandTab || this.startupErrorCount > 0 || this.notification != null || this.isOpen() ? 0.5F : Math.max(0.0F, this.tabOpacity - partialTicks * 0.1F);
 		
 		// Draw the panel contents
 		this.drawPanel(offsetMouseX, mouseY, partialTicks, active, xOffset);
@@ -372,6 +399,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 			if (this.startupErrorCount > 0)
 			{
 				glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH + 7, TAB_TOP + 2, 12, 12, 134, 92, 134 + 12, 92 + 12, 0.5F + this.tabOpacity);
+			}
+			else if (this.notification != null)
+			{
+				glDrawTexturedRect(LEFT_EDGE - TAB_WIDTH + 7, TAB_TOP + 2, 12, 12, 134 + 12, 92, 134 + 24, 92 + 12, 0.5F + this.tabOpacity);
 			}
 		}
 		else
@@ -448,25 +479,34 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
 	private void drawTooltips(int mouseX, int mouseY, float partialTicks, boolean active, float xOffset, boolean mouseOverTab)
 	{
+		boolean annoyingTip = this.startupErrorCount > 0 || this.notification != null;
+		
 		if (mouseOverTab && this.tweenAmount < 0.01)
 		{
 			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height, 0xFFFFFF, 0xB0000000);
 			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.activeModText, mouseX, mouseY + 13, this.width, this.height, 0xCCCCCC, 0xB0000000);
 			
-			if (this.startupErrorCount > 0)
+			if (annoyingTip)
 			{
-				this.drawErrorTooltip(mouseX, mouseY - 13);
+				this.drawNotificationTooltip(mouseX, mouseY - 13);
 			}
 		}
-		else if (GuiLiteLoaderPanel.displayErrorToolTip && this.startupErrorCount > 0 && !active && this.parentScreen instanceof GuiMainMenu)
+		else if (GuiLiteLoaderPanel.displayErrorToolTip && annoyingTip && !active && this.parentScreen instanceof GuiMainMenu)
 		{
-		    this.drawErrorTooltip((int)xOffset + LEFT_EDGE - 12, TAB_TOP + 2);
+		    this.drawNotificationTooltip((int)xOffset + LEFT_EDGE - 12, TAB_TOP + 2);
 		}
 	}
 
-	private void drawErrorTooltip(int left, int top)
+	private void drawNotificationTooltip(int left, int top)
 	{
-		GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount, this.criticalErrorCount), left, top, this.width, this.height, 0xFF5555, 0xB0330000);
+		if (this.startupErrorCount > 0)
+		{
+			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount, this.criticalErrorCount), left, top, this.width, this.height, 0xFF5555, 0xB0330000);
+		}
+		else if (this.notification != null)
+		{
+			GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.notification, left, top, this.width, this.height, 0xFFFFFF, 0xB0000099);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -482,7 +522,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		
 		if (button.id == 3)
 		{
-			this.setCurrentPanel(new GuiPanelUpdateCheck(this.mc, LiteLoaderVersion.getUpdateSite(), "LiteLoader"));
+			this.setCurrentPanel(new GuiPanelUpdateCheck(this, this.mc, LiteLoaderVersion.getUpdateSite(), "LiteLoader", this.properties));
 		}
 	}
 	

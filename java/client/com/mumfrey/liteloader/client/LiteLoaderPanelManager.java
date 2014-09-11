@@ -5,16 +5,20 @@ import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
 
 import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.core.LiteLoaderUpdateSite;
+import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Observer which handles the display of the mod panel
@@ -23,9 +27,6 @@ import com.mumfrey.liteloader.modconfig.ConfigManager;
  */
 public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 {
-	private static final String OPTION_MOD_INFO_SCREEN = "modInfoScreen";
-	private static final String OPTION_NO_HIDE_TAB = "tabAlwaysExpanded"; 
-
 	private final LoaderEnvironment environment;
 	
 	/**
@@ -54,6 +55,10 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	 * can temporarily disable the function without having to change the underlying property
 	 */
 	private boolean hideModInfoScreenTab = false;
+
+	private boolean checkForUpdate = false;
+	
+	private String notification;
 	
 	/**
 	 * Active "mod info" screen, drawn as an overlay when in the main menu and made the active screen if
@@ -72,8 +77,24 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 		this.properties  = properties;
 		this.minecraft   = ((GameEngine<Minecraft, ?>)engine).getClient();
 		
-		this.displayModInfoScreenTab = this.properties.getAndStoreBooleanProperty(LiteLoaderPanelManager.OPTION_MOD_INFO_SCREEN, true);
-		this.tabAlwaysExpanded = this.properties.getAndStoreBooleanProperty(LiteLoaderPanelManager.OPTION_NO_HIDE_TAB, false);
+		this.displayModInfoScreenTab = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_MOD_INFO_SCREEN, true);
+		this.tabAlwaysExpanded = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_NO_HIDE_TAB, false);
+		
+		if (this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE, false))
+		{
+			int updateCheckInterval = this.properties.getIntegerProperty(LoaderProperties.OPTION_UPDATE_CHECK_INTR) + 1;
+			LiteLoaderLogger.debug("Force update is TRUE, updateCheckInterval = %d", updateCheckInterval);
+			
+			if (updateCheckInterval > 10)
+			{
+				LiteLoaderLogger.debug("Forcing update check!");
+				this.checkForUpdate = true;
+				updateCheckInterval = 0;
+			}
+			
+			this.properties.setIntegerProperty(LoaderProperties.OPTION_UPDATE_CHECK_INTR, updateCheckInterval);
+			this.properties.writeProperties();
+		}
 	}
 	
 	@Override
@@ -81,6 +102,15 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	{
 		this.mods          = mods;
 		this.configManager = configManager;
+	}
+	
+	@Override
+	public void onStartupComplete()
+	{
+		if (this.checkForUpdate)
+		{
+			LiteLoaderVersion.getUpdateSite().beginUpdateCheck();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -93,6 +123,20 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 		{
 			this.panelHost.updateScreen();
 		}
+		
+		if (clock && this.checkForUpdate)
+		{
+			LiteLoaderUpdateSite updateSite = LiteLoaderVersion.getUpdateSite();
+			if (!updateSite.isCheckInProgress() && updateSite.isCheckComplete())
+			{
+				LiteLoaderLogger.debug("Scheduled update check completed, success=%s", updateSite.isCheckSucceess());
+				this.checkForUpdate = false;
+				if (updateSite.isCheckSucceess() && updateSite.isUpdateAvailable())
+				{
+					this.setNotification(I18n.format("gui.notifications.updateavailable"));
+				}
+			}
+		}
 	}
 
 	/* (non-Javadoc)
@@ -103,14 +147,18 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	{
 		if (this.mods == null) return;
 		
-		boolean tabHidden = this.hideModInfoScreenTab && this.minecraft.currentScreen instanceof GuiMainMenu;
+		boolean tabHidden = this.isTabHidden() && this.minecraft.currentScreen instanceof GuiMainMenu;
 		
 		if (this.isPanelSupportedOnScreen(this.minecraft.currentScreen) && ((this.displayModInfoScreenTab && !tabHidden) || (this.panelHost != null && this.panelHost.isOpen())))
 		{
 			// If we're at the main menu, prepare the overlay
 			if (this.panelHost == null || this.panelHost.getScreen() != this.minecraft.currentScreen)
 			{
-				this.panelHost = new GuiLiteLoaderPanel(this.minecraft, this.minecraft.currentScreen, this.mods, this.environment, this.configManager, !tabHidden);
+				this.panelHost = new GuiLiteLoaderPanel(this.minecraft, this.minecraft.currentScreen, this.mods, this.environment, this.properties, this.configManager, !tabHidden);
+				if (this.notification != null)
+				{
+					this.panelHost.setNotification(this.notification);
+				}
 			}
 
 			this.minecraft.entityRenderer.setupOverlayRendering();
@@ -127,7 +175,7 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 			this.displayLiteLoaderPanel(this.minecraft.currentScreen);
 		}
 	}
-	
+
 	/**
 	 * Set the "mod info" screen tab to hidden, regardless of the property setting
 	 */
@@ -137,6 +185,11 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 		this.hideModInfoScreenTab = true;
 	}
 	
+	private boolean isTabHidden()
+	{
+		return this.hideModInfoScreenTab && this.getStartupErrorCount() == 0 && this.notification == null;
+	}
+	
 	/**
 	 * Set whether the "mod info" screen tab should be shown in the main menu
 	 */
@@ -144,7 +197,7 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	public void setTabVisible(boolean show)
 	{
 		this.displayModInfoScreenTab = show;
-		this.properties.setBooleanProperty(LiteLoaderPanelManager.OPTION_MOD_INFO_SCREEN, show);
+		this.properties.setBooleanProperty(LoaderProperties.OPTION_MOD_INFO_SCREEN, show);
 		this.properties.writeProperties();
 	}
 	
@@ -161,7 +214,7 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	public void setTabAlwaysExpanded(boolean expand)
 	{
 		this.tabAlwaysExpanded = expand;
-		this.properties.setBooleanProperty(LiteLoaderPanelManager.OPTION_NO_HIDE_TAB, expand);
+		this.properties.setBooleanProperty(LoaderProperties.OPTION_NO_HIDE_TAB, expand);
 		this.properties.writeProperties();
 	}
 	
@@ -169,6 +222,19 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	public boolean isTabAlwaysExpanded()
 	{
 		return this.tabAlwaysExpanded;
+	}
+	
+	@Override
+	public void setForceUpdateEnabled(boolean forceUpdate)
+	{
+		this.properties.setBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE, forceUpdate);
+		this.properties.writeProperties();
+	}
+	
+	@Override
+	public boolean isForceUpdateEnabled()
+	{
+		return this.properties.getBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE);
 	}
 	
 	/**
@@ -181,7 +247,7 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 	{
 		if (this.isPanelSupportedOnScreen(parentScreen))
 		{
-			this.panelHost = new GuiLiteLoaderPanel(this.minecraft, parentScreen, this.mods, this.environment, this.configManager, !this.hideModInfoScreenTab);
+			this.panelHost = new GuiLiteLoaderPanel(this.minecraft, parentScreen, this.mods, this.environment, this.properties, this.configManager, !this.isTabHidden());
 			this.minecraft.displayGuiScreen(this.panelHost);
 		}
 	}
@@ -198,6 +264,18 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 		return this.mods.getCriticalErrorCount();
 	}
 
+	@Override
+	public void setNotification(String notification)
+	{
+		LiteLoaderLogger.debug("Setting notification: " + notification);
+		this.notification = notification;
+		
+		if (this.panelHost != null)
+		{
+			this.panelHost.setNotification(notification);
+		}
+	}
+	
 	private boolean isPanelSupportedOnScreen(GuiScreen guiScreen)
 	{
 		return (

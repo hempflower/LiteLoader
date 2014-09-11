@@ -221,7 +221,7 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	private InsnList genProfilerCallbackInsns(InsnList injected, Callback callback, int refNumber)
 	{
 		injected.add(new LdcInsnNode(refNumber));
-		injected.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.getCallbackClass(), callback.getCallbackMethod(), "(I)V"));
+		injected.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.getCallbackClass(), callback.getCallbackMethod(), "(I)V", false));
 		
 		if (callback.getChainedCallbacks().size() > 0)
 		{
@@ -297,7 +297,7 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 		String callbackMethodDesc = String.format("(%s%s%s%s)%s", hasReturnRef ? callbackReturnValueArg : "", hasReturnRef ? "I" : "", classInstanceArg, CallbackInjectionTransformer.getMethodArgs(methodNode), callbackReturnType);
 		
 		// Add the callback method insn to the injected instructions list
-		injected.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.getCallbackClass(), callback.getCallbackMethod(), callbackMethodDesc));
+		injected.add(new MethodInsnNode(Opcodes.INVOKESTATIC, callback.getCallbackClass(), callback.getCallbackMethod(), callbackMethodDesc, false));
 		
 		// If the callback RETURNs a value then push the appropriate RETURN opcode into the insns list
 		if (callback.injectReturn())

@@ -154,7 +154,7 @@ public final class LiteLoader
 	 * Mod panel manager, deliberately raw
 	 */
 	@SuppressWarnings("rawtypes")
-	private PanelManager modPanelManager;
+	private PanelManager panelManager;
 	
 	/**
 	 * Interface Manager
@@ -519,7 +519,7 @@ public final class LiteLoader
 	@SuppressWarnings({ "cast", "unchecked" })
 	public static <T> PanelManager<T> getModPanelManager()
 	{
-		return (PanelManager<T>)LiteLoader.instance.modPanelManager;
+		return (PanelManager<T>)LiteLoader.instance.panelManager;
 	}
 	
 	/**
@@ -869,10 +869,10 @@ public final class LiteLoader
 		}
 
 		// Get the mod panel manager
-		this.modPanelManager = this.objectFactory.getModPanelManager();
-		if (this.modPanelManager != null)
+		this.panelManager = this.objectFactory.getModPanelManager();
+		if (this.panelManager != null)
 		{
-			this.modPanelManager.init(this.mods, this.configManager);
+			this.panelManager.init(this.mods, this.configManager);
 		}
 		
 		// Create the interface manager
@@ -932,6 +932,11 @@ public final class LiteLoader
 		for (CoreProvider coreProvider : this.coreProviders)
 		{
 			coreProvider.onStartupComplete();
+		}
+		
+		if (this.panelManager != null)
+		{
+			this.panelManager.onStartupComplete();
 		}
 	}
 
@@ -1043,7 +1048,7 @@ public final class LiteLoader
 	@Deprecated
 	public boolean getDisplayModInfoScreenTab()
 	{
-		return (this.modPanelManager != null) ? this.modPanelManager.isTabVisible() : false;
+		return (this.panelManager != null) ? this.panelManager.isTabVisible() : false;
 	}
 
 	/**
@@ -1058,7 +1063,7 @@ public final class LiteLoader
 	public void displayModInfoScreen(Object parentScreen)
 	{
 		// Use implicit cast, because we want this to fail if the user tries to give us an invalid class
-		if (this.modPanelManager != null) this.modPanelManager.displayLiteLoaderPanel(parentScreen);
+		if (this.panelManager != null) this.panelManager.displayLiteLoaderPanel(parentScreen);
 	}
 
 	/**

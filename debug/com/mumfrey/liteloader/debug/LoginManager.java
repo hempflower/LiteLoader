@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.Proxy;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,12 +15,19 @@ import javax.swing.JOptionPane;
 import com.google.common.base.Strings;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.annotations.SerializedName;
 import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.UserType;
 import com.mojang.authlib.exceptions.AuthenticationException;
 import com.mojang.authlib.exceptions.InvalidCredentialsException;
+import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
 import com.mojang.authlib.yggdrasil.YggdrasilUserAuthentication;
@@ -315,8 +323,31 @@ public class LoginManager
 	public String getUserProperties()
 	{
 		PropertyMap userProperties = this.authentication.getUserProperties();
-		return userProperties != null ? userProperties.toString() : "{}";
+		return userProperties != null ? (new GsonBuilder()).registerTypeAdapter(PropertyMap.class, new UserPropertiesSerializer()).create().toJson(userProperties) : "{}";
 	}
+	
+	class UserPropertiesSerializer implements JsonSerializer<PropertyMap>
+	{
+		@Override
+		public JsonElement serialize(PropertyMap propertyMap, Type argType, JsonSerializationContext context)
+		{
+			JsonObject result = new JsonObject();
+			
+			for (String key : propertyMap.keySet())
+			{
+				JsonArray values = new JsonArray();
+				for (Property property : propertyMap.get(key))
+				{
+					values.add(new JsonPrimitive(property.getValue()));
+				}
+				
+				result.add(key, values);
+			}
+			
+			return result;
+		}
+	}
+
 	
 	/**
 	 * Struct for Gson serialisation of authenticaion settings

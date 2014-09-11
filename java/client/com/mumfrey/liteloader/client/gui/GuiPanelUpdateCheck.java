@@ -2,14 +2,18 @@ package com.mumfrey.liteloader.client.gui;
 
 import java.net.URI;
 
-import org.lwjgl.input.Keyboard;
-
-import com.mumfrey.liteloader.update.UpdateSite;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.resources.I18n;
+
+import org.lwjgl.input.Keyboard;
+
+import com.mumfrey.liteloader.core.LiteLoaderUpdateSite;
+import com.mumfrey.liteloader.launch.ClassPathUtilities;
+import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.update.UpdateSite;
 
 /**
  * "Check for updates" panel which docks in the mod info screen
@@ -23,15 +27,17 @@ class GuiPanelUpdateCheck extends GuiPanel
 	 */
 	private static final URI DOWNLOAD_URI = URI.create("http://dl.liteloader.com");
 
+	private final GuiLiteLoaderPanel parentScreen;
+
 	/**
 	 * Update site to contact
 	 */
-	private UpdateSite updateSite;
+	private final UpdateSite updateSite;
 	
 	/**
 	 * Panel title
 	 */
-	private String panelTitle;
+	private final String panelTitle;
 	
 	/**
 	 * Buttons
@@ -43,12 +49,17 @@ class GuiPanelUpdateCheck extends GuiPanel
 	 */
 	private int throb;
 
-	public GuiPanelUpdateCheck(Minecraft minecraft, UpdateSite updateSite, String updateName)
+	private boolean canForceUpdate, updateForced;
+	
+	public GuiPanelUpdateCheck(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, UpdateSite updateSite, String updateName, LoaderProperties properties)
 	{
 		super(minecraft);
 		
+		this.parentScreen = parentScreen;
 		this.updateSite = updateSite;
 		this.panelTitle = I18n.format("gui.updates.title", updateName);
+		
+		this.canForceUpdate = (updateSite instanceof LiteLoaderUpdateSite && ((LiteLoaderUpdateSite)updateSite).canForceUpdate(properties));
 	}
 	
 	@Override
@@ -56,9 +67,9 @@ class GuiPanelUpdateCheck extends GuiPanel
 	{
 		super.setSize(width, height);
 		
-		this.controls.add(new GuiButton(0, this.width - 99 - MARGIN, this.height - BOTTOM + 9, 100, 20, I18n.format("gui.done")));
+		this.controls.add(new GuiButton(0, this.width - 99 - MARGIN, this.height - BOTTOM + 9, 100, 20, this.updateForced ? I18n.format("gui.exitgame") : I18n.format("gui.done")));
 		this.controls.add(this.btnCheck = new GuiButton(1, MARGIN + 16, TOP + 16, 100, 20, I18n.format("gui.checknow")));
-		this.controls.add(this.btnDownload = new GuiButton(2, MARGIN + 16, TOP + 118, 100, 20, I18n.format("gui.downloadupdate")));
+		this.controls.add(this.btnDownload = new GuiButton(2, MARGIN + 16, TOP + 118, 100, 20, this.canForceUpdate ? I18n.format("gui.forceupdate") : I18n.format("gui.downloadupdate")));
 	}
 	
 	@Override
@@ -73,7 +84,7 @@ class GuiPanelUpdateCheck extends GuiPanel
 		drawRect(MARGIN, TOP - 4, this.width - MARGIN, TOP - 3, 0xFF999999);
 		drawRect(MARGIN, this.height - BOTTOM + 2, this.width - MARGIN, this.height - BOTTOM + 3, 0xFF999999);
 		
-		this.btnCheck.enabled = !this.updateSite.isCheckInProgress();
+		this.btnCheck.enabled = !this.updateForced && !this.updateSite.isCheckInProgress();
 		this.btnDownload.visible = false;
 
 		if (this.updateSite.isCheckInProgress())
@@ -92,10 +103,15 @@ class GuiPanelUpdateCheck extends GuiPanel
 				fontRenderer.drawString(I18n.format("gui.updates.available.title"), MARGIN + 18, TOP + 70, 0xFFFFFFFF);
 				if (this.updateSite.isUpdateAvailable())
 				{
-					this.btnDownload.visible = true;
+					this.btnDownload.visible = !this.updateForced;
 					fontRenderer.drawString(I18n.format("gui.updates.available.newversion"), MARGIN + 18, TOP + 84, 0xFFFFFFFF);
 					fontRenderer.drawString(I18n.format("gui.updates.available.version", this.updateSite.getAvailableVersion()), MARGIN + 18, TOP + 94, 0xFFFFFFFF);
 					fontRenderer.drawString(I18n.format("gui.updates.available.date", this.updateSite.getAvailableVersionDate()), MARGIN + 18, TOP + 104, 0xFFFFFFFF);
+					
+					if (this.updateForced)
+					{
+						fontRenderer.drawString(I18n.format("gui.updates.forced"), MARGIN + 18, TOP + 144, 0xFFFFAA00);
+					}
 				}
 				else
 				{
@@ -110,6 +126,17 @@ class GuiPanelUpdateCheck extends GuiPanel
 		
 		super.draw(mouseX, mouseY, partialTicks);
 	}
+	
+	@Override
+	public void close()
+	{
+		if (this.updateForced)
+		{
+			return;
+		}
+
+		super.close();
+	}
 
 	/**
 	 * @param control
@@ -117,11 +144,31 @@ class GuiPanelUpdateCheck extends GuiPanel
 	@Override
 	void actionPerformed(GuiButton control)
 	{
-		if (control.id == 0) this.close();
+		if (control.id == 0)
+		{
+			if (this.updateForced)
+			{
+				ClassPathUtilities.terminateRuntime(0);
+				return;
+			}
+
+			this.close();
+		}
 		if (control.id == 1) this.updateSite.beginUpdateCheck();
 		if (control.id == 2)
 		{
-			this.openURI(GuiPanelUpdateCheck.DOWNLOAD_URI);
+			if (this.canForceUpdate && ((LiteLoaderUpdateSite)this.updateSite).forceUpdate())
+			{
+				this.updateForced = true;
+				this.parentScreen.setToggleable(false);
+				ScaledResolution sr = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
+				this.parentScreen.setWorldAndResolution(this.mc, sr.getScaledWidth(), sr.getScaledHeight());
+			}
+			else
+			{
+				this.openURI(GuiPanelUpdateCheck.DOWNLOAD_URI);
+			}
+			
 			this.btnDownload.enabled = false;
 		}
 	}

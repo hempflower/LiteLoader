@@ -139,6 +139,7 @@ public class UpdateSite implements Comparator<Long>
 		{
 			if (this.stringRetriever == null)
 			{
+				LiteLoaderLogger.debug("Update site for %s is starting the update check", this.artefact);
 				this.stringRetriever = new HttpStringRetriever(String.format("%s%s", this.updateSiteUrl, this.updateSiteJsonFileName));
 				this.stringRetriever.start();
 			}
@@ -231,10 +232,13 @@ public class UpdateSite implements Comparator<Long>
 				{
 					try
 					{
+						LiteLoaderLogger.debug("Update site for %s is parsing the update response", this.artefact);
 						this.parseData(this.stringRetriever.getString());
+						LiteLoaderLogger.debug("Update site for %s successfully parsed the update response", this.artefact);
 					}
 					catch (Exception ex)
 					{
+						LiteLoaderLogger.debug("Update site for %s failed parsing the update response: %s:%s", this.artefact, ex.getClass().getSimpleName(), ex.getMessage());
 						this.checkSuccess = false;
 						ex.printStackTrace();
 					}

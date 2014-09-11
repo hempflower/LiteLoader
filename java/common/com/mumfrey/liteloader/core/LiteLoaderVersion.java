@@ -3,8 +3,6 @@ package com.mumfrey.liteloader.core;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.mumfrey.liteloader.update.UpdateSite;
-
 /**
  * LiteLoader version table
  *
@@ -46,11 +44,7 @@ public enum LiteLoaderVersion
 	 */
 	public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_7_10_R4;
 
-	private static final String UPDATE_SITE_URL = "http://dl.liteloader.com/versions/";
-	private static final String UPDATE_SITE_VERSIONS_JSON = "versions.json";
-	private static final String UPDATE_SITE_ARTEFACT_NAME = "com.mumfrey:liteloader";
-	
-	private static final UpdateSite updateSite = new UpdateSite(UPDATE_SITE_URL, UPDATE_SITE_VERSIONS_JSON, LiteLoaderVersion.CURRENT.getMinecraftVersion(), LiteLoaderVersion.UPDATE_SITE_ARTEFACT_NAME, LiteLoaderVersion.CURRENT.getReleaseTimestamp());
+	private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(), LiteLoaderVersion.CURRENT.getReleaseTimestamp());
 	
 	private final int revision;
 	
@@ -131,7 +125,7 @@ public enum LiteLoaderVersion
 		return this.loaderVersion;
 	}
 	
-	public static UpdateSite getUpdateSite()
+	public static LiteLoaderUpdateSite getUpdateSite()
 	{
 		return LiteLoaderVersion.updateSite;
 	}

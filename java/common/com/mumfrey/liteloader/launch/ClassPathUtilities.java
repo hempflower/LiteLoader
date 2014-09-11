@@ -12,6 +12,7 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Stack;
@@ -57,6 +58,8 @@ public abstract class ClassPathUtilities
 	private static Field classPathLoaderList;
 	
 	private static boolean canInject;
+	
+	private static boolean canTerminate;
 	
 	static
 	{
@@ -221,6 +224,33 @@ public abstract class ClassPathUtilities
 			catch (Exception ex) {}
 		}
 	}
+	
+	/**
+	 * Is the specified jar on the game launch classpath
+	 * 
+	 * @param jarFile
+	 * @return
+	 */
+	public static boolean isJarOnClassPath(File jarFile)
+	{
+		try
+		{
+			String jarURL = jarFile.toURI().toURL().toString();
+			
+			URL[] classPath = ((URLClassLoader)Launch.class.getClassLoader()).getURLs();
+			for (URL classPathEntry : classPath)
+			{
+				if (classPathEntry.toString().equals(jarURL))
+					return true;
+			}
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		return false;
+	}
 
 	/**
 	 * Gets the file containing the specified resource
@@ -285,29 +315,20 @@ public abstract class ClassPathUtilities
 
 			if (jar != null && parentJar != null && jar.getName().equals(parentJar.getName()))
 			{
-				final JarFile jarInClassLoader = ClassPathUtilities.getJarFromClassLoader(Launch.classLoader, jarFileName, true);
-				final JarFile jarInParentClassLoader = ClassPathUtilities.getJarFromClassLoader((URLClassLoader)Launch.class.getClassLoader(), jarFileName, true);
+				final JarDeletionHandler jarDeletionHandler = new JarDeletionHandler();
+				
+				JarFile jarInClassLoader = ClassPathUtilities.getJarFromClassLoader(Launch.classLoader, jarFileName, true);
+				JarFile jarInParentClassLoader = ClassPathUtilities.getJarFromClassLoader((URLClassLoader)Launch.class.getClassLoader(), jarFileName, true);
 
-				final File jarFileInClassLoader = new File(jarInClassLoader.getName());
-				final File jarFileInParentClassLoader = new File(jarInParentClassLoader.getName());
+				File jarFileInClassLoader = new File(jarInClassLoader.getName());
+				File jarFileInParentClassLoader = new File(jarInParentClassLoader.getName());
+				
+				jarDeletionHandler.setPaths(jarInClassLoader, jarInParentClassLoader, jarFileInClassLoader, jarFileInParentClassLoader);
 
 				try
 				{
-					Boolean deleted = AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>()
-					{
-						@Override
-						public Boolean run() throws Exception
-						{
-							jarInClassLoader.close();
-							jarInParentClassLoader.close();
-						
-							boolean deletedJarFile = jarFileInClassLoader.delete();
-							boolean deletedParentJarFile = jarFileInParentClassLoader.delete();
-							
-							return Boolean.valueOf(deletedJarFile || deletedParentJarFile);
-						}
-					});
-					
+					Boolean deleted = AccessController.doPrivileged(jarDeletionHandler);
+					ClassPathUtilities.canTerminate |= deleted;
 					return deleted;
 				}
 				catch (PrivilegedActionException ex)
@@ -322,6 +343,18 @@ public abstract class ClassPathUtilities
 		}
 		
 		return false;
+	}
+	
+	public static void terminateRuntime(int status)
+	{
+		if (ClassPathUtilities.canTerminate)
+		{
+			System.exit(status);
+		}
+		else
+		{
+			throw new IllegalStateException();
+		}
 	}
 
 	/**
@@ -341,8 +374,11 @@ public abstract class ClassPathUtilities
 			URLClassPath classPath = (URLClassPath)ClassPathUtilities.ucp.get(classLoader);
 			Map<String, ?> loaderMap = (Map<String, ?>)ClassPathUtilities.classPathLoaderMap.get(classPath);
 			
-			for (Entry<String, ?> loaderEntry : loaderMap.entrySet())
+			Iterator<?> iter = loaderMap.entrySet().iterator();
+			while (iter.hasNext())
 			{
+				Entry<String, ?> loaderEntry = (Entry<String, ?>)iter.next();
+				
 				String url = loaderEntry.getKey();
 				
 				if (url.endsWith(fileName))
@@ -362,7 +398,7 @@ public abstract class ClassPathUtilities
 						ArrayList<?> loaders = (ArrayList<?>)ClassPathUtilities.classPathLoaderList.get(classPath);
 						
 						loaders.remove(loader);
-						loaderMap.remove(url);
+						iter.remove();
 						
 						URL jarURL = new URL(url);
 						urls.remove(jarURL);
@@ -380,5 +416,42 @@ public abstract class ClassPathUtilities
 		}
 		
 		return jar;
+	}
+}
+
+class JarDeletionHandler implements PrivilegedExceptionAction<Boolean>
+{
+	JarFile jarInClassLoader, jarInParentClassLoader;
+	File jarFileInClassLoader, jarFileInParentClassLoader;
+
+	void setPaths(JarFile jarInClassLoader, JarFile jarInParentClassLoader, File jarFileInClassLoader, File jarFileInParentClassLoader)
+	{
+		this.jarInClassLoader = jarInClassLoader;
+		this.jarInParentClassLoader = jarInParentClassLoader;
+		this.jarFileInClassLoader = jarFileInClassLoader;
+		this.jarFileInParentClassLoader = jarFileInParentClassLoader;
+	}
+
+	@Override
+	public Boolean run() throws Exception
+	{
+		this.jarInClassLoader.close();
+		this.jarInParentClassLoader.close();
+		
+		try
+		{
+			Thread.sleep(5000);
+		}
+		catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+	
+		boolean deletedJarFile = this.jarFileInClassLoader.delete();
+		boolean deletedParentJarFile = this.jarFileInParentClassLoader.delete();
+		
+		System.err.println("deletedJarFile=" + deletedJarFile + "   deletedParentJarFile=" + deletedParentJarFile);
+		
+		return Boolean.valueOf(deletedJarFile || deletedParentJarFile);
 	}
 }

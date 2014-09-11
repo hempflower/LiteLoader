@@ -575,6 +575,26 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	{
 		this.localProperties.setProperty(propertyName, String.valueOf(value));
 	}
+	
+	@Override
+	public int getAndStoreIntegerProperty(String propertyName, int defaultValue)
+	{
+		int result = LiteLoaderBootstrap.tryParseInt(this.localProperties.getProperty(propertyName, String.valueOf(defaultValue)), defaultValue);
+		this.localProperties.setProperty(propertyName, String.valueOf(result));
+		return result;
+	}
+
+	@Override
+	public int getIntegerProperty(String propertyName)
+	{
+		return LiteLoaderBootstrap.tryParseInt(this.localProperties.getProperty(propertyName, "0"), 0);
+	}
+	
+	@Override
+	public void setIntegerProperty(String propertyName, int value)
+	{
+		this.localProperties.setProperty(propertyName, String.valueOf(value));
+	}
 
 	/**
 	 * Store current revision for mod in the config file
@@ -691,5 +711,17 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	public List<String> getPacketTransformers()
 	{
 		return this.apiAdapter.getPacketTransformers();
+	}
+	
+	private static int tryParseInt(String string, int defaultValue)
+	{
+		try
+		{
+			return Integer.parseInt(string);
+		}
+		catch (NumberFormatException ex)
+		{
+			return defaultValue;
+		}
 	}
 }

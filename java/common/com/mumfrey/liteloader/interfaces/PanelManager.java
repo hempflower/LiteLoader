@@ -19,6 +19,11 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
 	 * @param configManager
 	 */
 	public abstract void init(LiteLoaderMods mods, ConfigManager configManager);
+	
+	/**
+	 * 
+	 */
+	public abstract void onStartupComplete();
 
 	/**
 	 * 
@@ -59,4 +64,19 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
 	 * @return
 	 */
 	public abstract int getCriticalErrorCount();
+	
+	/**
+	 * @param notification
+	 */
+	public abstract void setNotification(String notification);
+	
+	/**
+	 * @param forceUpdate
+	 */
+	public abstract void setForceUpdateEnabled(boolean forceUpdate);
+	
+	/**
+	 * @return
+	 */
+	public abstract boolean isForceUpdateEnabled();
 }
