@@ -255,6 +255,35 @@
 		</jar>
 	</target>
 	
+    <target name="mcpjar" description="Build the MCP-names">
+        <echo level="info" message="Building mcpnamesjars" />
+
+        <mkdir dir="${dist.dir}" />
+        
+        <delete file="${dist.dir}/${ant.project.name}-${version}-mcpnames.${filetype}" />
+        <delete file="${dist.dir}/${ant.project.name}-${version}-mcpnames-sources.${filetype}" />
+        
+        <jar destfile="${dist.dir}/${ant.project.name}-${version}-mcpnames.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+            <manifest>
+                <attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
+                <attribute name="Implementation-Vendor" value="${author}" />
+                <attribute name="Implementation-Title" value="${ant.project.name}" />
+                <attribute name="Implementation-Version" value="${version}" />
+                <attribute name="TweakClass" value="${tweakclass}" />
+                <attribute name="TweakName" value="LiteLoader" />
+                <attribute name="TweakVersion" value="${version}" />
+                <attribute name="TweakAuthor" value="${author}" />
+            </manifest>
+            <fileset dir="${eclipse}/LiteLoader/bin" />
+        </jar>
+        <jar destfile="${dist.dir}/${ant.project.name}-${version}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
+            <fileset dir="${eclipse}/LiteLoader/java/common" />
+            <fileset dir="${eclipse}/LiteLoader/java/client" />
+            <fileset dir="${eclipse}/LiteLoader/debug" />
+            <fileset dir="${eclipse}/LiteLoader/resources" />
+        </jar>
+    </target>
+	
 	<property environment="env" />
 	
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
