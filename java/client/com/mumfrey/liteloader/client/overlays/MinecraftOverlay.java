@@ -75,6 +75,7 @@ public abstract class MinecraftOverlay implements IMinecraft
 		{
 			Display.setDisplayMode(new DisplayMode(width, height));
 			this.resize(width, height);
+			Display.setVSyncEnabled(Minecraft.getMinecraft().gameSettings.enableVsync);
 		}
 		catch (LWJGLException ex)
 		{
