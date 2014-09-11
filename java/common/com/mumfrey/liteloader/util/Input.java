@@ -26,6 +26,8 @@ import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
 /**
@@ -81,16 +83,20 @@ public final class Input implements CoreProvider
 	/**
 	 * 
 	 */
-	public Input(File keyMapSettingsFile)
+	public Input(LoaderEnvironment environment, LoaderProperties properties)
 	{
 		if (LiteLoader.getInstance() != null && LiteLoader.getInput() != null)
 		{
 			throw new IllegalStateException("Only one instance of Input is allowed, use LiteLoader.getInput() to get the active instance");
 		}
 		
-		this.keyMapSettingsFile = keyMapSettingsFile;
+		this.keyMapSettingsFile = new File(environment.getCommonConfigFolder(), "liteloader.keys.properties");
 		this.jInputComponentRegistry = new ComponentRegistry();
-		this.jInputComponentRegistry.enumerate();
+		
+		if (!properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_JINPUT_DISABLE, false))
+		{
+			this.jInputComponentRegistry.enumerate();
+		}
 	}
 	
 	@Override

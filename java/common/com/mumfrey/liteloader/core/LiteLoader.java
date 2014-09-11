@@ -210,7 +210,7 @@ public final class LiteLoader
 		this.enumerator = environment.getEnumerator();
 		
 		this.configManager = new ConfigManager();
-		this.input = new Input(new File(environment.getCommonConfigFolder(), "liteloader.keys.properties"));
+		this.input = new Input(environment, properties);
 
 		this.mods = new LiteLoaderMods(this, environment, properties, this.configManager);
 		

@@ -38,6 +38,7 @@ public class ComponentRegistry
 	{
 		try
 		{
+			LiteLoaderLogger.info("JInput Component Registry is initialising...");
 			this.enumerate(ControllerEnvironment.getDefaultEnvironment());
 			LiteLoaderLogger.info("JInput Component Registry initialised, found %d controller(s) %d component(s)", ControllerEnvironment.getDefaultEnvironment().getControllers().length, components.size());
 		}
@@ -53,6 +54,7 @@ public class ComponentRegistry
 		
 		for (Controller controller : environment.getControllers())
 		{
+			LiteLoaderLogger.info("Inspecting %s controller %s on %s...", controller.getType(), controller.getName(), controller.getPortType()); 
 			for (Component component : controller.getComponents())
 			{
 				this.addComponent(controller, component);

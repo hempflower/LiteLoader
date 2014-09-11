@@ -96,6 +96,7 @@ public interface LoaderProperties
 	public static final String OPTION_LOADING_BAR       = "loadingbar";
 	public static final String OPTION_FORCE_UPDATE      = "allowForceUpdate";
 	public static final String OPTION_UPDATE_CHECK_INTR = "updateCheckInterval";
+	public static final String OPTION_JINPUT_DISABLE    = "disableJInput";
 
 	// Enumerator properties
 	public static final String OPTION_SEARCH_MODS       = "search.mods";
