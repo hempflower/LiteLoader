@@ -2,6 +2,7 @@ package com.mumfrey.liteloader.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -306,5 +307,10 @@ public class CallbackProxyClient
 		}
 		
 		CallbackProxyClient.renderingFBO = false;
+	}
+	
+	public static void onRenderWorld(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
+	{
+		CallbackProxyClient.events.onRenderWorld(partialTicks, timeSlice);
 	}
 }

@@ -6,22 +6,20 @@ import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
+import com.mumfrey.liteloader.transformers.event.inject.BeforeStringInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.MethodHead;
+
+import static com.mumfrey.liteloader.core.runtime.Methods.*;
 
 public class LiteLoaderEventInjectionTransformer extends EventInjectionTransformer
 {
 	@Override
 	protected void addEvents()
 	{
-		MethodInfo runGameLoop            = new MethodInfo(Obf.Minecraft,            Obf.runGameLoop,            Void.TYPE);
-		MethodInfo updateFramebufferSize  = new MethodInfo(Obf.Minecraft,            Obf.updateFramebufferSize,  Void.TYPE);
-		MethodInfo framebufferRender      = new MethodInfo(Obf.FrameBuffer,          Obf.framebufferRender,      Void.TYPE, Integer.TYPE, Integer.TYPE);
-		MethodInfo bindFramebufferTexture = new MethodInfo(Obf.FrameBuffer,          Obf.bindFramebufferTexture, Void.TYPE);
-		MethodInfo sendChatMessage        = new MethodInfo(Obf.EntityClientPlayerMP, Obf.sendChatMessage,        Void.TYPE, String.class);
-
 		InjectionPoint methodHead         = new MethodHead();
 		InjectionPoint beforeFBORender    = new BeforeInvoke(framebufferRender);
 		InjectionPoint beforeBindFBOTex   = new BeforeInvoke(bindFramebufferTexture);
+		InjectionPoint beforePickProfiler = new BeforeStringInvoke("pick", endStartSection);
 		
 		this.addEvent(Event.getOrCreate("sendChatMessage", true), sendChatMessage, methodHead)
 			.addListener(new MethodInfo(Obf.CallbackProxyClient, "onOutboundChat"));
@@ -37,5 +35,8 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		
 		this.addEvent(Event.getOrCreate("postRenderFBO", false), runGameLoop, InjectionPoint.after(beforeFBORender))
 			.addListener(new MethodInfo(Obf.CallbackProxyClient, "postRenderFBO"));;
+			
+		this.addEvent(Event.getOrCreate("onRenderWorld", false), renderWorld, beforePickProfiler)
+			.addListener(new MethodInfo(Obf.CallbackProxyClient, "onRenderWorld"));;
 	}
 }

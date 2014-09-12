@@ -682,4 +682,13 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	{
 		this.frameBufferListeners.all().postRenderFBO(framebuffer);
 	}
+
+	/**
+	 * @param partialTicks
+	 * @param timeSlice
+	 */
+	public void onRenderWorld(float partialTicks, long timeSlice)
+	{
+		this.renderListeners.all().onRenderWorld();
+	}
 }

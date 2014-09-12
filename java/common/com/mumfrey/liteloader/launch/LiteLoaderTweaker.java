@@ -322,7 +322,7 @@ public class LiteLoaderTweaker implements ITweaker
 	@Override
 	public void injectIntoClassLoader(LaunchClassLoader classLoader)
 	{
-		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.");
+		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Obf");
 
 		LiteLoaderTweaker.instance.transformerManager.injectUpstreamTransformers(classLoader);
 
