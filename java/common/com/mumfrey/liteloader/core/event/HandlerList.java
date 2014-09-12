@@ -62,6 +62,50 @@ public class HandlerList<T> extends LinkedList<T>
 		this.type = type;
 	}
 	
+	/**
+	 * Returns the baked list of all listeners
+	 * 
+	 * @return
+	 */
+	public T all()
+	{
+		if (this.bakedHandler == null)
+		{
+			this.bake();
+		}
+		
+		return this.bakedHandler.get();
+	}
+
+	/**
+	 * Bake the current handler list
+	 */
+	protected void bake()
+	{
+		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.size());
+		this.bakedHandler = classLoader.newHandler();
+		this.bakedHandler.populate(this);
+	}
+
+	/**
+	 * Invalidate current baked list
+	 */
+	public void invalidate()
+	{
+		if (this.bakedHandler == null)
+		{
+			return;
+		}
+		
+		this.bakedHandler = null;
+		HandlerList.uncollectedHandlerLists++;
+		if (HandlerList.uncollectedHandlerLists > HandlerList.MAX_UNCOLLECTED_CLASSES)
+		{
+			System.gc();
+			HandlerList.uncollectedHandlerLists = 0;
+		}
+	}
+
 	/* (non-Javadoc)
 	 * @see java.util.LinkedList#add(java.lang.Object)
 	 */
@@ -76,36 +120,91 @@ public class HandlerList<T> extends LinkedList<T>
 		
 		return true;
 	}
-
-	/**
-	 * Invalidate current baked list
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#offer(java.lang.Object)
 	 */
-	public void invalidate()
+	@Override
+	public boolean offer(T listener)
 	{
-		this.bakedHandler = null;
-		HandlerList.uncollectedHandlerLists++;
-		if (HandlerList.uncollectedHandlerLists > HandlerList.MAX_UNCOLLECTED_CLASSES)
+		return this.add(listener);
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#offerFirst(java.lang.Object)
+	 */
+	@Override
+	public boolean offerFirst(T listener)
+	{
+		this.addFirst(listener);
+		return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#offerLast(java.lang.Object)
+	 */
+	@Override
+	public boolean offerLast(T listener)
+	{
+		this.addLast(listener);
+		return true;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#add(int, java.lang.Object)
+	 */
+	@Override
+	public void add(int index, T listener)
+	{
+		if (!this.contains(listener))
 		{
-			System.gc();
-			HandlerList.uncollectedHandlerLists = 0;
+			super.add(index, listener);
+			this.invalidate();
 		}
 	}
 	
-	/**
-	 * Returns the baked list of all listeners
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#addFirst(java.lang.Object)
 	 */
-	public T all()
+	@Override
+	public void addFirst(T listener)
 	{
-		if (this.bakedHandler == null)
+		if (!this.contains(listener))
 		{
-			HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.size());
-			this.bakedHandler = classLoader.newHandler();
-			this.bakedHandler.populate(this);
+			super.addFirst(listener);
+			this.invalidate();
 		}
-		
-		return this.bakedHandler.get();
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#addLast(java.lang.Object)
+	 */
+	@Override
+	public void addLast(T listener)
+	{
+		if (!this.contains(listener))
+		{
+			super.addLast(listener);
+			this.invalidate();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#addAll(java.util.Collection)
+	 */
+	@Override
+	public boolean addAll(Collection<? extends T> listeners)
+	{
+		throw new UnsupportedOperationException("'addAll' is not supported for HandlerList");
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#addAll(int, java.util.Collection)
+	 */
+	@Override
+	public boolean addAll(int index, Collection<? extends T> listeners)
+	{
+		throw new UnsupportedOperationException("'addAll' is not supported for HandlerList");
 	}
 	
 	/* (non-Javadoc)
@@ -114,7 +213,7 @@ public class HandlerList<T> extends LinkedList<T>
 	@Override
 	public T remove()
 	{
-		throw new UnsupportedOperationException("'remove' is not supported for HandlerList");
+		return this.removeFirst();
 	}
 	
 	/* (non-Javadoc)
@@ -123,25 +222,20 @@ public class HandlerList<T> extends LinkedList<T>
 	@Override
 	public T remove(int index)
 	{
-		throw new UnsupportedOperationException("'remove' is not supported for HandlerList");
+		T removed = super.remove(index);
+		this.invalidate();
+		return removed;
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.LinkedList#remove(java.lang.Object)
 	 */
 	@Override
-	public boolean remove(Object o)
+	public boolean remove(Object listener)
 	{
-		throw new UnsupportedOperationException("'remove' is not supported for HandlerList");
-	}
-	
-	/* (non-Javadoc)
-	 * @see java.util.AbstractCollection#removeAll(java.util.Collection)
-	 */
-	@Override
-	public boolean removeAll(Collection<?> c)
-	{
-		throw new UnsupportedOperationException("'removeAll' is not supported for HandlerList");
+		boolean removed = super.remove(listener);
+		this.invalidate();
+		return removed;
 	}
 	
 	/* (non-Javadoc)
@@ -150,16 +244,18 @@ public class HandlerList<T> extends LinkedList<T>
 	@Override
 	public T removeFirst()
 	{
-		throw new UnsupportedOperationException("'removeFirst' is not supported for HandlerList");
+		T removed = super.removeFirst();
+		this.invalidate();
+		return removed;
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.LinkedList#removeFirstOccurrence(java.lang.Object)
 	 */
 	@Override
-	public boolean removeFirstOccurrence(Object o)
+	public boolean removeFirstOccurrence(Object listener)
 	{
-		throw new UnsupportedOperationException("'removeFirstOccurrence' is not supported for HandlerList");
+		return this.remove(listener);
 	}
 	
 	/* (non-Javadoc)
@@ -168,16 +264,99 @@ public class HandlerList<T> extends LinkedList<T>
 	@Override
 	public T removeLast()
 	{
-		throw new UnsupportedOperationException("'removeLast' is not supported for HandlerList");
+		T removed = super.removeLast();
+		this.invalidate();
+		return removed;
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.LinkedList#removeLastOccurrence(java.lang.Object)
 	 */
 	@Override
-	public boolean removeLastOccurrence(Object o)
+	public boolean removeLastOccurrence(Object listener)
 	{
-		throw new UnsupportedOperationException("'removeLastOccurrence' is not supported for HandlerList");
+		boolean removed = super.removeLastOccurrence(listener);
+		this.invalidate();
+		return removed;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.AbstractCollection#removeAll(java.util.Collection)
+	 */
+	@Override
+	public boolean removeAll(Collection<?> listeners)
+	{
+		boolean removed = super.removeAll(listeners);
+		this.invalidate();
+		return removed;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#poll()
+	 */
+	@Override
+	public T poll()
+	{
+		T polled = super.poll();
+		this.invalidate();
+		return polled;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#pollFirst()
+	 */
+	@Override
+	public T pollFirst()
+	{
+		T polled = super.pollFirst();
+		this.invalidate();
+		return polled;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#pollLast()
+	 */
+	@Override
+	public T pollLast()
+	{
+		T polled = super.pollLast();
+		this.invalidate();
+		return polled;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#push(java.lang.Object)
+	 */
+	@Override
+	public void push(T listener)
+	{
+		this.addFirst(listener);
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#pop()
+	 */
+	@Override
+	public T pop()
+	{
+		return this.removeFirst();
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.LinkedList#set(int, java.lang.Object)
+	 */
+	@Override
+	public T set(int index, T listener)
+	{
+		T oldValue = null;
+		
+		if (!this.contains(listener))
+		{
+			oldValue = super.set(index, listener);
+			this.invalidate();
+		}
+		
+		return oldValue;
 	}
 	
 	/**
