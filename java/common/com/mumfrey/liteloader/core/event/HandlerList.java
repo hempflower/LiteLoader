@@ -82,9 +82,8 @@ public class HandlerList<T> extends LinkedList<T>
 	 */
 	protected void bake()
 	{
-		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.size());
-		this.bakedHandler = classLoader.newHandler();
-		this.bakedHandler.populate(this);
+		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type);
+		this.bakedHandler = classLoader.newHandler(this);
 	}
 
 	/**
@@ -370,7 +369,22 @@ public class HandlerList<T> extends LinkedList<T>
 	{
 		public abstract T get();
 
-		public abstract void populate(List<T> listeners);
+		public abstract BakedHandlerList<T> populate(List<T> listeners);
+	}
+	
+	/**
+	 * Exception to throw when failing to bake a handler list
+	 * 
+	 * @author Adam Mummery-Smith
+	 */
+	static class BakingFailedException extends RuntimeException
+	{
+		private static final long serialVersionUID = 1L;
+
+		public BakingFailedException(Throwable cause)
+		{
+			super("An unexpected error occurred while baking the handler list", cause);
+		}
 	}
 	
 	/**
@@ -381,66 +395,118 @@ public class HandlerList<T> extends LinkedList<T>
 	 */
 	static class HandlerListClassLoader<T> extends URLClassLoader
 	{
+		private static final String HANDLER_VAR_PREFIX = "handler$";
+
 		/**
 		 * Unique index number, just to ensure no name clashes
 		 */
 		private static int handlerIndex;
 
-		private int lineNumber = 1;
-
+		/**
+		 * Interface type which this classloader is generating handler for 
+		 */
 		private final Class<T> type;
 		
+		/**
+		 * Calculated class ref for the class type so that we don't have to keep calling getName().replace('.', '/')
+		 */
 		private final String typeRef;
 		
+		/**
+		 * Size of the handler list
+		 */
 		private int size;
-		
+
 		/**
 		 * @param type
 		 * @param size
 		 */
-		HandlerListClassLoader(Class<T> type, int size)
+		HandlerListClassLoader(Class<T> type)
 		{
 			super(new URL[0], Launch.classLoader);
 			this.type = type;
 			this.typeRef = type.getName().replace('.', '/');
-			this.size = size;
 		}
 		
 		/**
 		 * Create and return a new baked handler list
 		 */
 		@SuppressWarnings("unchecked")
-		public BakedHandlerList<T> newHandler()
+		public BakedHandlerList<T> newHandler(HandlerList<T> list)
+		{
+			this.size = list.size();
+			
+			Class<BakedHandlerList<T>> handlerClass = null;
+
+			try
+			{
+				// Inflect the class name and attempt to generate the class
+				String className = HandlerListClassLoader.getNextClassName(Obf.HandlerList.name, this.type.getSimpleName());
+				handlerClass = (Class<BakedHandlerList<T>>)this.loadClass(className);
+			}
+			catch (ClassNotFoundException ex)
+			{
+				throw new BakingFailedException(ex);
+			}
+
+			try
+			{
+				// Create an instance of the class, populate the entries from the supplied list and return it
+				BakedHandlerList<T> handlerList = this.createInstance(handlerClass);
+				return handlerList.populate(list);
+			}
+			catch (InstantiationException ex)
+			{
+				throw new BakingFailedException(ex);
+			}
+		}
+
+		/**
+		 * Create an instance of the baked class
+		 * 
+		 * @param handlerClass Baked HandlerList class
+		 * @return new instance of the Baked HandlerList class 
+		 * @throws InstantiationException if the handler can't be created for some reason
+		 */
+		private BakedHandlerList<T> createInstance(Class<BakedHandlerList<T>> handlerClass) throws InstantiationException
 		{
 			try
 			{
-				String className = this.getNextClassName();
-				Class<BakedHandlerList<T>> handlerClass = (Class<BakedHandlerList<T>>)this.loadClass(className);
 				Constructor<BakedHandlerList<T>> ctor = handlerClass.getDeclaredConstructor();
 				ctor.setAccessible(true);
 				return ctor.newInstance();
 			}
 			catch (Exception ex)
 			{
-				throw new RuntimeException(ex);
+				InstantiationException ie = new InstantiationException("Error instantiating class " + handlerClass);
+				ie.setStackTrace(ex.getStackTrace());
+				throw ie;
 			}
 		}
 
+		/* (non-Javadoc)
+		 * @see java.net.URLClassLoader#findClass(java.lang.String)
+		 */
 		@Override
 		protected Class<?> findClass(String name) throws ClassNotFoundException
 		{
 			try
 			{
+				// Read the basic class template
 				byte[] bytes = Launch.classLoader.getClassBytes(Obf.BakedHandlerList.name);
 				ClassReader classReader = new ClassReader(bytes);
 				ClassNode classNode = new ClassNode();
 				classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
 				
+				// Apply all transformations to the class, injects our custom code 
 				this.transform(name, classNode);
 				
+				// Write the class
 				ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 				classNode.accept(classWriter);
 				bytes = classWriter.toByteArray();
+				
+				// Delegate to ClassLoader's usual behaviour to load the class we just generated
 				return this.defineClass(name, bytes, 0, bytes.length);
 			}
 			catch (Throwable th)
@@ -450,30 +516,49 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 		}
 
-		private void transform(String name, ClassNode classNode)
+		/**
+		 * Perform all class bytecode transformations
+		 * 
+		 * @param name
+		 * @param classNode
+		 * @throws IOException 
+		 */
+		private void transform(String name, ClassNode classNode) throws IOException
 		{
 			LiteLoaderLogger.info("Baking listener list for %s with %d listeners", this.type.getSimpleName(), this.size);
 			LiteLoaderLogger.debug("Generating: %s", name);
 			
 			this.populateClass(name, classNode);
 			this.transformMethods(name, classNode);
-			this.injectInterfaceMethods(name, classNode);
+			this.injectInterfaceMethods(classNode, this.type.getName());
 		}
 
+		/**
+		 * Populate the class node itself
+		 * 
+		 * @param name
+		 * @param classNode
+		 */
 		private void populateClass(String name, ClassNode classNode)
 		{
 			classNode.access = classNode.access & ~Opcodes.ACC_ABSTRACT;
 			classNode.name = name.replace('.', '/');
 			classNode.superName = Obf.BakedHandlerList.ref;
-			classNode.interfaces.add(this.type.getName().replace('.', '/'));
-			classNode.sourceFile = "Dynamic";
+			classNode.interfaces.add(this.typeRef);
+			classNode.sourceFile = name.substring(name.lastIndexOf('.') + 1) + ".java";
 
-			for (int i = 0; i < this.size; i++)
+			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
 			{
-				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, "handler$" + i, "L" + this.typeRef + ";", null, null));
+				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";", null, null));
 			}
 		}
 
+		/**
+		 * Transform existing methods in the template class
+		 * 
+		 * @param name
+		 * @param classNode
+		 */
 		private void transformMethods(String name, ClassNode classNode)
 		{
 			for (Iterator<MethodNode> methodIterator = classNode.methods.iterator(); methodIterator.hasNext();)
@@ -494,6 +579,12 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 		}
 		
+		/**
+		 * Transform the constructor
+		 * 
+		 * @param classNode
+		 * @param method
+		 */
 		private void processCtor(ClassNode classNode, MethodNode method)
 		{
 			for (Iterator<AbstractInsnNode> iter = method.instructions.iterator(); iter.hasNext();)
@@ -510,6 +601,12 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 		}
 
+		/**
+		 * Transform .get()
+		 * 
+		 * @param classNode
+		 * @param method
+		 */
 		private void processGet(ClassNode classNode, MethodNode method)
 		{
 			method.access = method.access & ~Opcodes.ACC_ABSTRACT;
@@ -519,40 +616,41 @@ public class HandlerList<T> extends LinkedList<T>
 			method.instructions.add(new InsnNode(Opcodes.ARETURN));
 		}
 
+		/**
+		 * Transform .processPopulate()
+		 * 
+		 * @param classNode
+		 * @param method
+		 */
 		private void processPopulate(ClassNode classNode, MethodNode method)
 		{
 			method.access = method.access & ~Opcodes.ACC_ABSTRACT;
 			method.instructions.clear();
 			
-			for (int i = 0; i < this.size; i++)
+			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
 			{
 				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-				method.instructions.add(new IntInsnNode(Opcodes.BIPUSH, i));
+				method.instructions.add(new IntInsnNode(Opcodes.BIPUSH, handlerIndex));
 				method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true));
 				method.instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, this.typeRef));
-				method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, "handler$" + i, "L" + this.typeRef + ";"));
+				method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
 			}		
 
-			method.instructions.add(new InsnNode(Opcodes.RETURN));
+			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			method.instructions.add(new InsnNode(Opcodes.ARETURN));
 		}
 
-		private void injectInterfaceMethods(String name, ClassNode classNode)
-		{
-			try
-			{
-				String interfaceName = this.type.getName(); 
-				this.injectInterfaceMethods(classNode, interfaceName);
-			}
-			catch (IOException ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-
+		/**
+		 * Recurse down the interface inheritance hierarchy and inject methods to handle each interface
+		 * 
+		 * @param classNode
+		 * @param interfaceName
+		 * @throws IOException
+		 */
 		private void injectInterfaceMethods(ClassNode classNode, String interfaceName) throws IOException
 		{
-			ClassReader interfaceReader = new ClassReader(this.getInterfaceBytes(interfaceName));
+			ClassReader interfaceReader = new ClassReader(HandlerListClassLoader.getInterfaceBytes(interfaceName));
 			ClassNode interfaceNode = new ClassNode();
 			interfaceReader.accept(interfaceNode, 0);
 			
@@ -568,6 +666,12 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 		}
 
+		/**
+		 * Inject the supplied interface method into the target class an populate it with method calls to the list members 
+		 * 
+		 * @param classNode
+		 * @param method
+		 */
 		private void populateInterfaceMethod(ClassNode classNode, MethodNode method)
 		{
 			Type returnType = Type.getReturnType(method.desc);
@@ -577,13 +681,13 @@ public class HandlerList<T> extends LinkedList<T>
 				Type[] args = Type.getArgumentTypes(method.desc);
 				method.access = Opcodes.ACC_PUBLIC;
 				
-				for (int i = 0; i < this.size; i++)
+				for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
 				{
 					LabelNode lineNumberLabel = new LabelNode(new Label());
 					method.instructions.add(lineNumberLabel);
-					method.instructions.add(new LineNumberNode(++this.lineNumber, lineNumberLabel));
+					method.instructions.add(new LineNumberNode(100 + handlerIndex, lineNumberLabel));
 					method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-					method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, "handler$" + i, "L" + this.typeRef + ";"));
+					method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
 					this.invokeInterfaceMethod(method, args);
 				}		
 				
@@ -591,6 +695,12 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 		}
 
+		/**
+		 * Inject instructions into the supplied method to invoke the same method on the supplied interface 
+		 * 
+		 * @param method
+		 * @param args
+		 */
 		private void invokeInterfaceMethod(MethodNode method, Type[] args)
 		{
 			int argNumber = 1;
@@ -603,27 +713,28 @@ public class HandlerList<T> extends LinkedList<T>
 			method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, this.typeRef, method.name, method.desc, true));
 		}
 
-		private String getNextClassName()
+		/**
+		 * @param baseName
+		 * @param typeName
+		 * @return
+		 */
+		private static String getNextClassName(String baseName, String typeName)
 		{
-			return String.format("%s$%s$%s", Obf.HandlerList.name, this.type.getSimpleName(), HandlerListClassLoader.handlerIndex++);
+			return String.format("%s$%s%d", baseName, typeName, HandlerListClassLoader.handlerIndex++);
 		}
 
-		private byte[] getInterfaceBytes(String name) throws IOException
+		/**
+		 * @param name
+		 * @return
+		 * @throws IOException
+		 */
+		private static byte[] getInterfaceBytes(String name) throws IOException
 		{
 			byte[] bytes = Launch.classLoader.getClassBytes(name);
 
-			final List<IClassTransformer> transformers = Launch.classLoader.getTransformers();
-			
-			for (final IClassTransformer transformer : transformers)
+			for (final IClassTransformer transformer : Launch.classLoader.getTransformers())
 			{
-				try
-				{
-					bytes = transformer.transform(name, name, bytes);
-				}
-				catch (Exception ex)
-				{
-					ex.printStackTrace();
-				}
+				bytes = transformer.transform(name, name, bytes);
 			}
 			
 			return bytes;
