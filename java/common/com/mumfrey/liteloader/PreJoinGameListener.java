@@ -16,6 +16,11 @@ public interface PreJoinGameListener extends LiteMod
 	 * 
 	 * @param netHandler Net handler
 	 * @param joinGamePacket Join game packet
+	 * 
+	 * @return true to cancel the event
+	 * @deprecated this event's return code is not compatible with other events expressing the same pattern, 
+	 *     it will be replaced in the next release with a method whose return value is boolean to NOT cancel
 	 */
+	@Deprecated
 	public abstract boolean onPreJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket);
 }
