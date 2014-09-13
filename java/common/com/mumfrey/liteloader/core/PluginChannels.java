@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.mumfrey.liteloader.api.InterfaceProvider;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.network.INetHandler;
@@ -34,30 +35,36 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	/**
 	 * Mapping of plugin channel names to listeners
 	 */
-	protected HashMap<String, LinkedList<L>> pluginChannels = new HashMap<String, LinkedList<L>>();
+	protected final HashMap<String, LinkedList<L>> pluginChannels = new HashMap<String, LinkedList<L>>();
 	
 	/**
 	 * List of mods which implement PluginChannelListener interface
 	 */
-	protected LinkedList<L> pluginChannelListeners = new LinkedList<L>();
+	protected final FastIterableDeque<L> pluginChannelListeners;
 	
 	/**
 	 * Plugin channels that we know the server supports
 	 */
-	protected Set<String> remotePluginChannels = new HashSet<String>();
+	protected final Set<String> remotePluginChannels = new HashSet<String>();
 	
 	/**
 	 * Keep track of faulting listeners so that we can periodically log a message if a listener is throwing LOTS of exceptions
 	 */
-	protected Map<L, Integer> faultingPluginChannelListeners = new HashMap<L, Integer>();
+	protected final Map<L, Integer> faultingPluginChannelListeners = new HashMap<L, Integer>();
 	
 	/**
 	 * Package private
 	 */
 	PluginChannels()
 	{
+		this.pluginChannelListeners = this.createHandlerList();
 	}
 	
+	/**
+	 * @return
+	 */
+	protected abstract FastIterableDeque<L> createHandlerList();
+
 	/**
 	 * Get the current set of registered client-side channels
 	 */
@@ -90,10 +97,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	 */
 	protected void addPluginChannelListener(L pluginChannelListener)
 	{
-		if (!this.pluginChannelListeners.contains(pluginChannelListener))
-		{
-			this.pluginChannelListeners.add(pluginChannelListener);
-		}
+		this.pluginChannelListeners.add(pluginChannelListener);
 	}
 	
 	/**

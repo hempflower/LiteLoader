@@ -29,6 +29,8 @@ import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
+import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -60,17 +62,17 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	/**
 	 * List of mods which can filter server chat
 	 */
-	private HandlerList<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class);
+	private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	
 	/**
 	 * List of mods which provide server commands
 	 */
-	private HandlerList<ServerCommandProvider> serverCommandProviders = new HandlerList<ServerCommandProvider>(ServerCommandProvider.class);
+	private FastIterable<ServerCommandProvider> serverCommandProviders = new HandlerList<ServerCommandProvider>(ServerCommandProvider.class);
 	
 	/**
 	 * List of mods which monitor server player events
 	 */
-	private HandlerList<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
+	private FastIterable<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
 
 	/**
 	 * Package private ctor
@@ -157,10 +159,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 */
 	public void addServerChatFilter(ServerChatFilter serverChatFilter)
 	{
-		if (!this.serverChatFilters.contains(serverChatFilter))
-		{
-			this.serverChatFilters.add(serverChatFilter);
-		}
+		this.serverChatFilters.add(serverChatFilter);
 	}
 
 	/**
@@ -196,15 +195,7 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	{
 		EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
 		
-		for (ServerChatFilter chatFilter : this.serverChatFilters)
-		{
-			if (!chatFilter.onChat(player, chatPacket, chatPacket.func_149439_c()))
-			{
-				return false;
-			}
-		}
-
-		return true;
+		return this.serverChatFilters.all().onChat(player, chatPacket, chatPacket.func_149439_c());
 	}
 
 	/**

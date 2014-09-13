@@ -5,6 +5,8 @@ import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.api.Listener;
+import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -19,7 +21,14 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	
 	protected ClientPluginChannels()
 	{
+		if (ClientPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error", new InstantiationException("Only a single instance of ClientPluginChannels is allowed"));
 		ClientPluginChannels.instance = this;
+	}
+	
+	@Override
+	protected FastIterableDeque<PluginChannelListener> createHandlerList()
+	{
+		return new HandlerList<PluginChannelListener>(PluginChannelListener.class);
 	}
 
 	protected static ClientPluginChannels getInstance()

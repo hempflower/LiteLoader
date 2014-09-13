@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import javax.activity.InvalidActivityException;
@@ -35,9 +34,11 @@ import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.core.event.EventProxy;
+import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.crashreport.CallableLaunchWrapper;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
@@ -128,27 +129,11 @@ public final class LiteLoader
 	/**
 	 * Core providers
 	 */
-	private final List<CoreProvider> coreProviders = new LinkedList<CoreProvider>();
-	
-	/**
-	 * 
-	 */
-	private final List<TickObserver> tickObservers = new LinkedList<TickObserver>();
-	
-	/**
-	 * 
-	 */
-	private final List<WorldObserver> worldObservers = new LinkedList<WorldObserver>();
-	
-	/**
-	 * 
-	 */
-	private final List<ShutdownObserver> shutdownObservers = new LinkedList<ShutdownObserver>();
-	
-	/**
-	 * 
-	 */
-	private final List<PostRenderObserver> postRenderObservers = new LinkedList<PostRenderObserver>();
+	private final FastIterableDeque<CoreProvider> coreProviders = new HandlerList<CoreProvider>(CoreProvider.class);
+	private final FastIterableDeque<TickObserver> tickObservers = new HandlerList<TickObserver>(TickObserver.class);
+	private final FastIterableDeque<WorldObserver> worldObservers = new HandlerList<WorldObserver>(WorldObserver.class);
+	private final FastIterableDeque<ShutdownObserver> shutdownObservers = new HandlerList<ShutdownObserver>(ShutdownObserver.class);
+	private final FastIterableDeque<PostRenderObserver> postRenderObservers = new HandlerList<PostRenderObserver>(PostRenderObserver.class);
 	
 	/**
 	 * Mod panel manager, deliberately raw
@@ -245,10 +230,7 @@ public final class LiteLoader
 			this.shutdownObservers.addAll(this.apiAdapter.getAllObservers(ShutdownObserver.class));
 			this.postRenderObservers.addAll(this.apiAdapter.getAllObservers(PostRenderObserver.class));
 			
-			for (CoreProvider coreProvider : this.coreProviders)
-			{
-				coreProvider.onInit();
-			}
+			this.coreProviders.all().onInit();
 			
 			this.enumerator.onInit();
 			this.mods.init(this.apiAdapter.getAllObservers(ModLoadObserver.class));
@@ -273,10 +255,7 @@ public final class LiteLoader
 		// Spawn mod instances and initialise them
 		this.loadAndInitMods();
 
-		for (CoreProvider coreProvider : this.coreProviders)
-		{
-			coreProvider.onPostInitComplete(this.mods);
-		}
+		this.coreProviders.all().onPostInitComplete(this.mods);
 		
 		// Save stuff
 		this.properties.writeProperties();
@@ -884,10 +863,7 @@ public final class LiteLoader
 	 */
 	private void postInitCoreProviders()
 	{
-		for (CoreProvider coreProvider : this.coreProviders)
-		{
-			coreProvider.onPostInit(this.engine);
-		}
+		this.coreProviders.all().onPostInit(this.engine);
 
 		this.interfaceManager.registerInterfaces();
 	}
@@ -950,10 +926,7 @@ public final class LiteLoader
 	{
 		this.permissionsManagerClient.onJoinGame(netHandler, loginPacket);
 
-		for (CoreProvider coreProvider : this.coreProviders)
-		{
-			coreProvider.onJoinGame(netHandler, loginPacket);
-		}
+		this.coreProviders.all().onJoinGame(netHandler, loginPacket);
 	}
 	
 	/**
@@ -969,10 +942,7 @@ public final class LiteLoader
 			this.permissionsManagerClient.scheduleRefresh();
 		}
 		
-		for (WorldObserver worldObserver : this.worldObservers)
-		{
-			worldObserver.onWorldChanged(world);
-		}
+		this.worldObservers.all().onWorldChanged(world);
 	}
 	
 	/**
@@ -983,12 +953,7 @@ public final class LiteLoader
 	void onPostRender(int mouseX, int mouseY, float partialTicks)
 	{
 		this.profiler.startSection("core");
-		
-		for (PostRenderObserver postRenderObserver : this.postRenderObservers)
-		{
-			postRenderObserver.onPostRender(mouseX, mouseY, partialTicks);
-		}
-		
+		this.postRenderObservers.all().onPostRender(mouseX, mouseY, partialTicks);
 		this.profiler.endSection();
 	}
 
@@ -1020,10 +985,7 @@ public final class LiteLoader
 
 		this.profiler.startSection("observers");
 		
-		for (TickObserver tickObserver : this.tickObservers)
-		{
-			tickObserver.onTick(clock, partialTicks, inGame);
-		}
+		this.tickObservers.all().onTick(clock, partialTicks, inGame);
 		
 		this.profiler.endSection();
 	}
@@ -1032,10 +994,7 @@ public final class LiteLoader
 	{
 		LiteLoaderLogger.info("LiteLoader is shutting down, shutting down core providers and syncing configuration");
 		
-		for (ShutdownObserver lifeCycleObserver : this.shutdownObservers)
-		{
-			lifeCycleObserver.onShutDown();
-		}
+		this.shutdownObservers.all().onShutDown();
 
 		this.configManager.syncConfig();
 	}

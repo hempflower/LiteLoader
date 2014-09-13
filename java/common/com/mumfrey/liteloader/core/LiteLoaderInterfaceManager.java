@@ -4,7 +4,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +14,8 @@ import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.Observer;
 import com.mumfrey.liteloader.api.exceptions.InvalidProviderException;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
+import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -152,10 +153,7 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 					
 					this.registeredListeners.add(listener);
 					
-					for (InterfaceObserver observer : LiteLoaderInterfaceManager.this.observers)
-					{
-						observer.onRegisterListener(this.provider, this.interfaceType, listener);
-					}
+					LiteLoaderInterfaceManager.this.observers.all().onRegisterListener(this.provider, this.interfaceType, listener);
 					
 					return true;
 				}
@@ -197,7 +195,7 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 	/**
 	 * Interface observers
 	 */
-	protected final List<InterfaceObserver> observers = new LinkedList<InterfaceObserver>();
+	protected final FastIterable<InterfaceObserver> observers = new HandlerList<InterfaceObserver>(InterfaceObserver.class);
 	
 	/**
 	 * True once the initial init phase (in which all registered providers are initialised) is completed, we
@@ -321,10 +319,7 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 	 */
 	public void registerObserver(InterfaceObserver observer)
 	{
-		if (!this.observers.contains(observer))
-		{
-			this.observers.add(observer);
-		}
+		this.observers.add(observer);
 	}
 
 	/* (non-Javadoc)
