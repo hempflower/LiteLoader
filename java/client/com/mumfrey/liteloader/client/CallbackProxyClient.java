@@ -127,6 +127,12 @@ public class CallbackProxyClient
 	public static void onStartupComplete(int ref, Minecraft minecraft)
 	{
 		CallbackProxyClient.events = ClientEvents.getInstance();
+		
+		if (CallbackProxyClient.events == null)
+		{
+			throw new RuntimeException("LiteLoader failed to start up properly. The game is in an unstable state and must shut down now. Check the developer log for startup errors");
+		}
+		
 		CallbackProxyClient.events.onStartupComplete();
 	}
 	
