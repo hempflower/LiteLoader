@@ -20,6 +20,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -30,18 +31,59 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  *
  * @param <T>
  */
-public class HandlerList<T> extends LinkedList<T>
+public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T>
 {
 	private static final long serialVersionUID = 1L;
 
 	private static final int MAX_UNCOLLECTED_CLASSES = 5000;
 	
 	private static int uncollectedHandlerLists = 0;
+	
+	/**
+	 * Enum for logic operations supported between handlers which return bool
+	 */
+	public enum ReturnLogicOp
+	{
+		/**
+		 * Logical OR applied between handlers, return FALSE unless one or more handlers returns TRUE 
+		 */
+		OR,
+		
+		/**
+		 * Logical OR, but with the difference than an EMPTY handler list will return TRUE 
+		 */
+		OR_ASSUME_TRUE,
+		
+		/**
+		 * Logical AND, returns TRUE if the list is empty or if all handlers return TRUE 
+		 */
+		AND,
+		
+		/**
+		 * Logical AND, returns FALSE at the first handler to return FALSE and doesn't process any further handlers 
+		 */
+		AND_BREAK_ON_FALSE;
+		
+		boolean isOr()
+		{
+			return this == OR || this == OR_ASSUME_TRUE;
+		}
+		
+		boolean assumeTrue()
+		{
+			return this == OR_ASSUME_TRUE;
+		}
+	}
 
 	/**
 	 * Type of the interface for objects in this handler list
 	 */
-	private Class<T> type;
+	private final Class<T> type;
+
+	/**
+	 * 
+	 */
+	private final ReturnLogicOp logicOp;
 	
 	/**
 	 * Current baked handler list, we cook them at gas mark 5 for 30 minutes in a disposable classloader whic
@@ -54,12 +96,22 @@ public class HandlerList<T> extends LinkedList<T>
 	 */
 	public HandlerList(Class<T> type)
 	{
+		this(type, ReturnLogicOp.AND_BREAK_ON_FALSE);
+	}
+	
+	/**
+	 * @param type
+	 * @param logicOp Logical operation to apply to interface methods which return boolean
+	 */
+	public HandlerList(Class<T> type, ReturnLogicOp logicOp)
+	{
 		if (!type.isInterface())
 		{
 			throw new IllegalArgumentException("HandlerList type argument must be an interface");
 		}	
 		
 		this.type = type;
+		this.logicOp = logicOp;
 	}
 	
 	/**
@@ -67,6 +119,7 @@ public class HandlerList<T> extends LinkedList<T>
 	 * 
 	 * @return
 	 */
+	@Override
 	public T all()
 	{
 		if (this.bakedHandler == null)
@@ -82,13 +135,14 @@ public class HandlerList<T> extends LinkedList<T>
 	 */
 	protected void bake()
 	{
-		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type);
+		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.logicOp);
 		this.bakedHandler = classLoader.newHandler(this);
 	}
 
 	/**
 	 * Invalidate current baked list
 	 */
+	@Override
 	public void invalidate()
 	{
 		if (this.bakedHandler == null)
@@ -194,7 +248,16 @@ public class HandlerList<T> extends LinkedList<T>
 	@Override
 	public boolean addAll(Collection<? extends T> listeners)
 	{
-		throw new UnsupportedOperationException("'addAll' is not supported for HandlerList");
+		for (T listener : listeners)
+		{
+			if (!this.contains(listener))
+			{
+				super.add(listener);
+			}
+		}
+		
+		this.invalidate();
+		return true;
 	}
 	
 	/* (non-Javadoc)
@@ -413,6 +476,11 @@ public class HandlerList<T> extends LinkedList<T>
 		private final String typeRef;
 		
 		/**
+		 * Logic operation to apply when running a callback with a boolean 
+		 */
+		private final ReturnLogicOp logicOp;
+		
+		/**
 		 * Size of the handler list
 		 */
 		private int size;
@@ -421,11 +489,12 @@ public class HandlerList<T> extends LinkedList<T>
 		 * @param type
 		 * @param size
 		 */
-		HandlerListClassLoader(Class<T> type)
+		HandlerListClassLoader(Class<T> type, ReturnLogicOp logicOp)
 		{
 			super(new URL[0], Launch.classLoader);
 			this.type = type;
 			this.typeRef = type.getName().replace('.', '/');
+			this.logicOp = logicOp;
 		}
 		
 		/**
@@ -505,6 +574,8 @@ public class HandlerList<T> extends LinkedList<T>
 				ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 				classNode.accept(classWriter);
 				bytes = classWriter.toByteArray();
+				
+//				classNode.accept(new org.objectweb.asm.util.CheckClassAdapter(new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES)));
 				
 				// Delegate to ClassLoader's usual behaviour to load the class we just generated
 				return this.defineClass(name, bytes, 0, bytes.length);
@@ -614,6 +685,9 @@ public class HandlerList<T> extends LinkedList<T>
 
 			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			method.instructions.add(new InsnNode(Opcodes.ARETURN));
+			
+			method.maxStack = 1;
+			method.maxLocals = 1;
 		}
 
 		/**
@@ -639,6 +713,9 @@ public class HandlerList<T> extends LinkedList<T>
 
 			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			method.instructions.add(new InsnNode(Opcodes.ARETURN));
+			
+			method.maxStack = 3;
+			method.maxLocals = 2;
 		}
 
 		/**
@@ -675,24 +752,88 @@ public class HandlerList<T> extends LinkedList<T>
 		private void populateInterfaceMethod(ClassNode classNode, MethodNode method)
 		{
 			Type returnType = Type.getReturnType(method.desc);
+			Type[] args = Type.getArgumentTypes(method.desc);
 			
 			if (returnType.equals(Type.VOID_TYPE))
 			{
-				Type[] args = Type.getArgumentTypes(method.desc);
 				method.access = Opcodes.ACC_PUBLIC;
-				
-				for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
-				{
-					LabelNode lineNumberLabel = new LabelNode(new Label());
-					method.instructions.add(lineNumberLabel);
-					method.instructions.add(new LineNumberNode(100 + handlerIndex, lineNumberLabel));
-					method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-					method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
-					this.invokeInterfaceMethod(method, args);
-				}		
-				
-				method.instructions.add(new InsnNode(Opcodes.RETURN));
+				this.populateVoidInvokationChain(classNode, method, args);
 			}
+			else if (returnType.equals(Type.BOOLEAN_TYPE))
+			{
+				method.access = Opcodes.ACC_PUBLIC;
+				this.populateBooleanInvokationChain(classNode, method, args);
+			}
+		}
+
+		/**
+		 * @param classNode
+		 * @param method
+		 * @param args
+		 */
+		private void populateVoidInvokationChain(ClassNode classNode, MethodNode method, Type[] args)
+		{
+			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
+			{
+				this.invokeHandler(handlerIndex, classNode, method, args);
+			}		
+			
+			method.instructions.add(new InsnNode(Opcodes.RETURN));
+
+			method.maxLocals = args.length + 1;
+			method.maxStack = args.length + 1;
+		}
+
+		/**
+		 * @param classNode
+		 * @param method
+		 * @param args
+		 */
+		private void populateBooleanInvokationChain(ClassNode classNode, MethodNode method, Type[] args)
+		{
+			boolean isOrOperation = this.logicOp.isOr();
+			boolean breakOnFalse = this.logicOp == ReturnLogicOp.AND_BREAK_ON_FALSE;
+			int initialValue = isOrOperation && (!this.logicOp.assumeTrue() || this.size > 0) ? Opcodes.ICONST_0 : Opcodes.ICONST_1;
+			int localIndex = this.getFirstLocalIndex(args);
+			
+			method.instructions.add(new InsnNode(initialValue));
+			method.instructions.add(new VarInsnNode(Opcodes.ISTORE, localIndex));
+			
+			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
+			{
+				this.invokeHandler(handlerIndex, classNode, method, args); // invoke the method, this will leave the return value on the stack
+				
+				int jumpCondition = isOrOperation ? Opcodes.IFEQ : Opcodes.IFNE;     // jump if zero for OR, jump if one for AND
+				int semaphore = isOrOperation ? Opcodes.ICONST_1 : Opcodes.ICONST_0; // will push TRUE for OR, will push FALSE for AND
+				
+				LabelNode lbl = new LabelNode();
+				method.instructions.add(new JumpInsnNode(jumpCondition, lbl)); // jump over the set/return based on the condition
+				method.instructions.add(new InsnNode(semaphore)); // push TRUE or FALSE onto the stack
+				method.instructions.add(breakOnFalse ? new InsnNode(Opcodes.IRETURN) : new VarInsnNode(Opcodes.ISTORE, localIndex)); // set local or return
+				method.instructions.add(lbl); // jump here
+			}		
+			
+			method.instructions.add(new VarInsnNode(Opcodes.ILOAD, localIndex));
+			method.instructions.add(new InsnNode(Opcodes.IRETURN));
+			
+			method.maxLocals = args.length + 2;
+			method.maxStack = args.length + 1;
+		}
+
+		/**
+		 * @param handlerIndex
+		 * @param classNode
+		 * @param method
+		 * @param args
+		 */
+		private int invokeHandler(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args)
+		{
+			LabelNode lineNumberLabel = new LabelNode(new Label());
+			method.instructions.add(lineNumberLabel);
+			method.instructions.add(new LineNumberNode(100 + handlerIndex, lineNumberLabel));
+			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+			method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
+			return this.invokeInterfaceMethod(method, args);
 		}
 
 		/**
@@ -701,7 +842,7 @@ public class HandlerList<T> extends LinkedList<T>
 		 * @param method
 		 * @param args
 		 */
-		private void invokeInterfaceMethod(MethodNode method, Type[] args)
+		private int invokeInterfaceMethod(MethodNode method, Type[] args)
 		{
 			int argNumber = 1;
 			for (Type type : args)
@@ -711,6 +852,14 @@ public class HandlerList<T> extends LinkedList<T>
 			}
 			
 			method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, this.typeRef, method.name, method.desc, true));
+			return argNumber;
+		}
+		
+		private int getFirstLocalIndex(Type[] args)
+		{
+			int argNumber = 1;
+			for (Type type : args) argNumber += type.getSize();
+			return argNumber;
 		}
 
 		/**
