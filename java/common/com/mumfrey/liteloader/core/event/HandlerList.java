@@ -15,12 +15,12 @@ import net.minecraft.launchwrapper.Launch;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
-import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 
 /**
  * HandlerList is a generic class which supports baking a list of event handlers into a dynamic inner
