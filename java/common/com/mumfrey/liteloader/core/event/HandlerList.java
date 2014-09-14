@@ -754,15 +754,15 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			Type returnType = Type.getReturnType(method.desc);
 			Type[] args = Type.getArgumentTypes(method.desc);
 			
-			if (returnType.equals(Type.VOID_TYPE))
-			{
-				method.access = Opcodes.ACC_PUBLIC;
-				this.populateVoidInvokationChain(classNode, method, args);
-			}
-			else if (returnType.equals(Type.BOOLEAN_TYPE))
+			if (returnType.equals(Type.BOOLEAN_TYPE))
 			{
 				method.access = Opcodes.ACC_PUBLIC;
 				this.populateBooleanInvokationChain(classNode, method, args);
+			}
+			else
+			{
+				method.access = Opcodes.ACC_PUBLIC;
+				this.populateVoidInvokationChain(classNode, method, args, returnType);
 			}
 		}
 
@@ -771,14 +771,35 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		 * @param method
 		 * @param args
 		 */
-		private void populateVoidInvokationChain(ClassNode classNode, MethodNode method, Type[] args)
+		private void populateVoidInvokationChain(ClassNode classNode, MethodNode method, Type[] args, Type returnType)
 		{
+			int returnSize = returnType.getSize();
 			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
 			{
 				this.invokeHandler(handlerIndex, classNode, method, args);
-			}		
+				if (returnSize > 0)
+				{
+					method.instructions.add(new InsnNode(returnSize == 1 ? Opcodes.POP : Opcodes.POP2));
+				}
+			}
 			
-			method.instructions.add(new InsnNode(Opcodes.RETURN));
+			if (returnSize > 0)
+			{
+				if (returnType.getSort() == Type.OBJECT)
+				{
+					method.instructions.add(new InsnNode(Opcodes.ACONST_NULL));
+				}
+				else if (returnSize == 1)
+				{
+					method.instructions.add(new InsnNode(Opcodes.ICONST_0));
+				}
+				else if (returnSize == 2)
+				{
+					method.instructions.add(new InsnNode(Opcodes.DCONST_0));
+				}
+			}
+			
+			method.instructions.add(new InsnNode(returnType.getOpcode(Opcodes.IRETURN)));
 
 			method.maxLocals = args.length + 1;
 			method.maxStack = args.length + 1;
