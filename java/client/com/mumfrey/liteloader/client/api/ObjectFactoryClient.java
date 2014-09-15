@@ -71,7 +71,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	}
 	
 	@Override
-	public PanelManager<GuiScreen> getModPanelManager()
+	public PanelManager<GuiScreen> getPanelManager()
 	{
 		if (this.modPanelManager == null)
 		{
