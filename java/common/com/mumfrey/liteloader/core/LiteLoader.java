@@ -46,6 +46,7 @@ import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.messaging.MessageBus;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.Exposable;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
@@ -848,7 +849,7 @@ public final class LiteLoader
 		}
 
 		// Get the mod panel manager
-		this.panelManager = this.objectFactory.getModPanelManager();
+		this.panelManager = this.objectFactory.getPanelManager();
 		if (this.panelManager != null)
 		{
 			this.panelManager.init(this.mods, this.configManager);
@@ -905,15 +906,14 @@ public final class LiteLoader
 		// Set the loader branding in ClientBrandRetriever using reflection
 		LiteLoaderBootstrap.setBranding("LiteLoader");
 		
-		for (CoreProvider coreProvider : this.coreProviders)
-		{
-			coreProvider.onStartupComplete();
-		}
+		this.coreProviders.all().onStartupComplete();
 		
 		if (this.panelManager != null)
 		{
 			this.panelManager.onStartupComplete();
 		}
+		
+		MessageBus.getInstance().onStartupComplete();
 	}
 
 	/**

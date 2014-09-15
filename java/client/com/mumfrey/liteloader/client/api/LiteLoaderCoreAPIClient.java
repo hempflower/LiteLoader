@@ -14,6 +14,7 @@ import com.mumfrey.liteloader.client.LiteLoaderCoreProviderClient;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
+import com.mumfrey.liteloader.messaging.MessageBus;
 
 /**
  * Client side of the core API
@@ -113,7 +114,8 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 		(
 			objectFactory.getEventBroker(),
 			objectFactory.getClientPluginChannels(),
-			objectFactory.getServerPluginChannels()
+			objectFactory.getServerPluginChannels(),
+			MessageBus.getInstance()
 		);
 	}
 	
@@ -125,7 +127,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	{
 		return ImmutableList.<Observer>of
 		(
-			this.getObjectFactory().getModPanelManager()
+			this.getObjectFactory().getPanelManager()
 		);
 	}
 	
