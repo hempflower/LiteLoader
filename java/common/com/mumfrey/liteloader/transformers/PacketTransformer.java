@@ -24,7 +24,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * method in the packet class itself.
  *
  * @author Adam Mummery-Smith
+ * @deprecated This transformer will be retired in favour of event-based packed hooks for 1.8 and beyond 
  */
+@Deprecated
 public abstract class PacketTransformer extends ClassTransformer
 {
 	private static final Set<String> transformedPackets = new HashSet<String>();
