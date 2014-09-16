@@ -23,6 +23,7 @@ public class Obf
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
 	public static final Obf              MinecraftServer = new Obf("net.minecraft.server.MinecraftServer"                              );
+	public static final Obf                         GL11 = new Obf("org.lwjgl.opengl.GL11"                                             );
 	public static final Obf                  constructor = new Obf("<init>"                                                            );
 
 	// Classes
@@ -49,6 +50,7 @@ public class Obf
 	public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "ajn" );
 	public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ade" );
 	public static final Obf                  FrameBuffer = new Obf("net.minecraft.client.shader.Framebuffer",                    "bmg" );
+	public static final Obf                   GuiNewChat = new Obf("net.minecraft.client.gui.GuiNewChat",                        "bcc" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -87,6 +89,7 @@ public class Obf
 	public static final Obf        updateFramebufferSize = new Obf("func_147119_ah",                                             "an"  );
 	public static final Obf            framebufferRender = new Obf("func_147615_c",                                              "c"   );
 	public static final Obf       bindFramebufferTexture = new Obf("func_147612_c",                                              "c"   );
+	public static final Obf                     drawChat = new Obf("func_146230_a",                                              "a"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;

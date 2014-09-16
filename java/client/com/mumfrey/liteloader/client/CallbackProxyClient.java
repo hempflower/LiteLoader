@@ -2,6 +2,7 @@ package com.mumfrey.liteloader.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
@@ -26,6 +27,7 @@ import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
+import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 
 /**
  * Proxy class which handles the redirected calls from the injected callbacks and routes them to the
@@ -124,7 +126,7 @@ public class CallbackProxyClient
 		pluginChannels.onPluginChannelMessage((INetHandlerPlayServer)netHandler, packet);
 	}
 	
-	public static void onStartupComplete(int ref, Minecraft minecraft)
+	public static void onStartupComplete(EventInfo<Minecraft> e)
 	{
 		CallbackProxyClient.events = ClientEvents.getInstance();
 		
@@ -136,138 +138,95 @@ public class CallbackProxyClient
 		CallbackProxyClient.events.onStartupComplete();
 	}
 	
-	public static void onTimerUpdate(int ref)
+	public static void onTimerUpdate(EventInfo<Minecraft> e)
 	{
 		CallbackProxyClient.events.onTimerUpdate();
 	}
 	
-	public static void onAnimateTick(int ref)
+	public static void newTick(EventInfo<Minecraft> e)
 	{
 		CallbackProxyClient.clock = true;
 	}
 	
-	public static void onTick(int ref)
+	public static void onTick(EventInfo<Minecraft> e)
 	{
-		if (ref == 2)
-		{
-			CallbackProxyClient.events.onTick(CallbackProxyClient.clock);
-			CallbackProxyClient.clock = false;
-		}
+		CallbackProxyClient.events.onTick(CallbackProxyClient.clock);
+		CallbackProxyClient.clock = false;
 	}
 	
-	public static void onRender(int ref)
+	public static void onRender(EventInfo<Minecraft> e)
 	{
 		CallbackProxyClient.events.onRender();
 	}
 	
-	public static void preRenderGUI(int ref)
+	public static void preRenderGUI(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		if (ref == 1)
-		{
-			CallbackProxyClient.events.preRenderGUI(ref);
-		}
+		CallbackProxyClient.events.preRenderGUI(partialTicks);
 	}
 	
-	public static void onSetupCameraTransform(int ref)
+	public static void onSetupCameraTransform(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.onSetupCameraTransform();
+		CallbackProxyClient.events.onSetupCameraTransform(partialTicks, timeSlice);
 	}
 	
-	public static void postRenderEntities(int ref)
+	public static void postRenderEntities(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.postRenderEntities();
+		CallbackProxyClient.events.postRenderEntities(partialTicks, timeSlice);
 	}
 	
-	public static void postRender(int ref)
+	public static void postRender(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.postRender();
+		CallbackProxyClient.events.postRender(partialTicks, timeSlice);
 	}
 	
-	public static void onRenderHUD(int ref)
+	public static void onRenderHUD(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		CallbackProxyClient.events.onRenderHUD();
+		CallbackProxyClient.events.onRenderHUD(partialTicks);
 	}
 	
-	public static void onRenderChat(int ref)
+	public static void onRenderChat(EventInfo<GuiIngame> e, float partialTicks, boolean guiActive, int mouseX, int mouseY)
 	{
-		CallbackProxyClient.events.onRenderChat();
+		CallbackProxyClient.events.onRenderChat(e.getSource().getChatGUI(), partialTicks, guiActive, mouseX, mouseY);
 	}
 	
-	public static void postRenderChat(int ref)
+	public static void postRenderChat(EventInfo<GuiIngame> e, float partialTicks, boolean guiActive, int mouseX, int mouseY)
 	{
-		if (ref == 10)
-		{
-			CallbackProxyClient.events.postRenderChat();
-		}
+		CallbackProxyClient.events.postRenderChat(e.getSource().getChatGUI(), partialTicks, guiActive, mouseX, mouseY);
 	}
 	
-	public static void postRenderHUDandGUI(int ref)
+	public static void postRenderHUD(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		if (ref == 2)
-		{
-			CallbackProxyClient.events.postRenderHUD();
-			CallbackProxyClient.events.preRenderGUI(ref);
-		}
+		CallbackProxyClient.events.postRenderHUD(partialTicks);
 	}
 	
-	public static void IntegratedServerCtor(int ref, IntegratedServer instance, Minecraft minecraft, String folderName, String worldName, WorldSettings worldSettings)
+	public static void IntegratedServerCtor(EventInfo<IntegratedServer> e, Minecraft minecraft, String folderName, String worldName, WorldSettings worldSettings)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onStartServer(instance, folderName, worldName, worldSettings);
-		}
+		CallbackProxyClient.events.onStartServer(e.getSource(), folderName, worldName, worldSettings);
 	}
 	
-	public static void onInitializePlayerConnection(int ref, ServerConfigurationManager scm, NetworkManager netManager, EntityPlayerMP player)
+	public static void onInitializePlayerConnection(EventInfo<ServerConfigurationManager> e, NetworkManager netManager, EntityPlayerMP player)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onInitializePlayerConnection(scm, netManager, player);
-		}
+		CallbackProxyClient.events.onInitializePlayerConnection(e.getSource(), netManager, player);
 	}
 
-	public static void onPlayerLogin(int ref, ServerConfigurationManager scm, EntityPlayerMP player)
+	public static void onPlayerLogin(EventInfo<ServerConfigurationManager> e, EntityPlayerMP player)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onPlayerLogin(scm, player);
-		}
+		CallbackProxyClient.events.onPlayerLogin(e.getSource(), player);
 	}
 	
-	public static void onPlayerLogout(int ref, ServerConfigurationManager scm, EntityPlayerMP player)
+	public static void onPlayerLogout(EventInfo<ServerConfigurationManager> e, EntityPlayerMP player)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onPlayerLogout(scm, player);
-		}
+		CallbackProxyClient.events.onPlayerLogout(e.getSource(), player);
 	}
 	
-	public static EntityPlayerMP onSpawnPlayer(EntityPlayerMP returnValue, int ref, ServerConfigurationManager scm, GameProfile profile)
+	public static void onSpawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, GameProfile profile)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onSpawnPlayer(scm, returnValue, profile);
-		}
-
-		return returnValue;
+		CallbackProxyClient.events.onSpawnPlayer(e.getSource(), e.getReturnValue(), profile);
 	}
 
-	public static EntityPlayerMP onRespawnPlayer(EntityPlayerMP returnValue, int ref, ServerConfigurationManager scm, EntityPlayerMP oldPlayer, int dimension, boolean won)
+	public static void onRespawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, EntityPlayerMP oldPlayer, int dimension, boolean won)
 	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onRespawnPlayer(scm, returnValue, oldPlayer, dimension, won);
-		}
-
-		return returnValue;
-	}
-	
-	public static void onOutboundChat(int ref, C01PacketChatMessage packet, String message)
-	{
-		if (ref == 0)
-		{
-			CallbackProxyClient.events.onSendChatMessage(packet, message);
-		}
+		CallbackProxyClient.events.onRespawnPlayer(e.getSource(), e.getReturnValue(), oldPlayer, dimension, won);
 	}
 	
 	public static void onOutboundChat(EventInfo<EntityClientPlayerMP> e, String message)

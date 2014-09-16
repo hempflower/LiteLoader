@@ -401,8 +401,11 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	
 	/**
 	 * Callback from the tick hook, post render entities
+	 * 
+	 * @param timeSlice 
+	 * @param partialTicks2 
 	 */
-	void postRenderEntities()
+	void postRenderEntities(float partialTicks2, long timeSlice)
 	{
 		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
 		this.postRenderListeners.all().onPostRenderEntities(partialTicks);
@@ -410,8 +413,11 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	
 	/**
 	 * Callback from the tick hook, post render
+	 * 
+	 * @param timeSlice 
+	 * @param partialTicks2 
 	 */
-	void postRender()
+	void postRender(float partialTicks2, long timeSlice)
 	{
 		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
 		this.postRenderListeners.all().onPostRender(partialTicks);
@@ -420,37 +426,40 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	/**
 	 * Called immediately before the current GUI is rendered
 	 */
-	void preRenderGUI(int ref)
+	void preRenderGUI(float partialTicks)
 	{
-		Minecraft minecraft = this.engine.getClient();
-		
-		if (!minecraft.skipRenderWorld && ref == (minecraft.theWorld == null ? 1 : 2))
-		{
-			this.renderListeners.all().onRenderGui(this.engineClient.getCurrentScreen());
-		}
+		this.renderListeners.all().onRenderGui(this.engineClient.getCurrentScreen());
 	}
 	
 	/**
 	 * Called immediately after the world/camera transform is initialised
+	 * 
+	 * @param timeSlice 
+	 * @param partialTicks 
 	 */
-	void onSetupCameraTransform()
+	void onSetupCameraTransform(float partialTicks, long timeSlice)
 	{
 		this.renderListeners.all().onSetupCameraTransform();
 	}
 	
 	/**
 	 * Called immediately before the chat log is rendered
+	 * 
+	 * @param chatGui 
+	 * @param mouseY 
+	 * @param mouseX 
+	 * @param guiActive 
+	 * @param partialTicks 
 	 */
-	void onRenderChat()
+	void onRenderChat(GuiNewChat chatGui, float partialTicks, boolean guiActive, int mouseX, int mouseY)
 	{
-		GuiNewChat chat = this.engineClient.getChatGUI();
-		this.chatRenderListeners.all().onPreRenderChat(this.screenWidth, this.screenHeight, chat);
+		this.chatRenderListeners.all().onPreRenderChat(this.screenWidth, this.screenHeight, chatGui);
 	}
 	
 	/**
 	 * Called immediately after the chat log is rendered
 	 */
-	void postRenderChat()
+	void postRenderChat(GuiNewChat chatGui, float partialTicks, boolean guiActive, int mouseX, int mouseY)
 	{
 		GuiNewChat chat = this.engineClient.getChatGUI();
 		this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chat);
@@ -459,23 +468,17 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	/**
 	 * Callback when about to render the HUD
 	 */
-	void onRenderHUD()
+	void onRenderHUD(float partialTicks)
 	{
-		if (!this.engineClient.hideGUI() || this.engineClient.getCurrentScreen() != null)
-		{
-			this.hudRenderListeners.all().onPreRenderHUD(this.screenWidth, this.screenHeight);
-		}
+		this.hudRenderListeners.all().onPreRenderHUD(this.screenWidth, this.screenHeight);
 	}
 	
 	/**
 	 * Callback when the HUD has just been rendered
 	 */
-	void postRenderHUD()
+	void postRenderHUD(float partialTicks)
 	{
-		if (!this.engineClient.hideGUI() || this.engineClient.getCurrentScreen() != null)
-		{
-			this.hudRenderListeners.all().onPostRenderHUD(this.screenWidth, this.screenHeight);
-		}
+		this.hudRenderListeners.all().onPostRenderHUD(this.screenWidth, this.screenHeight);
 	}
 	
 	/**
