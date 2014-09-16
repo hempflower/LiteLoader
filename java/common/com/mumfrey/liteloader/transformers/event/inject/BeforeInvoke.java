@@ -187,9 +187,10 @@ public class BeforeInvoke extends InjectionPoint
 		}
 	}
 	
-	public void setLogging(boolean logging)
+	public BeforeInvoke setLogging(boolean logging)
 	{
 		this.logging = logging;
+		return this;
 	}
 	
 	/* (non-Javadoc)
@@ -200,6 +201,12 @@ public class BeforeInvoke extends InjectionPoint
 	{
 		int ordinal = 0;
 		boolean found = false;
+
+		if (this.logging)
+		{
+			LiteLoaderLogger.debug("================================================================================");
+			LiteLoaderLogger.debug("BeforeInvoke is searching for an injection point in method with descriptor %s", desc);
+		}
 		
 		ListIterator<AbstractInsnNode> iter = insns.iterator();
 		while (iter.hasNext())
@@ -210,19 +217,19 @@ public class BeforeInvoke extends InjectionPoint
 			{
 				MethodInsnNode node = (MethodInsnNode)insn;
 				
-				if (this.logging) LiteLoaderLogger.info("BeforeInvoke is considering invokation NAME=" + node.name + " DESC=" + node.desc + " OWNER=" + node.owner);
+				if (this.logging) LiteLoaderLogger.debug("BeforeInvoke is considering invokation NAME=%s DESC=%s OWNER=%s", node.name, node.desc, node.owner);
 				
 				int index = BeforeInvoke.arrayIndexOf(this.methodNames, node.name, -1);
-				if (index > -1 && this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke, checking owner/signature...");
+				if (index > -1 && this.logging) LiteLoaderLogger.debug("BeforeInvoke   found a matching invoke, checking owner/signature...");
 				
 				int ownerIndex = BeforeInvoke.arrayIndexOf(this.methodOwners, node.owner, index);
 				int descIndex = BeforeInvoke.arrayIndexOf(this.methodSignatures, node.desc, index);
 				if (index > -1 && ownerIndex == index && descIndex == index)
 				{
-					if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke, checking ordinal...");
+					if (this.logging) LiteLoaderLogger.debug("BeforeInvoke     found a matching invoke, checking preconditions...");
 					if (this.matchesInsn(node, ordinal))
 					{
-						if (this.logging) LiteLoaderLogger.info("BeforeInvoke found a matching invoke at ordinal %d", ordinal);
+						if (this.logging) LiteLoaderLogger.debug("BeforeInvoke         found a matching invoke at ordinal %d", ordinal);
 						nodes.add(node);
 						found = true;
 						
@@ -237,6 +244,8 @@ public class BeforeInvoke extends InjectionPoint
 			this.inspectInsn(desc, insns, insn);
 		}
 		
+		if (this.logging) LiteLoaderLogger.debug("================================================================================");
+		
 		return found;
 	}
 
@@ -247,6 +256,7 @@ public class BeforeInvoke extends InjectionPoint
 
 	protected boolean matchesInsn(MethodInsnNode node, int ordinal)
 	{
+		if (this.logging) LiteLoaderLogger.debug("BeforeInvoke       comparing target ordinal %d with current ordinal %d", this.ordinal, ordinal);
 		return this.ordinal == -1 || this.ordinal == ordinal;
 	}
 

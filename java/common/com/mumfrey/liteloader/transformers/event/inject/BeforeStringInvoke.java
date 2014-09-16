@@ -67,6 +67,7 @@ public class BeforeStringInvoke extends BeforeInvoke
 	@Override
 	protected boolean matchesInsn(MethodInsnNode node, int ordinal)
 	{
+		if (this.logging) LiteLoaderLogger.debug("BeforeInvoke       foundLdc \"%s\" = %s", this.ldcValue, this.foundLdc);
 		return this.foundLdc && super.matchesInsn(node, ordinal);
 	}
 }
