@@ -47,31 +47,59 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		/**
 		 * Logical OR applied between handlers, return FALSE unless one or more handlers returns TRUE 
 		 */
-		OR,
+		OR(true, false),
+		
+		/**
+		 * Logical OR, returns TRUE at the first handler to return TRUE and doesn't process any further handlers
+		 */
+		OR_BREAK_ON_TRUE(true, true),
 		
 		/**
 		 * Logical OR, but with the difference than an EMPTY handler list will return TRUE 
 		 */
-		OR_ASSUME_TRUE,
+		OR_ASSUME_TRUE(true, false, true),
 		
 		/**
 		 * Logical AND, returns TRUE if the list is empty or if all handlers return TRUE 
 		 */
-		AND,
+		AND(false, false),
 		
 		/**
 		 * Logical AND, returns FALSE at the first handler to return FALSE and doesn't process any further handlers 
 		 */
-		AND_BREAK_ON_FALSE;
+		AND_BREAK_ON_FALSE(false, true);
+		
+		private final boolean isOr;
+		
+		private final boolean breakOnMatch;
+		
+		private final boolean assumeTrue;
+		
+		private ReturnLogicOp(boolean isOr, boolean breakOnMatch)
+		{
+			this(isOr, breakOnMatch, false);
+		}
+		
+		private ReturnLogicOp(boolean isOr, boolean breakOnMatch, boolean assumeTrue)
+		{
+			this.isOr = isOr;
+			this.breakOnMatch = breakOnMatch;
+			this.assumeTrue = assumeTrue;
+		}
 		
 		boolean isOr()
 		{
-			return this == OR || this == OR_ASSUME_TRUE;
+			return this.isOr;
+		}
+		
+		public boolean breakOnMatch()
+		{
+			return this.breakOnMatch;
 		}
 		
 		boolean assumeTrue()
 		{
-			return this == OR_ASSUME_TRUE;
+			return this.assumeTrue;
 		}
 	}
 
@@ -813,7 +841,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		private void populateBooleanInvokationChain(ClassNode classNode, MethodNode method, Type[] args)
 		{
 			boolean isOrOperation = this.logicOp.isOr();
-			boolean breakOnFalse = this.logicOp == ReturnLogicOp.AND_BREAK_ON_FALSE;
+			boolean breakOnMatch = this.logicOp.breakOnMatch();
 			int initialValue = isOrOperation && (!this.logicOp.assumeTrue() || this.size > 0) ? Opcodes.ICONST_0 : Opcodes.ICONST_1;
 			int localIndex = this.getFirstLocalIndex(args);
 			
@@ -830,7 +858,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 				LabelNode lbl = new LabelNode();
 				method.instructions.add(new JumpInsnNode(jumpCondition, lbl)); // jump over the set/return based on the condition
 				method.instructions.add(new InsnNode(semaphore)); // push TRUE or FALSE onto the stack
-				method.instructions.add(breakOnFalse ? new InsnNode(Opcodes.IRETURN) : new VarInsnNode(Opcodes.ISTORE, localIndex)); // set local or return
+				method.instructions.add(breakOnMatch ? new InsnNode(Opcodes.IRETURN) : new VarInsnNode(Opcodes.ISTORE, localIndex)); // set local or return
 				method.instructions.add(lbl); // jump here
 			}		
 			
