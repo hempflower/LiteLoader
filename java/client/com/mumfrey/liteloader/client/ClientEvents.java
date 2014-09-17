@@ -6,16 +6,13 @@ import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.profiler.Profiler;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Timer;
 
 import org.lwjgl.input.Mouse;
 
 import com.mumfrey.liteloader.*;
-import com.mumfrey.liteloader.client.gen.GenProfiler;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
-import com.mumfrey.liteloader.client.util.PrivateFields;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.Events;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
@@ -44,13 +41,8 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	/**
 	 * Flags which keep track of whether hooks have been applied
 	 */
-	private boolean lateInitDone, profilerHooked;
+	private boolean lateInitDone;
 
-	/**
-	 * Profiler hook objects
-	 */
-	private Profiler genProfiler = null;
-	
 	/**
 	 * ScaledResolution used by the pre-chat and post-chat render callbacks
 	 */
@@ -97,17 +89,6 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		ClientEvents.instance = this;
 		
 		this.engineClient = (GameEngineClient)engine;
-		try
-		{
-			if (properties.getBooleanProperty(LoaderProperties.OPTION_GENERATE_MAPPINGS))
-			{
-				this.genProfiler = GenProfiler.class.newInstance();
-			}
-		}
-		catch (Throwable th)
-		{
-//			th.printStackTrace();
-		}
 	}
 	
 	static ClientEvents getInstance()
@@ -136,31 +117,12 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		delegate.registerInterface(OutboundChatFilter.class);
 	}
 	
-	/**
-	 * Initialise hooks
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.api.InterfaceProvider#initProvider()
 	 */
 	@Override
 	public void initProvider()
 	{
-		if (this.genProfiler != null)
-		{
-			try
-			{
-				LiteLoaderLogger.info("Event manager is registering the mapping generator hook");
-				
-				// Tick hook
-				if (!this.profilerHooked)
-				{
-					this.profilerHooked = true;
-					PrivateFields.minecraftProfiler.setFinal(this.engine.getClient(), this.genProfiler);
-				}
-			}
-			catch (Exception ex)
-			{
-				LiteLoaderLogger.warning(ex, "Error creating hook");
-				ex.printStackTrace();
-			}
-		}	
 	}
 
 	/**

@@ -28,10 +28,10 @@ public class LiteLoaderTweaker implements ITweaker
 	public static final int ENV_TYPE_CLIENT = 0;
 	public static final int ENV_TYPE_DEDICATEDSERVER = 1;
 	
+	// TODO Version - 1.7.10
 	public static final String VERSION = "1.7.10";
 
 	protected static final String bootstrapClassName = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
-	protected static final String genTransformerClassName = "com.mumfrey.liteloader.client.gen.GenProfilerTransformer";
 
 	/**
 	 * Loader startup state
@@ -327,13 +327,6 @@ public class LiteLoaderTweaker implements ITweaker
 
 		LiteLoaderTweaker.instance.transformerManager.injectUpstreamTransformers(classLoader);
 
-		LoaderBootstrap bootstrap = LiteLoaderTweaker.instance.bootstrap;
-		if (bootstrap instanceof LoaderProperties && ((LoaderProperties)bootstrap).getBooleanProperty(LoaderProperties.OPTION_GENERATE_MAPPINGS))
-		{
-			LiteLoaderLogger.info("Injecting gen trasnformer '%s'", LiteLoaderTweaker.genTransformerClassName);
-			LiteLoaderTweaker.instance.transformerManager.injectTransformer(LiteLoaderTweaker.genTransformerClassName);
-		}
-		
 		for (String transformerClassName : this.bootstrap.getRequiredDownstreamTransformers())
 		{
 			LiteLoaderLogger.info("Queuing required class transformer '%s'", transformerClassName);

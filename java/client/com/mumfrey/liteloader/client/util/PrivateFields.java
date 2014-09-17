@@ -140,7 +140,6 @@ public class PrivateFields<P, T>
 		return value;
 	}
 
-	public static final PrivateFields<Minecraft, Profiler>                         minecraftProfiler = new PrivateFields<Minecraft, Profiler>                     (Minecraft.class,                    Obf.minecraftProfiler);
 	public static final PrivateFields<RenderManager, Map>                            entityRenderMap = new PrivateFields<RenderManager, Map>                      (RenderManager.class,                Obf.entityRenderMap);
 	public static final PrivateFields<NetHandlerLoginClient, NetworkManager>              netManager = new PrivateFields<NetHandlerLoginClient, NetworkManager>   (NetHandlerLoginClient.class,        Obf.netManager);
 	public static final PrivateFields<RegistrySimple, Map>                           registryObjects = new PrivateFields<RegistrySimple, Map>                     (RegistrySimple.class,               Obf.registryObjects);                     

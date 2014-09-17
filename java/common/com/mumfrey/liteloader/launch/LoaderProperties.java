@@ -89,7 +89,6 @@ public interface LoaderProperties
 
 	// General properties
 	public static final String OPTION_SOUND_MANAGER_FIX = "soundManagerFix";
-	public static final String OPTION_GENERATE_MAPPINGS = "genMappings";
 	public static final String OPTION_MOD_INFO_SCREEN   = "modInfoScreen";
 	public static final String OPTION_NO_HIDE_TAB       = "tabAlwaysExpanded";
 	public static final String OPTION_BRAND             = "brand";

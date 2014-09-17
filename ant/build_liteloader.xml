@@ -223,7 +223,6 @@
 				<exclude name="?.class" />
 				<exclude name="??.class" />
 				<exclude name="???.class" />
-				<exclude name="/com/mumfrey/liteloader/core/gen/**" />
 			</fileset>
 		</copy>
 
