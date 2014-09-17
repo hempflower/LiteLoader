@@ -19,6 +19,7 @@ public class Obf
 	public static final Obf                   EventProxy = new Obf("com.mumfrey.liteloader.core.event.EventProxy"                      );
 	public static final Obf                  HandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList"                     );
 	public static final Obf             BakedHandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList$BakedHandlerList"    );
+	public static final Obf                 PacketEvents = new Obf("com.mumfrey.liteloader.core.PacketEvents"                          );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
@@ -33,13 +34,7 @@ public class Obf
 	public static final Obf                    GuiIngame = new Obf("net.minecraft.client.gui.GuiIngame",                         "bbv" );
 	public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "qi"  );
 	public static final Obf                CrashReport$6 = new Obf("net.minecraft.crash.CrashReport$6",                          "h"   );
-	public static final Obf            S01PacketJoinGame = new Obf("net.minecraft.network.play.server.S01PacketJoinGame",        "hd"  );
-	public static final Obf        S02PacketLoginSuccess = new Obf("net.minecraft.network.login.server.S02PacketLoginSuccess",   "js"  );
-	public static final Obf                S02PacketChat = new Obf("net.minecraft.network.play.server.S02PacketChat",            "gj"  );
-	public static final Obf       S3FPacketCustomPayload = new Obf("net.minecraft.network.play.server.S3FPacketCustomPayload",   "gr"  );
 	public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "fb"  );
-	public static final Obf         C01PacketChatMessage = new Obf("net.minecraft.network.play.client.C01PacketChatMessage",     "ir"  );
-	public static final Obf       C17PacketCustomPayload = new Obf("net.minecraft.network.play.client.C17PacketCustomPayload",   "iz"  );
 	public static final Obf             IntegratedServer = new Obf("net.minecraft.server.integrated.IntegratedServer",           "bsx" );
 	public static final Obf                WorldSettings = new Obf("net.minecraft.world.WorldSettings",                          "ahj" );
 	public static final Obf   ServerConfigurationManager = new Obf("net.minecraft.server.management.ServerConfigurationManager", "oi"  );
@@ -51,6 +46,15 @@ public class Obf
 	public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ade" );
 	public static final Obf                  FrameBuffer = new Obf("net.minecraft.client.shader.Framebuffer",                    "bmg" );
 	public static final Obf                   GuiNewChat = new Obf("net.minecraft.client.gui.GuiNewChat",                        "bcc" );
+
+	// Packets
+	// -----------------------------------------------------------------------------------------
+	@Deprecated public static final Obf      S01PacketJoinGame = Packets.S01PacketJoinGame;
+	@Deprecated public static final Obf  S02PacketLoginSuccess = Packets.S02PacketLoginSuccess;
+	@Deprecated public static final Obf          S02PacketChat = Packets.S02PacketChat;
+	@Deprecated public static final Obf S3FPacketCustomPayload = Packets.S3FPacketCustomPayload;
+	@Deprecated public static final Obf   C01PacketChatMessage = Packets.C01PacketChatMessage;
+	@Deprecated public static final Obf C17PacketCustomPayload = Packets.C17PacketCustomPayload;
 
 	// Fields
 	// -----------------------------------------------------------------------------------------

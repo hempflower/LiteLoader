@@ -5,15 +5,9 @@ import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.login.INetHandlerLoginClient;
-import net.minecraft.network.login.server.S02PacketLoginSuccess;
 import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Timer;
 
 import org.lwjgl.input.Mouse;
@@ -23,7 +17,6 @@ import com.mumfrey.liteloader.client.gen.GenProfiler;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.client.util.PrivateFields;
 import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.Events;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
@@ -90,15 +83,10 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	private FastIterableDeque<PostRenderListener>   postRenderListeners   = new HandlerList<PostRenderListener>(PostRenderListener.class);
 	private FastIterableDeque<HUDRenderListener>    hudRenderListeners    = new HandlerList<HUDRenderListener>(HUDRenderListener.class);
 	private FastIterableDeque<ChatRenderListener>   chatRenderListeners   = new HandlerList<ChatRenderListener>(ChatRenderListener.class);
-	private FastIterableDeque<ChatListener>         chatListeners         = new HandlerList<ChatListener>(ChatListener.class);
-	private FastIterableDeque<PostLoginListener>    postLoginListeners    = new HandlerList<PostLoginListener>(PostLoginListener.class);
-	private FastIterableDeque<JoinGameListener>     joinGameListeners     = new HandlerList<JoinGameListener>(JoinGameListener.class);
 	private FastIterableDeque<OutboundChatListener> outboundChatListeners = new HandlerList<OutboundChatListener>(OutboundChatListener.class);
 	private FastIterableDeque<ViewportListener>     viewportListeners     = new HandlerList<ViewportListener>(ViewportListener.class);
 	private FastIterableDeque<FrameBufferListener>  frameBufferListeners  = new HandlerList<FrameBufferListener>(FrameBufferListener.class);
 	private FastIterableDeque<InitCompleteListener> initListeners         = new HandlerList<InitCompleteListener>(InitCompleteListener.class);
-	private FastIterableDeque<ChatFilter>           chatFilters           = new HandlerList<ChatFilter>(ChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
-	private FastIterableDeque<PreJoinGameListener>  preJoinGameListeners  = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class, ReturnLogicOp.OR);
 	private FastIterableDeque<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class, ReturnLogicOp.AND);
 
 	@SuppressWarnings("cast")
@@ -141,15 +129,10 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		delegate.registerInterface(PostRenderListener.class);
 		delegate.registerInterface(HUDRenderListener.class);
 		delegate.registerInterface(ChatRenderListener.class);
-		delegate.registerInterface(ChatListener.class);
-		delegate.registerInterface(PostLoginListener.class);
-		delegate.registerInterface(JoinGameListener.class);
 		delegate.registerInterface(OutboundChatListener.class);
 		delegate.registerInterface(ViewportListener.class);
 		delegate.registerInterface(FrameBufferListener.class);
 		delegate.registerInterface(InitCompleteListener.class);
-		delegate.registerInterface(ChatFilter.class);
-		delegate.registerInterface(PreJoinGameListener.class);
 		delegate.registerInterface(OutboundChatFilter.class);
 	}
 	
@@ -235,43 +218,6 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	}
 	
 	/**
-	 * @deprecated use LiteLoader.getInterfaceManager().registerListener(listener); instead
-	 * @param chatFilter
-	 */
-	@Deprecated
-	@Override
-	public void addChatFilter(Object chatFilter)
-	{
-		if (chatFilter instanceof ChatFilter)
-		{
-			this.addChatFilter((ChatFilter)chatFilter);
-		}
-	}
-
-	/**
-	 * @param chatFilter
-	 */
-	public void addChatFilter(ChatFilter chatFilter)
-	{
-		this.chatFilters.add(chatFilter);
-	}
-	
-	/**
-	 * @param chatListener
-	 */
-	public void addChatListener(ChatListener chatListener)
-	{
-		if (chatListener instanceof ChatFilter)
-		{
-			LiteLoaderLogger.warning("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", chatListener.getName());
-		}
-		else
-		{
-			this.chatListeners.add(chatListener);
-		}
-	}
-	
-	/**
 	 * @param chatRenderListener
 	 */
 	public void addChatRenderListener(ChatRenderListener chatRenderListener)
@@ -285,30 +231,6 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	public void addHUDRenderListener(HUDRenderListener hudRenderListener)
 	{
 		this.hudRenderListeners.add(hudRenderListener);
-	}
-	
-	/**
-	 * @param postLoginListener
-	 */
-	public void addPreJoinGameListener(PostLoginListener postLoginListener)
-	{
-		this.postLoginListeners.add(postLoginListener);
-	}
-	
-	/**
-	 * @param joinGameListener
-	 */
-	public void addPreJoinGameListener(PreJoinGameListener joinGameListener)
-	{
-		this.preJoinGameListeners.add(joinGameListener);
-	}
-	
-	/**
-	 * @param joinGameListener
-	 */
-	public void addJoinGameListener(JoinGameListener joinGameListener)
-	{
-		this.joinGameListeners.add(joinGameListener);
 	}
 
 	/**
@@ -548,41 +470,6 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		
 		this.profiler.endSection();
 	}
-	
-	/**
-	 * Callback from the chat hook
-	 * 
-	 * @param chatPacket
-	 * @return
-	 */
-	boolean onChat(S02PacketChat chatPacket)
-	{
-		if (chatPacket.func_148915_c() == null)
-			return true;
-		
-		IChatComponent chat = chatPacket.func_148915_c();
-		String message = chat.getFormattedText();
-		
-		// Chat filters get a stab at the chat first, if any filter returns
-		// false the chat is discarded
-		for (ChatFilter chatFilter : this.chatFilters)
-		{
-			if (chatFilter.onChat(chatPacket, chat, message))
-			{
-				chat = chatPacket.func_148915_c();
-				message = chat.getFormattedText();
-			}
-			else
-			{
-				return false;
-			}
-		}
-		
-		// Chat listeners get the chat if no filter removed it
-		this.chatListeners.all().onChat(chat, message);
-		
-		return true;
-	}
 
 	/**
 	 * @param packet
@@ -602,53 +489,6 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		{
 			e.cancel();
 		}
-	}
-
-	/**
-	 * @param netHandler
-	 * @param loginPacket
-	 */
-	void onPostLogin(INetHandlerLoginClient netHandler, S02PacketLoginSuccess loginPacket)
-	{
-		ClientPluginChannels clientPluginChannels = LiteLoader.getClientPluginChannels();
-		if (clientPluginChannels instanceof ClientPluginChannelsClient)
-		{
-			((ClientPluginChannelsClient)clientPluginChannels).onPostLogin(netHandler, loginPacket);
-		}
-
-		this.postLoginListeners.all().onPostLogin(netHandler, loginPacket);
-	}
-	
-	/**
-	 * Pre join game callback from the login hook
-	 * 
-	 * @param netHandler
-	 * @param hookLogin
-	 * @return
-	 */
-	boolean onPreJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
-	{
-		return !this.preJoinGameListeners.all().onPreJoinGame(netHandler, loginPacket);
-	}
-	
-	/**
-	 * Callback from the join game hook
-	 * 
-	 * @param netHandler
-	 * @param loginPacket
-	 */
-	@Override
-	protected void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
-	{
-		super.onJoinGame(netHandler, loginPacket);
-		
-		ClientPluginChannels clientPluginChannels = LiteLoader.getClientPluginChannels();
-		if (clientPluginChannels instanceof ClientPluginChannelsClient)
-		{
-			((ClientPluginChannelsClient)clientPluginChannels).onJoinGame(netHandler, loginPacket);
-		}
-		
-		this.joinGameListeners.all().onJoinGame(netHandler, loginPacket);
 	}
 
 	/**

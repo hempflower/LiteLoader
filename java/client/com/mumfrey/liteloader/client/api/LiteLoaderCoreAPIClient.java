@@ -32,18 +32,12 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	};
 	
 	private static final String[] requiredDownstreamTransformers = {
+		LiteLoaderCoreAPI.PKG_LITELOADER_COMMON + ".transformers.LiteLoaderPacketTransformer",
 		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.LiteLoaderEventInjectionTransformer",
 		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftOverlayTransformer"
 	};
 	
-	private static final String[] defaultPacketTransformers = {
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.LoginSuccessPacketTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.ChatPacketTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.JoinGamePacketTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.CustomPayloadPacketTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.ServerChatPacketTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.ServerCustomPayloadPacketTransformer"
-	};
+	private static final String[] defaultPacketTransformers = {};
 	
 	private ObjectFactory<Minecraft, IntegratedServer> objectFactory;
 	
@@ -112,6 +106,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 		return ImmutableList.<InterfaceProvider>of
 		(
 			objectFactory.getEventBroker(),
+			objectFactory.getPacketEventBroker(),
 			objectFactory.getClientPluginChannels(),
 			objectFactory.getServerPluginChannels(),
 			MessageBus.getInstance()

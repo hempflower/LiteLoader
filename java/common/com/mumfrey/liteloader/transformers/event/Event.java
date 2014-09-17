@@ -95,7 +95,7 @@ public class Event implements Comparable<Event>
 	
 	protected Set<MethodInfo> pendingInjections;
 	
-	Event(String name, boolean cancellable, int priority)
+	protected Event(String name, boolean cancellable, int priority)
 	{
 		this.name = name.toLowerCase();
 		this.priority = priority;
@@ -216,7 +216,7 @@ public class Event implements Comparable<Event>
 		this.methodReturnType = Type.getReturnType(method.desc);
 		this.methodMAXS       = method.maxStack;
 		this.methodIsStatic   = (method.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
-		this.eventInfoClass   = EventInfo.getEventInfoClassName(this.methodReturnType).replace('.', '/');
+		this.eventInfoClass   = this.getEventInfoClassName();
 		this.eventDescriptor  = String.format("(L%s;%s)V", this.eventInfoClass, method.desc.substring(1, method.desc.indexOf(')')));
 	}
 	
@@ -306,10 +306,7 @@ public class Event implements Comparable<Event>
 		// Instance the EventInfo for this event
 		insns.add(new TypeInsnNode(Opcodes.NEW, this.eventInfoClass)); ctorMAXS++;
 		insns.add(new InsnNode(Opcodes.DUP)); ctorMAXS++; invokeMAXS++;
-		insns.add(new LdcInsnNode(this.name)); ctorMAXS++;
-		insns.add(this.methodIsStatic ? new InsnNode(Opcodes.ACONST_NULL) : new VarInsnNode(Opcodes.ALOAD, 0)); ctorMAXS++;
-		insns.add(new InsnNode(cancellable ? Opcodes.ICONST_1 : Opcodes.ICONST_0)); ctorMAXS++;
-		insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
+		ctorMAXS += invokeEventInfoConstructor(insns, cancellable);
 		insns.add(new VarInsnNode(Opcodes.ASTORE, eventInfoVar));
 		
 		// Call the event handler method in the proxy
@@ -328,6 +325,23 @@ public class Event implements Comparable<Event>
 		this.method.maxStack = Math.max(this.method.maxStack, Math.max(this.methodMAXS + ctorMAXS, this.methodMAXS + invokeMAXS));
 		
 		return handler;
+	}
+
+	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable)
+	{
+		int ctorMAXS = 0;
+		
+		insns.add(new LdcInsnNode(this.name)); ctorMAXS++;
+		insns.add(this.methodIsStatic ? new InsnNode(Opcodes.ACONST_NULL) : new VarInsnNode(Opcodes.ALOAD, 0)); ctorMAXS++;
+		insns.add(new InsnNode(cancellable ? Opcodes.ICONST_1 : Opcodes.ICONST_0)); ctorMAXS++;
+		insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
+		
+		return ctorMAXS;
+	}
+
+	protected String getEventInfoClassName()
+	{
+		return EventInfo.getEventInfoClassName(this.methodReturnType).replace('.', '/');
 	}
 
 	/**

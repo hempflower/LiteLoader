@@ -59,7 +59,10 @@ public interface LiteAPI
 	
 	/**
 	 * Should return an array of required packet transformer names, these transformers will be injected UPSTREAM. Can return null.
+	 * 
+	 * Deprecated - will be removed in 1.8
 	 */
+	@Deprecated
 	public abstract String[] getPacketTransformers();
 	
 	/**

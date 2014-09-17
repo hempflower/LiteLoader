@@ -27,6 +27,7 @@ public interface APIAdapter
 	/**
 	 * Aggregate and return required packet transformers from all registered APIs
 	 */
+	@Deprecated
 	public abstract List<String> getPacketTransformers();
 	
 	/**

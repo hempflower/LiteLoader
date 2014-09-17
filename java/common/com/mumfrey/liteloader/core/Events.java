@@ -5,12 +5,7 @@ import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.INetHandlerPlayServer;
-import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
@@ -29,7 +24,6 @@ import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.event.HandlerList;
-import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -58,11 +52,6 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	protected final Profiler profiler;
 
 	protected LiteLoaderMods mods;
-	
-	/**
-	 * List of mods which can filter server chat
-	 */
-	private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	
 	/**
 	 * List of mods which provide server commands
@@ -134,10 +123,8 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	@Override
 	public void registerInterfaces(InterfaceRegistrationDelegate delegate)
 	{
-		delegate.registerInterface(ServerChatFilter.class);
 		delegate.registerInterface(ServerCommandProvider.class);
 		delegate.registerInterface(ServerPlayerListener.class);
-		
 		delegate.registerInterface(CommonPluginChannelListener.class);
 	}
 	
@@ -152,14 +139,6 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 		{
 			LiteLoaderLogger.warning("Interface error for mod '%1s'. Implementing CommonPluginChannelListener has no effect! Use PluginChannelListener or ServerPluginChannelListener instead", listener.getName());
 		}
-	}
-
-	/**
-	 * @param serverChatFilter
-	 */
-	public void addServerChatFilter(ServerChatFilter serverChatFilter)
-	{
-		this.serverChatFilters.add(serverChatFilter);
 	}
 
 	/**
@@ -182,20 +161,6 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	public void onResourceManagerReload(IResourceManager resourceManager)
 	{
 		LoadingProgress.setMessage("Reloading Resources...");
-	}
-	
-	/**
-	 * Callback from the chat hook
-	 * @param netHandler 
-	 * 
-	 * @param chatPacket
-	 * @return
-	 */
-	public boolean onServerChat(INetHandlerPlayServer netHandler, C01PacketChatMessage chatPacket)
-	{
-		EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
-		
-		return this.serverChatFilters.all().onChat(player, chatPacket, chatPacket.func_149439_c());
 	}
 
 	/**
@@ -290,11 +255,6 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	protected void onWorldChanged(World world)
 	{
 		this.loader.onWorldChanged(world);
-	}
-
-	protected void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
-	{
-		this.loader.onJoinGame(netHandler, loginPacket);
 	}
 
 	/**

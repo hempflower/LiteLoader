@@ -7,25 +7,12 @@ import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.login.INetHandlerLoginClient;
-import net.minecraft.network.login.server.S02PacketLoginSuccess;
-import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.INetHandlerPlayServer;
-import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S02PacketChat;
-import net.minecraft.network.play.server.S3FPacketCustomPayload;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.world.WorldSettings;
 
 import com.mojang.authlib.GameProfile;
-import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 
@@ -48,83 +35,6 @@ public class CallbackProxyClient
 	private static boolean fboEnabled;
 
 	private static boolean renderingFBO;
-	
-	public static void handleLoginSuccessPacket(INetHandler netHandler, S02PacketLoginSuccess packet)
-	{
-		((INetHandlerLoginClient)netHandler).handleLoginSuccess(packet);
-		CallbackProxyClient.events.onPostLogin((INetHandlerLoginClient)netHandler, packet);
-	}
-	
-	/**
-	 * S02PacketChat::processPacket()
-	 * 
-	 * @param netHandler
-	 * @param packet
-	 */
-	public static void handleChatPacket(INetHandler netHandler, S02PacketChat packet)
-	{
-		if (CallbackProxyClient.events.onChat(packet))
-		{
-			((INetHandlerPlayClient)netHandler).handleChat(packet);
-		}
-	}
-	
-	/**
-	 * S02PacketChat::processPacket()
-	 * 
-	 * @param netHandler
-	 * @param packet
-	 */
-	public static void handleServerChatPacket(INetHandler netHandler, C01PacketChatMessage packet)
-	{
-		if (CallbackProxyClient.events.onServerChat((INetHandlerPlayServer)netHandler, packet))
-		{
-			((INetHandlerPlayServer)netHandler).processChatMessage(packet);
-		}
-	}
-	
-	/**
-	 * S01PacketJoinGame::processPacket()
-	 * 
-	 * @param netHandler
-	 * @param packet
-	 */
-	public static void handleJoinGamePacket(INetHandler netHandler, S01PacketJoinGame packet)
-	{
-		if (CallbackProxyClient.events.onPreJoinGame(netHandler, packet))
-		{
-			((INetHandlerPlayClient)netHandler).handleJoinGame(packet);
-			CallbackProxyClient.events.onJoinGame(netHandler, packet);
-		}
-	}
-	
-	/**
-	 * S3FPacketCustomPayload::processPacket()
-	 * 
-	 * @param netHandler
-	 * @param packet
-	 */
-	public static void handleCustomPayloadPacket(INetHandler netHandler, S3FPacketCustomPayload packet)
-	{
-		((INetHandlerPlayClient)netHandler).handleCustomPayload(packet);;
-		
-		ClientPluginChannels pluginChannels = LiteLoader.getClientPluginChannels();
-		pluginChannels.onPluginChannelMessage(packet);
-	}
-	
-	/**
-	 * C17PacketCustomPayload::processPacket()
-	 * 
-	 * @param netHandler
-	 * @param packet
-	 */
-	public static void handleCustomPayloadPacket(INetHandler netHandler, C17PacketCustomPayload packet)
-	{
-		((INetHandlerPlayServer)netHandler).processVanilla250Packet(packet);;
-		
-		ServerPluginChannels pluginChannels = LiteLoader.getServerPluginChannels();
-		pluginChannels.onPluginChannelMessage((INetHandlerPlayServer)netHandler, packet);
-	}
 	
 	public static void onStartupComplete(EventInfo<Minecraft> e)
 	{

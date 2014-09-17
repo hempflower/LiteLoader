@@ -733,7 +733,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			{
 				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-				method.instructions.add(new IntInsnNode(Opcodes.BIPUSH, handlerIndex));
+				method.instructions.add(handlerIndex > Short.MAX_VALUE ? new LdcInsnNode(new Integer(handlerIndex)) : new IntInsnNode(Opcodes.SIPUSH, handlerIndex));
 				method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true));
 				method.instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, this.typeRef));
 				method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));

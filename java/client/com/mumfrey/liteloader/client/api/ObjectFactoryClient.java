@@ -8,11 +8,13 @@ import com.mumfrey.liteloader.client.ClientEvents;
 import com.mumfrey.liteloader.client.ClientPluginChannelsClient;
 import com.mumfrey.liteloader.client.GameEngineClient;
 import com.mumfrey.liteloader.client.LiteLoaderPanelManager;
+import com.mumfrey.liteloader.client.PacketEventsClient;
 import com.mumfrey.liteloader.client.gui.startup.LoadingBar;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.Events;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
@@ -33,6 +35,8 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	private LoaderProperties properties;
 	
 	private ClientEvents clientEvents;
+	
+	private PacketEventsClient clientPacketEvents;
 
 	private GameEngineClient engine;
 	
@@ -57,6 +61,17 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 		}
 		
 		return this.clientEvents;
+	}
+	
+	@Override
+	public PacketEvents getPacketEventBroker()
+	{
+		if (this.clientPacketEvents == null)
+		{
+			this.clientPacketEvents = new PacketEventsClient();
+		}
+		
+		return this.clientPacketEvents;
 	}
 	
 	@Override

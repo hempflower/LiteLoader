@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.core;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.INetHandlerPlayServer;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
@@ -97,11 +98,11 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	
 	/**
 	 * Callback for the plugin channel hook
-	 * @param netHandler 
 	 * 
+	 * @param netHandler 
 	 * @param customPayload
 	 */
-	public void onPluginChannelMessage(INetHandlerPlayServer netHandler, C17PacketCustomPayload customPayload)
+	public void onPluginChannelMessage(INetHandler netHandler, C17PacketCustomPayload customPayload)
 	{
 		if (customPayload != null && customPayload.func_149559_c() != null)
 		{

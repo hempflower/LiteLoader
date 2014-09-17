@@ -1,5 +1,8 @@
 package com.mumfrey.liteloader.client.transformers;
 
+import static com.mumfrey.liteloader.core.runtime.Methods.*;
+import static com.mumfrey.liteloader.transformers.event.InjectionPoint.*;
+
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
@@ -9,9 +12,6 @@ import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeStringInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.MethodHead;
-
-import static com.mumfrey.liteloader.core.runtime.Methods.*;
-import static com.mumfrey.liteloader.transformers.event.InjectionPoint.after;
 
 public class LiteLoaderEventInjectionTransformer extends EventInjectionTransformer
 {

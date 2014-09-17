@@ -21,6 +21,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 public abstract class LiteLoaderCoreAPI implements LiteAPI
 {
 	protected static final String PKG_LITELOADER = "com.mumfrey.liteloader";
+	protected static final String PKG_LITELOADER_COMMON = LiteLoaderCoreAPI.PKG_LITELOADER + ".common";
 	
 	protected LoaderEnvironment environment;
 	

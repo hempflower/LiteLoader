@@ -203,7 +203,7 @@ public class ClassTransformerManager
 	 * @param classLoader
 	 * @param transformers
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	private void sieveAndSortPacketTransformers(LaunchClassLoader classLoader, Set<String> transformers)
 	{
 		LiteLoaderLogger.info("Sorting registered packet transformers by priority");
