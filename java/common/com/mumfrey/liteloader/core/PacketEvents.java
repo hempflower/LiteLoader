@@ -131,17 +131,17 @@ public abstract class PacketEvents implements InterfaceProvider
 		
 	private void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
 	{
-		this.handlePacketEvent(e, netHandler, packetId);
-		
-		if (this.packetHandlers[packetId] == null || e.isCancelled())
+		if (this.handlePacketEvent(e, netHandler, packetId) || this.packetHandlers[packetId] == null || e.isCancelled())
 		{
 			return;
 		}
 		
-		if (!this.packetHandlers[packetId].all().handlePacket(netHandler, e.getSource()))
+		if (this.packetHandlers[packetId].all().handlePacket(netHandler, e.getSource()))
 		{
-			e.cancel();
+			return;
 		}
+		
+		e.cancel();
 	}
 
 	/**
@@ -149,46 +149,50 @@ public abstract class PacketEvents implements InterfaceProvider
 	 * @param netHandler
 	 * @param packetId
 	 * @param packet
+	 * 
+	 * @return true if the packet was handled by a local handler and shouldn't be forwarded to later handlers
 	 */
-	protected void handlePacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
+	protected boolean handlePacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
 	{
 		Packet packet = e.getSource();
 
 		if (packetId == this.loginSuccessPacketId)
 		{
 			this.handlePacket(e, netHandler, (S02PacketLoginSuccess)packet);
-			return;
+			return true;
 		}
 		
 		if (packetId == this.serverChatPacketId)
 		{
 			this.handlePacket(e, netHandler, (S02PacketChat)packet);
-			return;
+			return true;
 		}
 		
 		if (packetId == this.clientChatPacketId)
 		{
 			this.handlePacket(e, netHandler, (C01PacketChatMessage)packet);
-			return;
+			return true;
 		}
 		
 		if (packetId == this.joinGamePacketId)
 		{
 			this.handlePacket(e, netHandler, (S01PacketJoinGame)packet);
-			return;
+			return true;
 		}
 		
 		if (packetId == this.serverPayloadPacketId)
 		{
 			this.handlePacket(e, netHandler, (S3FPacketCustomPayload)packet);
-			return;
+			return true;
 		}
 		
 		if (packetId == this.clientPayloadPacketId)
 		{
 			this.handlePacket(e, netHandler, (C17PacketCustomPayload)packet);
-			return;
+			return true;
 		}
+		
+		return false;
 	}
 	
 	/**
