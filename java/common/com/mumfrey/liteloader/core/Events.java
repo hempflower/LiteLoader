@@ -15,7 +15,6 @@ import net.minecraft.world.WorldSettings;
 import com.mojang.authlib.GameProfile;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.ServerChatFilter;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.ServerPlayerListener;
 import com.mumfrey.liteloader.ServerPluginChannelListener;
