@@ -2,7 +2,6 @@ package com.mumfrey.liteloader.client.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
-import java.nio.DoubleBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
-import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -55,13 +53,6 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	static final int PANEL_BOTTOM    = 26;
 	
 	private static final double TWEEN_RATE = 0.08;
-
-	/**
-	 * Used for clipping
-	 */
-	private static DoubleBuffer doubleBuffer = BufferUtils.createByteBuffer(64).asDoubleBuffer();
-	
-	private static int clippingPlaneFlags = 0;
 	
 	private static boolean displayErrorToolTip = true;
 	
@@ -769,80 +760,5 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	static void glDrawTexturedRect(int x, int y, IIcon icon, float alpha)
 	{
 		glDrawTexturedRect(x, y, icon.getIconWidth(), icon.getIconHeight(), icon.getMinU(), icon.getMinV(), icon.getMaxU(), icon.getMaxV(), alpha);
-	}
-	
-	/**
-	 * Enable OpenGL clipping planes (uses planes 2, 3, 4 and 5)
-	 * 
-	 * @param xLeft Left edge clip or -1 to not use this plane
-	 * @param xRight Right edge clip or -1 to not use this plane
-	 * @param yTop Top edge clip or -1 to not use this plane
-	 * @param yBottom Bottom edge clip or -1 to not use this plane
-	 */
-	final static void glEnableClipping(int xLeft, int xRight, int yTop, int yBottom)
-	{
-		clippingPlaneFlags = 0;
-		
-		// Apply left edge clipping if specified
-		if (xLeft != -1)
-		{
-			doubleBuffer.clear();
-			doubleBuffer.put(1).put(0).put(0).put(-xLeft).flip();
-			glClipPlane(GL_CLIP_PLANE2, doubleBuffer);
-			glEnable(GL_CLIP_PLANE2);
-			clippingPlaneFlags |= GL_CLIP_PLANE2;
-		}
-		
-		// Apply right edge clipping if specified
-		if (xRight != -1)
-		{
-			doubleBuffer.clear();
-			doubleBuffer.put(-1).put(0).put(0).put(xRight).flip();
-			glClipPlane(GL_CLIP_PLANE3, doubleBuffer);
-			glEnable(GL_CLIP_PLANE3);
-			clippingPlaneFlags |= GL_CLIP_PLANE3;
-		}
-		
-		// Apply top edge clipping if specified
-		if (yTop != -1)
-		{
-			doubleBuffer.clear();
-			doubleBuffer.put(0).put(1).put(0).put(-yTop).flip();
-			glClipPlane(GL_CLIP_PLANE4, doubleBuffer);
-			glEnable(GL_CLIP_PLANE4);
-			clippingPlaneFlags |= GL_CLIP_PLANE4;
-		}
-		
-		// Apply bottom edge clipping if specified
-		if (yBottom != -1)
-		{
-			doubleBuffer.clear();
-			doubleBuffer.put(0).put(-1).put(0).put(yBottom).flip();
-			glClipPlane(GL_CLIP_PLANE5, doubleBuffer);
-			glEnable(GL_CLIP_PLANE5);
-			clippingPlaneFlags |= GL_CLIP_PLANE5;
-		}
-	}
-	
-	/**
-	 * Enable clipping planes which were previously enabled 
-	 */
-	final static void glEnableClipping()
-	{
-		if ((clippingPlaneFlags & GL_CLIP_PLANE2) == GL_CLIP_PLANE2) glEnable(GL_CLIP_PLANE2);
-		if ((clippingPlaneFlags & GL_CLIP_PLANE3) == GL_CLIP_PLANE3) glEnable(GL_CLIP_PLANE3);
-		if ((clippingPlaneFlags & GL_CLIP_PLANE4) == GL_CLIP_PLANE4) glEnable(GL_CLIP_PLANE4);
-		if ((clippingPlaneFlags & GL_CLIP_PLANE5) == GL_CLIP_PLANE5) glEnable(GL_CLIP_PLANE5);
-	}
-	
-	/**
-	 * Disable OpenGL clipping planes (uses planes 2, 3, 4 and 5)
-	 */
-	final static void glDisableClipping()
-	{
-		glDisable(GL_CLIP_PLANE5);
-		glDisable(GL_CLIP_PLANE4);
-		glDisable(GL_CLIP_PLANE3);
-		glDisable(GL_CLIP_PLANE2);
 	}
 }

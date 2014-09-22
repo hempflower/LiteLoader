@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
+import static com.mumfrey.liteloader.client.util.GLClippingPlanes.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import java.util.ArrayList;
@@ -273,9 +274,9 @@ public class GuiModListEntry extends Gui
 			String tooltipText = icon.getDisplayText();
 			if (tooltipText != null)
 			{
-				GuiLiteLoaderPanel.glDisableClipping();
+				glDisableClipping();
 				GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, tooltipText, mouseX, mouseY, 4096, 4096, GuiModListEntry.WHITE, GuiModListEntry.BLEND_HALF & GuiModListEntry.BLACK);
-				GuiLiteLoaderPanel.glEnableClipping();
+				glEnableClipping();
 			}
 			
 			if (icon instanceof IconClickable) this.mouseOverIcon = (IconClickable)icon;
@@ -323,7 +324,7 @@ public class GuiModListEntry extends Gui
 		
 		this.mouseOverScrollBar = this.isMouseOver(mouseX, mouseY, xPosition + width - 5, yPos, 5, scrollHeight);
 
-		GuiLiteLoaderPanel.glEnableClipping(-1, -1, yPos, bottom - 3);
+		glEnableClipping(-1, -1, yPos, bottom - 3);
 		this.fontRenderer.drawSplitString(this.description, xPosition + 5, yPos - this.scrollBar.getValue(), width - 11, GuiModListEntry.DESCRIPTION_COLOUR);
 	}
 

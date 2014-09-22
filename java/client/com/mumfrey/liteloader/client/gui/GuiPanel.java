@@ -207,15 +207,4 @@ public abstract class GuiPanel extends Gui
 		glAlphaFunc(GL_GREATER, 0.1F); 
 		glDisable(GL_BLEND);
 	}
-
-
-	protected static final void glEnableClipping(int xLeft, int xRight, int yTop, int yBottom)
-	{
-		GuiLiteLoaderPanel.glEnableClipping(xLeft, xRight, yTop, yBottom);
-	}
-	
-	protected static final void glDisableClipping()
-	{
-		GuiLiteLoaderPanel.glDisableClipping();
-	}
 }

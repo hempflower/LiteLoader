@@ -1,11 +1,16 @@
 package com.mumfrey.liteloader.client.gui;
 
+import static com.mumfrey.liteloader.client.util.GLClippingPlanes.*;
 import static org.lwjgl.opengl.GL11.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.resources.I18n;
 
 import org.lwjgl.input.Keyboard;
 
@@ -18,10 +23,6 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.resources.I18n;
 
 /**
  * Mods panel
