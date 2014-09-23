@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.core.event;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
@@ -165,6 +166,14 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 	{
 		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.logicOp);
 		this.bakedHandler = classLoader.newHandler(this);
+		if (classLoader instanceof Closeable)
+		{
+			try
+			{
+				((Closeable)classLoader).close();
+			}
+			catch (IOException ex) {}
+		}
 	}
 
 	/**
