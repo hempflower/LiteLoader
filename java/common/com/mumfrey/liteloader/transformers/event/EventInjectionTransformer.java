@@ -261,7 +261,7 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		Event head = events.iterator().next();
 		MethodNode handler = head.inject(injectionPoint, cancellable, this.globalEventID);
 
-		LiteLoaderLogger.info("Injecting event %s with %d handlers in method %s in class %s", head.getName(), events.size(), method.name, classNode.name.replace('/', '.'));
+		LiteLoaderLogger.info("Injecting %s[x%d] in %s in %s", head.getName(), events.size(), method.name, getSimpleClassName(classNode));
 		
 		for (Event event : events)
 		{
@@ -269,5 +269,12 @@ public abstract class EventInjectionTransformer extends ClassTransformer
 		}
 		
 		this.globalEventID++;
+	}
+
+	private static String getSimpleClassName(ClassNode classNode)
+	{
+		String className = classNode.name.replace('/', '.');
+		int dotPos = className.lastIndexOf('.');
+		return dotPos == -1 ? className : className.substring(dotPos + 1);
 	}
 }

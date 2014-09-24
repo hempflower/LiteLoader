@@ -36,20 +36,20 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	/**
 	 * Ordered sets used to sort mods by version/revision  
 	 */
-	private final Map<String, TreeSet<LoadableMod<File>>> versionOrderingSets = new HashMap<String, TreeSet<LoadableMod<File>>>();
+	protected final Map<String, TreeSet<LoadableMod<File>>> versionOrderingSets = new HashMap<String, TreeSet<LoadableMod<File>>>();
 	
 	/**
 	 * Mods to add once init is completed
 	 */
-	private final List<LoadableMod<File>> loadableMods = new ArrayList<LoadableMod<File>>();
+	protected final List<LoadableMod<File>> loadableMods = new ArrayList<LoadableMod<File>>();
 
-	private LiteLoaderCoreAPI coreAPI;
+	protected LiteLoaderCoreAPI coreAPI;
 	
-	private File directory;
+	protected File directory;
 
-	private boolean readZipFiles;
-	private boolean readJarFiles;
-	private boolean loadTweaks;
+	protected boolean readZipFiles;
+	protected boolean readJarFiles;
+	protected boolean loadTweaks;
 
 	/**
 	 * True if this is a general, unversioned folder and the enumerator should only add files which have valid version metadata
@@ -211,6 +211,16 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	}
 
 	/**
+	 * @param modFile
+	 * @return
+	 */
+	protected boolean isFileSupported(LoadableModFile modFile)
+	{
+		// Stub for subclasses
+		return LiteLoaderVersion.CURRENT.isVersionSupported(modFile.getTargetVersion());
+	}
+
+	/**
 	 * @param candidateFile
 	 * @param strVersion
 	 */
@@ -222,7 +232,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 		{
 			// Only add the mod if the version matches, we add candidates to the versionOrderingSets in
 			// order to determine the most recent version available.
-			if (LiteLoaderVersion.CURRENT.isVersionSupported(modFile.getTargetVersion()))
+			if (this.isFileSupported(modFile))
 			{
 				if (!this.versionOrderingSets.containsKey(modFile.getName()))
 				{

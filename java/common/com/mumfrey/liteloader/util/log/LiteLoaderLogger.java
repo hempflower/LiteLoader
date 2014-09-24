@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
@@ -51,11 +52,11 @@ public class LiteLoaderLogger extends AbstractAppender
 		synchronized (LiteLoaderLogger.logTail)
 		{
 			LiteLoaderLogger.logIndex++;
-			this.append(event.getMessage().getFormattedMessage());
+			this.append(event.getMillis(), event.getMessage().getFormattedMessage());
 			Throwable thrown = event.getThrown();
 			if (thrown != null)
 			{
-				this.append(String.format("\2474%s: \2476%s", thrown.getClass().getSimpleName(), thrown.getMessage()));
+				this.append(event.getMillis(), String.format("\2474%s: \2476%s", thrown.getClass().getSimpleName(), thrown.getMessage()));
 			}
 		}
 	}
@@ -63,16 +64,18 @@ public class LiteLoaderLogger extends AbstractAppender
 	/**
 	 * @param message
 	 */
-	private void append(String message)
+	private void append(long timestamp, String message)
 	{
+		String date = new java.text.SimpleDateFormat("[HH:mm:ss] ").format(new Date(timestamp));
+		
 		while (message.indexOf('\n') > -1)
 		{
 			int LF = message.indexOf('\n');
-			this.appendLine(message.substring(0, LF));
+			this.appendLine(date + message.substring(0, LF));
 			message = message.substring(LF + 1);
 		}
 		
-		this.appendLine(message);
+		this.appendLine(date + message);
 	}
 
 	/**

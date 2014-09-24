@@ -23,7 +23,7 @@ import com.mumfrey.liteloader.util.net.LiteLoaderLogUpload;
  */
 class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 {
-	private static boolean useNativeRes = false;
+	private static boolean useNativeRes = true;
 	
 	/**
 	 * Scroll pane
@@ -226,7 +226,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 		{
 			if (yPos > scrollAmount - 10 && yPos <= scrollAmount + height)
 			{
-				this.mc.fontRendererObj.drawString(logLine, 0, yPos, this.getMessageColour(logLine.toLowerCase()));
+				this.mc.fontRendererObj.drawString(logLine, 0, yPos, this.getMessageColour(logLine.toLowerCase().substring(11)));
 			}
 			yPos += 10;
 		}
@@ -259,6 +259,14 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 		if (logLine.startsWith("calling late")) return 0x00AAAA;
 		if (logLine.startsWith("dependency check")) return 0xFFAA00;
 		if (logLine.startsWith("dependency")) return 0xFF5500;
+		if (logLine.startsWith("mod name collision")) return 0xAA0000;
+		if (logLine.startsWith("registering discovery module")) return 0x55FF55;
+		if (logLine.startsWith("registering interface provider")) return 0xFFAA00;
+		if (logLine.startsWith("mod file '")) return 0xFFAA00;
+		if (logLine.startsWith("classtransformer '")) return 0x5555FF;
+		if (logLine.startsWith("tweakClass '")) return 0x5555FF;
+		if (logLine.startsWith("baking listener list")) return 0x00AAAA;
+		if (logLine.startsWith("generating new event handler")) return 0xFFFF55;
 		
 		return 0xCCCCCC;
 	}

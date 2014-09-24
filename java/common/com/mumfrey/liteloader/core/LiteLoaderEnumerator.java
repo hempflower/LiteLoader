@@ -453,15 +453,28 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		
 		if (container != null)
 		{
-			if (container.isEnabled(this.environment) && this.checkDependencies(container) && this.checkAPIRequirements(container))
+			if (!container.isEnabled(this.environment))
 			{
-				this.registerEnabledContainer(container);
-			}
-			else
-			{
+				LiteLoaderLogger.info("Container %s is disabled", container.getLocation());
 				this.registerDisabledContainer(container);
 				return false;
 			}
+			
+			if (!this.checkDependencies(container))
+			{
+				LiteLoaderLogger.info("Container %s is missing one or more dependencies", container.getLocation());
+				this.registerDisabledContainer(container);
+				return false;
+			}
+				
+			if (!this.checkAPIRequirements(container))
+			{
+				LiteLoaderLogger.info("Container %s is missing one or more required APIs", container.getLocation());
+				this.registerDisabledContainer(container);
+				return false;
+			}
+
+			this.registerEnabledContainer(container);
 		}
 
 		return true;
