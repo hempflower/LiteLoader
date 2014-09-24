@@ -40,12 +40,12 @@ public class GuiPanelMods extends GuiPanel
 	/**
 	 * List of enumerated mods
 	 */
-	private List<GuiModListEntry> mods = new ArrayList<GuiModListEntry>();
+	private List<ModListEntry> mods = new ArrayList<ModListEntry>();
 	
 	/**
 	 * Currently selected mod
 	 */
-	private GuiModListEntry selectedMod = null;
+	private ModListEntry selectedMod = null;
 	
 	/**
 	 * Timer used to handle double-clicking on a mod
@@ -94,26 +94,26 @@ public class GuiPanelMods extends GuiPanel
 	private void populateModList(LiteLoaderMods mods, LoaderEnvironment environment, List<ModInfoDecorator> decorators)
 	{
 		// Add mods to this treeset first, in order to sort them
-		Map<String, GuiModListEntry> sortedMods = new TreeMap<String, GuiModListEntry>();
+		Map<String, ModListEntry> sortedMods = new TreeMap<String, ModListEntry>();
 		
 		// Active mods
 		for (ModInfo<LoadableMod<?>> mod : mods.getLoadedMods())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, mod);
+			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, mod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 		
 		// Disabled mods
 		for (ModInfo<?> disabledMod : mods.getDisabledMods())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, disabledMod);
+			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, disabledMod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 
 		// Injected tweaks
 		for (ModInfo<Loadable<?>> injectedTweak : mods.getInjectedTweaks())
 		{
-			GuiModListEntry modListEntry = new GuiModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, injectedTweak);
+			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, injectedTweak);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
 		
@@ -174,17 +174,17 @@ public class GuiPanelMods extends GuiPanel
 			
 			if (mouseY > GuiLiteLoaderPanel.PANEL_TOP && mouseY < this.height - GuiLiteLoaderPanel.PANEL_BOTTOM)
 			{
-				GuiModListEntry lastSelectedMod = this.selectedMod;
+				ModListEntry lastSelectedMod = this.selectedMod;
 				
-				for (GuiModListEntry mod : this.mods)
+				for (ModListEntry mod : this.mods)
 				{
-					if (mod.isMouseOver())
+					if (mod.getListPanel().isMouseOver())
 					{
 						this.selectMod(mod);
 						
-						if (mod.isMouseOverIcon())
+						if (mod.getListPanel().isMouseOverIcon())
 						{
-							mod.iconClick(this.parentScreen);
+							mod.getListPanel().iconClick(this.parentScreen);
 						}
 						else
 						{
@@ -326,16 +326,16 @@ public class GuiPanelMods extends GuiPanel
 		mouseY -= (GuiLiteLoaderPanel.PANEL_TOP - this.scrollBar.getValue());
 		
 		int yPos = 0;
-		for (GuiModListEntry mod : this.mods)
+		for (ModListEntry mod : this.mods)
 		{
 			// drawListEntry returns a value indicating the height of the item drawn
-			yPos += mod.draw(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
+			yPos += mod.getListPanel().draw(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
 		}
 		
 		yPos = 0;
-		for (GuiModListEntry mod : this.mods)
+		for (ModListEntry mod : this.mods)
 		{
-			yPos += mod.postRenderListEntry(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
+			yPos += mod.getListPanel().postRender(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
 		}
 		
 		glPopMatrix();
@@ -370,7 +370,7 @@ public class GuiPanelMods extends GuiPanel
 	 * @param mod
 	 * @return
 	 */
-	private void selectMod(GuiModListEntry mod)
+	private void selectMod(ModListEntry mod)
 	{
 		if (this.selectedMod != null)
 		{
@@ -407,10 +407,10 @@ public class GuiPanelMods extends GuiPanel
 		if (this.selectedMod == null) return;
 		
 		int yPos = 0;
-		for (GuiModListEntry mod : this.mods)
+		for (ModListEntry mod : this.mods)
 		{
 			if (mod == this.selectedMod) break;
-			yPos += mod.getHeight();
+			yPos += mod.getListPanel().getHeight();
 		}
 		
 		// Mod is above the top of the visible window
@@ -421,7 +421,7 @@ public class GuiPanelMods extends GuiPanel
 		}
 		
 		int panelHeight = this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - GuiLiteLoaderPanel.PANEL_TOP;
-		int modHeight = this.selectedMod.getHeight();
+		int modHeight = this.selectedMod.getListPanel().getHeight();
 		
 		// Mod is below the bottom of the visible window
 		if (yPos - this.scrollBar.getValue() + modHeight > panelHeight)

@@ -10,10 +10,12 @@ import com.mumfrey.liteloader.core.ModInfo;
 
 public class GuiModInfoPanel extends Gui
 {
-	private static final int TITLE_COLOUR       = GuiModListEntry.WHITE;
-	private static final int AUTHORS_COLOUR     = GuiModListEntry.WHITE;
-	private static final int DIVIDER_COLOUR     = GuiModListEntry.GREY;
-	private static final int DESCRIPTION_COLOUR = GuiModListEntry.WHITE;
+	private static final int TITLE_COLOUR       = GuiModListPanel.WHITE;
+	private static final int AUTHORS_COLOUR     = GuiModListPanel.WHITE;
+	private static final int DIVIDER_COLOUR     = GuiModListPanel.GREY;
+	private static final int DESCRIPTION_COLOUR = GuiModListPanel.WHITE;
+	
+	private final ModListEntry owner;
 	
 	private final FontRenderer fontRenderer;
 	
@@ -25,8 +27,9 @@ public class GuiModInfoPanel extends Gui
 
 	private boolean mouseOverPanel, mouseOverScrollBar;
 
-	public GuiModInfoPanel(FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo)
+	public GuiModInfoPanel(ModListEntry owner, FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo)
 	{
+		this.owner = owner;
 		this.fontRenderer = fontRenderer;
 		this.brandColour = brandColour;
 		this.modInfo = modInfo;
@@ -39,15 +42,15 @@ public class GuiModInfoPanel extends Gui
 		
 		this.mouseOverPanel = this.isMouseOver(mouseX, mouseY, xPosition, yPos, width, height);
 
-		this.fontRenderer.drawString(this.modInfo.getDisplayName(), xPosition + 5, yPos, GuiModInfoPanel.TITLE_COLOUR); yPos += 10;
-		this.fontRenderer.drawString(I18n.format("gui.about.versiontext", this.modInfo.getVersion()), xPosition + 5, yPos, GuiModListEntry.VERSION_TEXT_COLOUR); yPos += 10;
+		this.fontRenderer.drawString(this.owner.getTitleText(), xPosition + 5, yPos, GuiModInfoPanel.TITLE_COLOUR); yPos += 10;
+		this.fontRenderer.drawString(this.owner.getVersionText(), xPosition + 5, yPos, GuiModListPanel.VERSION_TEXT_COLOUR); yPos += 10;
 
 		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModInfoPanel.DIVIDER_COLOUR); yPos += 4; // divider
 
 		this.fontRenderer.drawString(I18n.format("gui.about.authors") + ": \2477" + this.modInfo.getAuthor(), xPosition + 5, yPos, GuiModInfoPanel.AUTHORS_COLOUR); yPos += 10;
 		if (!Strings.isNullOrEmpty(this.modInfo.getURL()))
 		{
-			this.fontRenderer.drawString(this.modInfo.getURL(), xPosition + 5, yPos, GuiModListEntry.BLEND_2THRDS & this.brandColour); yPos += 10;
+			this.fontRenderer.drawString(this.modInfo.getURL(), xPosition + 5, yPos, GuiModListPanel.BLEND_2THRDS & this.brandColour); yPos += 10;
 		}
 
 		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModInfoPanel.DIVIDER_COLOUR); yPos += 4; // divider
