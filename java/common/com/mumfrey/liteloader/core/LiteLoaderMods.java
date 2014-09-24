@@ -15,6 +15,8 @@ import net.minecraft.client.resources.IResourcePack;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModLoadObserver;
 import com.mumfrey.liteloader.common.LoadingProgress;
+import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
@@ -64,7 +66,7 @@ public class LiteLoaderMods
 	/**
 	 * Mod load observers
 	 */
-	private List<ModLoadObserver> observers;
+	private FastIterableDeque<ModLoadObserver> observers = new HandlerList<ModLoadObserver>(ModLoadObserver.class);
 
 	/**
 	 * List of loaded mods, for crash reporting
@@ -104,7 +106,7 @@ public class LiteLoaderMods
 
 	void init(List<ModLoadObserver> observers)
 	{
-		this.observers = observers;
+		this.observers.addAll(observers);
 		this.disabledMods.addAll(this.enumerator.getDisabledContainers());
 	}
 	
@@ -500,10 +502,7 @@ public class LiteLoaderMods
 	 */
 	void onModLoaded(Mod mod)
 	{
-		for (ModLoadObserver observer : this.observers)
-		{
-			observer.onModLoaded(mod.getMod());
-		}
+		this.observers.all().onModLoaded(mod.getMod());
 
 		this.allMods.add(mod);
 		this.initMods.add(mod);
@@ -532,10 +531,7 @@ public class LiteLoaderMods
 			this.disabledMods.add(new NonMod(container, false));
 		}
 		
-		for (ModLoadObserver observer : this.observers)
-		{
-			observer.onModLoadFailed(container, identifier, reason, th);
-		}
+		this.observers.all().onModLoadFailed(container, identifier, reason, th);
 	}
 
 	/**
@@ -591,10 +587,7 @@ public class LiteLoaderMods
 	 */
 	private void onPreInitMod(LiteMod instance)
 	{
-		for (ModLoadObserver observer : this.observers)
-		{
-			observer.onPreInitMod(instance);
-		}
+		this.observers.all().onPreInitMod(instance);
 		
 		// register mod config panel if configurable
 		this.configManager.registerMod(instance);
@@ -617,10 +610,7 @@ public class LiteLoaderMods
 	 */
 	private void onPostInitMod(LiteMod instance)
 	{
-		for (ModLoadObserver observer : this.observers)
-		{
-			observer.onPostInitMod(instance);
-		}
+		this.observers.all().onPostInitMod(instance);
 
 		// add the mod to all relevant listener queues
 		LiteLoader.getInterfaceManager().offer(instance);
@@ -646,10 +636,7 @@ public class LiteLoaderMods
 
 			LiteLoaderLogger.info("Performing config upgrade for mod %s. Upgrading %s to %s...", instance.getName(), lastModVersion, LiteLoaderVersion.CURRENT);
 			
-			for (ModLoadObserver observer : this.observers)
-			{
-				observer.onMigrateModConfig(instance, newConfigPath, oldConfigPath);
-			}
+			this.observers.all().onMigrateModConfig(instance, newConfigPath, oldConfigPath);
 
 			// Migrate versioned config if any is present
 			this.configManager.migrateModConfig(instance, newConfigPath, oldConfigPath);
