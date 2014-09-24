@@ -201,7 +201,7 @@ public class GuiPanelMods extends GuiPanel
 				
 				if (this.selectedMod != null && this.selectedMod == lastSelectedMod)
 				{
-					this.selectedMod.mousePressed();
+					this.selectedMod.getInfoPanel().mousePressed();
 				}
 			}
 		}
@@ -257,7 +257,7 @@ public class GuiPanelMods extends GuiPanel
 			
 			if (this.selectedMod != null)
 			{
-				this.selectedMod.mouseReleased();
+				this.selectedMod.getInfoPanel().mouseReleased();
 			}
 		}
 	}
@@ -265,7 +265,7 @@ public class GuiPanelMods extends GuiPanel
 	@Override
 	void mouseWheelScrolled(int mouseWheelDelta)
 	{
-		if (this.selectedMod == null || !this.selectedMod.mouseWheelScrolled(mouseWheelDelta))
+		if (this.selectedMod == null || !this.selectedMod.getInfoPanel().mouseWheelScrolled(mouseWheelDelta))
 		{
 			this.scrollBar.offsetValue(-mouseWheelDelta / 8);
 		}
@@ -329,7 +329,7 @@ public class GuiPanelMods extends GuiPanel
 		for (GuiModListEntry mod : this.mods)
 		{
 			// drawListEntry returns a value indicating the height of the item drawn
-			yPos += mod.drawListEntry(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
+			yPos += mod.draw(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
 		}
 		
 		yPos = 0;
@@ -361,7 +361,7 @@ public class GuiPanelMods extends GuiPanel
 			
 			int spaceForButtons = this.btnConfig.visible || this.btnToggle.visible ? 28 : 0;
 			glEnableClipping(left, right, GuiLiteLoaderPanel.PANEL_TOP, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - spaceForButtons);
-			this.selectedMod.drawInfo(mouseX, mouseY, partialTicks, left, GuiLiteLoaderPanel.PANEL_TOP, right - left, height - spaceForButtons);
+			this.selectedMod.getInfoPanel().draw(mouseX, mouseY, partialTicks, left, GuiLiteLoaderPanel.PANEL_TOP, right - left, height - spaceForButtons);
 			glDisableClipping();
 		}
 	}
@@ -374,7 +374,7 @@ public class GuiPanelMods extends GuiPanel
 	{
 		if (this.selectedMod != null)
 		{
-			this.selectedMod.mouseReleased();
+			this.selectedMod.getInfoPanel().mouseReleased();
 		}
 		
 		this.selectedMod = mod;

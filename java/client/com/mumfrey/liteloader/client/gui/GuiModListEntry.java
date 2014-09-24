@@ -12,7 +12,6 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 
-import com.google.common.base.Strings;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
@@ -31,37 +30,33 @@ import com.mumfrey.liteloader.util.render.IconTextured;
  */
 public class GuiModListEntry extends Gui
 {
-	private static final int BLACK                     = 0xFF000000;
-	private static final int DARK_GREY                 = 0xB0333333;
-	private static final int GREY                      = 0xFF999999;
-	private static final int WHITE                     = 0xFFFFFFFF;
+	static final int BLACK                     = 0xFF000000;
+	static final int DARK_GREY                 = 0xB0333333;
+	static final int GREY                      = 0xFF999999;
+	static final int WHITE                     = 0xFFFFFFFF;
 	
-	private static final int BLEND_2THRDS              = 0xB0FFFFFF;
-	private static final int BLEND_HALF                = 0x80FFFFFF;
+	static final int BLEND_2THRDS              = 0xB0FFFFFF;
+	static final int BLEND_HALF                = 0x80FFFFFF;
 	
-	private static final int API_COLOUR                = 0xFFAA00AA;
-	private static final int EXTERNAL_ENTRY_COLOUR     = 0xFF47D1AA;
-	private static final int MISSING_DEPENDENCY_COLOUR = 0xFFFFAA00;
-	private static final int ERROR_COLOUR              = 0xFFFF5555;
-	private static final int ERROR_GRADIENT_COLOUR     = 0xFFAA0000;
-	private static final int ERROR_GRADIENT_COLOUR2    = 0xFF550000;
+	static final int API_COLOUR                = 0xFFAA00AA;
+	static final int EXTERNAL_ENTRY_COLOUR     = 0xFF47D1AA;
+	static final int MISSING_DEPENDENCY_COLOUR = 0xFFFFAA00;
+	static final int ERROR_COLOUR              = 0xFFFF5555;
+	static final int ERROR_GRADIENT_COLOUR     = 0xFFAA0000;
+	static final int ERROR_GRADIENT_COLOUR2    = 0xFF550000;
 	
-	private static final int TITLE_COLOUR              = GuiModListEntry.WHITE;
-	private static final int VERSION_TEXT_COLOUR       = GuiModListEntry.GREY;
-	private static final int GRADIENT_COLOUR2          = GuiModListEntry.BLEND_2THRDS & GuiModListEntry.DARK_GREY;
-	private static final int HANGER_COLOUR             = GuiModListEntry.GREY;
-	private static final int HANGER_COLOUR_MOUSEOVER   = GuiModListEntry.WHITE;
-	private static final int AUTHORS_COLOUR            = GuiModListEntry.WHITE;
-	private static final int DIVIDER_COLOUR            = GuiModListEntry.GREY;
-	private static final int DESCRIPTION_COLOUR        = GuiModListEntry.WHITE;
+	static final int VERSION_TEXT_COLOUR       = GuiModListEntry.GREY;
+	static final int GRADIENT_COLOUR2          = GuiModListEntry.BLEND_2THRDS & GuiModListEntry.DARK_GREY;
+	static final int HANGER_COLOUR             = GuiModListEntry.GREY;
+	static final int HANGER_COLOUR_MOUSEOVER   = GuiModListEntry.WHITE;
 
-	private static final int PANEL_HEIGHT              = 32;
-	private static final int PANEL_SPACING             = 4;
+	static final int PANEL_HEIGHT              = 32;
+	static final int PANEL_SPACING             = 4;
 	
 	/**
 	 * For text display
 	 */
-	private FontRenderer fontRenderer;
+	private final FontRenderer fontRenderer;
 	
 	private final int brandColour;
 	
@@ -69,42 +64,14 @@ public class GuiModListEntry extends Gui
 	
 	private final LiteLoaderMods mods;
 
-	private ModInfo<?> modInfo;
+	private final ModInfo<?> modInfo;
 	
-	/**
-	 * The identifier of the mod, used as the enablement/disablement key
-	 */
-	private String identifier;
-	
-	/**
-	 * Display name of the mod, disabled mods use the file/folder name
-	 */
-	private String name;
-	
-	/**
-	 * Mod version string
-	 */
-	private String version;
-	
-	/**
-	 * Mod author, from the metadata
-	 */
-	private String author = I18n.format("gui.unknown");
-	
-	/**
-	 * Mod URL, from the metadata
-	 */
-	private String url = null;
-	
-	/**
-	 * Mod description, from metadata
-	 */
-	private String description = "";
+	private final GuiModInfoPanel infoPanel;
 	
 	/**
 	 * Whether the mod is currently active
 	 */
-	private boolean enabled;
+	private boolean isActive;
 	
 	private boolean isMissingDependencies;
 	
@@ -136,7 +103,7 @@ public class GuiModListEntry extends Gui
 	/**
 	 * True if the mouse was over this mod on the last render
 	 */
-	private boolean mouseOverListEntry, mouseOverInfo, mouseOverScrollBar;
+	private boolean mouseOver;
 	
 	private IconClickable mouseOverIcon = null;
 	
@@ -146,11 +113,6 @@ public class GuiModListEntry extends Gui
 	private boolean external;
 	
 	private List<IconTextured> modIcons = new ArrayList<IconTextured>();
-
-	/**
-	 * Scroll bar control for the mod info
-	 */
-	private GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
 	
 	/**
 	 * Mod list entry for an ACTIVE mod
@@ -166,21 +128,17 @@ public class GuiModListEntry extends Gui
 		this.decorators    = decorators;
 		this.modInfo       = modInfo;
 		
-		this.identifier    = modInfo.getIdentifier();
-		this.name          = modInfo.getDisplayName();
-		this.version       = modInfo.getVersion();
-		this.author        = modInfo.getAuthor();
-		this.enabled       = modInfo.isActive();
+		this.infoPanel     = new GuiModInfoPanel(fontRenderer, brandColour, modInfo);
+		
+		this.isActive      = modInfo.isActive();
 		this.canBeToggled  = modInfo.isToggleable() && mods.getEnabledModsList().saveAllowed();
-		this.willBeEnabled = mods.isModEnabled(this.identifier);;
+		this.willBeEnabled = mods.isModEnabled(this.modInfo.getIdentifier());;
 		this.external      = modInfo.getContainer().isExternalJar();
-		this.description   = modInfo.getDescription();
-		this.url           = modInfo.getURL();
 		this.isErrored     = modInfo.getStartupErrors() != null && modInfo.getStartupErrors().size() > 0;
 		
 		if (!modInfo.isActive())
 		{
-			this.enabled = modInfo.getContainer().isEnabled(environment);
+			this.isActive = modInfo.getContainer().isEnabled(environment);
 
 			Loadable<?> modContainer = modInfo.getContainer();
 			if (modContainer instanceof LoadableMod<?>)
@@ -212,7 +170,7 @@ public class GuiModListEntry extends Gui
 	 * @param selected
 	 * @return
 	 */
-	public int drawListEntry(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
+	public int draw(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
 	{
 		int gradientColour = this.getGradientColour(selected);
 		int titleColour    = this.getTitleColour(selected);
@@ -220,8 +178,8 @@ public class GuiModListEntry extends Gui
 		
 		this.drawGradientRect(xPosition, yPosition, xPosition + width, yPosition + GuiModListEntry.PANEL_HEIGHT, gradientColour, GuiModListEntry.GRADIENT_COLOUR2);
 		
-		String titleText = this.getTitleText();
-		String versionText = this.getVersionText();
+		String titleText = this.modInfo.getDisplayName();
+		String versionText = I18n.format("gui.about.versiontext", this.modInfo.getVersion());
 		String statusText = this.getStatusText();
 
 		for (ModInfoDecorator decorator : this.decorators)
@@ -234,8 +192,9 @@ public class GuiModListEntry extends Gui
 		this.fontRenderer.drawString(versionText, xPosition + 5, yPosition + 12, GuiModListEntry.VERSION_TEXT_COLOUR);
 		this.fontRenderer.drawString(statusText,  xPosition + 5, yPosition + 22, statusColour);
 		
-		this.mouseOverListEntry = this.isMouseOver(mouseX, mouseY, xPosition, yPosition, width, PANEL_HEIGHT); 
-		drawRect(xPosition, yPosition, xPosition + 1, yPosition + PANEL_HEIGHT, this.mouseOverListEntry ? GuiModListEntry.HANGER_COLOUR_MOUSEOVER : GuiModListEntry.HANGER_COLOUR);
+		this.mouseOver = this.isMouseOver(mouseX, mouseY, xPosition, yPosition, width, PANEL_HEIGHT); 
+		int hangerColour = this.mouseOver ? GuiModListEntry.HANGER_COLOUR_MOUSEOVER : GuiModListEntry.HANGER_COLOUR;
+		drawRect(xPosition, yPosition, xPosition + 1, yPosition + PANEL_HEIGHT, hangerColour);
 		
 		for (ModInfoDecorator decorator : this.decorators)
 		{
@@ -286,65 +245,6 @@ public class GuiModListEntry extends Gui
 	}
 
 	/**
-	 * Draw this entry as the info page
-	 * 
-	 * @param mouseX
-	 * @param mouseY
-	 * @param partialTicks
-	 * @param xPosition
-	 * @param yPosition
-	 * @param width
-	 */
-	public void drawInfo(final int mouseX, final int mouseY, final float partialTicks, final int xPosition, final int yPosition, final int width, final int height)
-	{
-		int bottom = height + yPosition;
-		int yPos = yPosition + 2;
-		
-		this.mouseOverInfo = this.isMouseOver(mouseX, mouseY, xPosition, yPos, width, height);
-
-		this.fontRenderer.drawString(this.getTitleText(),   xPosition + 5, yPos, GuiModListEntry.TITLE_COLOUR); yPos += 10;
-		this.fontRenderer.drawString(this.getVersionText(), xPosition + 5, yPos, GuiModListEntry.VERSION_TEXT_COLOUR); yPos += 10;
-
-		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModListEntry.DIVIDER_COLOUR); yPos += 4; // divider
-
-		this.fontRenderer.drawString(I18n.format("gui.about.authors") + ": \2477" + this.author, xPosition + 5, yPos, GuiModListEntry.AUTHORS_COLOUR); yPos += 10;
-		if (!Strings.isNullOrEmpty(this.url))
-		{
-			this.fontRenderer.drawString(this.url, xPosition + 5, yPos, GuiModListEntry.BLEND_2THRDS & this.brandColour); yPos += 10;
-		}
-
-		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModListEntry.DIVIDER_COLOUR); yPos += 4; // divider
-		drawRect(xPosition + 5, bottom - 1, xPosition + width, bottom, GuiModListEntry.DIVIDER_COLOUR); // divider
-		
-		int scrollHeight = bottom - yPos - 3;
-		int totalHeight = this.fontRenderer.splitStringWidth(this.description, width - 11);
-		
-		this.scrollBar.setMaxValue(totalHeight - scrollHeight);
-		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, xPosition + width - 5, yPos, 5, scrollHeight, totalHeight);
-		
-		this.mouseOverScrollBar = this.isMouseOver(mouseX, mouseY, xPosition + width - 5, yPos, 5, scrollHeight);
-
-		glEnableClipping(-1, -1, yPos, bottom - 3);
-		this.fontRenderer.drawSplitString(this.description, xPosition + 5, yPos - this.scrollBar.getValue(), width - 11, GuiModListEntry.DESCRIPTION_COLOUR);
-	}
-
-	/**
-	 * @return
-	 */
-	protected String getTitleText()
-	{
-		return this.name;
-	}
-
-	/**
-	 * @return
-	 */
-	protected String getVersionText()
-	{
-		return I18n.format("gui.about.versiontext", this.version);
-	}
-
-	/**
 	 * @return
 	 */
 	protected String getStatusText()
@@ -367,9 +267,9 @@ public class GuiModListEntry extends Gui
 		}
 		else if (this.canBeToggled)
 		{
-			if (!this.enabled && !this.willBeEnabled) statusText = "\2477" + I18n.format("gui.status.disabled");
-			if (!this.enabled &&  this.willBeEnabled) statusText = "\247a" + I18n.format("gui.status.pending.enabled"); 
-			if ( this.enabled && !this.willBeEnabled) statusText = "\247c" + I18n.format("gui.status.pending.disabled");
+			if (!this.isActive && !this.willBeEnabled) statusText = "\2477" + I18n.format("gui.status.disabled");
+			if (!this.isActive &&  this.willBeEnabled) statusText = "\247a" + I18n.format("gui.status.pending.enabled"); 
+			if ( this.isActive && !this.willBeEnabled) statusText = "\247c" + I18n.format("gui.status.pending.disabled");
 		}
 		
 		return statusText;
@@ -397,7 +297,7 @@ public class GuiModListEntry extends Gui
 		if (this.isMissingDependencies) return GuiModListEntry.MISSING_DEPENDENCY_COLOUR;
 		if (this.isMissingAPIs) return GuiModListEntry.API_COLOUR;
 		if (this.isErrored) return GuiModListEntry.ERROR_COLOUR;
-		if (!this.enabled) return GuiModListEntry.GREY;
+		if (!this.isActive) return GuiModListEntry.GREY;
 		return this.external ? GuiModListEntry.EXTERNAL_ENTRY_COLOUR : GuiModListEntry.WHITE;
 	}
 
@@ -430,19 +330,6 @@ public class GuiModListEntry extends Gui
 		return mouseX > x && mouseX < x + width && mouseY > y && mouseY < y + height;
 	}
 	
-	public void mousePressed()
-	{
-		if (this.mouseOverScrollBar)
-		{
-			this.scrollBar.setDragging(true);
-		}
-	}
-
-	public void mouseReleased()
-	{
-		this.scrollBar.setDragging(false);
-	}
-
 	/**
 	 * Toggle the enablement status of this mod, if supported
 	 */
@@ -451,13 +338,13 @@ public class GuiModListEntry extends Gui
 		if (this.canBeToggled)
 		{
 			this.willBeEnabled = !this.willBeEnabled;
-			this.mods.setModEnabled(this.identifier, this.willBeEnabled);
+			this.mods.setModEnabled(this.modInfo.getIdentifier(), this.willBeEnabled);
 		}
 	}
 	
 	public String getKey()
 	{
-		return (this.isErrored ? "0000" : "") + this.identifier + Integer.toHexString(this.hashCode());
+		return (this.isErrored ? "0000" : "") + this.modInfo.getIdentifier() + Integer.toHexString(this.hashCode());
 	}
 	
 	public LiteMod getModInstance()
@@ -472,27 +359,27 @@ public class GuiModListEntry extends Gui
 	
 	public String getName()
 	{
-		return getTitleText();
+		return this.modInfo.getDisplayName();
 	}
 
 	public String getVersion()
 	{
-		return this.version;
+		return this.modInfo.getVersion();
 	}
 
 	public String getAuthor()
 	{
-		return this.author;
+		return this.modInfo.getAuthor();
 	}
 
 	public String getDescription()
 	{
-		return this.description;
+		return this.modInfo.getDescription();
 	}
 
 	public boolean isEnabled()
 	{
-		return this.enabled;
+		return this.isActive;
 	}
 
 	public boolean canBeToggled()
@@ -507,12 +394,12 @@ public class GuiModListEntry extends Gui
 	
 	public boolean isMouseOverIcon()
 	{
-		return this.mouseOverListEntry && this.mouseOverIcon != null;
+		return this.mouseOver && this.mouseOverIcon != null;
 	}
 
 	public boolean isMouseOver()
 	{
-		return this.mouseOverListEntry;
+		return this.mouseOver;
 	}
 	
 	public void iconClick(Object source)
@@ -522,15 +409,9 @@ public class GuiModListEntry extends Gui
 			this.mouseOverIcon.onClicked(source, this);
 		}
 	}
-		
-	public boolean mouseWheelScrolled(int mouseWheelDelta)
+
+	public GuiModInfoPanel getInfoPanel()
 	{
-		if (this.mouseOverInfo)
-		{
-			this.scrollBar.offsetValue(-mouseWheelDelta / 8);
-			return true;
-		}
-		
-		return false;
+		return this.infoPanel;
 	}
 }
