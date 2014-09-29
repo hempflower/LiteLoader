@@ -30,7 +30,7 @@ public interface LoaderBootstrap
 	/**
 	 * Init, create the loader instance and load mods
 	 */
-	public abstract void init(LaunchClassLoader classLoader);
+	public abstract void init();
 	
 	/**
 	 * Post-init, initialise loaded mods

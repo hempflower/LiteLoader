@@ -1,17 +1,14 @@
 package com.mumfrey.liteloader.launch;
 
 import java.io.File;
-import java.net.URL;
 import java.util.List;
-
-import net.minecraft.launchwrapper.Launch;
 
 public class LiteLoaderTweakerServer extends LiteLoaderTweaker
 {
 	@Override
-	protected void initEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
+	protected StartupEnvironment spawnStartupEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		this.env = new StartupEnvironment(args, gameDirectory, assetsDirectory, profile)
+		return new StartupEnvironment(args, gameDirectory, assetsDirectory, profile)
 		{
 			@Override
 			public void registerCoreAPIs(List<String> apisToLoad)
@@ -25,9 +22,6 @@ public class LiteLoaderTweakerServer extends LiteLoaderTweaker
 				return LiteLoaderTweaker.ENV_TYPE_DEDICATEDSERVER;
 			}
 		};
-
-		URL[] urls = Launch.classLoader.getURLs();
-		this.jarUrl = urls[urls.length - 1]; // probably?
 	}
 
 	@Override

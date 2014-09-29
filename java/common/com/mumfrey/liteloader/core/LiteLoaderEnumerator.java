@@ -69,6 +69,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	private final LoaderEnvironment environment;
 	
 	private final LoaderProperties properties;
+	
+	private final LiteLoaderTweaker tweaker;
 
 	/**
 	 * Reference to the launch classloader
@@ -124,6 +126,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.environment       = environment;
 		this.properties        = properties;
+		this.tweaker           = (LiteLoaderTweaker)environment.getTweaker();
 		this.classLoader       = classLoader;
 		this.supportedPrefixes = this.getSupportedPrefixes(environment);
 		
@@ -548,7 +551,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			String tweakClass = container.getTweakClassName();
 			int tweakPriority = container.getTweakPriority();
 			LiteLoaderLogger.info("Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d", container.getName(), tweakClass, tweakPriority);
-			if (LiteLoaderTweaker.addCascadedTweaker(tweakClass, tweakPriority))
+			if (this.tweaker.addCascadedTweaker(tweakClass, tweakPriority))
 			{
 				LiteLoaderLogger.info("tweakClass '%s' was successfully added", tweakClass);
 				container.injectIntoClassPath(this.classLoader, true);
@@ -589,7 +592,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			for (String classTransformerClass : classTransformerClasses)
 			{
 				LiteLoaderLogger.info("Mod file '%s' provides classTransformer '%s', adding to class loader", container.getName(), classTransformerClass);
-				if (LiteLoaderTweaker.getTransformerManager().injectTransformer(classTransformerClass))
+				if (this.tweaker.getTransformerManager().injectTransformer(classTransformerClass))
 				{
 					LiteLoaderLogger.info("classTransformer '%s' was successfully added", classTransformerClass);
 					container.injectIntoClassPath(this.classLoader, true);

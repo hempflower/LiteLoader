@@ -59,6 +59,11 @@ public class LiteLoaderMods
 	protected final LoaderEnumerator enumerator;
 
 	/**
+	 * Tweaker
+	 */
+	private final LiteLoaderTweaker tweaker;
+
+	/**
 	 * Configuration manager 
 	 */
 	private final ConfigManager configManager;
@@ -100,6 +105,7 @@ public class LiteLoaderMods
 		this.loader           = loader;
 		this.environment      = environment;
 		this.enumerator       = environment.getEnumerator();
+		this.tweaker          = (LiteLoaderTweaker)environment.getTweaker();
 		this.properties       = properties;
 		this.configManager    = configManager;
 	}
@@ -681,7 +687,7 @@ public class LiteLoaderMods
 	 */
 	private void validateModTransformers()
 	{
-		ClassTransformerManager transformerManager = LiteLoaderTweaker.getTransformerManager();
+		ClassTransformerManager transformerManager = this.tweaker.getTransformerManager();
 		Set<String> injectedTransformers = transformerManager.getInjectedTransformers();
 		
 		for (Mod mod : this.loadedMods)
@@ -737,7 +743,7 @@ public class LiteLoaderMods
 	{
 		if (!mod.hasClassTransformers()) return false;
 		
-		Set<String> injectedTransformers = LiteLoaderTweaker.getTransformerManager().getInjectedTransformers();
+		Set<String> injectedTransformers = this.tweaker.getTransformerManager().getInjectedTransformers();
 		List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
 		
 		for (String modTransformer : modTransformers)

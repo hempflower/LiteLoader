@@ -17,6 +17,7 @@ import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 
+import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
@@ -120,6 +121,10 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	private String branding = null;
 	
 	private boolean loadTweaks = true;
+	
+	private LaunchClassLoader classLoader; 
+	
+	private final ITweaker tweaker;
 
 	private final APIRegistry apiRegistry;
 	
@@ -140,13 +145,13 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	private EnabledModsList enabledModsList;
 	
 	/**
-	 * @param gameDirectory
-	 * @param assetsDirectory
-	 * @param profile
+	 * @param env
+	 * @param tweaker
 	 */
-	public LiteLoaderBootstrap(StartupEnvironment env)
+	public LiteLoaderBootstrap(StartupEnvironment env, ITweaker tweaker)
 	{
 		this.environmentType     = EnvironmentType.values()[env.getEnvironmentTypeId()];
+		this.tweaker             = tweaker;
 		
 		this.apiRegistry         = new APIRegistry(this.getEnvironment(), this.getProperties());
 		
@@ -255,12 +260,19 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		return this;
 	}
 	
+	@Override
+	public ITweaker getTweaker()
+	{
+		return this.tweaker;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
 	 */
 	@Override
 	public void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad)
 	{
+		this.classLoader = classLoader;
 		this.loadTweaks = loadTweaks;
 		
 		LiteLoaderLogger.info("LiteLoader begin PREINIT...");
@@ -315,12 +327,12 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#init(java.util.List, net.minecraft.launchwrapper.LaunchClassLoader)
 	 */
 	@Override
-	public void init(LaunchClassLoader classLoader)
+	public void init()
 	{
 		// PreInit failed
 		if (this.enumerator == null) return;
 		
-		LiteLoader.createInstance(this.getEnvironment(), this.getProperties(), classLoader);
+		LiteLoader.createInstance(this.getEnvironment(), this.getProperties(), this.classLoader);
 		LiteLoader.invokeInit();
 	}
 

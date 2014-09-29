@@ -14,7 +14,6 @@ import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
-import com.google.common.base.Throwables;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -162,16 +161,39 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 	}
 	
-	private static LiteLoaderTweaker instance;
+	/**
+	 * Singleton instance, mainly for delegating from injected callbacks which need a static method to call
+	 */
+	protected static LiteLoaderTweaker instance;
 	
-	protected URL jarUrl;
+	/**
+	 * Approximate location of the minecraft jar, used for "base" injection position in ClassPathUtilities
+	 */
+	protected static URL jarUrl;
 	
+	/**
+	 * "Order" value for inserted tweakers, used as disambiguating sort criteria for injected tweakers which have the same priority 
+	 */
 	protected int tweakOrder = 0;
+	
+	/**
+	 * All tweakers, used to avoid injecting duplicates
+	 */
 	protected Set<String> allCascadingTweaks = new HashSet<String>();
+	
+	/**
+	 * Sorted list of tweakers, used to sort tweakers before injecting
+	 */
 	protected Set<SortableValue<String>> sortedCascadingTweaks = new TreeSet<SortableValue<String>>();
 
+	/**
+	 * True if this is the primary tweak, not known until at least PREJOINGAME
+	 */
 	protected boolean isPrimary;
 	
+	/**
+	 * Startup environment information, used to store info about the current startup in one place, also handles parsing command line arguments
+	 */
 	protected StartupEnvironment env;
 	
 	/**
@@ -179,22 +201,78 @@ public class LiteLoaderTweaker implements ITweaker
 	 */
 	protected LoaderBootstrap bootstrap;
 	
-	protected LoaderProperties properties;
-	
 	/**
 	 * Transformer manager
 	 */
 	protected ClassTransformerManager transformerManager;
 	
+	/* (non-Javadoc)
+	 * @see net.minecraft.launchwrapper.ITweaker#acceptOptions(java.util.List, java.io.File, java.io.File, java.lang.String)
+	 */
 	@Override
 	public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
 		Launch.classLoader.addClassLoaderExclusion("com.google.common.");
 		LiteLoaderTweaker.instance = this;
 		
-		this.prepare(args, gameDirectory, assetsDirectory, profile);
+		this.onPrepare(args, gameDirectory, assetsDirectory, profile);
 		
-		this.preInit();
+		this.onPreInit();
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.launchwrapper.ITweaker#injectIntoClassLoader(net.minecraft.launchwrapper.LaunchClassLoader)
+	 */
+	@Override
+	public void injectIntoClassLoader(LaunchClassLoader classLoader)
+	{
+		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Obf");
+		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Packets");
+
+		this.transformerManager.injectUpstreamTransformers(classLoader);
+
+		for (String transformerClassName : this.bootstrap.getRequiredDownstreamTransformers())
+		{
+			LiteLoaderLogger.info("Queuing required class transformer '%s'", transformerClassName);
+			this.transformerManager.injectTransformer(transformerClassName);
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see net.minecraft.launchwrapper.ITweaker#getLaunchTarget()
+	 */
+	@Override
+	public String getLaunchTarget()
+	{
+		this.isPrimary = true;
+		this.onPreBeginGame();
+		
+		return "net.minecraft.client.main.Main";
+	}
+
+	/* (non-Javadoc)
+	 * @see net.minecraft.launchwrapper.ITweaker#getLaunchArguments()
+	 */
+	@Override
+	public String[] getLaunchArguments()
+	{
+		return this.env.getLaunchArguments();
+	}
+
+	/**
+	 * Return true if this is the primary tweaker
+	 */
+	public boolean isPrimary()
+	{
+		return this.isPrimary;
+	}
+	
+	/**
+	 * Get the class transformer manager
+	 */
+	public ClassTransformerManager getTransformerManager()
+	{
+		return this.transformerManager;
 	}
 
 	/**
@@ -203,7 +281,7 @@ public class LiteLoaderTweaker implements ITweaker
 	 * @param profile
 	 * @param apisToLoad
 	 */
-	private void prepare(List<String> args, File gameDirectory, File assetsDirectory, String profile)
+	private void onPrepare(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
 		LiteLoaderLogger.info("Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
 		
@@ -212,7 +290,6 @@ public class LiteLoaderTweaker implements ITweaker
 			this.initEnvironment(args, gameDirectory, assetsDirectory, profile);
 
 			this.bootstrap = this.spawnBootstrap(LiteLoaderTweaker.bootstrapClassName, Launch.classLoader);
-			this.properties = this.bootstrap.getProperties();
 			
 			this.transformerManager = new ClassTransformerManager(this.bootstrap.getRequiredTransformers());
 			this.transformerManager.injectTransformers(this.bootstrap.getPacketTransformers());
@@ -228,7 +305,7 @@ public class LiteLoaderTweaker implements ITweaker
 	/**
 	 * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
 	 */
-	private void preInit()
+	private void onPreInit()
 	{
 		StartupState.PREINIT.gotoState();
 
@@ -245,13 +322,16 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 	}
 	
-	public static void preBeginGame()
+	/**
+	 * 
+	 */
+	private void onPreBeginGame()
 	{
 		StartupState.BEGINGAME.gotoState();
 		try
 		{
-			LiteLoaderTweaker.instance.transformerManager.injectDownstreamTransformers(Launch.classLoader);
-			LiteLoaderTweaker.instance.bootstrap.preBeginGame();
+			this.transformerManager.injectDownstreamTransformers(Launch.classLoader);
+			this.bootstrap.preBeginGame();
 			StartupState.BEGINGAME.completed();
 		}
 		catch (Throwable th)
@@ -263,13 +343,13 @@ public class LiteLoaderTweaker implements ITweaker
 	/**
 	 * Do the second stage of loader startup
 	 */
-	public static void init()
+	private void onInit()
 	{
 		StartupState.INIT.gotoState();
 		
 		try
 		{
-			LiteLoaderTweaker.instance.bootstrap.init(Launch.classLoader);
+			this.bootstrap.init();
 			StartupState.INIT.completed();
 		}
 		catch (Throwable th)
@@ -281,13 +361,13 @@ public class LiteLoaderTweaker implements ITweaker
 	/**
 	 * Do the second stage of loader startup
 	 */
-	public static void postInit()
+	private void onPostInit()
 	{
 		StartupState.POSTINIT.gotoState();
 
 		try
 		{
-			LiteLoaderTweaker.instance.bootstrap.postInit();
+			this.bootstrap.postInit();
 			StartupState.POSTINIT.completed();
 
 			StartupState.DONE.gotoState();
@@ -298,81 +378,25 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 	}
 
-	protected void initEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
+	/**
+	 * Set up the startup environment
+	 * 
+	 * @param args
+	 * @param gameDirectory
+	 * @param assetsDirectory
+	 * @param profile
+	 */
+	private void initEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		this.env = new StartupEnvironment(args, gameDirectory, assetsDirectory, profile)
-		{
-			@Override
-			public void registerCoreAPIs(List<String> apisToLoad)
-			{
-				apisToLoad.add(0, "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient");
-			}
-
-			@Override
-			public int getEnvironmentTypeId()
-			{
-				return LiteLoaderTweaker.ENV_TYPE_CLIENT;
-			}
-		};
+		this.env = this.spawnStartupEnvironment(args, gameDirectory, assetsDirectory, profile);
 
 		URL[] urls = Launch.classLoader.getURLs();
-		this.jarUrl = urls[urls.length - 1]; // probably?
+		LiteLoaderTweaker.jarUrl = urls[urls.length - 1]; // probably?
 	}
 
-	@Override
-	public void injectIntoClassLoader(LaunchClassLoader classLoader)
-	{
-		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Obf");
-		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Packets");
-
-		LiteLoaderTweaker.instance.transformerManager.injectUpstreamTransformers(classLoader);
-
-		for (String transformerClassName : this.bootstrap.getRequiredDownstreamTransformers())
-		{
-			LiteLoaderLogger.info("Queuing required class transformer '%s'", transformerClassName);
-			LiteLoaderTweaker.instance.transformerManager.injectTransformer(transformerClassName);
-		}
-	}
-	
-	@Override
-	public String getLaunchTarget()
-	{
-		this.isPrimary = true;
-		LiteLoaderTweaker.preBeginGame();
-		
-		return "net.minecraft.client.main.Main";
-	}
-
-	@Override
-	public String[] getLaunchArguments()
-	{
-		return this.env.getLaunchArguments();
-	}
-	
-	public static boolean addCascadedTweaker(String tweakClass, int priority)
-	{
-		return LiteLoaderTweaker.instance.addTweakToSortedList(tweakClass, priority);
-	}
-
-	private boolean addTweakToSortedList(String tweakClass, int priority)
-	{
-		if (tweakClass != null && !this.allCascadingTweaks.contains(tweakClass))
-		{
-			if (this.getClass().getName().equals(tweakClass))
-				return false;
-			
-			if (LiteLoaderTweaker.isTweakAlreadyEnqueued(tweakClass))
-				return false;
-			
-			this.allCascadingTweaks.add(tweakClass);
-			this.sortedCascadingTweaks.add(new SortableValue<String>(priority, this.tweakOrder++, tweakClass));
-			return true;
-		}
-		
-		return false;
-	}
-
-	@SuppressWarnings("unchecked")
+	/**
+	 * Injects discovered tweak classes
+	 */
 	private void injectDiscoveredTweakClasses()
 	{
 		if (this.sortedCascadingTweaks.size() > 0)
@@ -385,7 +409,9 @@ public class LiteLoaderTweaker implements ITweaker
 			
 			LiteLoaderLogger.info("Injecting cascaded tweakers...");
 
+			@SuppressWarnings("unchecked")
 			List<String> tweakClasses = (List<String>)Launch.blackboard.get("TweakClasses");
+			@SuppressWarnings("unchecked")
 			List<ITweaker> tweakers = (List<ITweaker>)Launch.blackboard.get("Tweaks");
 			if (tweakClasses != null && tweakers != null)
 			{
@@ -420,6 +446,91 @@ public class LiteLoaderTweaker implements ITweaker
 			tweakClasses.add(tweakClass);
 		}
 	}
+	
+	/**
+	 * @param tweakClass
+	 * @param priority
+	 * @return
+	 */
+	public boolean addCascadedTweaker(String tweakClass, int priority)
+	{
+		if (tweakClass != null && !this.allCascadingTweaks.contains(tweakClass))
+		{
+			if (this.getClass().getName().equals(tweakClass))
+				return false;
+			
+			if (LiteLoaderTweaker.isTweakAlreadyEnqueued(tweakClass))
+				return false;
+			
+			this.allCascadingTweaks.add(tweakClass);
+			this.sortedCascadingTweaks.add(new SortableValue<String>(priority, this.tweakOrder++, tweakClass));
+			return true;
+		}
+		
+		return false;
+	}
+
+	/**
+	 * The bootstrap object has to be spawned using reflection for obvious reasons, 
+	 * 
+	 * @param bootstrapClassName
+	 * @param classLoader
+	 * @return
+	 */
+	protected LoaderBootstrap spawnBootstrap(String bootstrapClassName, ClassLoader classLoader)
+	{
+		if (!StartupState.PREPARE.isInState())
+		{
+			throw new IllegalStateException("spawnBootstrap is not valid outside PREPARE");
+		}
+		
+		try
+		{
+			@SuppressWarnings("unchecked")
+			Class<? extends LoaderBootstrap> bootstrapClass = (Class<? extends LoaderBootstrap>)Class.forName(bootstrapClassName, false, classLoader);
+			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(StartupEnvironment.class);
+			bootstrapCtor.setAccessible(true);
+			
+			return bootstrapCtor.newInstance(this.env);
+		}
+		catch (Throwable th)
+		{
+			throw new RuntimeException(th);
+		}
+	}
+
+	/**
+	 * @param args
+	 * @param gameDirectory
+	 * @param assetsDirectory
+	 * @param profile
+	 * @return
+	 */
+	protected StartupEnvironment spawnStartupEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
+	{
+		return new StartupEnvironment(args, gameDirectory, assetsDirectory, profile)
+		{
+			@Override
+			public void registerCoreAPIs(List<String> apisToLoad)
+			{
+				apisToLoad.add(0, "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient");
+			}
+
+			@Override
+			public int getEnvironmentTypeId()
+			{
+				return LiteLoaderTweaker.ENV_TYPE_CLIENT;
+			}
+		};
+	}
+
+	/**
+	 * @return
+	 */
+	public static URL getJarUrl()
+	{
+		return LiteLoaderTweaker.jarUrl;
+	}
 
 	/**
 	 * @param url URL to add
@@ -446,45 +557,10 @@ public class LiteLoaderTweaker implements ITweaker
 		return false;
 	}
 
-	protected LoaderBootstrap spawnBootstrap(String bootstrapClassName, ClassLoader classLoader)
-	{
-		if (!StartupState.PREPARE.isInState())
-		{
-			throw new IllegalStateException("spawnBootstrap is not valid outside PREPARE");
-		}
-		
-		try
-		{
-			@SuppressWarnings("unchecked")
-			Class<? extends LoaderBootstrap> bootstrapClass = (Class<? extends LoaderBootstrap>)Class.forName(bootstrapClassName, false, classLoader);
-			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(StartupEnvironment.class);
-			bootstrapCtor.setAccessible(true);
-			
-			return bootstrapCtor.newInstance(this.env);
-		}
-		catch (Throwable th)
-		{
-			Throwables.propagate(th);
-		}
-		
-		return null;
-	}
-	
-	public static URL getJarUrl()
-	{
-		return LiteLoaderTweaker.instance.jarUrl;
-	}
-	
-	public static boolean isPrimary()
-	{
-		return LiteLoaderTweaker.instance.isPrimary;
-	}
-
-	public static ClassTransformerManager getTransformerManager()
-	{
-		return LiteLoaderTweaker.instance.transformerManager;
-	}
-	
+	/**
+	 * @param clazz
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	private static boolean isTweakAlreadyEnqueued(String clazz)
 	{
@@ -510,8 +586,36 @@ public class LiteLoaderTweaker implements ITweaker
 		return false;
 	}
 
+	/**
+	 * @return
+	 */
 	public static boolean loadingBarEnabled()
 	{
-		return LiteLoaderTweaker.instance.properties != null ? LiteLoaderTweaker.instance.properties.getBooleanProperty("loadingbar") : false; 
+		LoaderProperties properties = LiteLoaderTweaker.instance.bootstrap.getProperties();
+		return properties != null && properties.getBooleanProperty("loadingbar"); 
+	}
+
+	/**
+	 * Callback from the "Main" class, do the PREBEGINGAME steps (inject "downstream" transformers)
+	 */
+	public static void preBeginGame()
+	{
+		LiteLoaderTweaker.instance.onPreBeginGame();
+	}
+
+	/**
+	 * Callback from Minecraft::startGame() do early mod initialisation
+	 */
+	public static void init()
+	{
+		LiteLoaderTweaker.instance.onInit();
+	}
+
+	/**
+	 * Callback from Minecraft::startGame() do late mod initialisation
+	 */
+	public static void postInit()
+	{
+		LiteLoaderTweaker.instance.onPostInit();
 	}
 }
