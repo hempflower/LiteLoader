@@ -488,10 +488,10 @@ public class LiteLoaderTweaker implements ITweaker
 		{
 			@SuppressWarnings("unchecked")
 			Class<? extends LoaderBootstrap> bootstrapClass = (Class<? extends LoaderBootstrap>)Class.forName(bootstrapClassName, false, classLoader);
-			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(StartupEnvironment.class);
+			Constructor<? extends LoaderBootstrap> bootstrapCtor = bootstrapClass.getDeclaredConstructor(StartupEnvironment.class, ITweaker.class);
 			bootstrapCtor.setAccessible(true);
 			
-			return bootstrapCtor.newInstance(this.env);
+			return bootstrapCtor.newInstance(this.env, this);
 		}
 		catch (Throwable th)
 		{
