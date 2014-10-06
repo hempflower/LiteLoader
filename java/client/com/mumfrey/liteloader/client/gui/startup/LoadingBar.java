@@ -304,7 +304,7 @@ public class LoadingBar extends LoadingProgress
 		
 		glDisableTexture2D();
 		glEnableBlend();
-		glEnableAlpha();
+		glEnableAlphaTest();
 		glAlphaFunc(GL_GREATER, 0.0F);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -344,7 +344,7 @@ public class LoadingBar extends LoadingProgress
 		
 		this.fbo.framebufferRender(fboWidth, fboHeight);
 		
-		glEnableAlpha();
+		glEnableAlphaTest();
 		glAlphaFunc(GL_GREATER, 0.1F);
 //		glFlush();
 		

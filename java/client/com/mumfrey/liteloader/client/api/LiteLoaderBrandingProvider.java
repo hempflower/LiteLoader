@@ -6,9 +6,9 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
 import com.mumfrey.liteloader.api.BrandingProvider;
-import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.util.render.Icon;
 
 /**
  * LiteLoader's branding provider

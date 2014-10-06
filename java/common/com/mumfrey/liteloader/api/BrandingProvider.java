@@ -4,7 +4,7 @@ import java.net.URI;
 
 import net.minecraft.util.ResourceLocation;
 
-import com.mumfrey.liteloader.client.util.render.Icon;
+import com.mumfrey.liteloader.util.render.Icon;
 
 /**
  * LiteLoader Extensible API - Branding Provider

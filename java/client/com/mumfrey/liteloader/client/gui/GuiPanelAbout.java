@@ -17,10 +17,10 @@ import org.lwjgl.input.Keyboard;
 import com.mumfrey.liteloader.api.BrandingProvider;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
-import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.SortableValue;
+import com.mumfrey.liteloader.util.render.Icon;
 
 /**
  * "About LiteLoader" panel which docks in the mod info screen and lists information about the installed APIs

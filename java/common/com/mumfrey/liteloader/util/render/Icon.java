@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.util.render;
+package com.mumfrey.liteloader.util.render;
 
 public interface Icon
 {
@@ -6,9 +6,9 @@ public interface Icon
     public abstract int getIconHeight();
     public abstract float getMinU();
     public abstract float getMaxU();
-    public abstract float getInterpolatedU(double p_94214_1_);
+    public abstract float getInterpolatedU(double slice);
     public abstract float getMinV();
     public abstract float getMaxV();
-    public abstract float getInterpolatedV(double p_94207_1_);
+    public abstract float getInterpolatedV(double slice);
     public abstract String getIconName();
 }

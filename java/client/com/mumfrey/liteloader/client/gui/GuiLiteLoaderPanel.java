@@ -24,7 +24,6 @@ import com.mumfrey.liteloader.api.BrandingProvider;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
-import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
@@ -34,6 +33,7 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
+import com.mumfrey.liteloader.util.render.Icon;
 
 /**
  * GUI screen which displays info about loaded mods and also allows them to be enabled and

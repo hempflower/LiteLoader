@@ -1,6 +1,5 @@
 package com.mumfrey.liteloader.util.render;
 
-import com.mumfrey.liteloader.client.util.render.Icon;
 import net.minecraft.util.ResourceLocation;
 
 /**

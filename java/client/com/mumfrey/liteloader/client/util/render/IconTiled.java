@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.client.util.render;
 
+import com.mumfrey.liteloader.util.render.Icon;
+
 import net.minecraft.util.ResourceLocation;
 
 public class IconTiled implements Icon
