@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -27,7 +26,6 @@ import net.minecraft.util.RegistrySimple;
 import net.minecraft.util.ResourceLocation;
 
 import com.mumfrey.liteloader.client.util.PrivateFields;
-import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 

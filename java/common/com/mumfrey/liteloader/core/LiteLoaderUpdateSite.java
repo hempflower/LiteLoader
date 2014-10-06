@@ -1,16 +1,14 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import net.minecraft.util.Util;
 import net.minecraft.util.Util.EnumOS;
 
-import com.google.common.io.ByteStreams;
+import com.google.common.io.ByteSink;
 import com.google.common.io.Files;
-import com.google.common.io.OutputSupplier;
 import com.mumfrey.liteloader.launch.ClassPathUtilities;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.update.UpdateSite;
@@ -151,8 +149,8 @@ public class LiteLoaderUpdateSite extends UpdateSite
 		try
 		{
 			final InputStream inputStream = LiteLoaderUpdateSite.class.getResourceAsStream(resourceName);
-			final OutputSupplier<FileOutputStream> outputSupplier = Files.newOutputStreamSupplier(outputFile);
-			ByteStreams.copy(inputStream, outputSupplier);
+			final ByteSink outputSupplier = Files.asByteSink(outputFile);
+			outputSupplier.writeFrom(inputStream);
 		}
 		catch (NullPointerException ex)
 		{

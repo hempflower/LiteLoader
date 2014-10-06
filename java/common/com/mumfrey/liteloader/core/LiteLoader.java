@@ -16,8 +16,6 @@ import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.world.World;
 
-import org.apache.logging.log4j.Logger;
-
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.api.CustomisationProvider;
@@ -66,11 +64,6 @@ public final class LiteLoader
 	 * LiteLoader is a singleton, this is the singleton instance
 	 */
 	private static LiteLoader instance;
-	
-	/**
-	 * Logger for LiteLoader events
-	 */
-	private static final Logger logger = LiteLoaderLogger.getLogger();
 	
 	/**
 	 * Tweak system class loader 
