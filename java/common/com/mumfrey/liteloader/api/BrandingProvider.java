@@ -2,8 +2,9 @@ package com.mumfrey.liteloader.api;
 
 import java.net.URI;
 
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
+
+import com.mumfrey.liteloader.client.util.render.Icon;
 
 /**
  * LiteLoader Extensible API - Branding Provider
@@ -50,7 +51,7 @@ public interface BrandingProvider extends CustomisationProvider
 	 * Gets the coordinates of the logo as an IIcon instance, only called if getLogoResource() returns
 	 * a non-null value and the logo will only be used if BOTH methods return a valid object.
 	 */
-	public abstract IIcon getLogoCoords();
+	public abstract Icon getLogoCoords();
 	
 	/**
 	 * Get the resource to use for the icon logo (the chicken in the default setup), the API with the
@@ -63,7 +64,7 @@ public interface BrandingProvider extends CustomisationProvider
 	 * Gets the coordinates of the icon logo as an IIcon instance, only called if getIconResource()
 	 * returns a non-null value and the icon will only be used if BOTH methods return a valid object.
 	 */
-	public abstract IIcon getIconCoords();
+	public abstract Icon getIconCoords();
 	
 	/**
 	 * Get the display name for this API, used on the "about" screen, must not return null
@@ -97,5 +98,5 @@ public interface BrandingProvider extends CustomisationProvider
 	 * If you wish to display a clickable twitter icon next to the API information, return the icon
 	 * coordinates here.
 	 */
-	public abstract IIcon getTwitterAvatarCoords();
+	public abstract Icon getTwitterAvatarCoords();
 }

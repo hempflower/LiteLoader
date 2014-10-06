@@ -224,7 +224,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	 * @param candidateFile
 	 * @param strVersion
 	 */
-	private void addModFile(File candidateFile, String strVersion)
+	protected void addModFile(File candidateFile, String strVersion)
 	{
 		LoadableModFile modFile = new LoadableModFile(candidateFile, strVersion);
 		
@@ -253,7 +253,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	 * @param enumerator 
 	 */
 	@SuppressWarnings("unchecked")
-	private void sortAndAllocateFiles(ModularEnumerator enumerator)
+	protected void sortAndAllocateFiles(ModularEnumerator enumerator)
 	{
 		// Copy the first entry in every version set into the modfiles list
 		for (Entry<String, TreeSet<LoadableMod<File>>> modFileEntry : this.versionOrderingSets.entrySet())

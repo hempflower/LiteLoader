@@ -1,15 +1,19 @@
 package com.mumfrey.liteloader.client;
 
+import java.util.UUID;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.Session;
 import net.minecraft.world.WorldSettings;
 
 import com.mojang.authlib.GameProfile;
@@ -30,7 +34,7 @@ public class CallbackProxyClient
 	 */
 	private static boolean clock = false;
 	
-	private static ClientEvents events;
+	private static EventsClient events;
 
 	private static boolean fboEnabled;
 
@@ -38,7 +42,7 @@ public class CallbackProxyClient
 	
 	public static void onStartupComplete(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.events = ClientEvents.getInstance();
+		CallbackProxyClient.events = EventsClient.getInstance();
 		
 		if (CallbackProxyClient.events == null)
 		{
@@ -74,12 +78,12 @@ public class CallbackProxyClient
 		CallbackProxyClient.events.preRenderGUI(partialTicks);
 	}
 	
-	public static void onSetupCameraTransform(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
+	public static void onSetupCameraTransform(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
 	{
 		CallbackProxyClient.events.onSetupCameraTransform(partialTicks, timeSlice);
 	}
 	
-	public static void postRenderEntities(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
+	public static void postRenderEntities(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
 	{
 		CallbackProxyClient.events.postRenderEntities(partialTicks, timeSlice);
 	}
@@ -94,14 +98,14 @@ public class CallbackProxyClient
 		CallbackProxyClient.events.onRenderHUD(partialTicks);
 	}
 	
-	public static void onRenderChat(EventInfo<GuiIngame> e, float partialTicks, boolean guiActive, int mouseX, int mouseY)
+	public static void onRenderChat(EventInfo<GuiIngame> e, float partialTicks)
 	{
-		CallbackProxyClient.events.onRenderChat(e.getSource().getChatGUI(), partialTicks, guiActive, mouseX, mouseY);
+		CallbackProxyClient.events.onRenderChat(e.getSource().getChatGUI(), partialTicks);
 	}
 	
-	public static void postRenderChat(EventInfo<GuiIngame> e, float partialTicks, boolean guiActive, int mouseX, int mouseY)
+	public static void postRenderChat(EventInfo<GuiIngame> e, float partialTicks)
 	{
-		CallbackProxyClient.events.postRenderChat(e.getSource().getChatGUI(), partialTicks, guiActive, mouseX, mouseY);
+		CallbackProxyClient.events.postRenderChat(e.getSource().getChatGUI(), partialTicks);
 	}
 	
 	public static void postRenderHUD(EventInfo<EntityRenderer> e, float partialTicks)
@@ -139,7 +143,7 @@ public class CallbackProxyClient
 		CallbackProxyClient.events.onRespawnPlayer(e.getSource(), e.getReturnValue(), oldPlayer, dimension, won);
 	}
 	
-	public static void onOutboundChat(EventInfo<EntityClientPlayerMP> e, String message)
+	public static void onOutboundChat(EventInfo<EntityPlayerSP> e, String message)
 	{
 		CallbackProxyClient.events.onSendChatMessage(e, message);
 	}
@@ -173,7 +177,7 @@ public class CallbackProxyClient
 		}
 	}
 	
-	public static void renderFBO(EventInfo<Framebuffer> e, int width, int height)
+	public static void renderFBO(EventInfo<Framebuffer> e, int width, int height, boolean flag)
 	{
 		if (CallbackProxyClient.events == null) return;
 		if (CallbackProxyClient.renderingFBO)
@@ -187,5 +191,16 @@ public class CallbackProxyClient
 	public static void onRenderWorld(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
 		CallbackProxyClient.events.onRenderWorld(partialTicks, timeSlice);
+	}
+	
+	/**
+	 * Compatiblbe behaviour with FML, this method is called to generate a consistent offline UUID between client and server
+	 * for a given username.
+	 */
+	public static void generateOfflineUUID(ReturnEventInfo<Session, GameProfile> e)
+	{
+		Session session = e.getSource();
+		UUID uuid = EntityPlayer.getUUID(new GameProfile((UUID)null, session.getUsername()));
+		e.setReturnValue(new GameProfile(uuid, session.getUsername()));
 	}
 }

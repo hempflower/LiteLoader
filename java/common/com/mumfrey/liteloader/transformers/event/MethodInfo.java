@@ -77,6 +77,17 @@ public class MethodInfo
 	}
 	
 	/**
+	 * Create a MethodInfo for the specified class and method name
+	 * 
+	 * @param owner Owner name descriptor
+	 * @param method Literal method name
+	 */
+	public MethodInfo(Obf owner, Obf method)
+	{
+		this(owner.name, owner.obf, method.name, method.srg, method.obf, null, null);
+	}
+	
+	/**
 	 * Create a MethodInfo for the specified class, literal method name and literal descriptor
 	 * 
 	 * @param owner Owner name descriptor

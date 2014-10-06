@@ -15,7 +15,7 @@ public interface FrameBufferListener extends LiteMod
 	public abstract void preRenderFBO(Framebuffer fbo);
 	
 	/**
-	 * Called immediately before the FBO is rendered to the screen, after the appropriate GL modes and matrix transforms
+	 * Called immediately before the FBO is rendered to the screen, after the appropriate IGL modes and matrix transforms
 	 * have been set but before the FBO is actually rendered into the main output buffer.
 	 *   
 	 * @param fbo FBO instance

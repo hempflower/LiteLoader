@@ -1,15 +1,11 @@
 package com.mumfrey.liteloader.core.api;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.resources.ModResourcePack;
@@ -111,39 +107,6 @@ public class LoadableModClassPath extends LoadableModFile
 
 	private static String getVersionMetaDataString(File file)
 	{
-		try
-		{
-			if (file.isDirectory())
-			{
-				File versionMetaFile = new File(file, LoadableMod.METADATA_FILENAME);
-				if (versionMetaFile.exists())
-				{
-					return Files.toString(versionMetaFile, Charsets.UTF_8);
-				}
-			}
-			else
-			{
-				String strVersion = null;
-				ZipFile modZip = new ZipFile(file);
-				ZipEntry versionEntry = modZip.getEntry(LoadableMod.METADATA_FILENAME);
-				if (versionEntry != null)
-				{
-					try
-					{
-						strVersion = LoadableModFile.zipEntryToString(modZip, versionEntry);
-					}
-					catch (IOException ex) {}
-				}
-				
-				modZip.close();
-				return strVersion;
-			}
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		
-		return null;
+		return LoadableModFile.getFileContents(file, LoadableMod.METADATA_FILENAME, Charsets.UTF_8);
 	}
 }

@@ -22,6 +22,7 @@ import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mumfrey.liteloader.api.manager.APIProvider;
@@ -485,6 +486,16 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		// Give up and use timestamp
 		return (int)(otherMod.timeStamp - this.timeStamp);
 	}
+	
+	/**
+	 * @param name
+	 * @param charset
+	 * @return
+	 */
+	public String getFileContents(String name, Charset charset)
+	{
+		return LoadableModFile.getFileContents(this, name, charset);
+	}
 
 	/**
 	 * @return
@@ -599,5 +610,49 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		}
 		
 		return new String(bytes, bomOffset, bytes.length - bomOffset, charset);
+	}
+
+	/**
+	 * @param parent
+	 * @param name
+	 * @param charset
+	 * @return
+	 */
+	public static String getFileContents(File parent, String name, Charset charset)
+	{
+		try
+		{
+			if (parent.isDirectory())
+			{
+				File file = new File(parent, name);
+				if (file.isFile())
+				{
+					return Files.toString(file, charset);
+				}
+			}
+			else
+			{
+				String content = null;
+				ZipFile zipFile = new ZipFile(parent);
+				ZipEntry zipEntry = zipFile.getEntry(name);
+				if (zipEntry != null)
+				{
+					try
+					{
+						content = LoadableModFile.zipEntryToString(zipFile, zipEntry);
+					}
+					catch (IOException ex) {}
+				}
+				
+				zipFile.close();
+				return content;
+			}
+		}
+		catch (IOException ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		return null;
 	}
 }

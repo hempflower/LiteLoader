@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader.core;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
+import io.netty.buffer.Unpooled;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
+
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
-
-import net.minecraft.network.INetHandler;
 
 /**
  * Manages plugin channel connections and subscriptions for LiteLoader
@@ -115,19 +115,12 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	/**
 	 * @param data
 	 */
-	protected void onRegisterPacketReceived(byte[] data)
+	protected void onRegisterPacketReceived(PacketBuffer data)
 	{
-		try
+		String channels = data.readStringFromBuffer(65535);
+		for (String channel : channels.split("\u0000"))
 		{
-			String channels = new String(data, "UTF8");
-			for (String channel : channels.split("\u0000"))
-			{
-				this.remotePluginChannels.add(channel);
-			}
-		}
-		catch (UnsupportedEncodingException ex)
-		{
-			LiteLoaderLogger.warning(ex, "Error decoding REGISTER packet from remote host %s", ex.getClass().getSimpleName());
+			this.remotePluginChannels.add(channel);
 		}
 	}
 
@@ -135,7 +128,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	 * @return 
 	 * 
 	 */
-	protected byte[] getRegistrationData()
+	protected PacketBuffer getRegistrationData()
 	{
 		// If any mods have registered channels, send the REGISTER packet
 		if (this.pluginChannels.keySet().size() > 0)
@@ -150,7 +143,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 				separator = true;
 			}
 			
-			return channelList.toString().getBytes(Charset.forName("UTF8"));
+			return new PacketBuffer(Unpooled.buffer()).writeString(channelList.toString());
 		}
 		
 		return null;
@@ -181,20 +174,6 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 				this.pluginChannels.get(channel).add(pluginChannelListener);
 			}
 		}
-	}
-	
-	/**
-	 * Send a message on a plugin channel
-	 * 
-	 * @param channel Channel to send, must not be a reserved channel name
-	 * @param data
-	 * 
-	 * @deprecated Use ClientPluginChannels.sendMessage instead
-	 */
-	@Deprecated
-	public static boolean sendMessage(String channel, byte[] data, ChannelPolicy policy)
-	{
-		return ClientPluginChannels.sendMessage(channel, data, policy);
 	}
 	
 	/**

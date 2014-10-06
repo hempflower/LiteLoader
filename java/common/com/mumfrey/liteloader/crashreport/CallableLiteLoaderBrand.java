@@ -21,7 +21,15 @@ public class CallableLiteLoaderBrand implements Callable<String>
 	@Override
 	public String call() throws Exception
 	{
-		String brand = LiteLoader.getBranding();
+		String brand = null;
+		try
+		{
+			brand = LiteLoader.getBranding();
+		}
+		catch (Exception ex)
+		{
+			brand = "LiteLoader startup failed";
+		}
 		return brand == null ? "Unknown / None" : brand;
 	}
 }

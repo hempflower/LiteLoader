@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader.client.gui;
 
+import static com.mumfrey.liteloader.client.util.GL.*;
 import static com.mumfrey.liteloader.client.util.GLClippingPlanes.*;
-import static org.lwjgl.opengl.GL11.*;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static org.lwjgl.opengl.GL11.*;
+import static com.mumfrey.liteloader.client.util.GL.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,21 +12,22 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.BrandingProvider;
+import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
+import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
@@ -109,10 +111,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	private int brandColour = LiteLoaderBrandingProvider.BRANDING_COLOUR;
 	
 	private ResourceLocation logoResource = LiteLoaderBrandingProvider.ABOUT_TEXTURE;
-	private IIcon logoCoords = LiteLoaderBrandingProvider.LOGO_COORDS;
+	private Icon logoCoords = LiteLoaderBrandingProvider.LOGO_COORDS;
 	
 	private ResourceLocation iconResource = LiteLoaderBrandingProvider.ABOUT_TEXTURE;
-	private IIcon iconCoords = LiteLoaderBrandingProvider.ICON_COORDS;
+	private Icon iconCoords = LiteLoaderBrandingProvider.ICON_COORDS;
 	
 	private List<ModInfoDecorator> modInfoDecorators = new ArrayList<ModInfoDecorator>();
 	
@@ -174,7 +176,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 				}
 				
 				ResourceLocation logoResource = brandingProvider.getLogoResource();
-				IIcon logoCoords = brandingProvider.getLogoCoords();
+				Icon logoCoords = brandingProvider.getLogoCoords();
 				if (logoResource != null && logoCoords != null && brandingProvider.getPriority() > logoProviderPriority)
 				{
 					logoProvider = api;
@@ -184,7 +186,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 				}
 				
 				ResourceLocation iconResource = brandingProvider.getIconResource();
-				IIcon iconCoords = brandingProvider.getIconCoords();
+				Icon iconCoords = brandingProvider.getIconCoords();
 				if (iconResource != null && iconCoords != null && brandingProvider.getPriority() > iconProviderPriority)
 				{
 					iconProviderPriority = brandingProvider.getPriority();
@@ -551,7 +553,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 * @see net.minecraft.client.gui.GuiScreen#mouseClicked(int, int, int)
 	 */
 	@Override
-	protected void mouseClicked(int mouseX, int mouseY, int button)
+	protected void mouseClicked(int mouseX, int mouseY, int button) throws IOException
 	{
 		this.currentPanel.mousePressed(mouseX - LEFT_EDGE, mouseY, button);
 		
@@ -587,7 +589,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 * @see net.minecraft.client.gui.GuiScreen#handleMouseInput()
 	 */
 	@Override
-	public void handleMouseInput()
+	public void handleMouseInput() throws IOException
 	{
 		int mouseWheelDelta = Mouse.getEventDWheel();
 		if (mouseWheelDelta != 0)
@@ -699,7 +701,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		mouseX = Math.max(0, Math.min(screenWidth - 4, mouseX - 4));
 		mouseY = Math.max(0, Math.min(screenHeight - 16, mouseY));
 		drawRect(mouseX - textSize - 2, mouseY, mouseX + 2, mouseY + 12, backgroundColour);
-		fontRenderer.drawStringWithShadow(tooltipText, mouseX - textSize, mouseY + 2, colour);
+		fontRenderer.drawStringWithShadow(tooltipText, mouseX - textSize, mouseY + 2, colour); // TODO OBF MCPTEST drawStringWithShadow - func_175063_a
 	}
 
 	
@@ -733,21 +735,22 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 */
 	static void glDrawTexturedRect(int x, int y, int width, int height, float u, float v, float u2, float v2, float alpha)
 	{
-		glDisable(GL_LIGHTING);
-		glEnable(GL_BLEND);
+		glDisableLighting();
+		glEnableBlend();
 		glAlphaFunc(GL_GREATER, 0.0F);
-		glEnable(GL_TEXTURE_2D);
+		glEnableTexture2D();
 		glColor4f(1.0F, 1.0F, 1.0F, alpha);
 		
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.addVertexWithUV(x + 0,     y + height, 0, u , v2);
-		tessellator.addVertexWithUV(x + width, y + height, 0, u2, v2);
-		tessellator.addVertexWithUV(x + width, y + 0,      0, u2, v );
-		tessellator.addVertexWithUV(x + 0,     y + 0,      0, u , v );
+		Tessellator tessellator = Tessellator.getInstance();
+		WorldRenderer worldRenderer = tessellator.getWorldRenderer();
+		worldRenderer.startDrawingQuads();
+		worldRenderer.addVertexWithUV(x + 0,     y + height, 0, u , v2);
+		worldRenderer.addVertexWithUV(x + width, y + height, 0, u2, v2);
+		worldRenderer.addVertexWithUV(x + width, y + 0,      0, u2, v );
+		worldRenderer.addVertexWithUV(x + 0,     y + 0,      0, u , v );
 		tessellator.draw();
 		
-		glDisable(GL_BLEND);
+		glEnableBlend();
 		glAlphaFunc(GL_GREATER, 0.01F);
 	}
 
@@ -757,7 +760,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 * @param y
 	 * @param icon
 	 */
-	static void glDrawTexturedRect(int x, int y, IIcon icon, float alpha)
+	static void glDrawTexturedRect(int x, int y, Icon icon, float alpha)
 	{
 		glDrawTexturedRect(x, y, icon.getIconWidth(), icon.getIconHeight(), icon.getMinU(), icon.getMinV(), icon.getMaxU(), icon.getMaxV(), alpha);
 	}

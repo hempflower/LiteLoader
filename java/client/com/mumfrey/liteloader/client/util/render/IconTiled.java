@@ -1,9 +1,8 @@
 package com.mumfrey.liteloader.client.util.render;
 
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
-public class IconTiled implements IIcon
+public class IconTiled implements Icon
 {
 	private ResourceLocation textureResource;
 	

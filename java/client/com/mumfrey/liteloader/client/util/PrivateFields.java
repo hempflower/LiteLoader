@@ -139,7 +139,7 @@ public class PrivateFields<P, T>
 	}
 
 	public static final PrivateFields<RenderManager, Map>                            entityRenderMap = new PrivateFields<RenderManager, Map>                      (RenderManager.class,                Obf.entityRenderMap);
-	public static final PrivateFields<NetHandlerLoginClient, NetworkManager>              netManager = new PrivateFields<NetHandlerLoginClient, NetworkManager>   (NetHandlerLoginClient.class,        Obf.netManager);
+	public static final PrivateFields<NetHandlerLoginClient, NetworkManager>              netManager = new PrivateFields<NetHandlerLoginClient, NetworkManager>   (NetHandlerLoginClient.class,        Obf.networkManager);
 	public static final PrivateFields<RegistrySimple, Map>                           registryObjects = new PrivateFields<RegistrySimple, Map>                     (RegistrySimple.class,               Obf.registryObjects);                     
 	public static final PrivateFields<RegistryNamespaced, ObjectIntIdentityMap> underlyingIntegerMap = new PrivateFields<RegistryNamespaced, ObjectIntIdentityMap>(RegistryNamespaced.class,           Obf.underlyingIntegerMap);                     
 	public static final PrivateFields<ObjectIntIdentityMap, IdentityHashMap>             identityMap = new PrivateFields<ObjectIntIdentityMap, IdentityHashMap>   (ObjectIntIdentityMap.class,         Obf.identityMap);                     

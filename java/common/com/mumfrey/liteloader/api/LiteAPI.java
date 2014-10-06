@@ -58,14 +58,6 @@ public interface LiteAPI
 	public abstract String[] getRequiredDownstreamTransformers();
 	
 	/**
-	 * Should return an array of required packet transformer names, these transformers will be injected UPSTREAM. Can return null.
-	 * 
-	 * Deprecated - will be removed in 1.8
-	 */
-	@Deprecated
-	public abstract String[] getPacketTransformers();
-	
-	/**
 	 * Return a mod class prefix supported by this API, can return null if an API just wants to use "LiteMod" as a standard class name prefix
 	 */
 	public abstract String getModClassPrefix();
@@ -86,7 +78,14 @@ public interface LiteAPI
 	public abstract List<InterfaceProvider> getInterfaceProviders();
 	
 	/**
-	 * Should return a list of Observers for this API, can return null if the API doesn't have any Observers, (almost) guaranteed to only be called once
+	 * Should return a list of Observers which are safe to instantiate during pre-init, for example EnumerationObservers. Can return null if the API doesn't have any
+	 * Observers.
+	 */
+	public abstract List<Observer> getPreInitObservers();
+	
+	/**
+	 * Should return a list of Observers for this API, can return null if the API doesn't have any Observers, (almost) guaranteed to only be called once. This list may
+	 * include Observers returned by getPreInitObservers if the observers are still required.
 	 */
 	public abstract List<Observer> getObservers();
 

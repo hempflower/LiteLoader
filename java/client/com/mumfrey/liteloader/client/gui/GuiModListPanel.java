@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader.client.gui;
 
+import static com.mumfrey.liteloader.client.util.GL.*;
 import static com.mumfrey.liteloader.client.util.GLClippingPlanes.*;
-import static org.lwjgl.opengl.GL11.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,10 +142,10 @@ public class GuiModListPanel extends Gui
 		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		Minecraft.getMinecraft().getTextureManager().bindTexture(icon.getTextureResource());
 		
-		glEnable(GL_BLEND);
+		glEnableBlend();
 		this.drawTexturedModalRect(xPosition, yPosition, icon.getUPos(), icon.getVPos(), icon.getIconWidth(), icon.getIconHeight());
-		glDisable(GL_BLEND);
-
+		glDisableBlend();
+		
 		if (mouseX >= xPosition && mouseX <= xPosition + 12 && mouseY >= yPosition && mouseY <= yPosition + 12)
 		{
 			String tooltipText = icon.getDisplayText();

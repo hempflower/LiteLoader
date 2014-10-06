@@ -41,8 +41,6 @@ public interface LoaderBootstrap
 	
 	public abstract List<String> getRequiredDownstreamTransformers();
 	
-	public abstract List<String> getPacketTransformers();
-	
 	public abstract LoaderEnvironment getEnvironment();
 	
 	public abstract LoaderProperties getProperties();

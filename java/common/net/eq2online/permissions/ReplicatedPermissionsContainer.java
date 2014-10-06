@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.minecraft.network.PacketBuffer;
+
 /**
  * Serializable container object
  * 
@@ -94,11 +96,11 @@ public class ReplicatedPermissionsContainer implements Serializable
 	 * @param data Byte array containing the serialised data
 	 * @return new container or null if deserialisation failed
 	 */
-	public static ReplicatedPermissionsContainer fromBytes(byte[] data)
+	public static ReplicatedPermissionsContainer fromPacketBuffer(PacketBuffer data)
 	{
 		try
 		{
-			ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data));
+			ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data.readByteArray()));
 			ReplicatedPermissionsContainer object = (ReplicatedPermissionsContainer)inputStream.readObject();
 			return object;
 		}

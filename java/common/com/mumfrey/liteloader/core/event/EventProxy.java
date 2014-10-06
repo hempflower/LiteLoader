@@ -9,6 +9,7 @@ import net.minecraft.crash.CrashReportCategory;
 
 import org.objectweb.asm.Type;
 
+import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 
 /**
@@ -147,19 +148,11 @@ public final class EventProxy
 		
 		return tpl.toString();
 	}
-
+	
 	private static boolean appendTypeName(StringBuilder tpl, Type type, String sourceClass)
 	{
 		switch (type.getSort())
 		{
-			case Type.BOOLEAN: tpl.append("boolean"); return false;
-			case Type.CHAR:    tpl.append("char");    return false;
-			case Type.BYTE:    tpl.append("byte");    return false;
-			case Type.SHORT:   tpl.append("short");   return false;
-			case Type.INT:     tpl.append("int");     return false;
-			case Type.FLOAT:   tpl.append("float");   return false;
-			case Type.LONG:    tpl.append("long");    return false;
-			case Type.DOUBLE:  tpl.append("double");  return false;
 			case Type.ARRAY:
 				EventProxy.appendTypeName(tpl, type.getElementType(), sourceClass);
 				return true;
@@ -170,11 +163,10 @@ public final class EventProxy
 				if (typeName.endsWith("ReturnEventInfo")) tpl.append('<').append(sourceClass).append(", ?>");
 				else if (typeName.endsWith("EventInfo")) tpl.append('<').append(sourceClass).append('>');
 				return false;
+			default:
+				tpl.append(ByteCodeUtilities.getTypeName(type));
+				return false;
 		}
-		
-		tpl.append("Object");
-		
-		return false;
 	}
 
 	private static void addDetailLineBreak()

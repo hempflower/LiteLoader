@@ -1,17 +1,28 @@
 package com.mumfrey.liteloader.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.entity.Entity;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.Timer;
 
 import org.lwjgl.input.Mouse;
 
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.ChatRenderListener;
+import com.mumfrey.liteloader.FrameBufferListener;
+import com.mumfrey.liteloader.GameLoopListener;
+import com.mumfrey.liteloader.HUDRenderListener;
+import com.mumfrey.liteloader.InitCompleteListener;
+import com.mumfrey.liteloader.OutboundChatFilter;
+import com.mumfrey.liteloader.OutboundChatListener;
+import com.mumfrey.liteloader.PostRenderListener;
+import com.mumfrey.liteloader.RenderListener;
+import com.mumfrey.liteloader.Tickable;
+import com.mumfrey.liteloader.ViewportListener;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.Events;
@@ -24,9 +35,9 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-public class ClientEvents extends Events<Minecraft, IntegratedServer>
+public class EventsClient extends Events<Minecraft, IntegratedServer>
 {	
-	private static ClientEvents instance;
+	private static EventsClient instance;
 
 	/**
 	 * Reference to the game
@@ -82,18 +93,18 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	private FastIterableDeque<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class, ReturnLogicOp.AND);
 
 	@SuppressWarnings("cast")
-	public ClientEvents(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
+	public EventsClient(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
 	{
 		super(loader, engine, properties);
 		
-		ClientEvents.instance = this;
+		EventsClient.instance = this;
 		
 		this.engineClient = (GameEngineClient)engine;
 	}
 	
-	static ClientEvents getInstance()
+	static EventsClient getInstance()
 	{
-		return ClientEvents.instance;
+		return EventsClient.instance;
 	}
 	
 	/* (non-Javadoc)
@@ -330,20 +341,20 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	 * Called immediately before the chat log is rendered
 	 * 
 	 * @param chatGui 
-	 * @param mouseY 
-	 * @param mouseX 
-	 * @param guiActive 
 	 * @param partialTicks 
 	 */
-	void onRenderChat(GuiNewChat chatGui, float partialTicks, boolean guiActive, int mouseX, int mouseY)
+	void onRenderChat(GuiNewChat chatGui, float partialTicks)
 	{
 		this.chatRenderListeners.all().onPreRenderChat(this.screenWidth, this.screenHeight, chatGui);
 	}
 	
 	/**
 	 * Called immediately after the chat log is rendered
+	 * 
+	 * @param chatGui 
+	 * @param partialTicks 
 	 */
-	void postRenderChat(GuiNewChat chatGui, float partialTicks, boolean guiActive, int mouseX, int mouseY)
+	void postRenderChat(GuiNewChat chatGui, float partialTicks)
 	{
 		GuiNewChat chat = this.engineClient.getChatGUI();
 		this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chat);
@@ -401,7 +412,8 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 		Minecraft minecraft = this.engine.getClient();
 		
 		// Flag indicates whether we are in game at the moment
-		boolean inGame = minecraft.renderViewEntity != null && minecraft.renderViewEntity.worldObj != null;
+		Entity renderViewEntity = minecraft.getRenderViewEntity(); // TODO OBF MCPTEST func_175606_aa - getRenderViewEntity
+		boolean inGame = renderViewEntity != null && renderViewEntity.worldObj != null;
 		
 		this.profiler.startSection("loader");
 		super.onTick(clock, partialTicks, inGame);
@@ -445,7 +457,7 @@ public class ClientEvents extends Events<Minecraft, IntegratedServer>
 	/**
 	 * @param message
 	 */
-	void onSendChatMessage(EventInfo<EntityClientPlayerMP> e, String message)
+	void onSendChatMessage(EventInfo<EntityPlayerSP> e, String message)
 	{
 		if (!this.outboundChatFilters.all().onSendChatMessage(message))
 		{

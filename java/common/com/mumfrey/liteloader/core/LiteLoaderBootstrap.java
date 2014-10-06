@@ -716,15 +716,11 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	@Override
 	public List<String> getRequiredDownstreamTransformers()
 	{
-		return this.apiAdapter.getRequiredDownstreamTransformers();
+		List<String> requiredDownstreamTransformers = this.apiAdapter.getRequiredDownstreamTransformers();
+		requiredDownstreamTransformers.add(0, "com.mumfrey.liteloader.transformers.event.EventTransformer");
+		return requiredDownstreamTransformers;
 	}
 
-	@Override
-	public List<String> getPacketTransformers()
-	{
-		return this.apiAdapter.getPacketTransformers();
-	}
-	
 	private static int tryParseInt(String string, int defaultValue)
 	{
 		try

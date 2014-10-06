@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static org.lwjgl.opengl.GL11.*;
+import static com.mumfrey.liteloader.client.util.GL.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -200,11 +200,11 @@ public abstract class GuiPanel extends Gui
 	 */
 	protected void drawThrobber(int x, int y, int frame)
 	{
-		glEnable(GL_BLEND);
+		glEnableBlend();
 		glAlphaFunc(GL_GREATER, 0.0F); 
 		this.mc.getTextureManager().bindTexture(LiteLoaderBrandingProvider.ABOUT_TEXTURE);
 		drawTexturedModalRect(x, y, (frame % 4) * 16, 171 + (((frame / 4) % 3) * 16), 16, 16);
 		glAlphaFunc(GL_GREATER, 0.1F); 
-		glDisable(GL_BLEND);
+		glDisableBlend();
 	}
 }

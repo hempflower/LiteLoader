@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.server.integrated.IntegratedServer;
 
-import com.mumfrey.liteloader.client.ClientEvents;
+import com.mumfrey.liteloader.client.EventsClient;
 import com.mumfrey.liteloader.client.ClientPluginChannelsClient;
 import com.mumfrey.liteloader.client.GameEngineClient;
 import com.mumfrey.liteloader.client.LiteLoaderPanelManager;
@@ -34,7 +34,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	
 	private LoaderProperties properties;
 	
-	private ClientEvents clientEvents;
+	private EventsClient clientEvents;
 	
 	private PacketEventsClient clientPacketEvents;
 
@@ -57,7 +57,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	{
 		if (this.clientEvents == null)
 		{
-			this.clientEvents = new ClientEvents(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
+			this.clientEvents = new EventsClient(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
 		}
 		
 		return this.clientEvents;

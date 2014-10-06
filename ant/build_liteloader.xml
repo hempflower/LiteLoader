@@ -4,8 +4,8 @@
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties" classpath="tasks/ant-contrib.jar" />
 
 	<!-- Versions !!IMPORTANT -->
-	<property name="version" value="1.7.10_04" />
-	<property name="mcversion" value="1.7.10" />
+	<property name="version" value="1.8.0_00" />
+	<property name="mcversion" value="1.8.00" />
 	<property name="author" value="Mumfrey" />
 
 	<!-- Project definitions and dependencies -->

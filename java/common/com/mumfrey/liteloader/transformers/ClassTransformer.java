@@ -1,10 +1,10 @@
 package com.mumfrey.liteloader.transformers;
 
+import net.minecraft.launchwrapper.IClassTransformer;
+
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
-
-import net.minecraft.launchwrapper.IClassTransformer;
 
 /**
  * Base class for transformers which work via ClassNode
@@ -13,6 +13,8 @@ import net.minecraft.launchwrapper.IClassTransformer;
  */
 public abstract class ClassTransformer implements IClassTransformer
 {
+	public static final String HORIZONTAL_RULE = "----------------------------------------------------------------------------------------------------";
+
 	private ClassReader classReader;
 	private ClassNode classNode;
 	
@@ -51,5 +53,12 @@ public abstract class ClassTransformer implements IClassTransformer
 		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(writer);
 		return writer.toByteArray();
+	}
+
+	protected static String getSimpleClassName(ClassNode classNode)
+	{
+		String className = classNode.name.replace('/', '.');
+		int dotPos = className.lastIndexOf('.');
+		return dotPos == -1 ? className : className.substring(dotPos + 1);
 	}
 }

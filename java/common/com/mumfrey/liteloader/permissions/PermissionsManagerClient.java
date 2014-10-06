@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.permissions;
 
+import io.netty.buffer.Unpooled;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +13,7 @@ import java.util.TreeSet;
 
 import net.eq2online.permissions.ReplicatedPermissionsContainer;
 import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 
 import com.mumfrey.liteloader.LiteMod;
@@ -243,7 +246,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 				if (!query.modName.equals("all") || query.permissions.size() > 0)
 				{
 					byte[] data = query.getBytes();
-					ClientPluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, data, ChannelPolicy.DISPATCH_ALWAYS);
+					PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+					buffer.writeByteArray(data);
+					ClientPluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, buffer, ChannelPolicy.DISPATCH_ALWAYS);
 				}
 			}
 		}
@@ -306,7 +311,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * @see net.eq2online.permissions.PermissionsManager#onCustomPayload(java.lang.String, int, byte[])
 	 */
 	@Override
-	public void onCustomPayload(String channel, int length, byte[] data)
+	public void onCustomPayload(String channel, PacketBuffer data)
 	{
 		if (channel.equals(ReplicatedPermissionsContainer.CHANNEL) && !this.engine.isSinglePlayer())
 		{

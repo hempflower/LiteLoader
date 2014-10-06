@@ -25,14 +25,14 @@ public abstract class MinecraftOverlay implements IMinecraft
 	@SuppressWarnings("unused")
 	private static Minecraft __TARGET;
 	
-	// TODO Obfuscation 1.7.10
+	// TODO Obfuscation 1.8
 	// Fields
-	@Obfuscated({"field_71428_T", "Q"}) private Timer timer;
-	@Obfuscated({"field_71424_I", "z"}) private Profiler mcProfiler;
-	@Obfuscated({"field_71425_J", "A"}) private boolean running;
-	@Obfuscated({"field_110449_ao", "ap"}) private List<?> defaultResourcePacks = Lists.newArrayList();
-	@Obfuscated({"field_71475_ae", "af"}) private String serverName;
-	@Obfuscated({"field_71477_af", "ag"}) private int serverPort;
+	@Obfuscated({"field_71428_T", "U"}) private Timer timer;
+	@Obfuscated({"field_71424_I", "y"}) private Profiler mcProfiler;
+	@Obfuscated({"field_71425_J", "z"}) private boolean running;
+	@Obfuscated({"field_110449_ao", "aw"}) private List<?> defaultResourcePacks = Lists.newArrayList();
+	@Obfuscated({"field_71475_ae", "am"}) private String serverName;
+	@Obfuscated({"field_71477_af", "an"}) private int serverPort;
 	
 	// Methods
 	@Obfuscated({"func_71370_a", "a"}) @Stub abstract void resize(int width, int height);

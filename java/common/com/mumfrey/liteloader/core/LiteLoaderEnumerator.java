@@ -19,13 +19,16 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.google.common.base.Throwables;
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.api.EnumerationObserver;
 import com.mumfrey.liteloader.api.EnumeratorModule;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.manager.APIProvider;
+import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.exceptions.OutdatedLoaderException;
-import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
+import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
@@ -114,6 +117,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
 	private final String[] supportedPrefixes;
 	
+	private final FastIterableDeque<EnumerationObserver> observers = new HandlerList<EnumerationObserver>(EnumerationObserver.class);
+	
 	protected EnumeratorState state = EnumeratorState.INIT;
 	
 	/**
@@ -129,6 +134,9 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		this.tweaker           = (LiteLoaderTweaker)environment.getTweaker();
 		this.classLoader       = classLoader;
 		this.supportedPrefixes = this.getSupportedPrefixes(environment);
+
+		// Initialise observers
+		this.observers.addAll(environment.getAPIAdapter().getPreInitObservers(EnumerationObserver.class));
 		
 		// Initialise the shared mod list if we haven't already
 		this.getSharedModList();
@@ -459,21 +467,21 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			if (!container.isEnabled(this.environment))
 			{
 				LiteLoaderLogger.info("Container %s is disabled", container.getLocation());
-				this.registerDisabledContainer(container);
+				this.registerDisabledContainer(container, DisabledReason.USER_DISABLED);
 				return false;
 			}
 			
 			if (!this.checkDependencies(container))
 			{
 				LiteLoaderLogger.info("Container %s is missing one or more dependencies", container.getLocation());
-				this.registerDisabledContainer(container);
+				this.registerDisabledContainer(container, DisabledReason.MISSING_DEPENDENCY);
 				return false;
 			}
 				
 			if (!this.checkAPIRequirements(container))
 			{
 				LiteLoaderLogger.info("Container %s is missing one or more required APIs", container.getLocation());
-				this.registerDisabledContainer(container);
+				this.registerDisabledContainer(container, DisabledReason.MISSING_API);
 				return false;
 			}
 
@@ -492,17 +500,21 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		
 		this.disabledContainers.remove(container.getIdentifier());
 		this.enabledContainers.put(container.getIdentifier(), container);
+		
+		this.observers.all().onRegisterEnabledContainer(this, container);
 	}
 
 	/**
 	 * @param container
 	 */
-	protected void registerDisabledContainer(LoadableMod<?> container)
+	protected void registerDisabledContainer(LoadableMod<?> container, DisabledReason reason)
 	{
 		this.checkState(EnumeratorState.DISCOVER, "registerDisabledContainer");
 		
 		this.enabledContainers.remove(container.getIdentifier());
 		this.disabledContainers.put(container.getIdentifier(), new NonMod(container, false));
+
+		this.observers.all().onRegisterDisabledContainer(this, container, reason);
 	}
 	
 	/* (non-Javadoc)
@@ -520,6 +532,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		}
 
 		this.tweakContainers.add(container);
+		this.observers.all().onRegisterTweakContainer(this, container);
 		return true;
 	}
 
@@ -655,6 +668,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		}
 		
 		this.modsToLoad.add(mod);
+		
+		this.observers.all().onModAdded(this, mod);
 	}
 
 	/**

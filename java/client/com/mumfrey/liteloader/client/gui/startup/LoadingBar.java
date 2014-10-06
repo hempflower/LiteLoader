@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.client.gui.startup;
 
-import static org.lwjgl.opengl.GL11.*;
+import static com.mumfrey.liteloader.client.util.GL.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -245,19 +246,20 @@ public class LoadingBar extends LoadingProgress
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
-		glDisable(GL_LIGHTING);
-		glDisable(GL_FOG);
-		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_TEXTURE_2D);
+		glDisableLighting();
+		glDisableFog();
+		glDisableDepth();
+		glEnableTexture2D();
 		
 		this.textureManager.bindTexture(this.textureLocation);
-		Tessellator tessellator = Tessellator.instance;
-		tessellator.startDrawingQuads();
-		tessellator.setColorOpaque_I(0xFFFFFFFF);
-		tessellator.addVertexWithUV(0.0D,        scaledHeight, 0.0D, 0.0D, 0.0D);
-		tessellator.addVertexWithUV(scaledWidth, scaledHeight, 0.0D, 0.0D, 0.0D);
-		tessellator.addVertexWithUV(scaledWidth, 0.0D,         0.0D, 0.0D, 0.0D);
-		tessellator.addVertexWithUV(0.0D,        0.0D,         0.0D, 0.0D, 0.0D);
+		Tessellator tessellator = Tessellator.getInstance();
+		WorldRenderer worldRenderer = tessellator.getWorldRenderer();
+		worldRenderer.startDrawingQuads();
+		worldRenderer.setColorOpaque_I(0xFFFFFFFF); // TODO OBF MCPTEST func_178991_c - setColorOpaque_I
+		worldRenderer.addVertexWithUV(0.0D,        scaledHeight, 0.0D, 0.0D, 0.0D);
+		worldRenderer.addVertexWithUV(scaledWidth, scaledHeight, 0.0D, 0.0D, 0.0D);
+		worldRenderer.addVertexWithUV(scaledWidth, 0.0D,         0.0D, 0.0D, 0.0D);
+		worldRenderer.addVertexWithUV(0.0D,        0.0D,         0.0D, 0.0D, 0.0D);
 		tessellator.draw();
 		
 		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -270,16 +272,17 @@ public class LoadingBar extends LoadingProgress
 		int v2 = 256;
 		
 		float texMapScale = 0.00390625F;
-		tessellator.startDrawingQuads();
-		tessellator.setColorOpaque_I(0xFFFFFFFF);
-		tessellator.addVertexWithUV(left + 0,  top + v2, 0.0D, (u1 + 0)  * texMapScale, (v1 + v2) * texMapScale);
-		tessellator.addVertexWithUV(left + u2, top + v2, 0.0D, (u1 + u2) * texMapScale, (v1 + v2) * texMapScale);
-		tessellator.addVertexWithUV(left + u2, top + 0, 0.0D,  (u1 + u2) * texMapScale, (v1 + 0)  * texMapScale);
-		tessellator.addVertexWithUV(left + 0,  top + 0, 0.0D,  (u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale);
+		worldRenderer.startDrawingQuads();
+		worldRenderer.setColorOpaque_I(0xFFFFFFFF); // TODO OBF MCPTEST func_178991_c - setColorOpaque_I
+		worldRenderer.addVertexWithUV(left + 0,  top + v2, 0.0D, (u1 + 0)  * texMapScale, (v1 + v2) * texMapScale);
+		worldRenderer.addVertexWithUV(left + u2, top + v2, 0.0D, (u1 + u2) * texMapScale, (v1 + v2) * texMapScale);
+		worldRenderer.addVertexWithUV(left + u2, top + 0, 0.0D,  (u1 + u2) * texMapScale, (v1 + 0)  * texMapScale);
+		worldRenderer.addVertexWithUV(left + 0,  top + 0, 0.0D,  (u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale);
 		tessellator.draw();
 		
-		glEnable(GL_COLOR_LOGIC_OP);
-		glLogicOp(GL_OR_REVERSE);
+		glEnableTexture2D();
+		glEnableColorLogic();
+		glColorLogicOp(GL_OR_REVERSE);
 		this.fontRenderer.drawString(this.message, 1, scaledHeight - 19, 0xFF000000);
 		
 		if (LiteLoaderLogger.DEBUG)
@@ -292,16 +295,16 @@ public class LoadingBar extends LoadingProgress
 			glPopMatrix();
 		}
 		
-		glDisable(GL_COLOR_LOGIC_OP);
-		glEnable(GL_TEXTURE_2D);
+		glDisableColorLogic();
+		glEnableTexture2D();
 		
 		double barHeight = 10.0D;
 		
 		double barWidth = scaledResolution.getScaledWidth_double() - 2.0D;
 		
-		glDisable(GL_TEXTURE_2D);
-		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
+		glDisableTexture2D();
+		glEnableBlend();
+		glEnableAlpha();
 		glAlphaFunc(GL_GREATER, 0.0F);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
@@ -315,37 +318,37 @@ public class LoadingBar extends LoadingProgress
 //		tessellator.addVertex(0.0D,               scaledHeight - (scaledHeight / 3), 0.0D);
 //		tessellator.draw();
 		
-		tessellator.startDrawingQuads();
-		tessellator.setColorRGBA(this.barLuma, this.barLuma, this.barLuma, 128);
-		tessellator.addVertex(0.0D,               scaledHeight,             0.0D);
-		tessellator.addVertex(0.0D + scaledWidth, scaledHeight,             0.0D);
-		tessellator.addVertex(0.0D + scaledWidth, scaledHeight - barHeight, 0.0D);
-		tessellator.addVertex(0.0D,               scaledHeight - barHeight, 0.0D);
+		worldRenderer.startDrawingQuads();
+		worldRenderer.func_178961_b(this.barLuma, this.barLuma, this.barLuma, 128);
+		worldRenderer.addVertex(0.0D,               scaledHeight,             0.0D);
+		worldRenderer.addVertex(0.0D + scaledWidth, scaledHeight,             0.0D);
+		worldRenderer.addVertex(0.0D + scaledWidth, scaledHeight - barHeight, 0.0D);
+		worldRenderer.addVertex(0.0D,               scaledHeight - barHeight, 0.0D);
 		tessellator.draw();
 		
 		barHeight -= 1;
 		
-		tessellator.startDrawingQuads();
-		tessellator.setColorRGBA(this.r2, this.g2, this.b2, 255);
-		tessellator.addVertex(1.0D + barWidth * progress, scaledHeight - 1,         1.0D);
-		tessellator.addVertex(1.0D + barWidth * progress, scaledHeight - barHeight, 1.0D);
-		tessellator.setColorRGBA(0, 0, 0, 255);
-		tessellator.addVertex(1.0D,                       scaledHeight - barHeight, 1.0D);
-		tessellator.addVertex(1.0D,                       scaledHeight - 1,         1.0D);
+		worldRenderer.startDrawingQuads();
+		worldRenderer.func_178961_b(this.r2, this.g2, this.b2, 255);
+		worldRenderer.addVertex(1.0D + barWidth * progress, scaledHeight - 1,         1.0D);
+		worldRenderer.addVertex(1.0D + barWidth * progress, scaledHeight - barHeight, 1.0D);
+		worldRenderer.func_178961_b(0, 0, 0, 255);
+		worldRenderer.addVertex(1.0D,                       scaledHeight - barHeight, 1.0D);
+		worldRenderer.addVertex(1.0D,                       scaledHeight - 1,         1.0D);
 		tessellator.draw();
 		
 		glAlphaFunc(GL_GREATER, 0.1F);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_FOG);
+		glDisableLighting();
+		glDisableFog();
 		this.fbo.unbindFramebuffer();
 		
 		this.fbo.framebufferRender(fboWidth, fboHeight);
 		
-		glEnable(GL_ALPHA_TEST);
+		glEnableAlpha();
 		glAlphaFunc(GL_GREATER, 0.1F);
-		glFlush();
+//		glFlush();
 		
-		this.minecraft.resetSize();
+		this.minecraft.updateDisplay(); // TODO OBF MCPTEST updateDisplay - func_175601_h
 	}
 	
 	private void renderLogTail(int yPos)

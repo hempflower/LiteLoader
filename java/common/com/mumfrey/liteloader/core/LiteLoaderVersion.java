@@ -7,7 +7,7 @@ import java.util.Set;
  * LiteLoader version table
  *
  * @author Adam Mummery-Smith
- * @version 1.7.10_04
+ * @version 1.8.0_00
  */
 public enum LiteLoaderVersion
 {
@@ -37,12 +37,13 @@ public enum LiteLoaderVersion
 	MC_1_7_10_R1(28, 1404673785, "1.7.10", "1.7.10_01", "1.7.10"),
 	MC_1_7_10_R2(29, 1405369406, "1.7.10", "1.7.10_02", "1.7.10"),
 	MC_1_7_10_R3(30, 1407687918, "1.7.10", "1.7.10_03", "1.7.10", "1.7.10_03"),
-	MC_1_7_10_R4(31, 0,          "1.7.10", "1.7.10_04", "1.7.10", "1.7.10_03", "1.7.10_04");
+	MC_1_7_10_R4(31, 0,          "1.7.10", "1.7.10_04", "1.7.10", "1.7.10_03", "1.7.10_04"),
+	MC_1_8_0_R0(32, 0,          "1.8.0",  "1.8.0",     "1.8", "1.8.0");
 	
 	/**
 	 * Current loader version
 	 */
-	public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_7_10_R4;
+	public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_8_0_R0;
 
 	private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(), LiteLoaderVersion.CURRENT.getReleaseTimestamp());
 	

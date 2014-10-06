@@ -36,6 +36,11 @@ class APIProviderBasic implements APIProvider, APIAdapter
 	private final Map<LiteAPI, List<? extends Observer>> observers = new HashMap<LiteAPI, List<? extends Observer>>();
 	
 	/**
+	 * Cached preinit observers 
+	 */
+	private final Map<LiteAPI, List<? extends Observer>> preInitiObservers = new HashMap<LiteAPI, List<? extends Observer>>();
+	
+	/**
 	 * Cached CoreProvider set
 	 */
 	private List<CoreProvider> coreProviders;
@@ -91,26 +96,6 @@ class APIProviderBasic implements APIProvider, APIAdapter
 	}
 	
 	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.api.manager.APIProvider#getPacketTransformers()
-	 */
-	@Override
-	public List<String> getPacketTransformers()
-	{
-		List<String> packetTransformers = new ArrayList<String>();
-		
-		for (LiteAPI api : this.apis)
-		{
-			String[] apiTransformers = api.getPacketTransformers();
-			if (apiTransformers != null)
-			{
-				packetTransformers.addAll(Arrays.asList(apiTransformers));
-			}
-		}
-		
-		return packetTransformers;
-	}
-	
-	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.api.manager.APIProvider#getObservers(com.mumfrey.liteloader.api.LiteAPI)
 	 */
 	@Override
@@ -125,6 +110,18 @@ class APIProviderBasic implements APIProvider, APIAdapter
 		return this.observers.get(api);
 	}
 
+	@Override
+	public List<? extends Observer> getPreInitObservers(LiteAPI api)
+	{
+		if (!this.preInitiObservers.containsKey(api))
+		{
+			List<Observer> apiObservers = api.getPreInitObservers();
+			this.preInitiObservers.put(api, Collections.unmodifiableList(apiObservers != null ? apiObservers : new ArrayList<Observer>()));
+		}
+		
+		return this.preInitiObservers.get(api);
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Observer> List<T> getObservers(LiteAPI api, Class<T> observerType)
@@ -156,6 +153,25 @@ class APIProviderBasic implements APIProvider, APIAdapter
 		{
 			if (observerType.isAssignableFrom(coreProvider.getClass()) && !matchingObservers.contains(coreProvider))
 				matchingObservers.add((T)coreProvider);
+		}
+		
+		return matchingObservers;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <T extends Observer> List<T> getPreInitObservers(Class<T> observerType)
+	{
+		List<T> matchingObservers = new ArrayList<T>();
+		for (LiteAPI api : this.apis)
+		{
+			for (Observer observer : this.getPreInitObservers(api))
+			{
+				if (observerType.isAssignableFrom(observer.getClass()) && !matchingObservers.contains(observer))
+				{
+					matchingObservers.add((T)observer);
+				}
+			}
 		}
 		
 		return matchingObservers;

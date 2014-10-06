@@ -15,6 +15,7 @@ import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.messaging.MessageBus;
+import com.mumfrey.liteloader.transformers.event.json.ModEvents;
 
 /**
  * Client side of the core API
@@ -34,10 +35,9 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	private static final String[] requiredDownstreamTransformers = {
 		LiteLoaderCoreAPI.PKG_LITELOADER_COMMON + ".transformers.LiteLoaderPacketTransformer",
 		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.LiteLoaderEventInjectionTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftOverlayTransformer"
+		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftOverlayTransformer",
+		LiteLoaderCoreAPI.PKG_LITELOADER + ".transformers.event.json.ModEventInjectionTransformer"
 	};
-	
-	private static final String[] defaultPacketTransformers = {};
 	
 	private ObjectFactory<Minecraft, IntegratedServer> objectFactory;
 	
@@ -59,15 +59,6 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 		return LiteLoaderCoreAPIClient.requiredDownstreamTransformers;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.api.LiteAPI#getPacketTransformers()
-	 */
-	@Override
-	public String[] getPacketTransformers()
-	{
-		return LiteLoaderCoreAPIClient.defaultPacketTransformers;
-	}
-	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.api.LiteAPI#getCustomisationProviders()
 	 */
@@ -110,6 +101,18 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 			objectFactory.getClientPluginChannels(),
 			objectFactory.getServerPluginChannels(),
 			MessageBus.getInstance()
+		);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.api.LiteAPI#getPreInitObservers()
+	 */
+	@Override
+	public List<Observer> getPreInitObservers()
+	{
+		return ImmutableList.<Observer>of
+		(
+			new ModEvents()
 		);
 	}
 	

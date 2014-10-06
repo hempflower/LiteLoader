@@ -25,7 +25,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * Transformer which injects callbacks by searching for profiler invokations and RETURN opcodes
  * 
  * @author Adam Mummery-Smith
+ * @deprecated Use Event Injection instead
  */
+@Deprecated
 public abstract class CallbackInjectionTransformer extends ClassTransformer
 {
 	/**

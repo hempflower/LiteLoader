@@ -8,6 +8,8 @@ import java.util.List;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 
+import com.google.common.base.Joiner;
+
 /**
  * Base class for injection point discovery classes. Each subclass describes a strategy for locating code injection
  * points within a method, with the {@code find} method populating a collection with insn nodes from the method
@@ -26,7 +28,14 @@ import org.objectweb.asm.tree.InsnList;
  * @author Adam Mummery-Smith
  */
 public abstract class InjectionPoint
-{
+{	
+	/**
+	 * Capture locals as well as args
+	 */
+	protected boolean captureLocals;
+	
+	protected boolean logLocals;
+	
 	/**
 	 * Find injection points in the supplied insn list
 	 * 
@@ -38,6 +47,53 @@ public abstract class InjectionPoint
 	 */
 	public abstract boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event);
 	
+	/**
+	 * Set whether this injection point should capture local variables as well as method arguments
+	 * 
+	 * @param captureLocals
+	 * @return
+	 */
+	public InjectionPoint setCaptureLocals(boolean captureLocals)
+	{
+		this.captureLocals = captureLocals;
+		return this;
+	}
+	
+	/**
+	 * Get whether capture locals is enabled
+	 */
+	public boolean captureLocals()
+	{
+		return this.captureLocals;
+	}
+	
+	/**
+	 * Since it's virtually impossible to know what locals are available at a given injection point by reading the source, this method causes the
+	 * injection point to dump the locals to the debug log at injection time.
+	 * 
+	 * @param logLocals
+	 * @return
+	 */
+	public InjectionPoint setLogLocals(boolean logLocals)
+	{
+		this.logLocals = logLocals;
+		return this;
+	}
+	
+	/**
+	 * @return
+	 */
+	public boolean logLocals()
+	{
+		return this.logLocals;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "InjectionPoint(" + this.getClass().getSimpleName() + ")";
+	}
+
 	/**
 	 * Composite injection point
 	 * 
@@ -55,6 +111,18 @@ public abstract class InjectionPoint
 			}
 
 			this.components = components;
+			
+			for (InjectionPoint component : this.components)
+			{
+				this.captureLocals |= component.captureLocals;
+				this.logLocals |= component.logLocals;
+			}
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "CompositeInjectionPoint(" + this.getClass().getSimpleName() + ")[" + Joiner.on(',').join(this.components) + "]";
 		}
 	}
 	
@@ -138,6 +206,36 @@ public abstract class InjectionPoint
 			this.shift = shift;
 		}
 		
+		@Override
+		public InjectionPoint setCaptureLocals(boolean captureLocals)
+		{
+			return this.input.setCaptureLocals(captureLocals);
+		}
+		
+		@Override
+		public boolean captureLocals()
+		{
+			return this.input.captureLocals();
+		}
+		
+		@Override
+		public InjectionPoint setLogLocals(boolean logLocals)
+		{
+			return this.input.setLogLocals(logLocals);
+		}
+		
+		@Override
+		public boolean logLocals()
+		{
+			return this.input.logLocals();
+		}
+		
+		@Override
+		public String toString()
+		{
+			return "InjectionPoint(" + this.getClass().getSimpleName() + ")[" + this.input + "]";
+		}
+
 		@Override
 		public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
 		{

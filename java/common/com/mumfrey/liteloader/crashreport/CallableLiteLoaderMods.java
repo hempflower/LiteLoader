@@ -21,6 +21,13 @@ public class CallableLiteLoaderMods implements Callable<String>
 	@Override
 	public String call() throws Exception
 	{
-		return LiteLoader.getInstance().getLoadedModsList();
+		try
+		{
+			return LiteLoader.getInstance().getLoadedModsList();
+		}
+		catch (Exception ex)
+		{
+			return "LiteLoader startup failed";
+		}
 	}
 }

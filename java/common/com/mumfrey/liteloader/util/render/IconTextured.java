@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.util.render;
 
-import net.minecraft.util.IIcon;
+import com.mumfrey.liteloader.client.util.render.Icon;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -8,7 +8,7 @@ import net.minecraft.util.ResourceLocation;
  *  
  * @author Adam Mummery-Smith
  */
-public interface IconTextured extends IIcon
+public interface IconTextured extends Icon
 {
 	/**
 	 * Get tooltip text, return null for no tooltip

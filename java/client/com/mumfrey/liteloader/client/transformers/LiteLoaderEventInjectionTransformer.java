@@ -9,15 +9,22 @@ import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
+import com.mumfrey.liteloader.transformers.event.inject.BeforeNew;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeStringInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.MethodHead;
 
+/**
+ * Injector for LiteLoader's main events
+ *
+ * @author Adam Mummery-Smith
+ */
 public class LiteLoaderEventInjectionTransformer extends EventInjectionTransformer
 {
 	@Override
 	protected void addEvents()
 	{
+		// Event declaraions
 		Event onOutboundChat                   = Event.getOrCreate("onOutboundChat",               true);
 		Event onResize                         = Event.getOrCreate("updateFramebufferSize",        false);
 		Event preRenderFBO                     = Event.getOrCreate("preRenderFBO",                 false);
@@ -43,7 +50,9 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		Event onSpawnPlayer                    = Event.getOrCreate("onSpawnPlayer",                false);
 		Event onRespawnPlayer                  = Event.getOrCreate("onRespawnPlayer",              false);
 		Event onStartupComplete                = Event.getOrCreate("onStartupComplete",            false);
+		Event onSessionProfileBad              = Event.getOrCreate("onSessionProfileBad",          true);
 		
+		// Injection Points
 		InjectionPoint methodHead              = new MethodHead();
 		InjectionPoint methodReturn            = new BeforeReturn();
 		InjectionPoint beforeGlClear           = new BeforeInvoke(glClear);
@@ -54,17 +63,19 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		InjectionPoint beforeDrawChat          = new BeforeInvoke(drawChat);
 		InjectionPoint beforeEndProfiler       = new BeforeInvoke(endSection);
 		InjectionPoint beforeTickProfiler      = new BeforeStringInvoke("tick",         startSection);
-		InjectionPoint beforePickProfiler      = new BeforeStringInvoke("pick",         endStartSection);
+		InjectionPoint beforeCenterProfiler    = new BeforeStringInvoke("center",       startSection);
 		InjectionPoint beforeRenderProfiler    = new BeforeStringInvoke("gameRenderer", endStartSection);
-		InjectionPoint beforeFrustumProfiler   = new BeforeStringInvoke("frustrum",     endStartSection);
+		InjectionPoint beforeFrustumProfiler   = new BeforeStringInvoke("frustum",      endStartSection);
 		InjectionPoint beforeParticlesProfiler = new BeforeStringInvoke("litParticles", endStartSection);
+		InjectionPoint beforeNewGameProfile    = new BeforeNew(1, Obf.GameProfile);
 		
+		// Hooks
 		this.add(onOutboundChat,               sendChatMessage,            (methodHead),              "onOutboundChat");
 		this.add(onResize,                     updateFramebufferSize,      (methodHead),              "onResize");
 		this.add(preRenderFBO,                 runGameLoop,                (beforeFBORender),         "preRenderFBO");
-		this.add(renderFBO,                    framebufferRender,          (beforeBindFBOTex),        "renderFBO");
+		this.add(renderFBO,                    framebufferRenderExt,       (beforeBindFBOTex),        "renderFBO");
 		this.add(postRenderFBO,                runGameLoop,           after(beforeFBORender),         "postRenderFBO");
-		this.add(onRenderWorld,                renderWorld,                (beforePickProfiler),      "onRenderWorld");
+		this.add(onRenderWorld,                renderWorld,                (beforeCenterProfiler),    "onRenderWorld");
 		this.add(onTimerUpdate,                runGameLoop,                (beforeTickProfiler),      "onTimerUpdate");
 		this.add(onRender,                     runGameLoop,                (beforeRenderProfiler),    "onRender");
 		this.add(newTick,                      runTick,                    (methodHead),              "newTick");
@@ -72,8 +83,8 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		this.add(preRenderGUI,                 updateCameraAndRender, after(beforeGlClear),           "preRenderGUI");
 		this.add(onRenderHUD,                  updateCameraAndRender,      (beforeRenderHUD),         "onRenderHUD");
 		this.add(postRenderHUD,                updateCameraAndRender, after(beforeRenderHUD),         "postRenderHUD");
-		this.add(onSetupCameraTransform,       renderWorld,                (beforeFrustumProfiler),   "onSetupCameraTransform");
-		this.add(postRenderEntities,           renderWorld,                (beforeParticlesProfiler), "postRenderEntities");
+		this.add(onSetupCameraTransform,       renderWorldPass,            (beforeFrustumProfiler),   "onSetupCameraTransform");
+		this.add(postRenderEntities,           renderWorldPass,            (beforeParticlesProfiler), "postRenderEntities");
 		this.add(postRender,                   renderWorld,                (beforeEndProfiler),       "postRender");
 		this.add(onRenderChat,                 renderGameOverlay,          (beforeDrawChat),          "onRenderChat");
 		this.add(postRenderChat,               renderGameOverlay,     after(beforeDrawChat),          "postRenderChat");
@@ -84,6 +95,9 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		this.add(onSpawnPlayer,                spawnPlayer,                (methodReturn),            "onSpawnPlayer");
 		this.add(onRespawnPlayer,              respawnPlayer,              (methodReturn),            "onRespawnPlayer");
 		this.add(onStartupComplete,            startGame,                  (methodReturn),            "onStartupComplete");
+		
+		// Compatibility handlers
+		this.add(onSessionProfileBad,          getProfile,                 (beforeNewGameProfile),    "generateOfflineUUID");
 	}
 
 	protected final Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback)

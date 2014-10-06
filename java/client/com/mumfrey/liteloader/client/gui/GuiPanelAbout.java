@@ -10,7 +10,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
@@ -18,6 +17,7 @@ import org.lwjgl.input.Keyboard;
 import com.mumfrey.liteloader.api.BrandingProvider;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
+import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.SortableValue;
@@ -124,7 +124,7 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 		for (BrandingProvider branding : this.brandings)
 		{
 			ResourceLocation twitterAvatarResource = branding.getTwitterAvatarResource();
-			IIcon twitterAvatarCoords = branding.getTwitterAvatarCoords();
+			Icon twitterAvatarCoords = branding.getTwitterAvatarCoords();
 			
 			this.mc.getTextureManager().bindTexture(twitterAvatarResource != null ? twitterAvatarResource : LiteLoaderBrandingProvider.ABOUT_TEXTURE);
 			GuiLiteLoaderPanel.glDrawTexturedRect(0, yPos, twitterAvatarCoords != null ? twitterAvatarCoords : GuiPanelAbout.apiIconCoords, 1.0F);

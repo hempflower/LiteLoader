@@ -12,7 +12,6 @@ import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.launchwrapper.LogWrapper;
 
-import com.mumfrey.liteloader.transformers.PacketTransformer;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -155,8 +154,6 @@ public class ClassTransformerManager
 	 */
 	void injectUpstreamTransformers(LaunchClassLoader classLoader)
 	{
-		this.sieveAndSortPacketTransformers(classLoader, this.pendingTransformers);
-		
 		for (String requiredTransformerClassName : this.requiredTransformers)
 		{
 			LiteLoaderLogger.info("Injecting required class transformer '%s'", requiredTransformerClassName);
@@ -197,84 +194,28 @@ public class ClassTransformerManager
 		this.gameStarted = true;
 	}
 
-	/**
-	 * Sieves packet transformers from the injected transformers list and pokes the rest into the downstreamTransformers set
-	 * 
-	 * @param classLoader
-	 * @param transformers
-	 */
-	@SuppressWarnings({ "unchecked", "deprecation" })
-	private void sieveAndSortPacketTransformers(LaunchClassLoader classLoader, Set<String> transformers)
-	{
-		LiteLoaderLogger.info("Sorting registered packet transformers by priority");
-		int registeredTransformers = 0;
-		
-		NonDelegatingClassLoader tempLoader = new NonDelegatingClassLoader(classLoader.getURLs(), this.getClass().getClassLoader());
-		tempLoader.addDelegatedClassName("com.mumfrey.liteloader.core.transformers.PacketTransformer");
-		tempLoader.addDelegatedClassName("com.mumfrey.liteloader.core.runtime.Obf");
-		tempLoader.addDelegatedClassName("net.minecraft.launchwrapper.IClassTransformer");
-		tempLoader.addDelegatedPackage("org.objectweb.asm.");
-
-		Iterator<String> iter = transformers.iterator();
-		while (iter.hasNext())
-		{
-			String transformerClassName = iter.next();
-			try
-			{
-				Class<IClassTransformer> transformerClass = (Class<IClassTransformer>)tempLoader.addAndLoadClass(transformerClassName);
-				
-				if (PacketTransformer.class.isAssignableFrom(transformerClass))
-				{
-					if (tempLoader.isValid())
-					{
-						PacketTransformer transformer = (PacketTransformer)transformerClass.newInstance();
-						String packetClass = transformer.getPacketClass();
-						if (!this.packetTransformers.containsKey(packetClass))
-							this.packetTransformers.put(packetClass, new TreeSet<SortableValue<String>>());
-						this.packetTransformers.get(packetClass).add(transformer.getInfo(transformerClassName));
-						registeredTransformers++;
-						iter.remove();
-					}
-					else
-					{
-						LiteLoaderLogger.warning("Packet transformer class '%s' references class '%s' which is not allowed. Packet transformers must not contain references to other classes", transformerClassName, tempLoader.getInvalidClassName()); 
-						iter.remove();
-					}
-				}
-			}
-			catch (NoClassDefFoundError err)
-			{
-				LiteLoaderLogger.warning(err, "Packet transformer class '%s' references a missing class. This probably means it is out of date or missing a dependency.", transformerClassName); 
-				err.printStackTrace();
-				iter.remove();
-			}
-			catch (Exception ex)
-			{
-				ex.printStackTrace();
-			}
-		}
-		
-		this.downstreamTransformers.addAll(transformers);
-		transformers.clear();
-		
-		LiteLoaderLogger.info("Added %d packet transformer classes to the transformer list", registeredTransformers);
-	}
-
 	private synchronized void injectTransformer(LaunchClassLoader classLoader, String transformerClassName)
 	{
-		// Assign pendingTransformer so that logged errors during transformer init can be put in the map
-		this.pendingTransformer = transformerClassName;
-		
-		// Register the transformer
-		classLoader.registerTransformer(transformerClassName);
-		
-		// Unassign pending transformer now init is completed
-		this.pendingTransformer = null;
-		
-		// Check whether the transformer was successfully injected, look for it in the transformer list
-		if (this.findTransformer(classLoader, transformerClassName) != null)
+		try
 		{
-			this.injectedTransformers.add(transformerClassName);
+			// Assign pendingTransformer so that logged errors during transformer init can be put in the map
+			this.pendingTransformer = transformerClassName;
+			
+			// Register the transformer
+			classLoader.registerTransformer(transformerClassName);
+			
+			// Unassign pending transformer now init is completed
+			this.pendingTransformer = null;
+			
+			// Check whether the transformer was successfully injected, look for it in the transformer list
+			if (this.findTransformer(classLoader, transformerClassName) != null)
+			{
+				this.injectedTransformers.add(transformerClassName);
+			}
+		}
+		catch (Throwable th)
+		{
+			LiteLoaderLogger.severe(th, "Error injecting class transformer class %s", transformerClassName);
 		}
 	}
 

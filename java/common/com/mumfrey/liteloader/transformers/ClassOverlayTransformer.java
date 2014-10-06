@@ -1,7 +1,6 @@
 package com.mumfrey.liteloader.transformers;
 
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -288,7 +287,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 				throw new InvalidOverlayException(String.format("Overlay classes cannot contain non-private static methods or fields, found %s", field.name));
 			}
 
-			FieldNode target = this.findTargetField(targetClass, field);
+			FieldNode target = ByteCodeUtilities.findTargetField(targetClass, field);
 			if (target == null)
 			{
 				targetClass.fields.add(field);
@@ -319,7 +318,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	{
 		for (MethodNode overlayMethod : overlayClass.methods)
 		{
-			if (this.getAnnotation(overlayMethod, Stub.class) != null || (this.getAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
+			if (ByteCodeUtilities.getAnnotation(overlayMethod, Stub.class) != null || (ByteCodeUtilities.getAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
 			{
 				this.checkRenameMethod(targetClass, overlayMethod);
 			}
@@ -338,12 +337,12 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		{
 			this.transformMethod(overlayMethod, overlayClass.name, targetClass.name);
 			
-			AnnotationNode appendAnnotation = this.getAnnotation(overlayMethod, AppendInsns.class);
-			AnnotationNode stubAnnotation = this.getAnnotation(overlayMethod, Stub.class);
+			AnnotationNode appendAnnotation = ByteCodeUtilities.getAnnotation(overlayMethod, AppendInsns.class);
+			AnnotationNode stubAnnotation = ByteCodeUtilities.getAnnotation(overlayMethod, Stub.class);
 
 			if (stubAnnotation != null)
 			{
-				MethodNode target = this.findTargetMethod(targetClass, overlayMethod);
+				MethodNode target = ByteCodeUtilities.findTargetMethod(targetClass, overlayMethod);
 				if (target == null)
 				{
 					throw new InvalidOverlayException(String.format("Stub method %s was not located in the target class", overlayMethod.name));
@@ -351,7 +350,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 			}
 			else if (appendAnnotation != null)
 			{
-				String targetMethodName = this.<String>getAnnotationValue(appendAnnotation);
+				String targetMethodName = ByteCodeUtilities.<String>getAnnotationValue(appendAnnotation);
 				this.appendInsns(targetClass, targetMethodName, overlayMethod);
 			}
 			else if (!overlayMethod.name.startsWith("<"))
@@ -361,7 +360,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 					continue;
 				}
 				
-				MethodNode target = this.findTargetMethod(targetClass, overlayMethod);
+				MethodNode target = ByteCodeUtilities.findTargetMethod(targetClass, overlayMethod);
 				if (target != null) targetClass.methods.remove(target);
 				targetClass.methods.add(overlayMethod);
 			}
@@ -434,10 +433,10 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		if (targetMethodName == null || targetMethodName.length() == 0) targetMethodName = sourceMethod.name;
 
 		Set<String> obfuscatedNames = new HashSet<String>();
-		AnnotationNode obfuscatedAnnotation = this.getAnnotation(sourceMethod, Obfuscated.class);
+		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getAnnotation(sourceMethod, Obfuscated.class);
 		if (obfuscatedAnnotation != null)
 		{
-			obfuscatedNames.addAll(this.<List<String>>getAnnotationValue(obfuscatedAnnotation));
+			obfuscatedNames.addAll(ByteCodeUtilities.<List<String>>getAnnotationValue(obfuscatedAnnotation));
 		}
 		
 		for (MethodNode method : targetClass.methods)
@@ -475,146 +474,13 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	 */
 	private void checkRenameMethod(ClassNode targetClass, MethodNode searchFor)
 	{
-		MethodNode target = this.findTargetMethod(targetClass, searchFor);
+		MethodNode target = ByteCodeUtilities.findTargetMethod(targetClass, searchFor);
 		if (target != null && !target.name.equals(searchFor.name))
 		{
 			String methodDescriptor = searchFor.name + searchFor.desc;
 			this.renamedMethods.put(methodDescriptor, target.name);
 			searchFor.name = target.name;
 		}
-	}
-
-	/**
-	 * Finds a method in the target class, uses names specified in the {@link Obfuscated} annotation if present
-	 * 
-	 * @param targetClass
-	 * @param searchFor
-	 * @return
-	 */
-	private MethodNode findTargetMethod(ClassNode targetClass, MethodNode searchFor)
-	{
-		for (MethodNode target : targetClass.methods)
-		{
-			if (target.name.equals(searchFor.name) && target.desc.equals(searchFor.desc))
-				return target;
-		}
-		
-		AnnotationNode obfuscatedAnnotation = this.getAnnotation(searchFor, Obfuscated.class);
-		if (obfuscatedAnnotation != null)
-		{
-			for (String obfuscatedName : this.<List<String>>getAnnotationValue(obfuscatedAnnotation))
-			{
-				for (MethodNode target : targetClass.methods)
-				{
-					if (target.name.equals(obfuscatedName) && target.desc.equals(searchFor.desc))
-						return target;
-				}
-			}
-		}
-		
-		return null;
-	}
-
-	/**
-	 * Finds a field in the target class, uses names specified in the {@link Obfuscated} annotation if present
-	 * 
-	 * @param targetClass
-	 * @param searchFor
-	 * @return
-	 */
-	private FieldNode findTargetField(ClassNode targetClass, FieldNode searchFor)
-	{
-		for (FieldNode target : targetClass.fields)
-		{
-			if (target.name.equals(searchFor.name))
-				return target;
-		}
-		
-		AnnotationNode obfuscatedAnnotation = this.getAnnotation(searchFor, Obfuscated.class);
-		if (obfuscatedAnnotation != null)
-		{
-			for (String obfuscatedName : this.<List<String>>getAnnotationValue(obfuscatedAnnotation))
-			{
-				for (FieldNode target : targetClass.fields)
-				{
-					if (target.name.equals(obfuscatedName))
-						return target;
-				}
-			}
-		}
-			
-		return null;
-	}
-
-	/**
-	 * Get an annotation of the specified class from the supplied field node
-	 * 
-	 * @param field
-	 * @param annotationType
-	 * @return
-	 */
-	private AnnotationNode getAnnotation(FieldNode field, Class<? extends Annotation> annotationClass)
-	{
-		return this.getAnnotation(field.visibleAnnotations, Type.getDescriptor(annotationClass));
-	}
-
-	/**
-	 * Get an annotation of the specified class from the supplied method node
-	 * 
-	 * @param method
-	 * @param annotationType
-	 * @return
-	 */
-	private AnnotationNode getAnnotation(MethodNode method, Class<? extends Annotation> annotationClass)
-	{
-		return this.getAnnotation(method.visibleAnnotations, Type.getDescriptor(annotationClass));
-	}
-
-	/**
-	 * @param annotations
-	 * @param annotationType
-	 * @return
-	 */
-	private AnnotationNode getAnnotation(List<AnnotationNode> annotations, String annotationType)
-	{
-		if (annotations != null)
-		{
-			for (AnnotationNode annotation : annotations)
-			{
-				if (annotationType.equals(annotation.desc))
-					return annotation;
-			}
-		}
-		
-		return null;
-	}
-
-	/**
-	 * Get the value of an annotation node
-	 * 
-	 * @param annotation
-	 * @return
-	 */
-	private <T> T getAnnotationValue(AnnotationNode annotation)
-	{
-		return this.getAnnotationValue(annotation, "value");
-	}
-
-	/**
-	 * @param annotation
-	 * @param key
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	private <T> T getAnnotationValue(AnnotationNode annotation, String key)
-	{
-		boolean getNextValue = false;
-		for (Object value : annotation.values)
-		{
-			if (getNextValue) return (T)value;
-			if (value.equals(key)) getNextValue = true;
-		}
-		return null;
 	}
 
 	/**

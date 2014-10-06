@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static org.lwjgl.opengl.GL11.*;
+import static com.mumfrey.liteloader.client.util.GL.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import net.minecraft.util.Session;
 
 import org.lwjgl.input.Keyboard;
 
+import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.net.LiteLoaderLogUpload;
 
@@ -49,6 +50,8 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 	private boolean closeDialog;
 
 	private GuiLiteLoaderPanel parent;
+	
+	private int debugInfoTimer = 0;
 	
 	/**
 	 * @param parent
@@ -156,6 +159,19 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 			this.closeDialog = false;
 			this.logURL = null;
 			this.setSize(this.width, this.height);
+		}
+		
+		if (Keyboard.isKeyDown(Keyboard.KEY_F3))
+		{
+			this.debugInfoTimer++;
+			if (this.debugInfoTimer == 60)
+			{
+				LiteLoader.dumpDebugInfo();
+			}
+		}
+		else
+		{
+			this.debugInfoTimer = 0;
 		}
 	}
 	

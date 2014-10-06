@@ -220,7 +220,7 @@ public abstract class PacketEvents implements InterfaceProvider
 	{
 		EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
 		
-		if (!this.serverChatFilters.all().onChat(player, packet, packet.func_149439_c()))
+		if (!this.serverChatFilters.all().onChat(player, packet, packet.getMessage()))
 		{
 			e.cancel();
 		}

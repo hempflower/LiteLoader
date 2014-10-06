@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.eq2online.permissions.ReplicatedPermissionsContainer;
+import net.minecraft.network.PacketBuffer;
 
 
 /**
@@ -48,12 +49,12 @@ public class ServerPermissions implements ReplicatedPermissions
 	/**
 	 * @param data
 	 */
-	public ServerPermissions(byte[] data)
+	public ServerPermissions(PacketBuffer data)
 	{
 		this.createdTime = System.currentTimeMillis();
 		this.validUntil = this.createdTime + this.cacheTime;
 		
-		ReplicatedPermissionsContainer response = ReplicatedPermissionsContainer.fromBytes(data);
+		ReplicatedPermissionsContainer response = ReplicatedPermissionsContainer.fromPacketBuffer(data);
 		
 		if (response != null)
 		{

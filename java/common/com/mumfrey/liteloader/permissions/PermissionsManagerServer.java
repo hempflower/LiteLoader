@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.permissions;
 import java.util.List;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.PacketBuffer;
 
 import com.mumfrey.liteloader.Permissible;
 import com.mumfrey.liteloader.ServerPluginChannelListener;
@@ -26,7 +27,7 @@ public class PermissionsManagerServer implements PermissionsManager, ServerPlugi
 	}
 	
 	@Override
-	public void onCustomPayload(EntityPlayerMP sender, String channel, int length, byte[] data)
+	public void onCustomPayload(EntityPlayerMP sender, String channel, PacketBuffer data)
 	{
 	}
 	

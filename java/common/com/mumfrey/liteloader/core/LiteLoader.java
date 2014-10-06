@@ -12,6 +12,7 @@ import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.profiler.Profiler;
@@ -51,6 +52,7 @@ import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.Exposable;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
+import com.mumfrey.liteloader.transformers.event.EventTransformer;
 import com.mumfrey.liteloader.util.Input;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -568,6 +570,19 @@ public final class LiteLoader
 		return "true".equals(System.getProperty("mcpenv"));
 	}
 	
+	public static void dumpDebugInfo()
+	{
+		if (LiteLoaderLogger.DEBUG)
+		{
+			EventTransformer.dumpInjectionState();
+			LiteLoaderLogger.info("Debug info dumped to console");
+		}
+		else
+		{
+			LiteLoaderLogger.info("Debug dump not available, developer flag not enabled");
+		}
+	}
+	
 	/**
 	 * Used for crash reporting, returns a text list of all loaded mods
 	 * 
@@ -914,6 +929,9 @@ public final class LiteLoader
 		}
 		
 		MessageBus.getInstance().onStartupComplete();
+		
+		// Force packet injections
+		EnumConnectionState.values();
 	}
 
 	/**

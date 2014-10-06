@@ -1,11 +1,10 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static org.lwjgl.opengl.GL11.*;
-
-import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
-
+import static com.mumfrey.liteloader.client.util.GL.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+
+import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 
 /**
  * Super-simple implementation of a checkbox control

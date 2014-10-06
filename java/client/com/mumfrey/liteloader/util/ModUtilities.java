@@ -24,6 +24,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
+import net.minecraft.util.ResourceLocation;
 
 import com.mumfrey.liteloader.client.util.PrivateFields;
 import com.mumfrey.liteloader.core.LiteLoader;
@@ -84,11 +85,12 @@ public abstract class ModUtilities
 	@SuppressWarnings("unchecked")
 	public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
 	{
-		Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(RenderManager.instance);
+		RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
+		
+		Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(renderManager);
 		if (entityRenderMap != null)
 		{
 			entityRenderMap.put(entityClass, renderer);
-			renderer.setRenderManager(RenderManager.instance);
 		}
 		else
 		{
@@ -105,7 +107,7 @@ public abstract class ModUtilities
         {
         	Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap = PrivateFields.specialRendererMap.get(tileEntityRenderer);
 			specialRendererMap.put(tileEntityClass, renderer);
-			renderer.func_147497_a(tileEntityRenderer); // setDispatcher
+			renderer.setRendererDispatcher(tileEntityRenderer);
 		}
         catch (Exception ex)
         {
@@ -121,20 +123,20 @@ public abstract class ModUtilities
 	 * @param block Block to register
 	 * @param force Force insertion even if the operation is blocked by FMl
 	 */
-	public static void addBlock(int blockId, String blockName, Block block, boolean force)
+	public static void addBlock(int blockId, ResourceLocation blockName, Block block, boolean force)
 	{
-		Block existingBlock = Block.blockRegistry.getObject(blockName);
+		Block existingBlock = (Block)Block.blockRegistry.getObject(blockName);
 		
 		try
 		{
-			Block.blockRegistry.addObject(blockId, blockName, block);
+			Block.blockRegistry.register(blockId, blockName, block);
 		}
 		catch (IllegalArgumentException ex)
 		{
 			if (!force) throw new IllegalArgumentException("Could not register block '" + blockName + "', the operation was blocked by FML.", ex);
 			
 			ModUtilities.removeObjectFromRegistry(Block.blockRegistry, blockName);
-			Block.blockRegistry.addObject(blockId, blockName, block);
+			Block.blockRegistry.register(blockId, blockName, block);
 		}
 		
 		if (existingBlock != null)
@@ -166,20 +168,20 @@ public abstract class ModUtilities
 	 * @param item Item to register
 	 * @param force Force insertion even if the operation is blocked by FMl
 	 */
-	public static void addItem(int itemId, String itemName, Item item, boolean force)
+	public static void addItem(int itemId, ResourceLocation itemName, Item item, boolean force)
 	{
-		Item existingItem = Item.itemRegistry.getObject(itemName);
+		Item existingItem = (Item)Item.itemRegistry.getObject(itemName);
 		
 		try
 		{
-			Item.itemRegistry.addObject(itemId, itemName, item);
+			Item.itemRegistry.register(itemId, itemName, item);
 		}
 		catch (IllegalArgumentException ex)
 		{
 			if (!force) throw new IllegalArgumentException("Could not register item '" + itemName + "', the operation was blocked by FML.", ex);
 			
 			ModUtilities.removeObjectFromRegistry(Block.blockRegistry, itemName);
-			Item.itemRegistry.addObject(itemId, itemName, item);
+			Item.itemRegistry.register(itemId, itemName, item);
 		}
 		
 		if (existingItem != null)
@@ -269,15 +271,15 @@ public abstract class ModUtilities
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <K, V> V removeObjectFromRegistry(RegistrySimple<K, V> registry, K key)
+	private static <K, V> V removeObjectFromRegistry(RegistrySimple registry, K key)
 	{
 		if (registry == null) return null;
 		
-		ObjectIntIdentityMap<V> underlyingIntegerMap = null;
+		ObjectIntIdentityMap underlyingIntegerMap = null;
 		
 		if (registry instanceof RegistryNamespaced)
 		{
-			RegistryNamespaced<V> rns = (RegistryNamespaced<V>)registry;
+			RegistryNamespaced rns = (RegistryNamespaced)registry;
 			underlyingIntegerMap = PrivateFields.underlyingIntegerMap.get(rns); 
 		}
 		

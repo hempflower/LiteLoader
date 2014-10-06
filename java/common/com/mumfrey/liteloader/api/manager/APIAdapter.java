@@ -25,12 +25,6 @@ public interface APIAdapter
 	public abstract List<String> getRequiredDownstreamTransformers();
 	
 	/**
-	 * Aggregate and return required packet transformers from all registered APIs
-	 */
-	@Deprecated
-	public abstract List<String> getPacketTransformers();
-	
-	/**
 	 * Register interfaces from all registered APIs with the specified registry 
 	 */
 	public abstract void registerInterfaces(InterfaceRegistry interfaceManager);
@@ -65,4 +59,16 @@ public interface APIAdapter
 	 * @param observerType type of observer to search for
 	 */
 	public abstract <T extends Observer> List<T> getAllObservers(Class<T> observerType);
+	
+	/**
+	 * @param api
+	 * @return
+	 */
+	public abstract List<? extends Observer> getPreInitObservers(LiteAPI api);
+
+	/**
+	 * @param observerType
+	 * @return
+	 */
+	public abstract <T extends Observer> List<T> getPreInitObservers(Class<T> observerType);
 }

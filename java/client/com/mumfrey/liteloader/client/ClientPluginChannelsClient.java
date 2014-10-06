@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.login.INetHandlerLoginClient;
 import net.minecraft.network.login.server.S02PacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
@@ -48,10 +49,10 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
 	@Override
 	public void onPluginChannelMessage(S3FPacketCustomPayload customPayload)
 	{
-		if (customPayload != null && customPayload.func_149169_c() != null) // getChannel
+		if (customPayload != null && customPayload.getChannelName() != null)
 		{
-			String channel = customPayload.func_149169_c(); // getChannel
-			byte[] data = customPayload.func_149168_d(); // getData
+			String channel = customPayload.getChannelName();
+			PacketBuffer data = customPayload.getBufferData();
 			
 			this.onPluginChannelMessage(channel, data);
 		}
@@ -62,12 +63,12 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
 	 * @param registrationData
 	 */
 	@Override
-	protected void sendRegistrationData(INetHandler netHandler, byte[] registrationData)
+	protected void sendRegistrationData(INetHandler netHandler, PacketBuffer registrationData)
 	{
 		if (netHandler instanceof INetHandlerLoginClient)
 		{
 			NetworkManager networkManager = PrivateFields.netManager.get(((NetHandlerLoginClient)netHandler));
-			networkManager.scheduleOutboundPacket(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
+			networkManager.sendPacket(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
 		}
 		else if (netHandler instanceof INetHandlerPlayClient)
 		{
@@ -82,7 +83,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
 	 * @param data
 	 */
 	@Override
-	protected boolean send(String channel, byte[] data, ChannelPolicy policy)
+	protected boolean send(String channel, PacketBuffer data, ChannelPolicy policy)
 	{
 		if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
 			throw new RuntimeException("Invalid channel name specified"); 

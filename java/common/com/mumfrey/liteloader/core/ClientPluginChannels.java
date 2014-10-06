@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.core;
 
 import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
@@ -78,7 +79,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	 * @param channel
 	 * @param data
 	 */
-	protected void onPluginChannelMessage(String channel, byte[] data)
+	protected void onPluginChannelMessage(String channel, PacketBuffer data)
 	{
 		if (PluginChannels.CHANNEL_REGISTER.equals(channel))
 		{
@@ -91,12 +92,12 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 				PermissionsManagerClient permissionsManager = LiteLoader.getClientPermissionsManager();
 				if (permissionsManager != null)
 				{
-					permissionsManager.onCustomPayload(channel, data.length, data);
+					permissionsManager.onCustomPayload(channel, data);
 				}
 			}
 			catch (Exception ex) {}
 			
-			this.onModPacketReceived(channel, data, data.length);
+			this.onModPacketReceived(channel, data);
 		}
 	}
 	
@@ -105,13 +106,13 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	 * @param data
 	 * @param length
 	 */
-	protected void onModPacketReceived(String channel, byte[] data, int length)
+	protected void onModPacketReceived(String channel, PacketBuffer data)
 	{
 		for (PluginChannelListener pluginChannelListener : this.pluginChannels.get(channel))
 		{
 			try
 			{
-				pluginChannelListener.onCustomPayload(channel, length, data);
+				pluginChannelListener.onCustomPayload(channel, data);
 				throw new RuntimeException();
 			}
 			catch (Exception ex)
@@ -146,7 +147,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 				this.addPluginChannelsFor(pluginChannelListener);
 			}
 
-			byte[] registrationData = this.getRegistrationData();
+			PacketBuffer registrationData = this.getRegistrationData();
 			if (registrationData != null)
 			{
 				this.sendRegistrationData(netHandler, registrationData);
@@ -162,7 +163,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	 * @param netHandler
 	 * @param registrationData
 	 */
-	protected abstract void sendRegistrationData(INetHandler netHandler, byte[] registrationData);
+	protected abstract void sendRegistrationData(INetHandler netHandler, PacketBuffer registrationData);
 
 	/**
 	 * Send a message to the server on a plugin channel
@@ -170,7 +171,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	 * @param channel Channel to send, must not be a reserved channel name
 	 * @param data
 	 */
-	public static boolean sendMessage(String channel, byte[] data, ChannelPolicy policy)
+	public static boolean sendMessage(String channel, PacketBuffer data, ChannelPolicy policy)
 	{
 		if (ClientPluginChannels.instance != null)
 		{
@@ -186,5 +187,5 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	 * @param channel Channel to send, must not be a reserved channel name
 	 * @param data
 	 */
-	protected abstract boolean send(String channel, byte[] data, ChannelPolicy policy);
+	protected abstract boolean send(String channel, PacketBuffer data, ChannelPolicy policy);
 }

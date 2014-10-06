@@ -1,115 +1,129 @@
 package com.mumfrey.liteloader.core.runtime;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Packet obfuscation table
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.7.10
+ * TODO Obfuscation 1.8
  */
-@SuppressWarnings("hiding")
 public class Packets extends Obf
 {
-	public static final Packets S08PacketPlayerPosLook             = new Packets("net.minecraft.network.play.server.S08PacketPlayerPosLook",                           "fu");
-	public static final Packets S0EPacketSpawnObject               = new Packets("net.minecraft.network.play.server.S0EPacketSpawnObject",                             "fw");
-	public static final Packets S11PacketSpawnExperienceOrb        = new Packets("net.minecraft.network.play.server.S11PacketSpawnExperienceOrb",                      "fx");
-	public static final Packets S2CPacketSpawnGlobalEntity         = new Packets("net.minecraft.network.play.server.S2CPacketSpawnGlobalEntity",                       "fy");
-	public static final Packets S0FPacketSpawnMob                  = new Packets("net.minecraft.network.play.server.S0FPacketSpawnMob",                                "fz");
-	public static final Packets S10PacketSpawnPainting             = new Packets("net.minecraft.network.play.server.S10PacketSpawnPainting",                           "ga");
-	public static final Packets S0CPacketSpawnPlayer               = new Packets("net.minecraft.network.play.server.S0CPacketSpawnPlayer",                             "gb");
-	public static final Packets S0BPacketAnimation                 = new Packets("net.minecraft.network.play.server.S0BPacketAnimation",                               "gc");
-	public static final Packets S37PacketStatistics                = new Packets("net.minecraft.network.play.server.S37PacketStatistics",                              "gd");
-	public static final Packets S25PacketBlockBreakAnim            = new Packets("net.minecraft.network.play.server.S25PacketBlockBreakAnim",                          "ge");
-	public static final Packets S35PacketUpdateTileEntity          = new Packets("net.minecraft.network.play.server.S35PacketUpdateTileEntity",                        "gf");
-	public static final Packets S24PacketBlockAction               = new Packets("net.minecraft.network.play.server.S24PacketBlockAction",                             "gg");
-	public static final Packets S23PacketBlockChange               = new Packets("net.minecraft.network.play.server.S23PacketBlockChange",                             "gh");
-	public static final Packets S3APacketTabComplete               = new Packets("net.minecraft.network.play.server.S3APacketTabComplete",                             "gi");
-	public static final Packets S02PacketChat                      = new Packets("net.minecraft.network.play.server.S02PacketChat",                                    "gj");
-	public static final Packets S22PacketMultiBlockChange          = new Packets("net.minecraft.network.play.server.S22PacketMultiBlockChange",                        "gk");
-	public static final Packets S32PacketConfirmTransaction        = new Packets("net.minecraft.network.play.server.S32PacketConfirmTransaction",                      "gl");
-	public static final Packets S2EPacketCloseWindow               = new Packets("net.minecraft.network.play.server.S2EPacketCloseWindow",                             "gm");
-	public static final Packets S2DPacketOpenWindow                = new Packets("net.minecraft.network.play.server.S2DPacketOpenWindow",                              "gn");
-	public static final Packets S30PacketWindowItems               = new Packets("net.minecraft.network.play.server.S30PacketWindowItems",                             "go");
-	public static final Packets S31PacketWindowProperty            = new Packets("net.minecraft.network.play.server.S31PacketWindowProperty",                          "gp");
-	public static final Packets S2FPacketSetSlot                   = new Packets("net.minecraft.network.play.server.S2FPacketSetSlot",                                 "gq");
-	public static final Packets S3FPacketCustomPayload             = new Packets("net.minecraft.network.play.server.S3FPacketCustomPayload",                           "gr");
-	public static final Packets S40PacketDisconnect                = new Packets("net.minecraft.network.play.server.S40PacketDisconnect",                              "gs");
-	public static final Packets S19PacketEntityStatus              = new Packets("net.minecraft.network.play.server.S19PacketEntityStatus",                            "gt");
-	public static final Packets S27PacketExplosion                 = new Packets("net.minecraft.network.play.server.S27PacketExplosion",                               "gu");
-	public static final Packets S2BPacketChangeGameState           = new Packets("net.minecraft.network.play.server.S2BPacketChangeGameState",                         "gv");
-	public static final Packets S00PacketKeepAlive                 = new Packets("net.minecraft.network.play.server.S00PacketKeepAlive",                               "gw");
-	public static final Packets S21PacketChunkData                 = new Packets("net.minecraft.network.play.server.S21PacketChunkData",                               "gx");
-	public static final Packets S21PacketChunkData$Extracted       = new Packets("net.minecraft.network.play.server.S21PacketChunkData$Extracted",                     "gy");
-	public static final Packets S26PacketMapChunkBulk              = new Packets("net.minecraft.network.play.server.S26PacketMapChunkBulk",                            "gz");
-	public static final Packets S28PacketEffect                    = new Packets("net.minecraft.network.play.server.S28PacketEffect",                                  "ha");
-	public static final Packets S2APacketParticles                 = new Packets("net.minecraft.network.play.server.S2APacketParticles",                               "hb");
-	public static final Packets S29PacketSoundEffect               = new Packets("net.minecraft.network.play.server.S29PacketSoundEffect",                             "hc");
-	public static final Packets S01PacketJoinGame                  = new Packets("net.minecraft.network.play.server.S01PacketJoinGame",                                "hd");
-	public static final Packets S34PacketMaps                      = new Packets("net.minecraft.network.play.server.S34PacketMaps",                                    "he");
-	public static final Packets S14PacketEntity                    = new Packets("net.minecraft.network.play.server.S14PacketEntity",                                  "hf");
-	public static final Packets S15PacketEntityRelMove             = new Packets("net.minecraft.network.play.server.S14PacketEntity$S15PacketEntityRelMove",           "hg");
-	public static final Packets S17PacketEntityLookMove            = new Packets("net.minecraft.network.play.server.S14PacketEntity$S17PacketEntityLookMove",          "hh");
-	public static final Packets S16PacketEntityLook                = new Packets("net.minecraft.network.play.server.S14PacketEntity$S16PacketEntityLook",              "hi");
-	public static final Packets S36PacketSignEditorOpen            = new Packets("net.minecraft.network.play.server.S36PacketSignEditorOpen",                          "hj");
-	public static final Packets S39PacketPlayerAbilities           = new Packets("net.minecraft.network.play.server.S39PacketPlayerAbilities",                         "hk");
-	public static final Packets S38PacketPlayerListItem            = new Packets("net.minecraft.network.play.server.S38PacketPlayerListItem",                          "ho");
-	public static final Packets S0APacketUseBed                    = new Packets("net.minecraft.network.play.server.S0APacketUseBed",                                  "hp");
-	public static final Packets S13PacketDestroyEntities           = new Packets("net.minecraft.network.play.server.S13PacketDestroyEntities",                         "hq");
-	public static final Packets S1EPacketRemoveEntityEffect        = new Packets("net.minecraft.network.play.server.S1EPacketRemoveEntityEffect",                      "hr");
-	public static final Packets S07PacketRespawn                   = new Packets("net.minecraft.network.play.server.S07PacketRespawn",                                 "hs");
-	public static final Packets S19PacketEntityHeadLook            = new Packets("net.minecraft.network.play.server.S19PacketEntityHeadLook",                          "ht");
-	public static final Packets S09PacketHeldItemChange            = new Packets("net.minecraft.network.play.server.S09PacketHeldItemChange",                          "hu");
-	public static final Packets S3DPacketDisplayScoreboard         = new Packets("net.minecraft.network.play.server.S3DPacketDisplayScoreboard",                       "hv");
-	public static final Packets S1CPacketEntityMetadata            = new Packets("net.minecraft.network.play.server.S1CPacketEntityMetadata",                          "hw");
-	public static final Packets S1BPacketEntityAttach              = new Packets("net.minecraft.network.play.server.S1BPacketEntityAttach",                            "hx");
-	public static final Packets S12PacketEntityVelocity            = new Packets("net.minecraft.network.play.server.S12PacketEntityVelocity",                          "hy");
-	public static final Packets S04PacketEntityEquipment           = new Packets("net.minecraft.network.play.server.S04PacketEntityEquipment",                         "hz");
-	public static final Packets S1FPacketSetExperience             = new Packets("net.minecraft.network.play.server.S1FPacketSetExperience",                           "ia");
-	public static final Packets S06PacketUpdateHealth              = new Packets("net.minecraft.network.play.server.S06PacketUpdateHealth",                            "ib");
-	public static final Packets S3BPacketScoreboardObjective       = new Packets("net.minecraft.network.play.server.S3BPacketScoreboardObjective",                     "ic");
-	public static final Packets S3EPacketTeams                     = new Packets("net.minecraft.network.play.server.S3EPacketTeams",                                   "id");
-	public static final Packets S3CPacketUpdateScore               = new Packets("net.minecraft.network.play.server.S3CPacketUpdateScore",                             "ie");
-	public static final Packets S05PacketSpawnPosition             = new Packets("net.minecraft.network.play.server.S05PacketSpawnPosition",                           "ig");
-	public static final Packets S03PacketTimeUpdate                = new Packets("net.minecraft.network.play.server.S03PacketTimeUpdate",                              "ih");
-	public static final Packets S33PacketUpdateSign                = new Packets("net.minecraft.network.play.server.S33PacketUpdateSign",                              "ii");
-	public static final Packets S0DPacketCollectItem               = new Packets("net.minecraft.network.play.server.S0DPacketCollectItem",                             "ij");
-	public static final Packets S18PacketEntityTeleport            = new Packets("net.minecraft.network.play.server.S18PacketEntityTeleport",                          "ik");
-	public static final Packets S20PacketEntityProperties          = new Packets("net.minecraft.network.play.server.S20PacketEntityProperties",                        "il");
-	public static final Packets S20PacketEntityProperties$Snapshot = new Packets("net.minecraft.network.play.server.S20PacketEntityProperties$Snapshot",               "im");
-	public static final Packets S1DPacketEntityEffect              = new Packets("net.minecraft.network.play.server.S1DPacketEntityEffect",                            "in");
-	public static final Packets C0APacketAnimation                 = new Packets("net.minecraft.network.play.client.C0APacketAnimation",                               "ip");
-	public static final Packets C14PacketTabComplete               = new Packets("net.minecraft.network.play.client.C14PacketTabComplete",                             "iq");
-	public static final Packets C01PacketChatMessage               = new Packets("net.minecraft.network.play.client.C01PacketChatMessage",                             "ir");
-	public static final Packets C16PacketClientStatus              = new Packets("net.minecraft.network.play.client.C16PacketClientStatus",                            "is");
-	public static final Packets C16PacketClientStatus$EnumState    = new Packets("net.minecraft.network.play.client.C16PacketClientStatus$EnumState",                  "it");
-	public static final Packets C15PacketClientSettings            = new Packets("net.minecraft.network.play.client.C15PacketClientSettings",                          "iu");
-	public static final Packets C0FPacketConfirmTransaction        = new Packets("net.minecraft.network.play.client.C0FPacketConfirmTransaction",                      "iv");
-	public static final Packets C11PacketEnchantItem               = new Packets("net.minecraft.network.play.client.C11PacketEnchantItem",                             "iw");
-	public static final Packets C0EPacketClickWindow               = new Packets("net.minecraft.network.play.client.C0EPacketClickWindow",                             "ix");
-	public static final Packets C0DPacketCloseWindow               = new Packets("net.minecraft.network.play.client.C0DPacketCloseWindow",                             "iy");
-	public static final Packets C17PacketCustomPayload             = new Packets("net.minecraft.network.play.client.C17PacketCustomPayload",                           "iz");
-	public static final Packets C02PacketUseEntity                 = new Packets("net.minecraft.network.play.client.C02PacketUseEntity",                               "ja");
-	public static final Packets C02PacketUseEntity$Action          = new Packets("net.minecraft.network.play.client.C02PacketUseEntity$Action",                        "jb");
-	public static final Packets C00PacketKeepAlive                 = new Packets("net.minecraft.network.play.client.C00PacketKeepAlive",                               "jc");
-	public static final Packets C03PacketPlayer                    = new Packets("net.minecraft.network.play.client.C03PacketPlayer",                                  "jd");
-	public static final Packets C04PacketPlayerPosition            = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C04PacketPlayerPosition",          "je");
-	public static final Packets C06PacketPlayerPosLook             = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook",           "jf");
-	public static final Packets C05PacketPlayerLook                = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C05PacketPlayerLook",              "jg");
-	public static final Packets C13PacketPlayerAbilities           = new Packets("net.minecraft.network.play.client.C13PacketPlayerAbilities",                         "jh");
-	public static final Packets C07PacketPlayerDigging             = new Packets("net.minecraft.network.play.client.C07PacketPlayerDigging",                           "ji");
-	public static final Packets C0BPacketEntityAction              = new Packets("net.minecraft.network.play.client.C0BPacketEntityAction",                            "jj");
-	public static final Packets C0CPacketInput                     = new Packets("net.minecraft.network.play.client.C0CPacketInput",                                   "jk");
-	public static final Packets C09PacketHeldItemChange            = new Packets("net.minecraft.network.play.client.C09PacketHeldItemChange",                          "jl");
-	public static final Packets C10PacketCreativeInventoryAction   = new Packets("net.minecraft.network.play.client.C10PacketCreativeInventoryAction",                 "jm");
-	public static final Packets C12PacketUpdateSign                = new Packets("net.minecraft.network.play.client.C12PacketUpdateSign",                              "jn");
-	public static final Packets C08PacketPlayerBlockPlacement      = new Packets("net.minecraft.network.play.client.C08PacketPlayerBlockPlacement",                    "jo");
-	public static final Packets C00Handshake                       = new Packets("net.minecraft.network.handshake.client.C00Handshake",                                "jp");
-	public static final Packets S02PacketLoginSuccess              = new Packets("net.minecraft.network.login.server.S02PacketLoginSuccess",                           "js");
-	public static final Packets S01PacketEncryptionRequest         = new Packets("net.minecraft.network.login.server.S01PacketEncryptionRequest",                      "jt");
-	public static final Packets S00PacketDisconnect                = new Packets("net.minecraft.network.login.server.S00PacketDisconnect",                             "ju");
-	public static final Packets C00PacketLoginStart                = new Packets("net.minecraft.network.login.client.C00PacketLoginStart",                             "jw");
-	public static final Packets C01PacketEncryptionResponse        = new Packets("net.minecraft.network.login.client.C01PacketEncryptionResponse",                     "jx");
-	public static final Packets S01PacketPong                      = new Packets("net.minecraft.network.status.server.S01PacketPong",                                  "jz");
-	public static final Packets S00PacketServerInfo                = new Packets("net.minecraft.network.status.server.S00PacketServerInfo",                            "ka");
+	private static Map<String, Packets> packetMap = new HashMap<String, Packets>();
+	
+	public static Packets S08PacketPlayerPosLook           = new Packets("net.minecraft.network.play.server.S08PacketPlayerPosLook",                    "ii");
+	public static Packets S0EPacketSpawnObject             = new Packets("net.minecraft.network.play.server.S0EPacketSpawnObject",                      "il");
+	public static Packets S11PacketSpawnExperienceOrb      = new Packets("net.minecraft.network.play.server.S11PacketSpawnExperienceOrb",               "im");
+	public static Packets S2CPacketSpawnGlobalEntity       = new Packets("net.minecraft.network.play.server.S2CPacketSpawnGlobalEntity",                "in");
+	public static Packets S0FPacketSpawnMob                = new Packets("net.minecraft.network.play.server.S0FPacketSpawnMob",                         "io");
+	public static Packets S10PacketSpawnPainting           = new Packets("net.minecraft.network.play.server.S10PacketSpawnPainting",                    "ip");
+	public static Packets S0CPacketSpawnPlayer             = new Packets("net.minecraft.network.play.server.S0CPacketSpawnPlayer",                      "iq");
+	public static Packets S0BPacketAnimation               = new Packets("net.minecraft.network.play.server.S0BPacketAnimation",                        "ir");
+	public static Packets S37PacketStatistics              = new Packets("net.minecraft.network.play.server.S37PacketStatistics",                       "is");
+	public static Packets S25PacketBlockBreakAnim          = new Packets("net.minecraft.network.play.server.S25PacketBlockBreakAnim",                   "it");
+	public static Packets S35PacketUpdateTileEntity        = new Packets("net.minecraft.network.play.server.S35PacketUpdateTileEntity",                 "iu");
+	public static Packets S24PacketBlockAction             = new Packets("net.minecraft.network.play.server.S24PacketBlockAction",                      "iv");
+	public static Packets S23PacketBlockChange             = new Packets("net.minecraft.network.play.server.S23PacketBlockChange",                      "iw");
+	public static Packets S41PacketServerDifficulty        = new Packets("net.minecraft.network.play.server.S41PacketServerDifficulty",                 "ix");
+	public static Packets S3APacketTabComplete             = new Packets("net.minecraft.network.play.server.S3APacketTabComplete",                      "iy");
+	public static Packets S02PacketChat                    = new Packets("net.minecraft.network.play.server.S02PacketChat",                             "iz");
+	public static Packets S22PacketMultiBlockChange        = new Packets("net.minecraft.network.play.server.S22PacketMultiBlockChange",                 "ja");
+	public static Packets S32PacketConfirmTransaction      = new Packets("net.minecraft.network.play.server.S32PacketConfirmTransaction",               "jc");
+	public static Packets S2EPacketCloseWindow             = new Packets("net.minecraft.network.play.server.S2EPacketCloseWindow",                      "jd");
+	public static Packets S2DPacketOpenWindow              = new Packets("net.minecraft.network.play.server.S2DPacketOpenWindow",                       "je");
+	public static Packets S30PacketWindowItems             = new Packets("net.minecraft.network.play.server.S30PacketWindowItems",                      "jf");
+	public static Packets S31PacketWindowProperty          = new Packets("net.minecraft.network.play.server.S31PacketWindowProperty",                   "jg");
+	public static Packets S2FPacketSetSlot                 = new Packets("net.minecraft.network.play.server.S2FPacketSetSlot",                          "jh");
+	public static Packets S3FPacketCustomPayload           = new Packets("net.minecraft.network.play.server.S3FPacketCustomPayload",                    "ji");
+	public static Packets S40PacketDisconnect              = new Packets("net.minecraft.network.play.server.S40PacketDisconnect",                       "jj");
+	public static Packets S19PacketEntityStatus            = new Packets("net.minecraft.network.play.server.S19PacketEntityStatus",                     "jk");
+	public static Packets S49PacketUpdateEntityNBT         = new Packets("net.minecraft.network.play.server.S49PacketUpdateEntityNBT",                  "jl");
+	public static Packets S27PacketExplosion               = new Packets("net.minecraft.network.play.server.S27PacketExplosion",                        "jm");
+	public static Packets S46PacketSetCompressionLevel     = new Packets("net.minecraft.network.play.server.S46PacketSetCompressionLevel",              "jn");
+	public static Packets S2BPacketChangeGameState         = new Packets("net.minecraft.network.play.server.S2BPacketChangeGameState",                  "jo");
+	public static Packets S00PacketKeepAlive               = new Packets("net.minecraft.network.play.server.S00PacketKeepAlive",                        "jp");
+	public static Packets S21PacketChunkData               = new Packets("net.minecraft.network.play.server.S21PacketChunkData",                        "jq");
+	public static Packets S26PacketMapChunkBulk            = new Packets("net.minecraft.network.play.server.S26PacketMapChunkBulk",                     "js");
+	public static Packets S28PacketEffect                  = new Packets("net.minecraft.network.play.server.S28PacketEffect",                           "jt");
+	public static Packets S2APacketParticles               = new Packets("net.minecraft.network.play.server.S2APacketParticles",                        "ju");
+	public static Packets S29PacketSoundEffect             = new Packets("net.minecraft.network.play.server.S29PacketSoundEffect",                      "jv");
+	public static Packets S01PacketJoinGame                = new Packets("net.minecraft.network.play.server.S01PacketJoinGame",                         "jw");
+	public static Packets S34PacketMaps                    = new Packets("net.minecraft.network.play.server.S34PacketMaps",                             "jx");
+	public static Packets S14PacketEntity                  = new Packets("net.minecraft.network.play.server.S14PacketEntity",                           "jy");
+	public static Packets S15PacketEntityRelMove           = new Packets("net.minecraft.network.play.server.S14PacketEntity$S15PacketEntityRelMove",    "jz");
+	public static Packets S17PacketEntityLookMove          = new Packets("net.minecraft.network.play.server.S14PacketEntity$S17PacketEntityLookMove",   "ka");
+	public static Packets S16PacketEntityLook              = new Packets("net.minecraft.network.play.server.S14PacketEntity$S16PacketEntityLook",       "kb");
+	public static Packets S36PacketSignEditorOpen          = new Packets("net.minecraft.network.play.server.S36PacketSignEditorOpen",                   "kc");
+	public static Packets S39PacketPlayerAbilities         = new Packets("net.minecraft.network.play.server.S39PacketPlayerAbilities",                  "kd");
+	public static Packets S42PacketCombatEvent             = new Packets("net.minecraft.network.play.server.S42PacketCombatEvent",                      "ke");
+	public static Packets S38PacketPlayerListItem          = new Packets("net.minecraft.network.play.server.S38PacketPlayerListItem",                   "kh");
+	public static Packets S0APacketUseBed                  = new Packets("net.minecraft.network.play.server.S0APacketUseBed",                           "kl");
+	public static Packets S13PacketDestroyEntities         = new Packets("net.minecraft.network.play.server.S13PacketDestroyEntities",                  "km");
+	public static Packets S1EPacketRemoveEntityEffect      = new Packets("net.minecraft.network.play.server.S1EPacketRemoveEntityEffect",               "kn");
+	public static Packets S48PacketResourcePackSend        = new Packets("net.minecraft.network.play.server.S48PacketResourcePackSend",                 "ko");
+	public static Packets S07PacketRespawn                 = new Packets("net.minecraft.network.play.server.S07PacketRespawn",                          "kp");
+	public static Packets S19PacketEntityHeadLook          = new Packets("net.minecraft.network.play.server.S19PacketEntityHeadLook",                   "kq");
+	public static Packets S44PacketWorldBorder             = new Packets("net.minecraft.network.play.server.S44PacketWorldBorder",                      "kr");
+	public static Packets S43PacketCamera                  = new Packets("net.minecraft.network.play.server.S43PacketCamera",                           "ku");
+	public static Packets S09PacketHeldItemChange          = new Packets("net.minecraft.network.play.server.S09PacketHeldItemChange",                   "kv");
+	public static Packets S3DPacketDisplayScoreboard       = new Packets("net.minecraft.network.play.server.S3DPacketDisplayScoreboard",                "kw");
+	public static Packets S1CPacketEntityMetadata          = new Packets("net.minecraft.network.play.server.S1CPacketEntityMetadata",                   "kx");
+	public static Packets S1BPacketEntityAttach            = new Packets("net.minecraft.network.play.server.S1BPacketEntityAttach",                     "ky");
+	public static Packets S12PacketEntityVelocity          = new Packets("net.minecraft.network.play.server.S12PacketEntityVelocity",                   "kz");
+	public static Packets S04PacketEntityEquipment         = new Packets("net.minecraft.network.play.server.S04PacketEntityEquipment",                  "la");
+	public static Packets S1FPacketSetExperience           = new Packets("net.minecraft.network.play.server.S1FPacketSetExperience",                    "lb");
+	public static Packets S06PacketUpdateHealth            = new Packets("net.minecraft.network.play.server.S06PacketUpdateHealth",                     "lc");
+	public static Packets S3BPacketScoreboardObjective     = new Packets("net.minecraft.network.play.server.S3BPacketScoreboardObjective",              "ld");
+	public static Packets S3EPacketTeams                   = new Packets("net.minecraft.network.play.server.S3EPacketTeams",                            "le");
+	public static Packets S3CPacketUpdateScore             = new Packets("net.minecraft.network.play.server.S3CPacketUpdateScore",                      "lf");
+	public static Packets S05PacketSpawnPosition           = new Packets("net.minecraft.network.play.server.S05PacketSpawnPosition",                    "lh");
+	public static Packets S03PacketTimeUpdate              = new Packets("net.minecraft.network.play.server.S03PacketTimeUpdate",                       "li");
+	public static Packets S45PacketTitle                   = new Packets("net.minecraft.network.play.server.S45PacketTitle",                            "lj");
+	public static Packets S33PacketUpdateSign              = new Packets("net.minecraft.network.play.server.S33PacketUpdateSign",                       "ll");
+	public static Packets S47PacketPlayerListHeaderFooter  = new Packets("net.minecraft.network.play.server.S47PacketPlayerListHeaderFooter",           "lm");
+	public static Packets S0DPacketCollectItem             = new Packets("net.minecraft.network.play.server.S0DPacketCollectItem",                      "ln");
+	public static Packets S18PacketEntityTeleport          = new Packets("net.minecraft.network.play.server.S18PacketEntityTeleport",                   "lo");
+	public static Packets S20PacketEntityProperties        = new Packets("net.minecraft.network.play.server.S20PacketEntityProperties",                 "lp");
+	public static Packets S1DPacketEntityEffect            = new Packets("net.minecraft.network.play.server.S1DPacketEntityEffect",                     "lr");
+	public static Packets C14PacketTabComplete             = new Packets("net.minecraft.network.play.client.C14PacketTabComplete",                      "lt");
+	public static Packets C01PacketChatMessage             = new Packets("net.minecraft.network.play.client.C01PacketChatMessage",                      "lu");
+	public static Packets C16PacketClientStatus            = new Packets("net.minecraft.network.play.client.C16PacketClientStatus",                     "lv");
+	public static Packets C15PacketClientSettings          = new Packets("net.minecraft.network.play.client.C15PacketClientSettings",                   "lx");
+	public static Packets C0FPacketConfirmTransaction      = new Packets("net.minecraft.network.play.client.C0FPacketConfirmTransaction",               "ly");
+	public static Packets C11PacketEnchantItem             = new Packets("net.minecraft.network.play.client.C11PacketEnchantItem",                      "lz");
+	public static Packets C0EPacketClickWindow             = new Packets("net.minecraft.network.play.client.C0EPacketClickWindow",                      "ma");
+	public static Packets C0DPacketCloseWindow             = new Packets("net.minecraft.network.play.client.C0DPacketCloseWindow",                      "mb");
+	public static Packets C17PacketCustomPayload           = new Packets("net.minecraft.network.play.client.C17PacketCustomPayload",                    "mc");
+	public static Packets C02PacketUseEntity               = new Packets("net.minecraft.network.play.client.C02PacketUseEntity",                        "md");
+	public static Packets C00PacketKeepAlive               = new Packets("net.minecraft.network.play.client.C00PacketKeepAlive",                        "mf");
+	public static Packets C03PacketPlayer                  = new Packets("net.minecraft.network.play.client.C03PacketPlayer",                           "mg");
+	public static Packets C04PacketPlayerPosition          = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C04PacketPlayerPosition",   "mh");
+	public static Packets C06PacketPlayerPosLook           = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C06PacketPlayerPosLook",    "mi");
+	public static Packets C05PacketPlayerLook              = new Packets("net.minecraft.network.play.client.C03PacketPlayer$C05PacketPlayerLook",       "mj");
+	public static Packets C13PacketPlayerAbilities         = new Packets("net.minecraft.network.play.client.C13PacketPlayerAbilities",                  "mk");
+	public static Packets C07PacketPlayerDigging           = new Packets("net.minecraft.network.play.client.C07PacketPlayerDigging",                    "ml");
+	public static Packets C0BPacketEntityAction            = new Packets("net.minecraft.network.play.client.C0BPacketEntityAction",                     "mn");
+	public static Packets C0CPacketInput                   = new Packets("net.minecraft.network.play.client.C0CPacketInput",                            "mp");
+	public static Packets C19PacketResourcePackStatus      = new Packets("net.minecraft.network.play.client.C19PacketResourcePackStatus",               "mq");
+	public static Packets C09PacketHeldItemChange          = new Packets("net.minecraft.network.play.client.C09PacketHeldItemChange",                   "ms");
+	public static Packets C10PacketCreativeInventoryAction = new Packets("net.minecraft.network.play.client.C10PacketCreativeInventoryAction",          "mt");
+	public static Packets C12PacketUpdateSign              = new Packets("net.minecraft.network.play.client.C12PacketUpdateSign",                       "mu");
+	public static Packets C0APacketAnimation               = new Packets("net.minecraft.network.play.client.C0APacketAnimation",                        "mv");
+	public static Packets C18PacketSpectate                = new Packets("net.minecraft.network.play.client.C18PacketSpectate",                         "mw");
+	public static Packets C08PacketPlayerBlockPlacement    = new Packets("net.minecraft.network.play.client.C08PacketPlayerBlockPlacement",             "mx");
+	public static Packets C00Handshake                     = new Packets("net.minecraft.network.handshake.client.C00Handshake",                         "mz");
+	public static Packets S02PacketLoginSuccess            = new Packets("net.minecraft.network.login.server.S02PacketLoginSuccess",                    "nd");
+	public static Packets S01PacketEncryptionRequest       = new Packets("net.minecraft.network.login.server.S01PacketEncryptionRequest",               "ne");
+	public static Packets S03PacketEnableCompression       = new Packets("net.minecraft.network.login.server.S03PacketEnableCompression",               "nf");
+	public static Packets S00PacketDisconnect              = new Packets("net.minecraft.network.login.server.S00PacketDisconnect",                      "ng");
+	public static Packets C00PacketLoginStart              = new Packets("net.minecraft.network.login.client.C00PacketLoginStart",                      "ni");
+	public static Packets C01PacketEncryptionResponse      = new Packets("net.minecraft.network.login.client.C01PacketEncryptionResponse",              "nj");
+	public static Packets S01PacketPong                    = new Packets("net.minecraft.network.status.server.S01PacketPong",                           "nn");
+	public static Packets S00PacketServerInfo              = new Packets("net.minecraft.network.status.server.S00PacketServerInfo",                     "no");
+	public static Packets C01PacketPing                    = new Packets("net.minecraft.network.status.client.C01PacketPing",                           "nw");
+	public static Packets C00PacketServerQuery             = new Packets("net.minecraft.network.status.client.C00PacketServerQuery",                    "nx");
 
 	public static final Packets[] packets = new Packets[] {
 		S08PacketPlayerPosLook,
@@ -125,6 +139,7 @@ public class Packets extends Obf
 		S35PacketUpdateTileEntity,
 		S24PacketBlockAction,
 		S23PacketBlockChange,
+		S41PacketServerDifficulty,
 		S3APacketTabComplete,
 		S02PacketChat,
 		S22PacketMultiBlockChange,
@@ -137,11 +152,12 @@ public class Packets extends Obf
 		S3FPacketCustomPayload,
 		S40PacketDisconnect,
 		S19PacketEntityStatus,
+		S49PacketUpdateEntityNBT,
 		S27PacketExplosion,
+		S46PacketSetCompressionLevel,
 		S2BPacketChangeGameState,
 		S00PacketKeepAlive,
 		S21PacketChunkData,
-		S21PacketChunkData$Extracted,
 		S26PacketMapChunkBulk,
 		S28PacketEffect,
 		S2APacketParticles,
@@ -154,12 +170,16 @@ public class Packets extends Obf
 		S16PacketEntityLook,
 		S36PacketSignEditorOpen,
 		S39PacketPlayerAbilities,
+		S42PacketCombatEvent,
 		S38PacketPlayerListItem,
 		S0APacketUseBed,
 		S13PacketDestroyEntities,
 		S1EPacketRemoveEntityEffect,
+		S48PacketResourcePackSend,
 		S07PacketRespawn,
 		S19PacketEntityHeadLook,
+		S44PacketWorldBorder,
+		S43PacketCamera,
 		S09PacketHeldItemChange,
 		S3DPacketDisplayScoreboard,
 		S1CPacketEntityMetadata,
@@ -173,17 +193,16 @@ public class Packets extends Obf
 		S3CPacketUpdateScore,
 		S05PacketSpawnPosition,
 		S03PacketTimeUpdate,
+		S45PacketTitle,
 		S33PacketUpdateSign,
+		S47PacketPlayerListHeaderFooter,
 		S0DPacketCollectItem,
 		S18PacketEntityTeleport,
 		S20PacketEntityProperties,
-		S20PacketEntityProperties$Snapshot,
 		S1DPacketEntityEffect,
-		C0APacketAnimation,
 		C14PacketTabComplete,
 		C01PacketChatMessage,
 		C16PacketClientStatus,
-		C16PacketClientStatus$EnumState,
 		C15PacketClientSettings,
 		C0FPacketConfirmTransaction,
 		C11PacketEnchantItem,
@@ -191,7 +210,6 @@ public class Packets extends Obf
 		C0DPacketCloseWindow,
 		C17PacketCustomPayload,
 		C02PacketUseEntity,
-		C02PacketUseEntity$Action,
 		C00PacketKeepAlive,
 		C03PacketPlayer,
 		C04PacketPlayerPosition,
@@ -201,18 +219,24 @@ public class Packets extends Obf
 		C07PacketPlayerDigging,
 		C0BPacketEntityAction,
 		C0CPacketInput,
+		C19PacketResourcePackStatus,
 		C09PacketHeldItemChange,
 		C10PacketCreativeInventoryAction,
 		C12PacketUpdateSign,
+		C0APacketAnimation,
+		C18PacketSpectate,
 		C08PacketPlayerBlockPlacement,
 		C00Handshake,
 		S02PacketLoginSuccess,
 		S01PacketEncryptionRequest,
+		S03PacketEnableCompression,
 		S00PacketDisconnect,
 		C00PacketLoginStart,
 		C01PacketEncryptionResponse,
 		S01PacketPong,
-		S00PacketServerInfo
+		S00PacketServerInfo,
+		C01PacketPing,
+		C00PacketServerQuery,
 	};
 	
 	private static int nextPacketIndex;
@@ -227,6 +251,7 @@ public class Packets extends Obf
 		
 		this.shortName = seargeName.substring(Math.max(seargeName.lastIndexOf('.'), seargeName.lastIndexOf('$')) + 1);
 		this.index = Packets.nextPacketIndex++;
+		Packets.packetMap.put(this.shortName, this);
 	}
 	
 	public int getIndex()
@@ -252,5 +277,14 @@ public class Packets extends Obf
 	public static int count()
 	{
 		return Packets.nextPacketIndex;
+	}
+
+	/**
+	 * @param name
+	 * @return
+	 */
+	public static Packets getByName(String name)
+	{
+		return Packets.packetMap.get(name);
 	}
 }

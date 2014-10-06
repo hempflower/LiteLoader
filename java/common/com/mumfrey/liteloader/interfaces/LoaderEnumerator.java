@@ -14,6 +14,14 @@ import com.mumfrey.liteloader.core.ModInfo;
  */
 public interface LoaderEnumerator extends ModularEnumerator
 {
+	public enum DisabledReason
+	{
+		UNKNOWN,
+		USER_DISABLED,
+		MISSING_DEPENDENCY,
+		MISSING_API
+	}
+	
 	/**
 	 * Perform pre-init tasks (container discovery)
 	 */

@@ -3,10 +3,10 @@ package com.mumfrey.liteloader.client.api;
 import java.net.URI;
 
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.IIcon;
 import net.minecraft.util.ResourceLocation;
 
 import com.mumfrey.liteloader.api.BrandingProvider;
+import com.mumfrey.liteloader.client.util.render.Icon;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.LiteLoader;
 
@@ -84,7 +84,7 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
 	 * @see com.mumfrey.liteloader.api.BrandingProvider#getLogoCoords()
 	 */
 	@Override
-	public IIcon getLogoCoords()
+	public Icon getLogoCoords()
 	{
 		return LiteLoaderBrandingProvider.LOGO_COORDS; 
 	}
@@ -102,7 +102,7 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
 	 * @see com.mumfrey.liteloader.api.BrandingProvider#getIconCoords()
 	 */
 	@Override
-	public IIcon getIconCoords()
+	public Icon getIconCoords()
 	{
 		return LiteLoaderBrandingProvider.ICON_COORDS; 
 	}
@@ -129,7 +129,7 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
 	 * @see com.mumfrey.liteloader.api.BrandingProvider#getTwitterAvatarCoords()
 	 */
 	@Override
-	public IIcon getTwitterAvatarCoords()
+	public Icon getTwitterAvatarCoords()
 	{
 		return LiteLoaderBrandingProvider.TWITTER_AVATAR_COORDS; 
 	}

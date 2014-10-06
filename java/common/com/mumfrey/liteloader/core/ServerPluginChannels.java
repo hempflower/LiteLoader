@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.core;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
@@ -103,10 +104,10 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 */
 	public void onPluginChannelMessage(INetHandler netHandler, C17PacketCustomPayload customPayload)
 	{
-		if (customPayload != null && customPayload.func_149559_c() != null)
+		if (customPayload != null && customPayload.getChannelName() != null)
 		{
-			String channel = customPayload.func_149559_c();
-			byte[] data = customPayload.func_149558_e();
+			String channel = customPayload.getChannelName();
+			PacketBuffer data = customPayload.getBufferData();
 			
 			EntityPlayerMP sender = ((NetHandlerPlayServer)netHandler).playerEntity;
 			this.onPluginChannelMessage(sender, channel, data);
@@ -117,7 +118,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 * @param channel
 	 * @param data
 	 */
-	private final void onPluginChannelMessage(EntityPlayerMP sender, String channel, byte[] data)
+	private final void onPluginChannelMessage(EntityPlayerMP sender, String channel, PacketBuffer data)
 	{
 		if (PluginChannels.CHANNEL_REGISTER.equals(channel))
 		{
@@ -130,12 +131,12 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 				PermissionsManagerServer permissionsManager = LiteLoader.getServerPermissionsManager();
 				if (permissionsManager != null)
 				{
-					permissionsManager.onCustomPayload(sender, channel, data.length, data);
+					permissionsManager.onCustomPayload(sender, channel, data);
 				}
 			}
 			catch (Exception ex) {}
 			
-			this.onModPacketReceived(sender, channel, data, data.length);
+			this.onModPacketReceived(sender, channel, data);
 		}
 	}
 
@@ -144,13 +145,13 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 * @param data
 	 * @param length
 	 */
-	protected void onModPacketReceived(EntityPlayerMP sender, String channel, byte[] data, int length)
+	protected void onModPacketReceived(EntityPlayerMP sender, String channel, PacketBuffer data)
 	{
 		for (ServerPluginChannelListener pluginChannelListener : this.pluginChannels.get(channel))
 		{
 			try
 			{
-				pluginChannelListener.onCustomPayload(sender, channel, length, data);
+				pluginChannelListener.onCustomPayload(sender, channel, data);
 				throw new RuntimeException();
 			}
 			catch (Exception ex)
@@ -176,7 +177,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	{
 		try
 		{
-			byte[] registrationData = this.getRegistrationData();
+			PacketBuffer registrationData = this.getRegistrationData();
 			if (registrationData != null)
 			{
 				this.sendRegistrationData(player, registrationData);
@@ -184,7 +185,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 		}
 		catch (Exception ex)
 		{
-			LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getCommandSenderName());
+			LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getName());
 		}
 	}
 
@@ -192,7 +193,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 * @param netHandler
 	 * @param registrationData
 	 */
-	private void sendRegistrationData(EntityPlayerMP recipient, byte[] registrationData)
+	private void sendRegistrationData(EntityPlayerMP recipient, PacketBuffer registrationData)
 	{
 		ServerPluginChannels.dispatch(recipient, new S3FPacketCustomPayload(CHANNEL_REGISTER, registrationData));
 	}
@@ -204,7 +205,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 * @param channel Channel to send, must not be a reserved channel name
 	 * @param data
 	 */
-	public static boolean sendMessage(EntityPlayerMP recipient, String channel, byte[] data, ChannelPolicy policy)
+	public static boolean sendMessage(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
 	{
 		if (ServerPluginChannels.instance != null)
 		{
@@ -221,7 +222,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	 * @param channel Channel to send, must not be a reserved channel name
 	 * @param data
 	 */
-	private boolean send(EntityPlayerMP recipient, String channel, byte[] data, ChannelPolicy policy)
+	private boolean send(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
 	{
 		if (recipient == null) return false;
 		

@@ -5,7 +5,6 @@ import java.util.Collection;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
 
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
@@ -65,9 +64,9 @@ public class BeforeStringInvoke extends BeforeInvoke
 	}
 	
 	@Override
-	protected boolean matchesInsn(MethodInsnNode node, int ordinal)
+	protected boolean matchesInsn(InsnInfo nodeInfo, int ordinal)
 	{
 		if (this.logging) LiteLoaderLogger.debug("BeforeInvoke       foundLdc \"%s\" = %s", this.ldcValue, this.foundLdc);
-		return this.foundLdc && super.matchesInsn(node, ordinal);
+		return this.foundLdc && super.matchesInsn(nodeInfo, ordinal);
 	}
 }

@@ -15,6 +15,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
+import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -94,7 +95,9 @@ public class Event implements Comparable<Event>
 	protected String eventInfoClass;
 	
 	protected Set<MethodInfo> pendingInjections;
-	
+
+	private int injectionCount = 0;
+
 	protected Event(String name, boolean cancellable, int priority)
 	{
 		this.name = name.toLowerCase();
@@ -188,7 +191,7 @@ public class Event implements Comparable<Event>
 	{
 		return this.priority;
 	}
-	
+
 	/**
 	 * Get whether this event is currently attached to a method
 	 */
@@ -212,7 +215,7 @@ public class Event implements Comparable<Event>
 			throw new IllegalStateException("Attempted to attach the event " + this.name + " to " + method.name + " but the event was already attached to " + this.method.name + "!");
 		}
 		
-		this.method    = method;
+		this.method           = method;
 		this.methodReturnType = Type.getReturnType(method.desc);
 		this.methodMAXS       = method.maxStack;
 		this.methodIsStatic   = (method.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC;
@@ -260,6 +263,24 @@ public class Event implements Comparable<Event>
 		}
 	}
 	
+	int dumpInjectionState()
+	{
+		int uninjectedCount = 0;
+		int pendingInjectionCount = this.pendingInjections != null ? this.pendingInjections.size() : 0;
+		
+		LiteLoaderLogger.debug("        Event: %-40s   Injected: %d   Pending: %d %s", this.name, this.injectionCount, pendingInjectionCount, this.injectionCount == 0 ? " <<< NOT INJECTED >>>" : "");
+		if (pendingInjectionCount > 0)
+		{
+			for (MethodInfo pending : this.pendingInjections)
+			{
+				LiteLoaderLogger.debug("           Pending: %s.%s", pending.getOwners(), pending.toString());
+				uninjectedCount++;
+			}
+		}
+		
+		return uninjectedCount;
+	}
+	
 	/**
 	 * Pre-flight check
 	 * 
@@ -286,19 +307,24 @@ public class Event implements Comparable<Event>
 	 * 
 	 * @return MethodNode for the event handler delegate
 	 */
-	final MethodNode inject(final AbstractInsnNode injectionPoint, boolean cancellable, final int globalEventID)
+	final MethodNode inject(final AbstractInsnNode injectionPoint, boolean cancellable, final int globalEventID, final boolean captureLocals, final Type[] locals)
 	{
 		// Pre-flight checks
 		this.validate(injectionPoint, cancellable, globalEventID);
 		
+		Type[] argumentTypes = Type.getArgumentTypes(this.method.desc);
+		int initialFrameSize = argumentTypes.length + (this.methodIsStatic ? 0 : 1);
+
+		boolean doCaptureLocals = captureLocals && locals != null && locals.length > initialFrameSize;
+		String eventDescriptor = this.generateEventDescriptor(doCaptureLocals, locals, argumentTypes, initialFrameSize);
+		
 		// Create the handler delegate method
-		MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID), this.eventDescriptor, null, null);
+		MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID), eventDescriptor, null, null);
 		Event.addMethodToActiveProxy(handler);
 		
 		LiteLoaderLogger.debug("Event %s is spawning handler %s in class %s", this.name, handler.name, Event.getActiveProxyRef());
 
-		Type[] argumentTypes = Type.getArgumentTypes(this.method.desc);
-		int ctorMAXS = 0, invokeMAXS = argumentTypes.length;
+		int ctorMAXS = 0, invokeMAXS = argumentTypes.length + (doCaptureLocals ? locals.length - initialFrameSize : 0);
 		int eventInfoVar = this.method.maxLocals++;
 		
 		InsnList insns = new InsnList();
@@ -311,7 +337,11 @@ public class Event implements Comparable<Event>
 		
 		// Call the event handler method in the proxy
 		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
-		Event.pushArgs(argumentTypes, insns, this.methodIsStatic);
+		ByteCodeUtilities.loadArgs(argumentTypes, insns, this.methodIsStatic ? 0 : 1);
+		if (doCaptureLocals)
+		{
+			ByteCodeUtilities.pushLocals(locals, insns, initialFrameSize);
+		}
 		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc, false));
 		
 		if (cancellable)
@@ -325,6 +355,19 @@ public class Event implements Comparable<Event>
 		this.method.maxStack = Math.max(this.method.maxStack, Math.max(this.methodMAXS + ctorMAXS, this.methodMAXS + invokeMAXS));
 		
 		return handler;
+	}
+
+	private String generateEventDescriptor(final boolean captureLocals, final Type[] locals, Type[] argumentTypes, int startIndex)
+	{
+		if (!captureLocals) return this.eventDescriptor;
+		
+		String eventDescriptor = this.eventDescriptor.substring(0, this.eventDescriptor.indexOf(')'));
+		for (int l = startIndex; l < locals.length; l++)
+		{
+			if (locals[l] != null) eventDescriptor += locals[l].getDescriptor();
+		}
+		
+		return eventDescriptor + ")V";
 	}
 
 	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable)
@@ -404,6 +447,7 @@ public class Event implements Comparable<Event>
 		LiteLoaderLogger.debug("Adding event %s to handler %s", this.name, handler.name);
 		
 		Event.getEventsForHandlerMethod(handler).add(this);
+		this.injectionCount++;
 	}
 
 	/**
@@ -522,7 +566,7 @@ public class Event implements Comparable<Event>
 						insns.add(lineNumberLabel);
 						insns.add(new LineNumberNode(++lineNumber, lineNumberLabel));
 						
-						Event.pushArgs(args, insns, true);
+						ByteCodeUtilities.loadArgs(args, insns, 0);
 						insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name), handlerMethod.desc, false));
 					}
 					
@@ -581,21 +625,7 @@ public class Event implements Comparable<Event>
 	{
 		return Obf.EventProxy.ref + (Event.proxyInnerClassIndex > 1 ? "$" + Event.proxyInnerClassIndex : "");
 	}
-	
-	/**
-	 * @param args
-	 * @param insns
-	 */
-	private static void pushArgs(Type[] args, InsnList insns, boolean isStatic)
-	{
-		int argNumber = isStatic ? 0 : 1;
-		for (Type type : args)
-		{
-			insns.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), argNumber));
-			argNumber += type.getSize();
-		}
-	}
-	
+
 	@Override
 	public int compareTo(Event other)
 	{

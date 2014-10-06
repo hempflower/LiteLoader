@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader;
 
+import net.minecraft.network.PacketBuffer;
+
 import com.mumfrey.liteloader.core.CommonPluginChannelListener;
 
 /**
@@ -13,8 +15,7 @@ public interface PluginChannelListener extends CommonPluginChannelListener, Join
 	 * Called when a custom payload packet arrives on a channel this mod has registered
 	 * 
 	 * @param channel Channel on which the custom payload was received
-	 * @param length Length of the custom payload data
 	 * @param data Custom payload data
 	 */
-	public abstract void onCustomPayload(String channel, int length, byte[] data);
+	public abstract void onCustomPayload(String channel, PacketBuffer data);
 }
