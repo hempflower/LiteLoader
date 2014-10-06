@@ -319,7 +319,7 @@ public class LoadingBar extends LoadingProgress
 //		tessellator.draw();
 		
 		worldRenderer.startDrawingQuads();
-		worldRenderer.func_178961_b(this.barLuma, this.barLuma, this.barLuma, 128);
+		worldRenderer.setColorRGBA(this.barLuma, this.barLuma, this.barLuma, 128); // TODO OBF MCPTEST func_178961_b - setColorRGBA
 		worldRenderer.addVertex(0.0D,               scaledHeight,             0.0D);
 		worldRenderer.addVertex(0.0D + scaledWidth, scaledHeight,             0.0D);
 		worldRenderer.addVertex(0.0D + scaledWidth, scaledHeight - barHeight, 0.0D);
@@ -329,10 +329,10 @@ public class LoadingBar extends LoadingProgress
 		barHeight -= 1;
 		
 		worldRenderer.startDrawingQuads();
-		worldRenderer.func_178961_b(this.r2, this.g2, this.b2, 255);
+		worldRenderer.setColorRGBA(this.r2, this.g2, this.b2, 255); // TODO OBF MCPTEST func_178961_b - setColorRGBA
 		worldRenderer.addVertex(1.0D + barWidth * progress, scaledHeight - 1,         1.0D);
 		worldRenderer.addVertex(1.0D + barWidth * progress, scaledHeight - barHeight, 1.0D);
-		worldRenderer.func_178961_b(0, 0, 0, 255);
+		worldRenderer.setColorRGBA(0, 0, 0, 255); // TODO OBF MCPTEST func_178961_b - setColorRGBA
 		worldRenderer.addVertex(1.0D,                       scaledHeight - barHeight, 1.0D);
 		worldRenderer.addVertex(1.0D,                       scaledHeight - 1,         1.0D);
 		tessellator.draw();
