@@ -811,12 +811,12 @@ public class GL
 		GlStateManager.popAttrib();
 	}
 	
-	public static void glDisableAlpha()
+	public static void glDisableAlphaTest()
 	{
 		GlStateManager.disableAlpha();
 	}
 	
-	public static void glEnableAlpha()
+	public static void glEnableAlphaTest()
 	{
 		GlStateManager.enableAlpha();
 	}
