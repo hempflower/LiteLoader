@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static com.mumfrey.liteloader.client.util.GL.*;
-import static com.mumfrey.liteloader.client.util.GLClippingPlanes.*;
+import static com.mumfrey.liteloader.gl.GL.*;
+import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.resources.I18n;

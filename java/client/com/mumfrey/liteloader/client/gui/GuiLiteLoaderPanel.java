@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
-import static com.mumfrey.liteloader.client.util.GL.*;
+import static com.mumfrey.liteloader.gl.GL.*;
 
 import java.io.IOException;
 import java.util.ArrayList;

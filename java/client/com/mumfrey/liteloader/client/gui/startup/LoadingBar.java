@@ -1,6 +1,6 @@
 package com.mumfrey.liteloader.client.gui.startup;
 
-import static com.mumfrey.liteloader.client.util.GL.*;
+import static com.mumfrey.liteloader.gl.GL.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.util;
+package com.mumfrey.liteloader.gl;
 
 import static org.lwjgl.opengl.GL11.*;
 
