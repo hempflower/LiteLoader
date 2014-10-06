@@ -137,20 +137,6 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	}
 
 	/**
-	 * @deprecated use LiteLoader.getInterfaceManager().registerListener(listener); instead
-	 * @param tickListener
-	 */
-	@Deprecated
-	@Override
-	public void addTickListener(Object tickListener)
-	{
-		if (tickListener instanceof Tickable)
-		{
-			this.addTickListener((Tickable)tickListener);
-		}
-	}
-
-	/**
 	 * @param tickable
 	 */
 	public void addTickListener(Tickable tickable)

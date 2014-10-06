@@ -245,30 +245,6 @@ public abstract class ModUtilities
 		boolean deobfuscated = Tessellator.class.getSimpleName().equals("Tessellator");
 		return deobfuscated ? (ModUtilities.seargeNames ? obf.srg : obf.name) : (ModUtilities.fmlDetected ? obf.srg : obf.obf);
 	}
-
-	/**
-	 * Registers a keybind with the game settings class so that it is configurable in the "controls" screen
-	 * 
-	 * @param newBinding key binding to add
-	 * @deprecated Deprecated : use LiteLoader.getInput().registerKeyBinding() instead
-	 */
-	@Deprecated
-	public static void registerKey(KeyBinding newBinding)
-	{
-		LiteLoader.getInput().registerKeyBinding(newBinding);
-	}
-	
-	/**
-	 * Unregisters a registered keybind with the game settings class, thus removing it from the "controls" screen
-	 * 
-	 * @param removeBinding
-	 * @deprecated Deprecated : use LiteLoader.getInput().unRegisterKeyBinding() instead
-	 */
-	@Deprecated
-	public static void unRegisterKey(KeyBinding removeBinding)
-	{
-		LiteLoader.getInput().unRegisterKeyBinding(removeBinding);
-	}
 	
 	@SuppressWarnings("unchecked")
 	private static <K, V> V removeObjectFromRegistry(RegistrySimple registry, K key)

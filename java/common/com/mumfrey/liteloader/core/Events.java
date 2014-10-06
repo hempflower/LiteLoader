@@ -96,16 +96,6 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 		
 		LoadingProgress.setMessage("Starting Game...");
 	}
-
-	/**
-	 * @param listener
-	 * @deprecated Use LiteLoader.getInterfaceManager().registerListener() instead
-	 */
-	@Deprecated
-	public void addListener(LiteMod listener)
-	{
-		LiteLoader.getInterfaceManager().registerListener(listener);
-	}
 	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.api.InterfaceProvider#getListenerBaseType()
@@ -254,24 +244,5 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	protected void onWorldChanged(World world)
 	{
 		this.loader.onWorldChanged(world);
-	}
-
-	/**
-	 * @deprecated use LiteLoader.getInterfaceManager().registerListener(listener); instead
-	 * @param chatFilter
-	 */
-	@Deprecated
-	public void addChatFilter(Object chatFilter)
-	{
-		
-	}
-
-	/**
-	 * @deprecated use LiteLoader.getInterfaceManager().registerListener(listener); instead
-	 * @param tickListener
-	 */
-	@Deprecated
-	public void addTickListener(Object tickListener)
-	{
 	}
 }

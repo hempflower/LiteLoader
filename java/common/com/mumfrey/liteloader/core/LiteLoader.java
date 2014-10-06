@@ -1,14 +1,12 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.activity.InvalidActivityException;
 
-import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.crash.CrashReport;
 import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.launchwrapper.LaunchClassLoader;
@@ -43,8 +41,8 @@ import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
-import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
+import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.messaging.MessageBus;
@@ -263,30 +261,6 @@ public final class LiteLoader
 		// Save stuff
 		this.properties.writeProperties();
 	}
-
-	/**
-	 * @param resourcePack
-	 * @return
-	 * 
-	 * @deprecated Use LiteLoader.getGameEngine().registerResourcePack() instead
-	 */
-	@Deprecated
-	public boolean registerModResourcePack(IResourcePack resourcePack)
-	{
-		return this.engine.registerResourcePack(resourcePack);
-	}
-
-	/**
-	 * @param resourcePack
-	 * @return
-	 * 
-	 * @deprecated Use LiteLoader.getGameEngine().unRegisterResourcePack() instead
-	 */
-	@Deprecated
-	public boolean unRegisterModResourcePack(IResourcePack resourcePack)
-	{
-		return this.engine.unRegisterResourcePack(resourcePack);
-	}
 	
 	/**
 	 * Get the singleton instance of LiteLoader, initialises the loader if
@@ -301,18 +275,6 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * Get the LiteLoader logger object
-	 * 
-	 * @return
-	 * @deprecated use LiteLoaderLogger instead
-	 */
-	@Deprecated
-	public static final Logger getLogger()
-	{
-		return LiteLoader.logger;
-	}
-	
-	/**
 	 * Get the tweak system classloader
 	 * 
 	 * @return
@@ -320,18 +282,6 @@ public final class LiteLoader
 	public static LaunchClassLoader getClassLoader()
 	{
 		return LiteLoader.classLoader;
-	}
-	
-	/**
-	 * Get the output stream which we are using for console output
-	 * 
-	 * @return System.err
-	 * @deprecated use log4j instead
-	 */
-	@Deprecated
-	public static final PrintStream getConsoleStream()
-	{
-		return System.err;
 	}
 	
 	/**
@@ -406,17 +356,6 @@ public final class LiteLoader
 		return LiteLoader.getAPI(identifier) != null;
 	}
 	
-	/**
-	 * @return
-	 * 
-	 * @deprecated use getClientPermissionsManager instead
-	 */
-	@Deprecated
-	public static PermissionsManagerClient getPermissionsManager()
-	{
-		return LiteLoader.instance.permissionsManagerClient;
-	}
-	
 	public static PermissionsManagerClient getClientPermissionsManager()
 	{
 		return LiteLoader.instance.permissionsManagerClient;
@@ -438,31 +377,6 @@ public final class LiteLoader
 	public static LiteLoaderInterfaceManager getInterfaceManager()
 	{
 		return LiteLoader.instance.interfaceManager;
-	}
-	
-	/**
-	 * Get the event manager
-	 * 
-	 * @deprecated DO NOT USE, register listeners with the interface manager instead!
-	 * 
-	 * @return
-	 */
-	@Deprecated
-	public static Events<?, ?> getEvents()
-	{
-		return LiteLoader.instance.events;
-	}
-	
-	/**
-	 * Get the plugin channel manager
-	 * 
-	 * @return
-	 * @deprecated use LiteLoader.getClientPluginChannels()
-	 */
-	@Deprecated
-	public static ClientPluginChannels getPluginChannels()
-	{
-		return LiteLoader.instance.clientPluginChannels;
 	}
 
 	/**
@@ -1015,32 +929,6 @@ public final class LiteLoader
 		this.shutdownObservers.all().onShutDown();
 
 		this.configManager.syncConfig();
-	}
-	
-	/**
-	 * Get whether the "mod info" screen tab is shown in the main menu
-	 * 
-	 * @deprecated use getModPanelManager().getDisplayModInfoScreenTab(); instead
-	 */
-	@Deprecated
-	public boolean getDisplayModInfoScreenTab()
-	{
-		return (this.panelManager != null) ? this.panelManager.isTabVisible() : false;
-	}
-
-	/**
-	 * Display the "mod info" overlay over the specified GUI
-	 * 
-	 * @param parentScreen
-	 * 
-	 * @deprecated use getModPanelManager().displayModInfoScreen(parentScreen); instead
-	 */
-	@SuppressWarnings("unchecked")
-	@Deprecated
-	public void displayModInfoScreen(Object parentScreen)
-	{
-		// Use implicit cast, because we want this to fail if the user tries to give us an invalid class
-		if (this.panelManager != null) this.panelManager.displayLiteLoaderPanel(parentScreen);
 	}
 
 	/**
