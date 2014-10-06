@@ -340,7 +340,7 @@ public class Event implements Comparable<Event>
 		ByteCodeUtilities.loadArgs(argumentTypes, insns, this.methodIsStatic ? 0 : 1);
 		if (doCaptureLocals)
 		{
-			ByteCodeUtilities.pushLocals(locals, insns, initialFrameSize);
+			ByteCodeUtilities.loadLocals(locals, insns, initialFrameSize);
 		}
 		insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc, false));
 		

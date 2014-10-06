@@ -16,26 +16,55 @@ import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
+/**
+ * Utility methods for working with bytecode using ASM
+ * 
+ * @author Adam Mummery-Smith
+ */
 public abstract class ByteCodeUtilities
 {
 	private ByteCodeUtilities() {}
 	
+	/**
+	 * Injects appropriate LOAD opcodes into the supplied InsnList appropriate for each entry in the args array starting at pos
+	 * 
+	 * @param args Argument types
+	 * @param insns Instruction List to inject into
+	 * @param pos Start position
+	 */
 	public static void loadArgs(Type[] args, InsnList insns, int pos)
 	{
 		ByteCodeUtilities.loadArgs(args, insns, pos, -1);
 	}
 		
+	/**
+	 * Injects appropriate LOAD opcodes into the supplied InsnList appropriate for each entry in the args array starting at start and ending at end
+	 * 
+	 * @param args Argument types
+	 * @param insns Instruction List to inject into
+	 * @param start Start position
+	 * @param end End position
+	 */
 	public static void loadArgs(Type[] args, InsnList insns, int start, int end)
 	{
+		int pos = start;
+		
 		for (Type type : args)
 		{
-			insns.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), start));
-			start += type.getSize();
-			if (end >= start && start >= end) return;
+			insns.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), pos));
+			pos += type.getSize();
+			if (end >= start && pos >= end) return;
 		}
 	}
 	
-	public static void pushLocals(Type[] locals, InsnList insns, int pos)
+	/**
+	 * Injects appropriate LOAD opcodes into the supplied InsnList for each entry in the supplied locals array starting at pos
+	 * 
+	 * @param locals Local types (can contain nulls for uninitialised, TOP, or RETURN values in locals)
+	 * @param insns Instruction List to inject into
+	 * @param pos Start position
+	 */
+	public static void loadLocals(Type[] locals, InsnList insns, int pos)
 	{
 		for (; pos < locals.length; pos++)
 		{
@@ -47,14 +76,38 @@ public abstract class ByteCodeUtilities
 	}
 
 	/**
-	 * @param method
-	 * @param node
-	 * @return
+	 * Attempts to identify available locals at an arbitrary point in the bytecode specified by node.
+	 * 
+	 * This method builds an approximate view of the locals available at an arbitrary point in the bytecode by examining the following
+	 * features in the bytecode:
+	 * 
+	 *  * Any available stack map frames
+	 *  * STORE opcodes
+	 *  * The local variable table
+	 *  
+	 * Inference proceeds by walking the bytecode from the start of the method looking for stack frames and STORE opcodes. When either
+	 * of these is encountered, an attempt is made to cross-reference the values in the stack map or STORE opcode with the value in the
+	 * local variable table which covers the code range. Stack map frames overwrite the entire simulated local variable table with their
+	 * own value types, STORE opcodes overwrite only the local slot to which they pertain. Values in the simulated locals array are spaced
+	 * according to their size (unlike the representation in FrameNode) and this TOP, NULL and UNINTITIALIZED_THIS opcodes will be
+	 * represented as null values in the simulated frame.
+	 * 
+	 * This code does not currently simulate the prescribed JVM behaviour where overwriting the second slot of a DOUBLE or LONG actually
+	 * invalidates the DOUBLE or LONG stored in the previous location, so we have to hope (for now) that this behaviour isn't emitted by
+	 * the compiler or any upstream transformers. I may have to re-think this strategy if this situation is encountered in the wild. 
+	 * 
+	 * @param classNode ClassNode containing the method, used to initialise the implicit "this" reference in simple methods with no stack frames
+	 * @param method MethodNode to explore
+	 * @param node Node indicating the position at which to determine the locals state. The locals will be enumerated UP TO the specified
+	 *     node, so bear in mind that if the specified node is itself a STORE opcode, then we will be looking at the state of the locals
+	 *     PRIOR to its invokation
+	 * @return A sparse array containing a view (hopefully) of the locals at the specified location
 	 */
 	public static LocalVariableNode[] getLocalsAt(ClassNode classNode, MethodNode method, AbstractInsnNode node)
 	{
 		LocalVariableNode[] frame = new LocalVariableNode[method.maxLocals];
 		
+		// Initialise implicit "this" reference in non-static methods
 		if ((method.access & Opcodes.ACC_STATIC) == 0)
 		{
 			frame[0] = new LocalVariableNode("this", classNode.name, null, null, null, 0);
@@ -66,15 +119,19 @@ public abstract class ByteCodeUtilities
 			if (insn instanceof FrameNode)
 			{
 				FrameNode frameNode = (FrameNode)insn;
+				
+				// localPos tracks the location in the frame node's locals list, which doesn't leave space for TOP entries
 				int localPos = 0;
 				for (int framePos = 0; framePos < frame.length; framePos++)
 				{
+					// Get the local at the current position in the FrameNode's locals list
 					final Object localType = (localPos < frameNode.local.size()) ? frameNode.local.get(localPos) : null;
-					if (localType instanceof String)
+					
+					if (localType instanceof String) // String refers to a reference type
 					{
 						frame[framePos] = ByteCodeUtilities.getLocalVariableAt(classNode, method, node, framePos);
 					}
-					else if (localType instanceof Integer)
+					else if (localType instanceof Integer) // Integer refers to a primitive type or other marker
 					{
 						boolean isMarkerType = localType == Opcodes.UNINITIALIZED_THIS || localType == Opcodes.TOP || localType == Opcodes.NULL;
 						boolean is32bitValue = localType == Opcodes.INTEGER || localType == Opcodes.FLOAT;
@@ -90,7 +147,12 @@ public abstract class ByteCodeUtilities
 							if (is64bitValue)
 							{
 								framePos++;
+								frame[framePos] = null; // TOP
 							}
+						}
+						else
+						{
+							throw new RuntimeException("Unrecognised locals opcode " + localType + " in locals array at position " + localPos + " in " + classNode.name + "." + method.name + method.desc);
 						}
 					}
 					else if (localType == null)
@@ -120,6 +182,9 @@ public abstract class ByteCodeUtilities
 	}
 
 	/**
+	 * Attempts to locate the appropriate entry in the local variable table for the specified local variable index at the location
+	 * specified by node.
+	 * 
 	 * @param classNode
 	 * @param method
 	 * @param node
@@ -147,6 +212,8 @@ public abstract class ByteCodeUtilities
 	}
 	
 	/**
+	 * Get the source code name for the specified type
+	 * 
 	 * @param type
 	 * @return
 	 */
