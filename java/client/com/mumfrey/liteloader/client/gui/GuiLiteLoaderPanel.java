@@ -750,7 +750,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		worldRenderer.addVertexWithUV(x + 0,     y + 0,      0, u , v );
 		tessellator.draw();
 		
-		glEnableBlend();
+		glDisableBlend();
 		glAlphaFunc(GL_GREATER, 0.01F);
 	}
 
