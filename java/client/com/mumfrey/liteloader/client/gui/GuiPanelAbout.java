@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -215,7 +216,7 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 	}
 	
 	@Override
-	void mousePressed(int mouseX, int mouseY, int mouseButton)
+	void mousePressed(int mouseX, int mouseY, int mouseButton) throws IOException
 	{
 		this.scrollPane.mousePressed(mouseX, mouseY, mouseButton);
 		

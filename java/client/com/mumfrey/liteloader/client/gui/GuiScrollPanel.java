@@ -2,6 +2,9 @@ package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
+
+import java.io.IOException;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
@@ -139,7 +142,7 @@ class GuiScrollPanel extends GuiPanel
 	}
 
 	@Override
-	public void mousePressed(int mouseX, int mouseY, int mouseButton)
+	public void mousePressed(int mouseX, int mouseY, int mouseButton) throws IOException
 	{
 		mouseY += this.scrollBar.getValue() - this.top;
 		mouseX -= this.left;

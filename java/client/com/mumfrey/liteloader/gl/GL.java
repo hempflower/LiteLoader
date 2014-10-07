@@ -861,12 +861,12 @@ public class GL
 		GlStateManager.colorMaterial(face, mode);
 	}
 	
-	public static void glDisableDepth()
+	public static void glDisableDepthTest()
 	{
 		GlStateManager.disableDepth();
 	}
 	
-	public static void glEnableDepth()
+	public static void glEnableDepthTest()
 	{
 		GlStateManager.enableDepth();
 	}
@@ -1021,7 +1021,7 @@ public class GL
 		GlStateManager.deleteTexture(textureName); // TODO OBF MCPTEST func_179150_h - deleteTexture
 	}
 	
-	public static void glBindTexture(int textureName)
+	public static void glBindTexture2D(int textureName)
 	{
 		GlStateManager.bindTexture(textureName); // TODO OBF MCPTEST func_179144_i - bindTexture
 	}

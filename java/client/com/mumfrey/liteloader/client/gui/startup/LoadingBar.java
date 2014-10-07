@@ -248,7 +248,7 @@ public class LoadingBar extends LoadingProgress
 		
 		glDisableLighting();
 		glDisableFog();
-		glDisableDepth();
+		glDisableDepthTest();
 		glEnableTexture2D();
 		
 		this.textureManager.bindTexture(this.textureLocation);

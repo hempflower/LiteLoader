@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.client.gui;
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +164,7 @@ public class GuiPanelMods extends GuiPanel
 	}
 	
 	@Override
-	void mousePressed(int mouseX, int mouseY, int mouseButton)
+	void mousePressed(int mouseX, int mouseY, int mouseButton) throws IOException
 	{
 		if (mouseButton == 0)
 		{

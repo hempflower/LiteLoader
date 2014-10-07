@@ -2,14 +2,15 @@ package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
+
+import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 
 /**
  * Base class for panels
@@ -124,7 +125,7 @@ public abstract class GuiPanel extends Gui
 	 * @param mouseY
 	 * @param mouseButton
 	 */
-	void mousePressed(int mouseX, int mouseY, int mouseButton)
+	void mousePressed(int mouseX, int mouseY, int mouseButton) throws IOException
 	{
 		if (mouseButton == 0)
 		{
