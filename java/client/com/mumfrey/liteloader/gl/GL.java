@@ -2,6 +2,8 @@ package com.mumfrey.liteloader.gl;
 
 import java.nio.FloatBuffer;
 
+import org.lwjgl.opengl.GL11;
+
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.TexGen;
 
@@ -803,7 +805,13 @@ public class GL
 
 	public static void glPushAttrib()
 	{
+		// GL_ENABLE_BIT | GL_LIGHTING_BIT
 		GlStateManager.pushAttrib();
+	}
+	
+	public static void glPushAttrib(int mask)
+	{
+		GL11.glPushAttrib(mask);
 	}
 	
 	public static void glPopAttrib()
