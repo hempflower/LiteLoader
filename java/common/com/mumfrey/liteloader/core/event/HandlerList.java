@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -20,8 +22,10 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
+import com.mumfrey.liteloader.Priority;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -121,6 +125,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 	private BakedHandlerList<T> bakedHandler;
 	
 	/**
+	 * True to sort the list when baking 
+	 */
+	private boolean sorted = true;
+	
+	/**
 	 * @param type
 	 */
 	public HandlerList(Class<T> type)
@@ -134,6 +143,16 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 	 */
 	public HandlerList(Class<T> type, ReturnLogicOp logicOp)
 	{
+		this(type, logicOp, true);
+	}
+	
+	/**
+	 * @param type
+	 * @param logicOp Logical operation to apply to interface methods which return boolean
+	 * @param sorted True to sort the list when baking (doesn't sort the underlying list)
+	 */
+	public HandlerList(Class<T> type, ReturnLogicOp logicOp, boolean sorted)
+	{
 		if (!type.isInterface())
 		{
 			throw new IllegalArgumentException("HandlerList type argument must be an interface");
@@ -141,8 +160,60 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		
 		this.type = type;
 		this.logicOp = logicOp;
+		this.sorted = sorted;
 	}
 	
+	/**
+	 * True if the list will be sorted by priority on bake
+	 */
+	public boolean isSorted()
+	{
+		return this.sorted;
+	}
+	
+	/**
+	 * Set whether to sort list entries before baking them
+	 */
+	public void setSorted(boolean sorted)
+	{
+		this.sorted = sorted;
+		this.invalidate();
+	}
+
+	@SuppressWarnings("unchecked")
+	protected List<T> getSortedList()
+	{
+		if (!this.sorted) return this;
+		
+		SortableValue<T>[] sortable = new SortableValue[this.size()];
+		for (int s = 0; s < this.size(); s++)
+		{
+			T value = this.get(s);
+			sortable[s] = new SortableValue<T>(this.getPriority(value), s, value);
+		}
+		
+		Arrays.sort(sortable);
+		
+		List<T> sortedList = new ArrayList<T>(this.size());
+		for (int s = 0; s < sortable.length; s++)
+		{
+			sortedList.add(sortable[s].getValue());
+		}
+		
+		return sortedList;
+	}
+
+	private int getPriority(T value)
+	{
+		Priority priority = value.getClass().getAnnotation(Priority.class);
+		if (priority != null)
+		{
+			return priority.value();
+		}
+		
+		return 1000;
+	}
+
 	/**
 	 * Returns the baked list of all listeners
 	 * 
@@ -559,7 +630,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			{
 				// Create an instance of the class, populate the entries from the supplied list and return it
 				BakedHandlerList<T> handlerList = this.createInstance(handlerClass);
-				return handlerList.populate(list);
+				return handlerList.populate(list.getSortedList());
 			}
 			catch (InstantiationException ex)
 			{
