@@ -2,7 +2,6 @@ package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -125,7 +124,7 @@ public abstract class GuiPanel extends Gui
 	 * @param mouseY
 	 * @param mouseButton
 	 */
-	void mousePressed(int mouseX, int mouseY, int mouseButton) throws IOException
+	void mousePressed(int mouseX, int mouseY, int mouseButton)
 	{
 		if (mouseButton == 0)
 		{

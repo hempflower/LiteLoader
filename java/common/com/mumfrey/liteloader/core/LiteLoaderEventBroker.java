@@ -33,8 +33,44 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
  * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
  */
-public abstract class Events<TClient, TServer extends MinecraftServer> implements InterfaceProvider, IResourceManagerReloadListener
+public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider, IResourceManagerReloadListener
 {
+	/**
+	 * @author Adam Mummery-Smith
+	 *
+	 * @param <T>
+	 */
+	public static class ReturnValue<T>
+	{
+		private T value;
+		private boolean isSet;
+		
+		public ReturnValue(T value)
+		{
+			this.value = value;
+		}
+
+		public ReturnValue()
+		{
+		}
+		
+		public boolean isSet()
+		{
+			return this.isSet;
+		}
+		
+		public T get()
+		{
+			return this.value;
+		}
+		
+		public void set(T value)
+		{
+			this.isSet = true;
+			this.value = value;
+		}
+	}
+	
 	/**
 	 * Reference to the loader instance
 	 */
@@ -61,14 +97,14 @@ public abstract class Events<TClient, TServer extends MinecraftServer> implement
 	 * List of mods which monitor server player events
 	 */
 	private FastIterable<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
-
+	
 	/**
 	 * Package private ctor
 	 * 
 	 * @param loader
 	 * @param minecraft
 	 */
-	public Events(LiteLoader loader, GameEngine<TClient, TServer> engine, LoaderProperties properties)
+	public LiteLoaderEventBroker(LiteLoader loader, GameEngine<TClient, TServer> engine, LoaderProperties properties)
 	{
 		this.loader   = loader;
 		this.engine   = engine;

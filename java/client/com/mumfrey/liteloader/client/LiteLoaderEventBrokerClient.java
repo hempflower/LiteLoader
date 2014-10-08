@@ -4,28 +4,22 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.play.client.C01PacketChatMessage;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ScreenShotHelper;
 import net.minecraft.util.Timer;
 
 import org.lwjgl.input.Mouse;
 
-import com.mumfrey.liteloader.ChatRenderListener;
-import com.mumfrey.liteloader.FrameBufferListener;
-import com.mumfrey.liteloader.GameLoopListener;
-import com.mumfrey.liteloader.HUDRenderListener;
-import com.mumfrey.liteloader.InitCompleteListener;
-import com.mumfrey.liteloader.OutboundChatFilter;
-import com.mumfrey.liteloader.OutboundChatListener;
-import com.mumfrey.liteloader.PostRenderListener;
-import com.mumfrey.liteloader.RenderListener;
-import com.mumfrey.liteloader.Tickable;
-import com.mumfrey.liteloader.ViewportListener;
+import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.core.Events;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.event.HandlerList;
@@ -33,32 +27,18 @@ import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
+import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-public class EventsClient extends Events<Minecraft, IntegratedServer>
+public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer>
 {	
-	private static EventsClient instance;
+	private static LiteLoaderEventBrokerClient instance;
 
 	/**
 	 * Reference to the game
 	 */
 	protected final GameEngineClient engineClient;
 
-	/**
-	 * Reference to the minecraft timer
-	 */
-	private Timer minecraftTimer;
-	
-	/**
-	 * Flags which keep track of whether hooks have been applied
-	 */
-	private boolean lateInitDone;
-
-	/**
-	 * ScaledResolution used by the pre-chat and post-chat render callbacks
-	 */
-	private ScaledResolution currentResolution;
-	
 	/**
 	 * Current screen width
 	 */
@@ -91,20 +71,22 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	private FastIterableDeque<FrameBufferListener>  frameBufferListeners  = new HandlerList<FrameBufferListener>(FrameBufferListener.class);
 	private FastIterableDeque<InitCompleteListener> initListeners         = new HandlerList<InitCompleteListener>(InitCompleteListener.class);
 	private FastIterableDeque<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class, ReturnLogicOp.AND);
+	private FastIterableDeque<ScreenshotListener>   screenshotListeners   = new HandlerList<ScreenshotListener>(ScreenshotListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+	private FastIterableDeque<EntityRenderListener> entityRenderListeners = new HandlerList<EntityRenderListener>(EntityRenderListener.class);
 
 	@SuppressWarnings("cast")
-	public EventsClient(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
+	public LiteLoaderEventBrokerClient(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
 	{
 		super(loader, engine, properties);
 		
-		EventsClient.instance = this;
+		LiteLoaderEventBrokerClient.instance = this;
 		
 		this.engineClient = (GameEngineClient)engine;
 	}
 	
-	static EventsClient getInstance()
+	static LiteLoaderEventBrokerClient getInstance()
 	{
-		return EventsClient.instance;
+		return LiteLoaderEventBrokerClient.instance;
 	}
 	
 	/* (non-Javadoc)
@@ -126,6 +108,8 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 		delegate.registerInterface(FrameBufferListener.class);
 		delegate.registerInterface(InitCompleteListener.class);
 		delegate.registerInterface(OutboundChatFilter.class);
+		delegate.registerInterface(ScreenshotListener.class);
+		delegate.registerInterface(EntityRenderListener.class);
 	}
 	
 	/* (non-Javadoc)
@@ -223,6 +207,22 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	{
 		this.frameBufferListeners.add(frameBufferListener);
 	}
+	
+	/**
+	 * @param screenshotListener
+	 */
+	public void addScreenshotListener(ScreenshotListener screenshotListener)
+	{
+		this.screenshotListeners.add(screenshotListener);
+	}
+	
+	/**
+	 * @param entityRenderListener
+	 */
+	public void addEntityRenderListener(EntityRenderListener entityRenderListener)
+	{
+		this.entityRenderListeners.add(entityRenderListener);
+	}
 
 	/**
 	 * Late initialisation callback
@@ -232,23 +232,18 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	{
 		this.engine.refreshResources(false);
 		
-		if (!this.lateInitDone)
+		for (InitCompleteListener initMod : this.initListeners)
 		{
-			this.lateInitDone = true;
-			
-			for (InitCompleteListener initMod : this.initListeners)
+			try
 			{
-				try
-				{
-					LoadingProgress.setMessage("Calling late init for mod %s...", initMod.getName());
-					LiteLoaderLogger.info("Calling late init for mod %s", initMod.getName());
-					initMod.onInitCompleted(this.engine.getClient(), this.loader);
-				}
-				catch (Throwable th)
-				{
-					this.mods.onLateInitFailed(initMod, th);
-					LiteLoaderLogger.warning(th, "Error calling late init for mod %s", initMod.getName());
-				}
+				LoadingProgress.setMessage("Calling late init for mod %s...", initMod.getName());
+				LiteLoaderLogger.info("Calling late init for mod %s", initMod.getName());
+				initMod.onInitCompleted(this.engine.getClient(), this.loader);
+			}
+			catch (Throwable th)
+			{
+				this.mods.onLateInitFailed(initMod, th);
+				LiteLoaderLogger.warning(th, "Error calling late init for mod %s", initMod.getName());
 			}
 		}
 		
@@ -259,9 +254,9 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 
 	public void onResize(Minecraft minecraft)
 	{
-		this.currentResolution = this.engineClient.getScaledResolution();
-		this.screenWidth = this.currentResolution.getScaledWidth();
-		this.screenHeight = this.currentResolution.getScaledHeight();
+		ScaledResolution currentResolution = this.engineClient.getScaledResolution();
+		this.screenWidth = currentResolution.getScaledWidth();
+		this.screenHeight = currentResolution.getScaledHeight();
 		
 		if (this.wasFullScreen != minecraft.isFullScreen())
 		{
@@ -269,7 +264,7 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 		}
 		
 		this.wasFullScreen = minecraft.isFullScreen();
-		this.viewportListeners.all().onViewportResized(this.currentResolution, minecraft.displayWidth, minecraft.displayHeight);
+		this.viewportListeners.all().onViewportResized(currentResolution, minecraft.displayWidth, minecraft.displayHeight);
 	}
 	
 	/**
@@ -286,9 +281,8 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	 * @param timeSlice 
 	 * @param partialTicks2 
 	 */
-	void postRenderEntities(float partialTicks2, long timeSlice)
+	void postRenderEntities(float partialTicks, long timeSlice)
 	{
-		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
 		this.postRenderListeners.all().onPostRenderEntities(partialTicks);
 	}
 	
@@ -298,9 +292,8 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	 * @param timeSlice 
 	 * @param partialTicks2 
 	 */
-	void postRender(float partialTicks2, long timeSlice)
+	void postRender(float partialTicks, long timeSlice)
 	{
-		float partialTicks = (this.minecraftTimer != null) ? this.minecraftTimer.elapsedPartialTicks : 0.0F;
 		this.postRenderListeners.all().onPostRender(partialTicks);
 	}
 	
@@ -376,24 +369,13 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	 * 
 	 * @param clock True if this is a new tick (otherwise it's just a new frame)
 	 */
-	void onTick(boolean clock)
+	void onTick()
 	{
 		this.profiler.startSection("litemods");
-		float partialTicks = 0.0F;
 		
-		// Try to get the minecraft timer object and determine the value of the
-		// partialTicks
-		if (clock || this.minecraftTimer == null)
-		{
-			this.minecraftTimer = ((IMinecraft)this.engine.getClient()).getTimer();
-		}
-		
-		// Hooray, we got the timer reference
-		if (this.minecraftTimer != null)
-		{
-			partialTicks = this.minecraftTimer.renderPartialTicks;
-			clock = this.minecraftTimer.elapsedTicks > 0;
-		}
+		Timer minecraftTimer = ((IMinecraft)this.engine.getClient()).getTimer();
+		float partialTicks = minecraftTimer.renderPartialTicks;
+		boolean clock = minecraftTimer.elapsedTicks > 0;
 		
 		Minecraft minecraft = this.engine.getClient();
 		
@@ -414,18 +396,11 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 		this.tickListeners.all().onTick(minecraft, partialTicks, inGame, clock);
 		
 		// Detected world change
-		if (minecraft.theWorld != null)
+		int worldHashCode = (minecraft.theWorld != null) ? minecraft.theWorld.hashCode() : 0;
+		if (worldHashCode != this.worldHashCode)
 		{
-			if (minecraft.theWorld.hashCode() != this.worldHashCode)
-			{
-				this.worldHashCode = minecraft.theWorld.hashCode();
-				super.onWorldChanged(minecraft.theWorld);
-			}
-		}
-		else
-		{
-			this.worldHashCode = 0;
-			super.onWorldChanged(null);
+			this.worldHashCode = worldHashCode;
+			super.onWorldChanged(minecraft.theWorld);
 		}
 		
 		this.profiler.endSection();
@@ -481,8 +456,55 @@ public class EventsClient extends Events<Minecraft, IntegratedServer>
 	 * @param partialTicks
 	 * @param timeSlice
 	 */
-	public void onRenderWorld(float partialTicks, long timeSlice)
+	void onRenderWorld(float partialTicks, long timeSlice)
 	{
 		this.renderListeners.all().onRenderWorld();
+	}
+	
+	/**
+	 * @param e
+	 * @param name
+	 * @param width
+	 * @param height
+	 * @param fbo
+	 */
+	void onScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, String name, int width, int height, Framebuffer fbo)
+	{
+		ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>(e.getReturnValue());
+		
+		if (!this.screenshotListeners.all().onSaveScreenshot(name, width, height, fbo, ret))
+		{
+			e.setReturnValue(ret.get());
+		}
+	}
+
+	/**
+	 * @param source
+	 * @param entity
+	 * @param xPos
+	 * @param yPos
+	 * @param zPos
+	 * @param yaw
+	 * @param partialTicks
+	 * @param render 
+	 */
+	public void onRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, Render render)
+	{
+		this.entityRenderListeners.all().onRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
+	}
+
+	/**
+	 * @param source
+	 * @param entity
+	 * @param xPos
+	 * @param yPos
+	 * @param zPos
+	 * @param yaw
+	 * @param partialTicks
+	 * @param render 
+	 */
+	public void onPostRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, Render render)
+	{
+		this.entityRenderListeners.all().onPostRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
 	}
 }

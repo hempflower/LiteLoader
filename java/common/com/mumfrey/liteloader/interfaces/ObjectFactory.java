@@ -4,7 +4,7 @@ import net.minecraft.server.MinecraftServer;
 
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.Events;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
@@ -20,7 +20,7 @@ import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
  */
 public interface ObjectFactory<TClient, TServer extends MinecraftServer>
 {
-	public abstract Events<TClient, TServer> getEventBroker();
+	public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
 	
 	public abstract PacketEvents getPacketEventBroker();
 	

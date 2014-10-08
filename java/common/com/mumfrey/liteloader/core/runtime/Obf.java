@@ -51,6 +51,12 @@ public class Obf
 	public static final Obf                   GuiNewChat = new Obf("net.minecraft.client.gui.GuiNewChat",                        "buh" );
 	public static final Obf               GlStateManager = new Obf("net.minecraft.client.renderer.GlStateManager",               "cjm" );
 	public static final Obf                      Session = new Obf("net.minecraft.util.Session",                                 "btw" );
+	public static final Obf               IChatComponent = new Obf("net.minecraft.util.IChatComponent",                          "ho"  );
+	public static final Obf             ScreenShotHelper = new Obf("net.minecraft.util.ScreenShotHelper",                        "btt" );
+	public static final Obf                 OpenGlHelper = new Obf("net.minecraft.client.renderer.OpenGlHelper",                 "dax" );
+	public static final Obf                       Entity = new Obf("net.minecraft.entity.Entity",                                "wv"  );
+	public static final Obf                RenderManager = new Obf("net.minecraft.client.renderer.entity.RenderManager",         "cpt" );
+	public static final Obf                       Render = new Obf("net.minecraft.client.renderer.entity.Render",                "cpu" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -94,6 +100,11 @@ public class Obf
 	public static final Obf                        clear = new Obf("func_179086_m",                                              "m"   );
 	public static final Obf              renderWorldPass = new Obf("func_175068_a",                                              "a"   );
 	public static final Obf                   getProfile = new Obf("func_148256_e",                                              "a"   );
+	public static final Obf               saveScreenshot = new Obf("func_148260_a",                                              "a"   );
+	public static final Obf         isFramebufferEnabled = new Obf("func_148822_b",                                              "i"   );
+	public static final Obf               doRenderEntity = new Obf("func_147939_a",                                              "a"   );
+	public static final Obf                     doRender = new Obf("func_76986_a",                                               "a"   );
+	public static final Obf        doRenderShadowAndFire = new Obf("func_76979_b",                                               "b"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;

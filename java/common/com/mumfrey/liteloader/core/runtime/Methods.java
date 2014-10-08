@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.core.runtime;
 
+import java.io.File;
+
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
 /**
@@ -29,6 +31,11 @@ public abstract class Methods
 	public static final MethodInfo respawnPlayer          = new MethodInfo(Obf.ServerConfigurationManager, Obf.respawnPlayer,                Obf.EntityPlayerMP, Obf.EntityPlayerMP, Integer.TYPE, Boolean.TYPE);
 	public static final MethodInfo glClear                = new MethodInfo(Obf.GlStateManager,             Obf.clear,                        Void.TYPE, Integer.TYPE);
 	public static final MethodInfo getProfile             = new MethodInfo(Obf.Session,                    Obf.getProfile,                   Obf.GameProfile);
+	public static final MethodInfo saveScreenshot         = new MethodInfo(Obf.ScreenShotHelper,           Obf.saveScreenshot,               Obf.IChatComponent, File.class, String.class, Integer.TYPE, Integer.TYPE, Obf.FrameBuffer);
+	public static final MethodInfo isFramebufferEnabled   = new MethodInfo(Obf.OpenGlHelper,               Obf.isFramebufferEnabled,         Boolean.TYPE);
+	public static final MethodInfo doRenderEntity         = new MethodInfo(Obf.RenderManager,              Obf.doRenderEntity,               Boolean.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Boolean.TYPE);
+	public static final MethodInfo doRender               = new MethodInfo(Obf.Render,                     Obf.doRender,                     Void.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
+	public static final MethodInfo doRenderShadowAndFire  = new MethodInfo(Obf.Render,                     Obf.doRenderShadowAndFire,        Void.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
 	
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);
 	public static final MethodInfo endSection             = new MethodInfo(Obf.Profiler,                   Obf.endSection,                   Void.TYPE);

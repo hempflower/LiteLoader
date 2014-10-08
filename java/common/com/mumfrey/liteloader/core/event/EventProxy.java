@@ -146,7 +146,12 @@ public final class EventProxy
 		}
 		tpl.append(")\n\t    {\n\t        // handler code here\n\t    }");
 		
-		return tpl.toString();
+		String template = tpl.toString();
+		if (template.contains(", ReturnType>"))
+		{
+			template = template.replace("static void", "static <ReturnType> void");
+		}
+		return template;
 	}
 	
 	private static boolean appendTypeName(StringBuilder tpl, Type type, String sourceClass)
@@ -160,7 +165,7 @@ public final class EventProxy
 				String typeName = type.getClassName();
 				typeName = typeName.substring(typeName.lastIndexOf('.') + 1);
 				tpl.append(typeName);
-				if (typeName.endsWith("ReturnEventInfo")) tpl.append('<').append(sourceClass).append(", ?>");
+				if (typeName.endsWith("ReturnEventInfo")) tpl.append('<').append(sourceClass).append(", ReturnType>");
 				else if (typeName.endsWith("EventInfo")) tpl.append('<').append(sourceClass).append('>');
 				return false;
 			default:

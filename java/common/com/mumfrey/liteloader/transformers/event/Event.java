@@ -312,11 +312,11 @@ public class Event implements Comparable<Event>
 		// Pre-flight checks
 		this.validate(injectionPoint, cancellable, globalEventID);
 		
-		Type[] argumentTypes = Type.getArgumentTypes(this.method.desc);
-		int initialFrameSize = argumentTypes.length + (this.methodIsStatic ? 0 : 1);
+		Type[] arguments = Type.getArgumentTypes(this.method.desc);
+		int initialFrameSize = ByteCodeUtilities.getFirstNonArgLocalIndex(arguments, !this.methodIsStatic);
 
 		boolean doCaptureLocals = captureLocals && locals != null && locals.length > initialFrameSize;
-		String eventDescriptor = this.generateEventDescriptor(doCaptureLocals, locals, argumentTypes, initialFrameSize);
+		String eventDescriptor = this.generateEventDescriptor(doCaptureLocals, locals, arguments, initialFrameSize);
 		
 		// Create the handler delegate method
 		MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID), eventDescriptor, null, null);
@@ -324,7 +324,7 @@ public class Event implements Comparable<Event>
 		
 		LiteLoaderLogger.debug("Event %s is spawning handler %s in class %s", this.name, handler.name, Event.getActiveProxyRef());
 
-		int ctorMAXS = 0, invokeMAXS = argumentTypes.length + (doCaptureLocals ? locals.length - initialFrameSize : 0);
+		int ctorMAXS = 0, invokeMAXS = arguments.length + (doCaptureLocals ? locals.length - initialFrameSize : 0);
 		int eventInfoVar = this.method.maxLocals++;
 		
 		InsnList insns = new InsnList();
@@ -332,12 +332,12 @@ public class Event implements Comparable<Event>
 		// Instance the EventInfo for this event
 		insns.add(new TypeInsnNode(Opcodes.NEW, this.eventInfoClass)); ctorMAXS++;
 		insns.add(new InsnNode(Opcodes.DUP)); ctorMAXS++; invokeMAXS++;
-		ctorMAXS += invokeEventInfoConstructor(insns, cancellable);
+		ctorMAXS += this.invokeEventInfoConstructor(insns, cancellable);
 		insns.add(new VarInsnNode(Opcodes.ASTORE, eventInfoVar));
 		
 		// Call the event handler method in the proxy
 		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
-		ByteCodeUtilities.loadArgs(argumentTypes, insns, this.methodIsStatic ? 0 : 1);
+		ByteCodeUtilities.loadArgs(arguments, insns, this.methodIsStatic ? 0 : 1);
 		if (doCaptureLocals)
 		{
 			ByteCodeUtilities.loadLocals(locals, insns, initialFrameSize);
@@ -474,6 +474,14 @@ public class Event implements Comparable<Event>
 	}
 	
 	/**
+	 * Get currently registered listeners for this event
+	 */
+	public Set<MethodInfo> getListeners()
+	{
+		return Collections.<MethodInfo>unmodifiableSet(this.listeners);
+	}
+	
+	/**
 	 * Get an event by name (case insensitive)
 	 * 
 	 * @param eventName
@@ -486,28 +494,6 @@ public class Event implements Comparable<Event>
 				return event;
 		
 		return null;
-	}
-
-	/**
-	 * Get all of the listeners for an event by name
-	 * 
-	 * @param eventName
-	 * @return
-	 */
-	static Set<MethodInfo> getEventListeners(String eventName)
-	{
-		return Event.getEventListeners(Event.getEvent(eventName));
-	}
-	
-	/**
-	 * Get all of an event's listeners
-	 * 
-	 * @param event
-	 * @return
-	 */
-	static Set<MethodInfo> getEventListeners(Event event)
-	{
-		return event == null ? null : Collections.unmodifiableSet(event.listeners);
 	}
 	
 	/**

@@ -51,6 +51,9 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		Event onRespawnPlayer                  = Event.getOrCreate("onRespawnPlayer",              false);
 		Event onStartupComplete                = Event.getOrCreate("onStartupComplete",            false);
 		Event onSessionProfileBad              = Event.getOrCreate("onSessionProfileBad",          true);
+		Event onSaveScreenshot                 = Event.getOrCreate("onSaveScreenshot",             true);
+		Event onRenderEntity                   = Event.getOrCreate("onRenderEntity",               false);
+		Event onPostRenderEntity               = Event.getOrCreate("onPostRenderEntity",           false);
 		
 		// Injection Points
 		InjectionPoint methodHead              = new MethodHead();
@@ -62,6 +65,8 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		InjectionPoint beforeRender            = new BeforeInvoke(updateCameraAndRender);
 		InjectionPoint beforeDrawChat          = new BeforeInvoke(drawChat);
 		InjectionPoint beforeEndProfiler       = new BeforeInvoke(endSection);
+		InjectionPoint beforeIsFBOEnabled      = new BeforeInvoke(isFramebufferEnabled);
+		InjectionPoint beforeRenderEntity      = new BeforeInvoke(doRender).setCaptureLocals(true);
 		InjectionPoint beforeTickProfiler      = new BeforeStringInvoke("tick",         startSection);
 		InjectionPoint beforeCenterProfiler    = new BeforeStringInvoke("center",       startSection);
 		InjectionPoint beforeRenderProfiler    = new BeforeStringInvoke("gameRenderer", endStartSection);
@@ -95,6 +100,9 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		this.add(onSpawnPlayer,                spawnPlayer,                (methodReturn),            "onSpawnPlayer");
 		this.add(onRespawnPlayer,              respawnPlayer,              (methodReturn),            "onRespawnPlayer");
 		this.add(onStartupComplete,            startGame,                  (methodReturn),            "onStartupComplete");
+		this.add(onSaveScreenshot,             saveScreenshot,             (beforeIsFBOEnabled),      "onSaveScreenshot");
+		this.add(onRenderEntity,               doRenderEntity,             (beforeRenderEntity),      "onRenderEntity");
+		this.add(onPostRenderEntity,           doRenderEntity,        after(beforeRenderEntity),      "onPostRenderEntity");
 		
 		// Compatibility handlers
 		this.add(onSessionProfileBad,          getProfile,                 (beforeNewGameProfile),    "generateOfflineUUID");

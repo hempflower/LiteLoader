@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -283,7 +282,7 @@ public final class EventTransformer extends ClassTransformer
 						injection.setLocals(locals);
 						if (injectionPoint.logLocals())
 						{
-							int startPos = ((method.access & Opcodes.ACC_STATIC) == 0 ? 1 : 0) + Type.getArgumentTypes(method.desc).length;
+							int startPos = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
 							
 							LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
 							LiteLoaderLogger.debug("Logging local variables for " + injectionPoint.getClass().getSimpleName());

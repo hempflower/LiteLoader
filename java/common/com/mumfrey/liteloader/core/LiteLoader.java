@@ -143,7 +143,7 @@ public final class LiteLoader
 	/**
 	 * Event manager
 	 */
-	private Events<?, ?> events;
+	private LiteLoaderEventBroker<?, ?> events;
 
 	/**
 	 * Plugin channel manager 

@@ -7,6 +7,7 @@ import net.minecraft.network.login.server.S02PacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
 import com.mumfrey.liteloader.ChatFilter;
@@ -15,6 +16,7 @@ import com.mumfrey.liteloader.PostLoginListener;
 import com.mumfrey.liteloader.PreJoinGameListener;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.PacketEvents;
@@ -146,14 +148,22 @@ public class PacketEventsClient extends PacketEvents
 		IChatComponent chat = packet.func_148915_c();
 		String message = chat.getFormattedText();
 		
-		// Chat filters get a stab at the chat first, if any filter returns
-		// false the chat is discarded
+		// Chat filters get a stab at the chat first, if any filter returns false the chat is discarded
 		for (ChatFilter chatFilter : this.chatFilters)
 		{
-			if (chatFilter.onChat(packet, chat, message))
+			ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>();
+			
+			if (chatFilter.onChat(chat, message, ret))
 			{
-				chat = packet.func_148915_c();
-				message = chat.getFormattedText();
+				if (ret.isSet())
+				{
+					chat = ret.get();
+					if (chat == null)
+					{
+						chat = new ChatComponentText("");
+					}
+					message = chat.getFormattedText();
+				}
 			}
 			else
 			{

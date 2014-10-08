@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.server.integrated.IntegratedServer;
 
-import com.mumfrey.liteloader.client.EventsClient;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.ClientPluginChannelsClient;
 import com.mumfrey.liteloader.client.GameEngineClient;
 import com.mumfrey.liteloader.client.LiteLoaderPanelManager;
@@ -12,7 +12,7 @@ import com.mumfrey.liteloader.client.PacketEventsClient;
 import com.mumfrey.liteloader.client.gui.startup.LoadingBar;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.Events;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
@@ -34,7 +34,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	
 	private LoaderProperties properties;
 	
-	private EventsClient clientEvents;
+	private LiteLoaderEventBrokerClient clientEvents;
 	
 	private PacketEventsClient clientPacketEvents;
 
@@ -53,11 +53,11 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	}
 	
 	@Override
-	public Events<Minecraft, IntegratedServer> getEventBroker()
+	public LiteLoaderEventBroker<Minecraft, IntegratedServer> getEventBroker()
 	{
 		if (this.clientEvents == null)
 		{
-			this.clientEvents = new EventsClient(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
+			this.clientEvents = new LiteLoaderEventBrokerClient(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
 		}
 		
 		return this.clientEvents;

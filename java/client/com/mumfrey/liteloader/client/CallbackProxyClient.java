@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.client;
 
+import java.io.File;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
@@ -7,12 +8,17 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.ScreenShotHelper;
 import net.minecraft.util.Session;
 import net.minecraft.world.WorldSettings;
 
@@ -29,12 +35,7 @@ import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
  */
 public class CallbackProxyClient
 {
-	/**
-	 * Tick clock, sent as a flag to the core onTick so that mods know it's a new tick
-	 */
-	private static boolean clock = false;
-	
-	private static EventsClient events;
+	private static LiteLoaderEventBrokerClient eventBroker;
 
 	private static boolean fboEnabled;
 
@@ -42,147 +43,145 @@ public class CallbackProxyClient
 	
 	public static void onStartupComplete(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.events = EventsClient.getInstance();
+		CallbackProxyClient.eventBroker = LiteLoaderEventBrokerClient.getInstance();
 		
-		if (CallbackProxyClient.events == null)
+		if (CallbackProxyClient.eventBroker == null)
 		{
 			throw new RuntimeException("LiteLoader failed to start up properly. The game is in an unstable state and must shut down now. Check the developer log for startup errors");
 		}
 		
-		CallbackProxyClient.events.onStartupComplete();
+		CallbackProxyClient.eventBroker.onStartupComplete();
 	}
 	
 	public static void onTimerUpdate(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.events.onTimerUpdate();
+		CallbackProxyClient.eventBroker.onTimerUpdate();
 	}
 	
 	public static void newTick(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.clock = true;
 	}
 	
 	public static void onTick(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.events.onTick(CallbackProxyClient.clock);
-		CallbackProxyClient.clock = false;
+		CallbackProxyClient.eventBroker.onTick();
 	}
 	
 	public static void onRender(EventInfo<Minecraft> e)
 	{
-		CallbackProxyClient.events.onRender();
+		CallbackProxyClient.eventBroker.onRender();
 	}
 	
 	public static void preRenderGUI(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		CallbackProxyClient.events.preRenderGUI(partialTicks);
+		CallbackProxyClient.eventBroker.preRenderGUI(partialTicks);
 	}
 	
 	public static void onSetupCameraTransform(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.onSetupCameraTransform(partialTicks, timeSlice);
+		CallbackProxyClient.eventBroker.onSetupCameraTransform(partialTicks, timeSlice);
 	}
 	
 	public static void postRenderEntities(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.postRenderEntities(partialTicks, timeSlice);
+		CallbackProxyClient.eventBroker.postRenderEntities(partialTicks, timeSlice);
 	}
 	
 	public static void postRender(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.postRender(partialTicks, timeSlice);
+		CallbackProxyClient.eventBroker.postRender(partialTicks, timeSlice);
 	}
 	
 	public static void onRenderHUD(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		CallbackProxyClient.events.onRenderHUD(partialTicks);
+		CallbackProxyClient.eventBroker.onRenderHUD(partialTicks);
 	}
 	
 	public static void onRenderChat(EventInfo<GuiIngame> e, float partialTicks)
 	{
-		CallbackProxyClient.events.onRenderChat(e.getSource().getChatGUI(), partialTicks);
+		CallbackProxyClient.eventBroker.onRenderChat(e.getSource().getChatGUI(), partialTicks);
 	}
 	
 	public static void postRenderChat(EventInfo<GuiIngame> e, float partialTicks)
 	{
-		CallbackProxyClient.events.postRenderChat(e.getSource().getChatGUI(), partialTicks);
+		CallbackProxyClient.eventBroker.postRenderChat(e.getSource().getChatGUI(), partialTicks);
 	}
 	
 	public static void postRenderHUD(EventInfo<EntityRenderer> e, float partialTicks)
 	{
-		CallbackProxyClient.events.postRenderHUD(partialTicks);
+		CallbackProxyClient.eventBroker.postRenderHUD(partialTicks);
 	}
 	
 	public static void IntegratedServerCtor(EventInfo<IntegratedServer> e, Minecraft minecraft, String folderName, String worldName, WorldSettings worldSettings)
 	{
-		CallbackProxyClient.events.onStartServer(e.getSource(), folderName, worldName, worldSettings);
+		CallbackProxyClient.eventBroker.onStartServer(e.getSource(), folderName, worldName, worldSettings);
 	}
 	
 	public static void onInitializePlayerConnection(EventInfo<ServerConfigurationManager> e, NetworkManager netManager, EntityPlayerMP player)
 	{
-		CallbackProxyClient.events.onInitializePlayerConnection(e.getSource(), netManager, player);
+		CallbackProxyClient.eventBroker.onInitializePlayerConnection(e.getSource(), netManager, player);
 	}
 
 	public static void onPlayerLogin(EventInfo<ServerConfigurationManager> e, EntityPlayerMP player)
 	{
-		CallbackProxyClient.events.onPlayerLogin(e.getSource(), player);
+		CallbackProxyClient.eventBroker.onPlayerLogin(e.getSource(), player);
 	}
 	
 	public static void onPlayerLogout(EventInfo<ServerConfigurationManager> e, EntityPlayerMP player)
 	{
-		CallbackProxyClient.events.onPlayerLogout(e.getSource(), player);
+		CallbackProxyClient.eventBroker.onPlayerLogout(e.getSource(), player);
 	}
 	
 	public static void onSpawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, GameProfile profile)
 	{
-		CallbackProxyClient.events.onSpawnPlayer(e.getSource(), e.getReturnValue(), profile);
+		CallbackProxyClient.eventBroker.onSpawnPlayer(e.getSource(), e.getReturnValue(), profile);
 	}
 
 	public static void onRespawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, EntityPlayerMP oldPlayer, int dimension, boolean won)
 	{
-		CallbackProxyClient.events.onRespawnPlayer(e.getSource(), e.getReturnValue(), oldPlayer, dimension, won);
+		CallbackProxyClient.eventBroker.onRespawnPlayer(e.getSource(), e.getReturnValue(), oldPlayer, dimension, won);
 	}
 	
 	public static void onOutboundChat(EventInfo<EntityPlayerSP> e, String message)
 	{
-		CallbackProxyClient.events.onSendChatMessage(e, message);
+		CallbackProxyClient.eventBroker.onSendChatMessage(e, message);
 	}
 	
 	public static void onResize(EventInfo<Minecraft> e)
 	{
-		if (CallbackProxyClient.events == null) return;
-		CallbackProxyClient.events.onResize(e.getSource());
+		if (CallbackProxyClient.eventBroker == null) return;
+		CallbackProxyClient.eventBroker.onResize(e.getSource());
 	}
 	
 	public static void preRenderFBO(EventInfo<Minecraft> e)
 	{
-		if (CallbackProxyClient.events == null) return;
+		if (CallbackProxyClient.eventBroker == null) return;
 		CallbackProxyClient.fboEnabled = OpenGlHelper.isFramebufferEnabled();
 		
 		if (CallbackProxyClient.fboEnabled)
 		{
 			CallbackProxyClient.renderingFBO = true;
-			CallbackProxyClient.events.preRenderFBO(e.getSource().getFramebuffer());
+			CallbackProxyClient.eventBroker.preRenderFBO(e.getSource().getFramebuffer());
 		}
 	}
 	
 	public static void postRenderFBO(EventInfo<Minecraft> e)
 	{
-		if (CallbackProxyClient.events == null) return;
+		if (CallbackProxyClient.eventBroker == null) return;
 		CallbackProxyClient.renderingFBO = false;
 
 		if (CallbackProxyClient.fboEnabled)
 		{
-			CallbackProxyClient.events.postRenderFBO(e.getSource().getFramebuffer());
+			CallbackProxyClient.eventBroker.postRenderFBO(e.getSource().getFramebuffer());
 		}
 	}
 	
 	public static void renderFBO(EventInfo<Framebuffer> e, int width, int height, boolean flag)
 	{
-		if (CallbackProxyClient.events == null) return;
+		if (CallbackProxyClient.eventBroker == null) return;
 		if (CallbackProxyClient.renderingFBO)
 		{
-			CallbackProxyClient.events.onRenderFBO(e.getSource(), width, height);
+			CallbackProxyClient.eventBroker.onRenderFBO(e.getSource(), width, height);
 		}
 		
 		CallbackProxyClient.renderingFBO = false;
@@ -190,7 +189,22 @@ public class CallbackProxyClient
 	
 	public static void onRenderWorld(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.events.onRenderWorld(partialTicks, timeSlice);
+		CallbackProxyClient.eventBroker.onRenderWorld(partialTicks, timeSlice);
+	}
+	
+	public static void onSaveScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, File gameDir, String name, int width, int height, Framebuffer fbo)
+	{
+		CallbackProxyClient.eventBroker.onScreenshot(e, name, width, height, fbo);
+	}
+	
+	public static void onRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, boolean hideBoundingBox, Render render)
+	{
+		CallbackProxyClient.eventBroker.onRenderEntity(e.getSource(), entity, xPos, yPos, zPos, yaw, partialTicks, render);
+	}
+	
+	public static void onPostRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, boolean hideBoundingBox, Render render)
+	{
+		CallbackProxyClient.eventBroker.onPostRenderEntity(e.getSource(), entity, xPos, yPos, zPos, yaw, partialTicks, render);
 	}
 	
 	/**

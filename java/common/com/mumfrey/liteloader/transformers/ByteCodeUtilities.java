@@ -74,6 +74,49 @@ public abstract class ByteCodeUtilities
 			}
 		}
 	}
+	
+	/**
+	 * Get the first variable index in the supplied method which is not an argument or "this" reference, this corresponds
+	 * to the size of the arguments passed in to the method plus an extra spot for "this" if the method is non-static 
+	 * 
+	 * @param method
+	 * @return
+	 */
+	public static int getFirstNonArgLocalIndex(MethodNode method)
+	{
+		return ByteCodeUtilities.getFirstNonArgLocalIndex(Type.getArgumentTypes(method.desc), (method.access & Opcodes.ACC_STATIC) == 0);
+	}
+	
+	/**
+	 * Get the first non-arg variable index based on the supplied arg array and whether to include the "this" reference,
+	 * this corresponds to the size of the arguments passed in to the method plus an extra spot for "this" is specified 
+
+	 * @param args
+	 * @param includeThis
+	 * @return
+	 */
+	public static int getFirstNonArgLocalIndex(Type[] args, boolean includeThis)
+	{
+		return ByteCodeUtilities.getArgsSize(args) + (includeThis ? 1 : 0);
+	}
+	
+	/**
+	 * Get the size of the specified args array in local variable terms (eg. doubles and longs take two spaces)
+	 * 
+	 * @param args
+	 * @return
+	 */
+	public static int getArgsSize(Type[] args)
+	{
+		int size = 0;
+		
+		for (Type type : args)
+		{
+			size += type.getSize();
+		}
+		
+		return size;
+	}
 
 	/**
 	 * Attempts to identify available locals at an arbitrary point in the bytecode specified by node.
@@ -121,8 +164,7 @@ public abstract class ByteCodeUtilities
 				FrameNode frameNode = (FrameNode)insn;
 				
 				// localPos tracks the location in the frame node's locals list, which doesn't leave space for TOP entries
-				int localPos = 0;
-				for (int framePos = 0; framePos < frame.length; framePos++)
+				for (int localPos = 0, framePos = 0; framePos < frame.length; framePos++, localPos++)
 				{
 					// Get the local at the current position in the FrameNode's locals list
 					final Object localType = (localPos < frameNode.local.size()) ? frameNode.local.get(localPos) : null;
@@ -163,8 +205,6 @@ public abstract class ByteCodeUtilities
 					{
 						throw new RuntimeException("Invalid value " + localType + " in locals array at position " + localPos + " in " + classNode.name + "." + method.name + method.desc);
 					}
-					
-					localPos++;
 				}
 			}
 			else if (insn instanceof VarInsnNode)

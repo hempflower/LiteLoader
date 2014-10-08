@@ -25,6 +25,7 @@ import org.objectweb.asm.tree.*;
 import com.mumfrey.liteloader.Priority;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -923,7 +924,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			boolean isOrOperation = this.logicOp.isOr();
 			boolean breakOnMatch = this.logicOp.breakOnMatch();
 			int initialValue = isOrOperation && (!this.logicOp.assumeTrue() || this.size > 0) ? Opcodes.ICONST_0 : Opcodes.ICONST_1;
-			int localIndex = this.getFirstLocalIndex(args);
+			int localIndex = ByteCodeUtilities.getArgsSize(args);
 			
 			method.instructions.add(new InsnNode(initialValue));
 			method.instructions.add(new VarInsnNode(Opcodes.ISTORE, localIndex));
@@ -984,13 +985,6 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			return argNumber;
 		}
 		
-		private int getFirstLocalIndex(Type[] args)
-		{
-			int argNumber = 1;
-			for (Type type : args) argNumber += type.getSize();
-			return argNumber;
-		}
-
 		/**
 		 * @param baseName
 		 * @param typeName

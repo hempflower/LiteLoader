@@ -1,6 +1,5 @@
 package com.mumfrey.liteloader.modconfig;
 
-import java.io.IOException;
 
 /**
  * Interface for mod config panels to implement
@@ -61,7 +60,7 @@ public interface ConfigPanel
 	 * @param mouseY
 	 * @param mouseButton
 	 */
-	public abstract void mousePressed(ConfigPanelHost host, int mouseX, int mouseY, int mouseButton) throws IOException;
+	public abstract void mousePressed(ConfigPanelHost host, int mouseX, int mouseY, int mouseButton);
 	
 	/**
 	 * Called when a mouse button is released
