@@ -1,8 +1,11 @@
 package com.mumfrey.liteloader.transformers;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -12,9 +15,15 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.FrameNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.analysis.Analyzer;
+import org.objectweb.asm.tree.analysis.AnalyzerException;
+import org.objectweb.asm.tree.analysis.BasicValue;
+import org.objectweb.asm.tree.analysis.Frame;
+import org.objectweb.asm.tree.analysis.SimpleVerifier;
 
 /**
  * Utility methods for working with bytecode using ASM
@@ -23,6 +32,8 @@ import org.objectweb.asm.tree.VarInsnNode;
  */
 public abstract class ByteCodeUtilities
 {
+	private static Map<String, List<LocalVariableNode>> calculatedLocalVariables = new HashMap<String, List<LocalVariableNode>>();
+	
 	private ByteCodeUtilities() {}
 	
 	/**
@@ -236,8 +247,9 @@ public abstract class ByteCodeUtilities
 		LocalVariableNode localVariableNode = null;
 		
 		int pos = method.instructions.indexOf(node);
-		
-		for (LocalVariableNode local : method.localVariables)
+
+		List<LocalVariableNode> localVariables = ByteCodeUtilities.getLocalVariableTable(classNode, method);
+		for (LocalVariableNode local : localVariables)
 		{
 			if (local.index != var) continue;
 			int start = method.instructions.indexOf(local.start);
@@ -250,7 +262,140 @@ public abstract class ByteCodeUtilities
 		
 		return localVariableNode;
 	}
+
+	/**
+	 * Fetches or generates the local variable table for the specified method. Since Mojang strip the local variable table
+	 * as part of the obfuscation process, we need to generate the local variable table when running obfuscated. We cache
+	 * the generated tables so that we only need to do the relatively expensive calculation once per method we encounter.
+	 * 
+	 * @param classNode
+	 * @param method
+	 * @return
+	 */
+	public static List<LocalVariableNode> getLocalVariableTable(ClassNode classNode, MethodNode method)
+	{
+		if (method.localVariables.isEmpty())
+		{
+			String signature = String.format("%s.%s%s", classNode.name, method.name, method.desc);
+			
+			List<LocalVariableNode> localVars = ByteCodeUtilities.calculatedLocalVariables.get(signature);
+			if (localVars != null)
+			{
+				return localVars;
+			}
+			
+			localVars = ByteCodeUtilities.generateLocalVariableTable(classNode, method);
+			ByteCodeUtilities.calculatedLocalVariables.put(signature, localVars);
+			return localVars;
+		}
+		
+		return method.localVariables;
+	}
 	
+	/**
+	 * Use ASM Analyzer to generate the local variable table for the specified method
+	 * 
+	 * @param classNode
+	 * @param method
+	 * @return
+	 */
+	public static List<LocalVariableNode> generateLocalVariableTable(ClassNode classNode, MethodNode method)
+	{
+		// Use Analyzer to generate the bytecode frames
+		Analyzer<BasicValue> analyzer = new Analyzer<BasicValue>(new SimpleVerifier(Type.getObjectType(classNode.name), null, null, false));
+		try
+		{
+			analyzer.analyze(classNode.name, method);
+		}
+		catch (AnalyzerException ex)
+		{
+			ex.printStackTrace();
+		}
+		
+		// Get frames from the Analyzer
+		Frame<BasicValue>[] frames = analyzer.getFrames();
+		
+		// Record the original size of hte method
+		int methodSize = method.instructions.size();
+
+		// List of LocalVariableNodes to return 
+		List<LocalVariableNode> localVariables = new ArrayList<LocalVariableNode>();
+		
+		LocalVariableNode[] localNodes = new LocalVariableNode[method.maxLocals]; // LocalVariableNodes for current frame
+		BasicValue[] locals = new BasicValue[method.maxLocals]; // locals in previous frame, used to work out what changes between frames
+		LabelNode[] labels = new LabelNode[methodSize]; // Labels to add to the method, for the markers
+		
+		// Traverse the frames and work out when locals begin and end
+		for (int i = 0; i < methodSize; i++)
+		{
+			Frame<BasicValue> f = frames[i];
+			if (f == null) continue;
+			LabelNode label = null;
+			
+			for (int j = 0; j < f.getLocals(); j++)
+			{
+				BasicValue local = f.getLocal(j);
+				if (local == null && locals[j] == null) continue;
+				if (local != null && local.equals(locals[j])) continue;
+
+				if (label == null)
+				{
+					label = new LabelNode();
+					labels[i] = label;
+				}
+				
+				if (local == null && locals[j] != null)
+				{
+					localVariables.add(localNodes[j]);
+					localNodes[j].end = label;
+					localNodes[j] = null;
+				}
+				else if (local != null)
+				{
+					if (locals[j] != null)
+					{
+						localVariables.add(localNodes[j]);
+						localNodes[j].end = label;
+						localNodes[j] = null;
+					}
+					
+					String desc = (local.getType() != null) ? local.getType().getDescriptor() : null;
+					localNodes[j] = new LocalVariableNode("var" + j, desc, null, label, null, j);
+				}
+				
+				locals[j] = local;
+			}
+		}
+		
+		// Reached the end of the method so flush all current locals and mark the end
+		LabelNode label = null;
+		for (int k = 0; k < localNodes.length; k++)
+		{
+			if (localNodes[k] != null)
+			{
+				if (label == null)
+				{
+					label = new LabelNode();
+					method.instructions.add(label);
+				}
+				
+				localNodes[k].end = label;
+				localVariables.add(localNodes[k]);
+			}
+		}
+
+		// Insert generated labels into the method body
+		for (int n = methodSize - 1; n >= 0; n--)
+		{
+			if (labels[n] != null)
+			{
+				method.instructions.insert(method.instructions.get(n), labels[n]);
+			}
+		}
+		
+		return localVariables;
+	}
+
 	/**
 	 * Get the source code name for the specified type
 	 * 

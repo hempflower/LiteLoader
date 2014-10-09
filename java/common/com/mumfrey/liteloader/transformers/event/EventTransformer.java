@@ -131,7 +131,7 @@ public final class EventTransformer extends ClassTransformer
 		{
 			if (injectionPoint.captureLocals != this.captureLocals)
 			{
-				throw new RuntimeException("Overlapping injection points defined with incompatible settings. Attempting to handle " + injectionPoint.getClass().getSimpleName() + " with capture locals [" + injectionPoint.captureLocals + "] but already defined injection point with [" + this.captureLocals + "]");
+				throw new RuntimeException("Overlapping injection points defined with incompatible settings. Attempting to handle " + injectionPoint + " with capture locals [" + injectionPoint.captureLocals + "] but already defined injection point with [" + this.captureLocals + "]");
 			}
 		}
 
@@ -285,7 +285,7 @@ public final class EventTransformer extends ClassTransformer
 							int startPos = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
 							
 							LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-							LiteLoaderLogger.debug("Logging local variables for " + injectionPoint.getClass().getSimpleName());
+							LiteLoaderLogger.debug("Logging local variables for " + injectionPoint);
 							for (int i = startPos; i < locals.length; i++)
 							{
 								LocalVariableNode local = locals[i];

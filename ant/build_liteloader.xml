@@ -5,7 +5,7 @@
 
 	<!-- Versions !!IMPORTANT -->
 	<property name="version" value="1.8.0_00" />
-	<property name="mcversion" value="1.8.00" />
+	<property name="mcversion" value="1.8" />
 	<property name="author" value="Mumfrey" />
 
 	<!-- Project definitions and dependencies -->
@@ -288,6 +288,6 @@
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
 		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}"/>
 		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
-		<copy todir="${eclipse}/Installer/src/main/resources" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
+		<copy todir="${eclipse}/LiteLoaderInstaller/src/main/resources" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
 	</target>
 </project>
