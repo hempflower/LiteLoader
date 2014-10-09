@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.client;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.Packet;
 import net.minecraft.network.login.INetHandlerLoginClient;
@@ -10,8 +11,11 @@ import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 
+import com.mojang.realmsclient.RealmsMainScreen;
+import com.mojang.realmsclient.dto.RealmsServer;
 import com.mumfrey.liteloader.ChatFilter;
 import com.mumfrey.liteloader.ChatListener;
+import com.mumfrey.liteloader.JoinGameListener;
 import com.mumfrey.liteloader.PostLoginListener;
 import com.mumfrey.liteloader.PreJoinGameListener;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
@@ -20,9 +24,11 @@ import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.PacketEvents;
+import com.mumfrey.liteloader.core.event.EventCancellationException;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -32,6 +38,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public class PacketEventsClient extends PacketEvents
 {
+	private static RealmsServer joiningRealm;
+	
+	private FastIterableDeque<JoinGameListener> joinGameListeners = new HandlerList<JoinGameListener>(JoinGameListener.class);
 	private FastIterableDeque<ChatListener> chatListeners = new HandlerList<ChatListener>(ChatListener.class);
 	private FastIterableDeque<ChatFilter> chatFilters = new HandlerList<ChatFilter>(ChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	private FastIterableDeque<PreJoinGameListener> preJoinGameListeners = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class, ReturnLogicOp.OR);
@@ -42,10 +51,19 @@ public class PacketEventsClient extends PacketEvents
 	{
 		super.registerInterfaces(delegate);
 		
+		delegate.registerInterface(JoinGameListener.class);
 		delegate.registerInterface(ChatListener.class);
 		delegate.registerInterface(ChatFilter.class);
 		delegate.registerInterface(PreJoinGameListener.class);
 		delegate.registerInterface(PostLoginListener.class);
+	}
+	
+	/**
+	 * @param joinGameListener
+	 */
+	public void registerJoinGameListener(JoinGameListener joinGameListener)
+	{
+		this.joinGameListeners.add(joinGameListener);
 	}
 
 	/**
@@ -86,28 +104,56 @@ public class PacketEventsClient extends PacketEvents
 	{
 		this.postLoginListeners.add(postLoginListener);
 	}
-	
+
+	public static void onJoinRealm(EventInfo<RealmsMainScreen> e, long arg1, RealmsServer server)
+	{
+		PacketEventsClient.joiningRealm = server;
+	}
+
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(com.mumfrey.liteloader.common.transformers.PacketEventInfo, net.minecraft.network.INetHandler, net.minecraft.network.play.server.S01PacketJoinGame)
 	 */
 	@Override
 	protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
 	{
-		if (!(netHandler instanceof INetHandlerPlayClient))
-		{
-			return;
-		}
-		
-		e.cancel();
-
-		if (this.preJoinGameListeners.all().onPreJoinGame(netHandler, packet))
+		if (this.preJoinGame(e, netHandler, packet))
 		{
 			return;
 		}
 		
 		((INetHandlerPlayClient)netHandler).handleJoinGame(packet);
-		
 		super.handlePacket(e, netHandler, packet);
+		
+		this.postJoinGame(e, netHandler, packet);
+	}
+
+	/**
+	 * @param e
+	 * @param netHandler
+	 * @param packet
+	 * @throws EventCancellationException
+	 */
+	private boolean preJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet) throws EventCancellationException
+	{
+		if (!(netHandler instanceof INetHandlerPlayClient))
+		{
+			return true;
+		}
+		
+		e.cancel();
+
+		return this.preJoinGameListeners.all().onPreJoinGame(netHandler, packet);
+	}
+
+	/**
+	 * @param e
+	 * @param netHandler
+	 * @param packet
+	 */
+	private void postJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+	{
+		this.joinGameListeners.all().onJoinGame(netHandler, packet, Minecraft.getMinecraft().getCurrentServerData(), PacketEventsClient.joiningRealm);
+		PacketEventsClient.joiningRealm = null;
 		
 		ClientPluginChannels clientPluginChannels = LiteLoader.getClientPluginChannels();
 		if (clientPluginChannels instanceof ClientPluginChannelsClient)

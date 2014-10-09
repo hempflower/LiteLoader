@@ -20,5 +20,6 @@
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/lwjgl/lwjgl/lwjgl/2.9.1/lwjgl-2.9.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/asm-debug-all-5.0.3.jar"/>
 	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/org/lwjgl/lwjgl/lwjgl_util/2.9.1/lwjgl_util-2.9.1.jar"/>
+	<classpathentry exported="true" kind="lib" path="/Client/jars/libraries/com/mojang/realms/1.5.5/realms-1.5.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

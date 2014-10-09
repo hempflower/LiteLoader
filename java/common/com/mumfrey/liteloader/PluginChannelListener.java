@@ -9,7 +9,7 @@ import com.mumfrey.liteloader.core.CommonPluginChannelListener;
  *
  * @author Adam Mummery-Smith
  */
-public interface PluginChannelListener extends CommonPluginChannelListener, JoinGameListener
+public interface PluginChannelListener extends LiteMod, CommonPluginChannelListener
 {
 	/**
 	 * Called when a custom payload packet arrives on a channel this mod has registered

@@ -36,6 +36,8 @@ public abstract class Methods
 	public static final MethodInfo doRenderEntity         = new MethodInfo(Obf.RenderManager,              Obf.doRenderEntity,               Boolean.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE, Boolean.TYPE);
 	public static final MethodInfo doRender               = new MethodInfo(Obf.Render,                     Obf.doRender,                     Void.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
 	public static final MethodInfo doRenderShadowAndFire  = new MethodInfo(Obf.Render,                     Obf.doRenderShadowAndFire,        Void.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
+	public static final MethodInfo realmsPlay             = new MethodInfo(Obf.RealmsMainScreen,           "play",                           Void.TYPE, Long.TYPE);
+	public static final MethodInfo realmsStopFetcher      = new MethodInfo(Obf.RealmsMainScreen,           "stopRealmsFetcherAndPinger",     Void.TYPE);
 	
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);
 	public static final MethodInfo endSection             = new MethodInfo(Obf.Profiler,                   Obf.endSection,                   Void.TYPE);

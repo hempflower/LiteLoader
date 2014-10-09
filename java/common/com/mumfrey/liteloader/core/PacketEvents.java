@@ -13,7 +13,6 @@ import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
-import com.mumfrey.liteloader.JoinGameListener;
 import com.mumfrey.liteloader.PacketHandler;
 import com.mumfrey.liteloader.ServerChatFilter;
 import com.mumfrey.liteloader.api.InterfaceProvider;
@@ -23,7 +22,6 @@ import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.core.runtime.Packets;
 import com.mumfrey.liteloader.interfaces.FastIterable;
-import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -34,7 +32,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 public abstract class PacketEvents implements InterfaceProvider
 {
 	protected static PacketEvents instance;
-	
+
 	class PacketHandlerList extends HandlerList<PacketHandler>
 	{
 		private static final long serialVersionUID = 1L;
@@ -49,7 +47,6 @@ public abstract class PacketEvents implements InterfaceProvider
 	private PacketHandlerList packetHandlers[] = new PacketHandlerList[Packets.count()];
 	
 	private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
-	private FastIterableDeque<JoinGameListener> joinGameListeners = new HandlerList<JoinGameListener>(JoinGameListener.class);
 	
 	private final int loginSuccessPacketId  = Packets.S02PacketLoginSuccess.getIndex();
 	private final int serverChatPacketId    = Packets.S02PacketChat.getIndex();
@@ -74,21 +71,12 @@ public abstract class PacketEvents implements InterfaceProvider
 	public void registerInterfaces(InterfaceRegistrationDelegate delegate)
 	{
 		delegate.registerInterface(PacketHandler.class);
-		delegate.registerInterface(JoinGameListener.class);
 		delegate.registerInterface(ServerChatFilter.class);
 	}
 
 	@Override
 	public void initProvider()
 	{
-	}
-	
-	/**
-	 * @param joinGameListener
-	 */
-	public void registerJoinGameListener(JoinGameListener joinGameListener)
-	{
-		this.joinGameListeners.add(joinGameListener);
 	}
 
 	/**
@@ -123,7 +111,7 @@ public abstract class PacketEvents implements InterfaceProvider
 			}
 		}
 	}
-	
+
 	public static void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler)
 	{
 		PacketEvents.instance.handlePacket(e, netHandler, e.getPacketId());
@@ -235,7 +223,6 @@ public abstract class PacketEvents implements InterfaceProvider
 	protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
 	{
 		this.loader.onJoinGame(netHandler, packet);
-		this.joinGameListeners.all().onJoinGame(netHandler, packet);
 	}
 	
 	/**

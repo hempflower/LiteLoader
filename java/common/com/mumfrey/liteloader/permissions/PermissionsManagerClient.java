@@ -178,10 +178,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 		this.registeredClientPermissions.put(mod, new TreeSet<String>());
 	}
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.JoinGameListener#onJoinGame(net.minecraft.network.INetHandler, net.minecraft.network.play.server.S01PacketJoinGame)
-	 */
-	@Override
 	public void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket)
 	{
 		this.clearServerPermissions();

@@ -54,6 +54,7 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		Event onSaveScreenshot                 = Event.getOrCreate("onSaveScreenshot",             true);
 		Event onRenderEntity                   = Event.getOrCreate("onRenderEntity",               false);
 		Event onPostRenderEntity               = Event.getOrCreate("onPostRenderEntity",           false);
+		Event onJoinRealm                      = Event.getOrCreate("onJoinRealm",                  false);
 		
 		// Injection Points
 		InjectionPoint methodHead              = new MethodHead();
@@ -67,6 +68,7 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		InjectionPoint beforeEndProfiler       = new BeforeInvoke(endSection);
 		InjectionPoint beforeIsFBOEnabled      = new BeforeInvoke(isFramebufferEnabled);
 		InjectionPoint beforeRenderEntity      = new BeforeInvoke(doRender).setCaptureLocals(true);
+		InjectionPoint beforeStopRealsmFetcher = new BeforeInvoke(realmsStopFetcher).setCaptureLocals(true);
 		InjectionPoint beforeTickProfiler      = new BeforeStringInvoke("tick",         startSection);
 		InjectionPoint beforeCenterProfiler    = new BeforeStringInvoke("center",       startSection);
 		InjectionPoint beforeRenderProfiler    = new BeforeStringInvoke("gameRenderer", endStartSection);
@@ -106,10 +108,26 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		
 		// Compatibility handlers
 		this.add(onSessionProfileBad,          getProfile,                 (beforeNewGameProfile),    "generateOfflineUUID");
+		
+		// Protocol handlers
+		this.add(onJoinRealm,                  realmsPlay,                 (beforeStopRealsmFetcher), "onJoinRealm", Obf.PacketEventsClient);
 	}
 
 	protected final Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback)
 	{
-		return this.addEvent(event, targetMethod, injectionPoint).addListener(new MethodInfo(Obf.CallbackProxyClient, callback));
+		return this.add(event, targetMethod, injectionPoint, callback, Obf.CallbackProxyClient);
+	}
+
+	/**
+	 * @param event
+	 * @param targetMethod
+	 * @param injectionPoint
+	 * @param callback
+	 * @param proxy
+	 * @return
+	 */
+	private Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback, Obf proxy)
+	{
+		return this.addEvent(event, targetMethod, injectionPoint).addListener(new MethodInfo(proxy, callback));
 	}
 }
