@@ -124,8 +124,16 @@ public abstract class PacketEvents implements InterfaceProvider
 			return;
 		}
 		
-		if (this.packetHandlers[packetId].all().handlePacket(netHandler, e.getSource()))
+		try
 		{
+			if (this.packetHandlers[packetId].all().handlePacket(netHandler, e.getSource()))
+			{
+				return;
+			}
+		}
+		catch (Throwable ex)
+		{
+			ex.printStackTrace();
 			return;
 		}
 		

@@ -910,8 +910,9 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			
 			method.instructions.add(new InsnNode(returnType.getOpcode(Opcodes.IRETURN)));
 
-			method.maxLocals = args.length + 1;
-			method.maxStack = args.length + 1;
+			int argsSize = ByteCodeUtilities.getArgsSize(args);
+			method.maxLocals = argsSize + 1;
+			method.maxStack = argsSize + 1;
 		}
 
 		/**
@@ -924,7 +925,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			boolean isOrOperation = this.logicOp.isOr();
 			boolean breakOnMatch = this.logicOp.breakOnMatch();
 			int initialValue = isOrOperation && (!this.logicOp.assumeTrue() || this.size > 0) ? Opcodes.ICONST_0 : Opcodes.ICONST_1;
-			int localIndex = ByteCodeUtilities.getArgsSize(args);
+			int localIndex = ByteCodeUtilities.getArgsSize(args) + 1;
 			
 			method.instructions.add(new InsnNode(initialValue));
 			method.instructions.add(new VarInsnNode(Opcodes.ISTORE, localIndex));
@@ -946,8 +947,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			method.instructions.add(new VarInsnNode(Opcodes.ILOAD, localIndex));
 			method.instructions.add(new InsnNode(Opcodes.IRETURN));
 			
-			method.maxLocals = args.length + 2;
-			method.maxStack = args.length + 1;
+			method.maxLocals = localIndex + 2;
+			method.maxStack = localIndex + 1;
 		}
 
 		/**
