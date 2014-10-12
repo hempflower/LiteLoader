@@ -2,7 +2,6 @@ package com.mumfrey.liteloader.launch;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.Map.Entry;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
@@ -12,7 +11,6 @@ import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.launchwrapper.LogWrapper;
 
-import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -28,19 +26,9 @@ public class ClassTransformerManager
 	private boolean gameStarted;
 	
 	/**
-	 * Transformers to inject
-	 */
-	private Set<String> pendingTransformers = new HashSet<String>();
-	
-	/**
 	 * Transformers to inject after preInit but before the game starts, necessary for anything that needs to be downstream of forge
 	 */
-	private Set<String> downstreamTransformers = new HashSet<String>();
-	
-	/**
-	 * Packet transformers, seived from the injectedTransformers list
-	 */
-	private Map<String, TreeSet<SortableValue<String>>> packetTransformers = new HashMap<String, TreeSet<SortableValue<String>>>();
+	private Set<String> downstreamTransformers = new LinkedHashSet<String>();
 	
 	/**
 	 * Transformers passed into the constructor which are required and must be injected upstream
@@ -50,7 +38,7 @@ public class ClassTransformerManager
 	/**
 	 * Transformers successfully injected by us
 	 */
-	private final Set<String> injectedTransformers = new HashSet<String>();
+	private final Set<String> injectedTransformers = new LinkedHashSet<String>();
 	
 	/**
 	 * Catalogue of transformer startup failures
@@ -112,7 +100,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.pendingTransformers.add(transformerClass);
+			this.downstreamTransformers.add(transformerClass);
 			return true;
 		}
 		
@@ -127,7 +115,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.pendingTransformers.addAll(transformerClasses);
+			this.downstreamTransformers.addAll(transformerClasses);
 			return true;
 		}
 		
@@ -142,7 +130,7 @@ public class ClassTransformerManager
 	{
 		if (!this.gameStarted)
 		{
-			this.pendingTransformers.addAll(Arrays.asList(transformerClasses));
+			this.downstreamTransformers.addAll(Arrays.asList(transformerClasses));
 			return true;
 		}
 		
@@ -159,21 +147,6 @@ public class ClassTransformerManager
 			LiteLoaderLogger.info("Injecting required class transformer '%s'", requiredTransformerClassName);
 			this.injectTransformer(classLoader, requiredTransformerClassName);
 		}
-		
-		for (Entry<String, TreeSet<SortableValue<String>>> packetClassTransformers : this.packetTransformers.entrySet())
-		{
-			for (SortableValue<String> transformerInfo : packetClassTransformers.getValue())
-			{
-				String packetClass = packetClassTransformers.getKey();
-				String transformerClassName = transformerInfo.getValue();
-				if (packetClass.lastIndexOf('.') != -1) packetClass = packetClass.substring(packetClass.lastIndexOf('.') + 1);
-				LiteLoaderLogger.info("Injecting packet class transformer '%s' for packet class '%s' with priority %d", transformerClassName, packetClass, transformerInfo.getPriority());
-				this.injectTransformer(classLoader, transformerClassName);
-			}
-		}
-		
-		// inject any transformers received after this point directly into the downstreamTransformers set
-		this.pendingTransformers = this.downstreamTransformers;
 	}
 
 	/**
@@ -181,6 +154,8 @@ public class ClassTransformerManager
 	 */
 	void injectDownstreamTransformers(LaunchClassLoader classLoader)
 	{
+		this.gameStarted = true;
+
 		if (this.downstreamTransformers.size() > 0)
 			LiteLoaderLogger.info("Injecting downstream transformers");
 
@@ -191,7 +166,6 @@ public class ClassTransformerManager
 		}
 		
 		this.downstreamTransformers.clear();
-		this.gameStarted = true;
 	}
 
 	private synchronized void injectTransformer(LaunchClassLoader classLoader, String transformerClassName)
