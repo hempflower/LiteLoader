@@ -13,8 +13,10 @@ import java.util.Set;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
 
+import com.google.common.base.Charsets;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Manages plugin channel connections and subscriptions for LiteLoader
@@ -117,10 +119,19 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	 */
 	protected void onRegisterPacketReceived(PacketBuffer data)
 	{
-		String channels = data.readStringFromBuffer(65535);
-		for (String channel : channels.split("\u0000"))
+		try
 		{
-			this.remotePluginChannels.add(channel);
+			byte[] bytes = new byte[data.readableBytes()];
+			data.readBytes(bytes);
+			String channels = new String(bytes, Charsets.UTF_8);
+			for (String channel : channels.split("\u0000"))
+			{
+				this.remotePluginChannels.add(channel);
+			}
+		}
+		catch (Exception ex)
+		{
+			LiteLoaderLogger.warning(ex, "Error decoding REGISTER packet from remote host %s", ex.getClass().getSimpleName());
 		}
 	}
 
@@ -143,7 +154,9 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 				separator = true;
 			}
 			
-			return new PacketBuffer(Unpooled.buffer()).writeString(channelList.toString());
+			PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
+			buffer.writeBytes(channelList.toString().getBytes(Charsets.UTF_8));
+			return buffer;
 		}
 		
 		return null;
