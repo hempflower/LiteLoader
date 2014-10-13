@@ -8,8 +8,10 @@ import net.minecraft.network.login.server.S02PacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
+import net.minecraft.util.IThreadListener;
 
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
@@ -20,13 +22,14 @@ import com.mumfrey.liteloader.PostLoginListener;
 import com.mumfrey.liteloader.PreJoinGameListener;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.event.EventCancellationException;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
+import com.mumfrey.liteloader.core.runtime.Packets;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -108,6 +111,17 @@ public class PacketEventsClient extends PacketEvents
 	public static void onJoinRealm(EventInfo<RealmsMainScreen> e, long arg1, RealmsServer server)
 	{
 		PacketEventsClient.joiningRealm = server;
+	}
+	
+	@Override
+	protected IThreadListener getPacketContextListener(Packets.Context context)
+	{
+		if (context == Packets.Context.SERVER)
+		{
+			return MinecraftServer.getServer();
+		}
+		
+		return Minecraft.getMinecraft();
 	}
 
 	/* (non-Javadoc)

@@ -12,6 +12,7 @@ import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
+import net.minecraft.util.IThreadListener;
 
 import com.mumfrey.liteloader.PacketHandler;
 import com.mumfrey.liteloader.ServerChatFilter;
@@ -119,6 +120,13 @@ public abstract class PacketEvents implements InterfaceProvider
 		
 	private void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
 	{
+		Packets packetInfo = Packets.packets[e.getPacketId()];
+		IThreadListener threadListener = this.getPacketContextListener(packetInfo.getContext());
+		if (threadListener != null && !threadListener.isCallingFromMinecraftThread())
+		{
+			return;
+		}
+		
 		if (this.handlePacketEvent(e, netHandler, packetId) || this.packetHandlers[packetId] == null || e.isCancelled())
 		{
 			return;
@@ -131,6 +139,13 @@ public abstract class PacketEvents implements InterfaceProvider
 		
 		e.cancel();
 	}
+
+	/**
+	 * 
+	 * @param context
+	 * @return
+	 */
+	protected abstract IThreadListener getPacketContextListener(Packets.Context context);
 
 	/**
 	 * @param e
