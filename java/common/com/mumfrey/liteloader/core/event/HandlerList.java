@@ -8,9 +8,11 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
@@ -710,7 +712,9 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			
 			this.populateClass(name, classNode);
 			this.transformMethods(name, classNode);
-			this.injectInterfaceMethods(classNode, this.type.getName());
+			
+			Set<String> generatedMethods = new HashSet<String>();
+			this.injectInterfaceMethods(classNode, this.type.getName(), generatedMethods);
 		}
 
 		/**
@@ -832,9 +836,10 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		 * 
 		 * @param classNode
 		 * @param interfaceName
+		 * @param generatedMethods 
 		 * @throws IOException
 		 */
-		private void injectInterfaceMethods(ClassNode classNode, String interfaceName) throws IOException
+		private void injectInterfaceMethods(ClassNode classNode, String interfaceName, Set<String> generatedMethods) throws IOException
 		{
 			ClassReader interfaceReader = new ClassReader(HandlerListClassLoader.getInterfaceBytes(interfaceName));
 			ClassNode interfaceNode = new ClassNode();
@@ -842,13 +847,16 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			
 			for (MethodNode interfaceMethod : interfaceNode.methods)
 			{
+				String signature = interfaceMethod.name + interfaceMethod.desc;
+				if (generatedMethods.contains(signature)) continue;
+				generatedMethods.add(signature);
 				classNode.methods.add(interfaceMethod);
 				this.populateInterfaceMethod(classNode, interfaceMethod);
 			}
 			
 			for (String parentInterface : interfaceNode.interfaces)
 			{
-				this.injectInterfaceMethods(classNode, parentInterface.replace('/', '.'));
+				this.injectInterfaceMethods(classNode, parentInterface.replace('/', '.'), generatedMethods);
 			}
 		}
 
