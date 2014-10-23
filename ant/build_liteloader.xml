@@ -39,17 +39,27 @@
 	<target name="setup_development">
 	    <property name="skipremoval" value="DEV" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}.md5" />
+		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
 	</target>
 	
 	<target name="setup_production">
 	    <property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
+        <property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+	</target>
+	
+	<target name="setup_jenkins">
+	    <property name="skipremoval" value="" />
+		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
+        <property name="artefact.name" value="${ant.project.name}-${mcversion}-SNAPSHOT" />
 	</target>
 	
 	<!-- Main target -->
 	<target name="development" depends="setup_development, findmcp, setdirsold, setdirsnew, build" description="Entry point for MCP and upstream builds" />
 	
-	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build" description="Entry point for production builds" />
+	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build, mcpjar" description="Entry point for production builds" />
+	
+	<target name="jenkins" depends="setup_jenkins, findmcp, setdirsold, setdirsnew, build, mcpjar" description="Entry point for CI builds" />
 
 	<target name="setdirsnew" description="Set the MCP source directories for the new layout" unless="mcpsrc.exists">
 		<echo level="info" message="Setting MCP source directories for NEW configuration" />
@@ -239,7 +249,7 @@
 
 		<mkdir dir="${dist.dir}" />
 		
-		<jar destfile="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+		<jar destfile="${dist.dir}/${artefact.name}.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
 			<manifest>
 				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
 				<attribute name="Implementation-Vendor" value="${author}" />
@@ -259,10 +269,10 @@
 
         <mkdir dir="${dist.dir}" />
         
-        <delete file="${dist.dir}/${ant.project.name}-${version}-mcpnames.${filetype}" />
-        <delete file="${dist.dir}/${ant.project.name}-${version}-mcpnames-sources.${filetype}" />
+        <delete file="${dist.dir}/${artefact.name}-mcpnames.${filetype}" />
+        <delete file="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" />
         
-        <jar destfile="${dist.dir}/${ant.project.name}-${version}-mcpnames.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+        <jar destfile="${dist.dir}/${artefact.name}-mcpnames.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
             <manifest>
                 <attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
                 <attribute name="Implementation-Vendor" value="${author}" />
@@ -275,7 +285,7 @@
             </manifest>
             <fileset dir="${eclipse}/LiteLoader/bin" />
         </jar>
-        <jar destfile="${dist.dir}/${ant.project.name}-${version}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
+        <jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
             <fileset dir="${eclipse}/LiteLoader/java/common" />
             <fileset dir="${eclipse}/LiteLoader/java/client" />
             <fileset dir="${eclipse}/LiteLoader/debug" />
@@ -287,7 +297,7 @@
 	
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
 		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}"/>
-		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
-		<copy todir="${eclipse}/LiteLoaderInstaller/src/main/resources" file="${dist.dir}/${ant.project.name}-${mcversion}.${filetype}" failonerror="false" overwrite="true" />
+		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}" file="${dist.dir}/${artefact.name}.${filetype}" failonerror="false" overwrite="true" />
+		<copy todir="${eclipse}/LiteLoaderInstaller/src/main/resources" file="${dist.dir}/${artefact.name}.${filetype}" failonerror="false" overwrite="true" />
 	</target>
 </project>

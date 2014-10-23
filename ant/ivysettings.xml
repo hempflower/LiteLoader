@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivysettings>
+    <settings defaultResolver="srg2source" />
+    <resolvers>
+        <chain name="srg2source">
+	        <ibiblio name="m2" m2compatible="true" />
+	        <ibiblio name="forge" m2compatible="true" root="http://files.minecraftforge.net/maven/"/>
+	        <ibiblio name="eclipse" m2compatible="true" root="https://repo.eclipse.org/content/groups/eclipse/"/>
+        </chain>
+    </resolvers>
+</ivysettings>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="liteloadertosrg" basedir="." default="build" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+    <property name="project.name" value="liteloader" />
+    <property name="version" value="1.8" />
+    <property name="author" value="Mumfrey" />
+    
+    <property name="mcp.dir" location="../../.." />
+    <property name="mcp.temp.dir" location="${mcp.dir}/temp" />
+    <property name="minecraft.src.dir" location="${mcp.dir}/src/minecraft" />
+    <property name="lib.dir" location="./lib" />
+    <property name="temp.dir" location="./temp" />
+    <property name="out.dir" location="${temp.dir}/out" />
+    <property name="dist.dir" location="${mcp.dir}/build/dist" />
+    <property name="src.dir" location="${temp.dir}/src" />
+    <property name="map.file" location="${temp.dir}/range.map" />
+    <property name="insrg.file" location="${mcp.temp.dir}/client_ro_srg.srg" />
+    <property name="outsrg.file" location="${temp.dir}/remap.srg" />
+    <property name="liteloader.src.base" location="../java" />
+    
+    <property name="python_windows" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
+    <property name="python_linux" location="/usr/bin/python" />
+
+    <path id="class.path">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar" />
+        </fileset>
+    </path>
+	
+    <target name="build">
+        <property name="artefact" location="${dist.dir}/${project.name}-${version}-srgnames-sources.jar" />
+        <ivy:configure file="ivysettings.xml" />
+        <antcall target="jar" />
+    </target>
+
+    <target name="jenkins">
+        <property name="artefact" location="${dist.dir}/${project.name}-${version}-SNAPSHOT-srgnames-sources.jar" />
+        <ivy:configure file="ivysettings.xml" />
+        <antcall target="jar" />
+    </target>
+
+    <path id="classpath">
+        <fileset dir="${ivy.lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    
+    <target name="clean">
+        <echo message="Cleaning working directories..." />
+        
+        <delete dir="${temp.dir}" failonerror="false" />
+        
+        <mkdir dir="${src.dir}"/>
+        <mkdir dir="${out.dir}"/>
+        <mkdir dir="${temp.dir}"/>
+    </target>
+    
+    <target name="init" depends="clean">
+        <echo message="Aggregating sources..." />
+    	
+        <copy todir="${src.dir}" overwrite="true">
+            <fileset dir="${minecraft.src.dir}">
+            	<exclude name="*.java" />
+            </fileset>
+            <fileset dir="${liteloader.src.base}/common">
+                <exclude name="**/Jump.java" />
+            </fileset>
+            <fileset dir="${liteloader.src.base}/client" />
+        </copy>
+        
+        <echo message="Fetching dependencies..." />
+    </target>
+    
+   <target name="reobfSrg" depends="init">
+        <echo message="Running reobf to generate srgs..." />
+        
+        <exec executable="${python_windows}" dir="${mcp.dir}" osfamily="windows">
+            <arg value="runtime/reobfuscate.py" />
+            <arg value="--srgnames" />
+            <arg value="--client" />
+        </exec>
+        
+        <exec executable="${python_linux}" dir="${mcp.dir}" osfamily="unix">
+            <arg value="runtime/reobfuscate.py" />
+            <arg value="--srgnames" />
+            <arg value="--client" />
+        </exec>
+    </target>
+
+    <target name="extractRanges" depends="reobfSrg">
+    	<echo message="Extracting ranges from source..." />
+    	
+        <java classname="net.minecraftforge.srg2source.ast.RangeExtractor" output="${temp.dir}/extractRanges.log">
+            <classpath refid="class.path" />
+            <arg value="${src.dir}" />
+            <arg value="${lib.dir}" />
+            <arg value="${map.file}" />
+        </java>
+    </target>
+    
+    <target name="flipsrg" depends="extractRanges">
+        <echo message="Remapping SRG file..." />
+    	
+        <copy file="${insrg.file}" tofile="${outsrg.file}" overwrite="true" />
+        <replaceregexp file="${outsrg.file}" byline="true" match="(FD|CL): ([^\s]+) ([^\s]+)" replace="\1: \3 \2" />
+        <replaceregexp file="${outsrg.file}" byline="true" match="MD: ([^\s]+) ([^\s]+) ([^\s]+) ([^\s]+)" replace="MD: \3 \4 \1 \2" />
+    </target>
+    
+    <target name="applyRanges" depends="flipsrg">
+        <echo message="Remapping ranges in source..." />
+    	
+        <java classname="net.minecraftforge.srg2source.rangeapplier.RangeApplier" output="${temp.dir}/applyRanges.log">
+            <classpath refid="class.path" />
+            <arg value="--srcRoot=${src.dir}" />
+            <arg value="--srcRangeMap=${map.file}" />
+            <arg value="--srgFiles=${outsrg.file}" />
+            <arg value="--outDir=${out.dir}" />
+        </java>
+    </target>
+    
+    <target name="jar" depends="applyRanges">
+        <echo message="Building src jar..." />
+        
+        <jar destfile="${artefact}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+            <manifest>
+                <attribute name="Implementation-Vendor" value="${author}" />
+                <attribute name="Implementation-Title" value="${ant.project.name}" />
+                <attribute name="Implementation-Version" value="${version}" />
+            </manifest>
+            <fileset dir="${out.dir}">
+            	<exclude name="net/minecraft/**" />
+            </fileset>
+        </jar>
+    </target>
+</project>

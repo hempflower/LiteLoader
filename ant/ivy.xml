@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<ivy-module version="2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd">
+    <info organisation="com.mumfrey" module="liteloader" status="integration">
+        <ivyauthor name="Adam Mummery-Smith" />
+    </info>
+    <dependencies>
+        <dependency org="org.ow2.asm" name="asm-debug-all" rev="4.1" />
+        <dependency org="com.google.guava" name="guava" rev="15.0" />
+        <dependency org="net.sf.opencsv" name="opencsv" rev="2.3" />
+        <dependency org="net.sf.jopt-simple" name="jopt-simple" rev="4.6" />
+        <dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="3.2.0.201312181205-r" />
+        <dependency org="org.eclipse.core" name="contenttype" rev="3.4.200-v20130326-1255" />
+        <dependency org="org.eclipse.core" name="jobs" rev="3.5.300-v20130429-1813" />
+        <dependency org="org.eclipse.core" name="runtime" rev="3.9.0-v20130326-1255" />
+        <dependency org="org.eclipse" name="osgi" rev="3.9.1-v20130814-1242" />
+        <dependency org="org.eclipse.text" name="org.eclipse.text" rev="3.5.101" />
+        <dependency org="org.eclipse.equinox" name="common" rev="3.6.200-v20130402-1505" />
+        <dependency org="org.eclipse.equinox" name="preferences" rev="3.5.100-v20130422-1538" />
+        <dependency org="org.eclipse.jdt" name="org.eclipse.jdt.core" rev="3.10.0.v20131029-1755" />
+        <dependency org="net.minecraftforge.srg2source" name="Srg2Source" rev="3.2-SNAPSHOT" />
+    </dependencies>
+</ivy-module>
