@@ -1156,7 +1156,7 @@ public class GL
 	
 	public static void glResetColor()
 	{
-		GlStateManager.func_179117_G();
+		GlStateManager.resetColor();
 	}
 	
 	public static void glCallList(int list)

@@ -7,25 +7,48 @@ import com.google.gson.annotations.SerializedName;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
+/**
+ * A JSON method descriptor, 
+ *
+ * @author Adam Mummery-Smith
+ */
 public class JsonDescriptor implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Key used to refer to this method descriptor elsewhere
+	 */
 	@SerializedName("key")
 	private String key;
 	
+	/**
+	 * Name of the class which owns this method
+	 */
 	@SerializedName("owner")
 	private String owner;
 	
+	/**
+	 * Method name
+	 */
 	@SerializedName("name")
 	private String name;
 	
+	/**
+	 * Method return type, assumes VOID if none specified
+	 */
 	@SerializedName("return")
 	private String returnType;
 	
+	/**
+	 * Argument types for the method
+	 */
 	@SerializedName("args")
 	private String[] argumentTypes;
 	
+	/**
+	 * Get the key used to refer to this method descriptor
+	 */
 	public String getKey()
 	{
 		if (this.key == null)
@@ -36,6 +59,10 @@ public class JsonDescriptor implements Serializable
 		return this.key;
 	}
 	
+	/**
+	 * @param obfTable
+	 * @return
+	 */
 	public MethodInfo parse(JsonObfuscationTable obfTable)
 	{
 		if (this.owner == null || this.name == null)
@@ -46,21 +73,19 @@ public class JsonDescriptor implements Serializable
 		Obf owner = obfTable.parseClass(this.owner);
 		Obf name = obfTable.parseMethod(this.name);
 		
-		if (this.returnType == null)
+		if (this.argumentTypes == null && this.returnType == null)
 		{
-			if (this.argumentTypes != null)
-			{
-				throw new InvalidEventJsonException("Method descriptor was invalid, args specified with no return type!");
-			}
-			
 			return new MethodInfo(owner, name);
 		}
 		
-		Object returnType = obfTable.parseType(this.returnType);
+		Object returnType = obfTable.parseType(this.returnType == null ? "VOID" : this.returnType);
 		Object[] args = (this.argumentTypes != null ? new Object[this.argumentTypes.length] : new Object[0]);
-		for (int arg = 0; arg < this.argumentTypes.length; arg++)
+		if (this.argumentTypes != null)
 		{
-			args[arg] = obfTable.parseType(this.argumentTypes[arg]);
+			for (int arg = 0; arg < this.argumentTypes.length; arg++)
+			{
+				args[arg] = obfTable.parseType(this.argumentTypes[arg]);
+			}
 		}
 		
 		return new MethodInfo(owner, name, returnType, args);

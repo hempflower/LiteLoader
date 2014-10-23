@@ -8,30 +8,57 @@ import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;
+import com.mumfrey.liteloader.transformers.event.inject.BeforeStringInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.MethodHead;
 
+/**
+ * A JSON injection point definition
+ * 
+ * @author Adam Mummery-Smith
+ */
 public class JsonInjection implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Method to inject into
+	 */
 	@SerializedName("method")
 	private String methodName;
 	
+	/**
+	 * Type of injection point
+	 */
 	@SerializedName("type")
 	private JsonInjectionType type;
 	
+	/**
+	 * Shift type (optional)
+	 */
 	@SerializedName("shift")
 	private JsonInjectionShiftType shift;
 	
+	/**
+	 * Target method to search for when using INVOKE and INVOKESTRING
+	 */
 	@SerializedName("target")
 	private String target;
 	
+	/**
+	 * Ordinal to use when using INVOKE and INVOKESTRING
+	 */
 	@SerializedName("ordinal")
 	private int ordinal = -1;
 	
+	/**
+	 * InjectionPoint class to use for CUSTOM
+	 */
 	@SerializedName("class")
 	private String className;
 	
+	/**
+	 * Constructor arguments to pass wehn using CUSTOM
+	 */
 	@SerializedName("args")
 	private Object[] args;
 	
@@ -49,24 +76,26 @@ public class JsonInjection implements Serializable
 		return this.injectionPoint;
 	}
 	
-	public void parse(JsonEvents json)
+	public void parse(JsonMethods methods)
 	{
-		this.method = this.parseMethod(json);
-		this.injectionPoint = this.parseInjectionPoint(json);
+		this.method = this.parseMethod(methods);
+		this.injectionPoint = this.parseInjectionPoint(methods);
 	}
 	
-	private MethodInfo parseMethod(JsonEvents json)
+	private MethodInfo parseMethod(JsonMethods methods)
 	{
-		return json.getMethod(this.methodName);
+		return methods.get(this.methodName);
 	}
 
-	public InjectionPoint parseInjectionPoint(JsonEvents json)
+	public InjectionPoint parseInjectionPoint(JsonMethods methods)
 	{
 		switch (this.type)
 		{
 			case INVOKE:
-				MethodInfo method = json.getMethod(this.getTarget());
-				return this.applyShift(new BeforeInvoke(method, this.ordinal));
+				return this.applyShift(new BeforeInvoke(methods.get(this.getTarget()), this.ordinal));
+				
+			case INVOKESTRING:
+				return this.applyShift(new BeforeStringInvoke(this.getArg(0).toString(), methods.get(this.getTarget()), this.ordinal));
 				
 			case RETURN:
 				return this.applyShift(new BeforeReturn(this.ordinal));
@@ -93,6 +122,14 @@ public class JsonInjection implements Serializable
 		}
 		
 		throw new InvalidEventJsonException("Could not parse injection type");
+	}
+
+	private Object getArg(int arg)
+	{
+		if (this.args == null || this.args.length >= this.args.length || arg < 0)
+			return "";
+		
+		return this.args[arg];
 	}
 
 	private String getTarget()

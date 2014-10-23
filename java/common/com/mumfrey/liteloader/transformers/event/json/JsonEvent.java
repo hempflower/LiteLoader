@@ -9,29 +9,55 @@ import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
+/**
+ * An event definition in JSON, serialisable class read by Gson
+ * 
+ * @author Adam Mummery-Smith
+ */
 public class JsonEvent implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
 	private static int nextEventID = 0;
 	
+	/**
+	 * Event name
+	 */
 	@SerializedName("name")
 	private String name;
 	
+	/**
+	 * Whether the event is cancellable
+	 */
 	@SerializedName("cancellable")
 	private boolean cancellable;
 	
+	/**
+	 * Event priority (relative to other events at the same injection point)
+	 */
 	@SerializedName("priority")
 	private int priority = 1000;
 	
+	/**
+	 * Injection points specified in the JSON file
+	 */
 	@SerializedName("injections")
 	private List<JsonInjection> jsonInjections;
 	
+	/**
+	 * Listeners defined in the JSON file
+	 */
 	@SerializedName("listeners")
 	private List<String> jsonListeners;
 	
+	/**
+	 * Listener methods parsed from the JSON
+	 */
 	private transient List<MethodInfo> listeners = new ArrayList<MethodInfo>();
 	
+	/**
+	 * Get the name of this event
+	 */
 	public String getName()
 	{
 		if (this.name == null)
@@ -42,52 +68,75 @@ public class JsonEvent implements Serializable
 		return this.name;
 	}
 	
+	/**
+	 * Get whether this event is cancellable or not
+	 */
 	public boolean isCancellable()
 	{
 		return this.cancellable;
 	}
 	
+	/**
+	 * Get the event priority
+	 */
 	public int getPriority()
 	{
 		return this.priority;
 	}
 	
+	/**
+	 * Get the list of listeners parsed from the JSON
+	 */
 	public List<MethodInfo> getListeners()
 	{
 		return this.listeners;
 	}
 	
-	public void parse(JsonEvents json)
+	/**
+	 * Parse the JSON to initialise this object
+	 */
+	public void parse(JsonMethods methods)
 	{
-		this.parseInjectionPoints(json);
-		this.parseListeners(json);
+		this.parseInjectionPoints(methods);
+		this.parseListeners(methods);
 	}
 
-	private void parseInjectionPoints(JsonEvents json)
+	/**
+	 * @param methods
+	 */
+	private void parseInjectionPoints(JsonMethods methods)
 	{
-		if (this.jsonInjections == null || this.jsonInjections.size() == 0)
+		if (this.jsonInjections == null || this.jsonInjections.isEmpty())
 		{
 			throw new InvalidEventJsonException("Event " + this.getName() + " does not have any defined injections");
 		}
 
 		for (JsonInjection injection : this.jsonInjections)
 		{
-			injection.parse(json);
+			injection.parse(methods);
 		}
 	}
 
-	private void parseListeners(JsonEvents json)
+	/**
+	 * @param methods
+	 */
+	private void parseListeners(JsonMethods methods)
 	{
-		if (this.jsonListeners == null || this.jsonListeners.size() == 0)
+		if (this.jsonListeners == null || this.jsonListeners.isEmpty())
 		{
 			throw new InvalidEventJsonException("Event " + this.getName() + " does not have any defined listeners");
 		}
 
 		for (String listener : this.jsonListeners)
 		{
-			this.listeners.add(json.getMethod(listener));
+			this.listeners.add(methods.get(listener));
 		}
 	}
+	
+	/**
+	 * @param transformer
+	 * @return
+	 */
 	public Event register(ModEventInjectionTransformer transformer)
 	{
 		Event event = Event.getOrCreate(this.getName(), this.isCancellable(), this.getPriority());

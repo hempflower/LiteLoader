@@ -9,6 +9,12 @@ import com.google.gson.annotations.SerializedName;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.core.runtime.Packets;
 
+/**
+ * JSON-defined obfuscation table entries used like a registry by the other JSON components to look up obfuscation mappings
+ * for methods and fields.
+ *
+ * @author Adam Mummery-Smith
+ */
 public class JsonObfuscationTable implements Serializable
 {
 	private static final long serialVersionUID = 1L;
@@ -22,10 +28,14 @@ public class JsonObfuscationTable implements Serializable
 	@SerializedName("fields")
 	private List<JsonObf> jsonFields;
 	
+	// Parsed values
 	private transient Map<String, Obf> classObfs = new HashMap<String, Obf>();
 	private transient Map<String, Obf> methodObfs = new HashMap<String, Obf>();
 	private transient Map<String, Obf> fieldObfs = new HashMap<String, Obf>();
 
+	/**
+	 * Parse the entries in each collection to actual Obf objects
+	 */
 	public void parse()
 	{
 		if (this.jsonClasses != null)
@@ -53,6 +63,9 @@ public class JsonObfuscationTable implements Serializable
 		}
 	}
 	
+	/**
+	 * Look up a type (a class or primitive type) by token
+	 */
 	public Object parseType(String token)
 	{
 		token = token.replace(" ", "").trim();
@@ -76,16 +89,28 @@ public class JsonObfuscationTable implements Serializable
 		return this.parseClass(token);
 	}
 
+	/**
+	 * @param token
+	 * @return
+	 */
 	public Obf parseClass(String token)
 	{
 		return this.parseObf(token, this.classObfs);
 	}
 
+	/**
+	 * @param token
+	 * @return
+	 */
 	public Obf parseMethod(String token)
 	{
 		return this.parseObf(token, this.methodObfs);
 	}
 	
+	/**
+	 * @param token
+	 * @return
+	 */
 	public Obf parseField(String token)
 	{
 		return this.parseObf(token, this.fieldObfs);
@@ -119,7 +144,7 @@ public class JsonObfuscationTable implements Serializable
 				return packet;
 			}
 			
-			throw new InvalidEventJsonException("The token " + token + " could not be resolved");
+			throw new InvalidEventJsonException("The token " + token + " could not be resolved to a type");
 		}
 		
 		return new JsonObf.Mapping(token, token, token);
