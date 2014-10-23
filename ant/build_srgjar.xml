@@ -57,7 +57,7 @@
     
     <target name="init" depends="clean">
         <echo message="Aggregating sources..." />
-    	
+        
         <copy todir="${src.dir}" overwrite="true">
             <fileset dir="${minecraft.src.dir}">
             	<exclude name="*.java" />
@@ -69,6 +69,7 @@
         </copy>
         
         <echo message="Fetching dependencies..." />
+        <ivy:retrieve sync="true" />
     </target>
     
    <target name="reobfSrg" depends="init">
@@ -88,8 +89,8 @@
     </target>
 
     <target name="extractRanges" depends="reobfSrg">
-    	<echo message="Extracting ranges from source..." />
-    	
+        <echo message="Extracting ranges from source..." />
+        
         <java classname="net.minecraftforge.srg2source.ast.RangeExtractor" output="${temp.dir}/extractRanges.log">
             <classpath refid="class.path" />
             <arg value="${src.dir}" />
@@ -100,7 +101,7 @@
     
     <target name="flipsrg" depends="extractRanges">
         <echo message="Remapping SRG file..." />
-    	
+        
         <copy file="${insrg.file}" tofile="${outsrg.file}" overwrite="true" />
         <replaceregexp file="${outsrg.file}" byline="true" match="(FD|CL): ([^\s]+) ([^\s]+)" replace="\1: \3 \2" />
         <replaceregexp file="${outsrg.file}" byline="true" match="MD: ([^\s]+) ([^\s]+) ([^\s]+) ([^\s]+)" replace="MD: \3 \4 \1 \2" />
@@ -108,7 +109,7 @@
     
     <target name="applyRanges" depends="flipsrg">
         <echo message="Remapping ranges in source..." />
-    	
+        
         <java classname="net.minecraftforge.srg2source.rangeapplier.RangeApplier" output="${temp.dir}/applyRanges.log">
             <classpath refid="class.path" />
             <arg value="--srcRoot=${src.dir}" />
