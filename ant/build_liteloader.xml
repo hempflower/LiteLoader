@@ -283,7 +283,10 @@
                 <attribute name="TweakVersion" value="${version}" />
                 <attribute name="TweakAuthor" value="${author}" />
             </manifest>
-            <fileset dir="${eclipse}/LiteLoader/bin" />
+            <fileset dir="${mcp.dir}/bin/minecraft">
+                <include name="com/mumfrey/**" />
+                <include name="net/eq2online/**" />
+            </fileset>
         </jar>
         <jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
             <fileset dir="${eclipse}/LiteLoader/java/common" />
