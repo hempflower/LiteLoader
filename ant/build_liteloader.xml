@@ -297,7 +297,7 @@
 	</target>
 	
 	<target name="javadoc" description="Create the javadoc jar">
-		<javadoc destdir="${stage.dir}/docs">
+		<javadoc destdir="${stage.dir}/docs" useexternalfile="true">
 			<fileset dir="${eclipse}/${project}/java">
 				<exclude name="**/debug" />
 				<exclude name="**/debug/*.java" />
