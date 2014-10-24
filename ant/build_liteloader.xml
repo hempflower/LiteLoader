@@ -37,29 +37,29 @@
 	</target>
 	
 	<target name="setup_development">
-	    <property name="skipremoval" value="DEV" />
+		<property name="skipremoval" value="DEV" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}.md5" />
-		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="artefact.name" value="${ant.project.name}-${mcversion}-DEV" />
 	</target>
 	
 	<target name="setup_production">
-	    <property name="skipremoval" value="" />
+		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
-        <property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
 	</target>
 	
 	<target name="setup_jenkins">
-	    <property name="skipremoval" value="" />
+		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
-        <property name="artefact.name" value="${ant.project.name}-${mcversion}-SNAPSHOT" />
+		<property name="artefact.name" value="${ant.project.name}-${mcversion}-SNAPSHOT" />
 	</target>
 	
 	<!-- Main target -->
 	<target name="development" depends="setup_development, findmcp, setdirsold, setdirsnew, build" description="Entry point for MCP and upstream builds" />
 	
-	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build, mcpjar" description="Entry point for production builds" />
+	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build, javadoc, mcpjar" description="Entry point for production builds" />
 	
-	<target name="jenkins" depends="setup_jenkins, findmcp, setdirsold, setdirsnew, build, mcpjar" description="Entry point for CI builds" />
+	<target name="jenkins" depends="setup_jenkins, findmcp, setdirsold, setdirsnew, build, javadoc, mcpjar" description="Entry point for CI builds" />
 
 	<target name="setdirsnew" description="Set the MCP source directories for the new layout" unless="mcpsrc.exists">
 		<echo level="info" message="Setting MCP source directories for NEW configuration" />
@@ -264,37 +264,55 @@
 		</jar>
 	</target>
 	
-    <target name="mcpjar" description="Build the MCP-names">
-        <echo level="info" message="Building mcpnamesjars" />
+	<target name="mcpjar" description="Build the MCP-names">
+		<echo level="info" message="Building mcpnamesjars" />
 
-        <mkdir dir="${dist.dir}" />
-        
-        <delete file="${dist.dir}/${artefact.name}-mcpnames.${filetype}" />
-        <delete file="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" />
-        
-        <jar destfile="${dist.dir}/${artefact.name}-mcpnames.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
-            <manifest>
-                <attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
-                <attribute name="Implementation-Vendor" value="${author}" />
-                <attribute name="Implementation-Title" value="${ant.project.name}" />
-                <attribute name="Implementation-Version" value="${version}" />
-                <attribute name="TweakClass" value="${tweakclass}" />
-                <attribute name="TweakName" value="LiteLoader" />
-                <attribute name="TweakVersion" value="${version}" />
-                <attribute name="TweakAuthor" value="${author}" />
-            </manifest>
-            <fileset dir="${mcp.dir}/bin/minecraft">
-                <include name="com/mumfrey/**" />
-                <include name="net/eq2online/**" />
-            </fileset>
-        </jar>
-        <jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
-            <fileset dir="${eclipse}/LiteLoader/java/common" />
-            <fileset dir="${eclipse}/LiteLoader/java/client" />
-            <fileset dir="${eclipse}/LiteLoader/debug" />
-            <fileset dir="${eclipse}/LiteLoader/resources" />
-        </jar>
-    </target>
+		<mkdir dir="${dist.dir}" />
+		
+		<delete file="${dist.dir}/${artefact.name}-mcpnames.${filetype}" />
+		<delete file="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" />
+		
+		<jar destfile="${dist.dir}/${artefact.name}-mcpnames.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+			<manifest>
+				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
+				<attribute name="Implementation-Vendor" value="${author}" />
+				<attribute name="Implementation-Title" value="${ant.project.name}" />
+				<attribute name="Implementation-Version" value="${version}" />
+				<attribute name="TweakClass" value="${tweakclass}" />
+				<attribute name="TweakName" value="LiteLoader" />
+				<attribute name="TweakVersion" value="${version}" />
+				<attribute name="TweakAuthor" value="${author}" />
+			</manifest>
+			<fileset dir="${mcp.dir}/bin/minecraft">
+				<include name="com/mumfrey/**" />
+				<include name="net/eq2online/**" />
+			</fileset>
+		</jar>
+		<jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
+			<fileset dir="${eclipse}/LiteLoader/java/common" />
+			<fileset dir="${eclipse}/LiteLoader/java/client" />
+			<fileset dir="${eclipse}/LiteLoader/debug" />
+			<fileset dir="${eclipse}/LiteLoader/resources" />
+		</jar>
+	</target>
+	
+	<target name="javadoc" description="Create the javadoc jar">
+		<javadoc destdir="${stage.dir}/docs">
+			<fileset dir="${eclipse}/${project}/java">
+				<exclude name="**/debug" />
+				<exclude name="**/debug/*.java" />
+			</fileset>
+		</javadoc>
+		  <jar destfile="${dist.dir}/${artefact.name}-javadoc.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+				<manifest>
+					<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
+					<attribute name="Implementation-Vendor" value="${author}" />
+					<attribute name="Implementation-Title" value="${ant.project.name}" />
+					<attribute name="Implementation-Version" value="${version}" />
+				</manifest>
+				<fileset dir="${stage.dir}/docs" />
+			</jar>
+	</target>
 	
 	<property environment="env" />
 	
