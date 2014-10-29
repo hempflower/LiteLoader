@@ -22,12 +22,6 @@ public class EnumeratorModuleProtectionDomain implements EnumeratorModule
 {
 	private LoadableMod<File> codeSource;
 
-	/**
-	 * @param parent
-	 * @param searchProtectionDomain
-	 * @param searchClassPath
-	 * @param loadTweaks
-	 */
 	public EnumeratorModuleProtectionDomain(boolean loadTweaks)
 	{
 		this.initPackagePath();

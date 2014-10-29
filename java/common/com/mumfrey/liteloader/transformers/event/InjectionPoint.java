@@ -43,7 +43,7 @@ public abstract class InjectionPoint
 	 * @param insns Insn list to search in, the strategy MUST ONLY add nodes from this list to the {@code nodes} collection
 	 * @param nodes Collection of nodes to populate. Injectors should NOT make any assumptions about the state of this collection and should only call add()
 	 * @param event Event being injected here, supplied to allow alteration of behaviour for specific event configurations (eg. cancellable)
-	 * @return
+	 * @return true if one or more injection points were found
 	 */
 	public abstract boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event);
 	
@@ -51,7 +51,7 @@ public abstract class InjectionPoint
 	 * Set whether this injection point should capture local variables as well as method arguments
 	 * 
 	 * @param captureLocals
-	 * @return
+	 * @return this, for fluent interface
 	 */
 	public InjectionPoint setCaptureLocals(boolean captureLocals)
 	{
@@ -72,7 +72,7 @@ public abstract class InjectionPoint
 	 * injection point to dump the locals to the debug log at injection time.
 	 * 
 	 * @param logLocals
-	 * @return
+	 * @return this, for fluent interface
 	 */
 	public InjectionPoint setLogLocals(boolean logLocals)
 	{
@@ -81,7 +81,7 @@ public abstract class InjectionPoint
 	}
 	
 	/**
-	 * @return
+	 * Get whether log locals is enabled 
 	 */
 	public boolean logLocals()
 	{
@@ -263,7 +263,6 @@ public abstract class InjectionPoint
 	 * injection points 
 	 * 
 	 * @param operands
-	 * @return
 	 */
 	public static InjectionPoint and(InjectionPoint... operands)
 	{
@@ -275,7 +274,6 @@ public abstract class InjectionPoint
 	 * injection points 
 	 * 
 	 * @param operands
-	 * @return
 	 */
 	public static InjectionPoint or(InjectionPoint... operands)
 	{
@@ -286,7 +284,6 @@ public abstract class InjectionPoint
 	 * Returns an injection point which returns all insns immediately following insns from the supplied injection point
 	 * 
 	 * @param point
-	 * @return
 	 */
 	public static InjectionPoint after(InjectionPoint point)
 	{
@@ -297,7 +294,6 @@ public abstract class InjectionPoint
 	 * Returns an injection point which returns all insns immediately prior to insns from the supplied injection point
 	 * 
 	 * @param point
-	 * @return
 	 */
 	public static InjectionPoint before(InjectionPoint point)
 	{
@@ -308,7 +304,6 @@ public abstract class InjectionPoint
 	 * Returns an injection point which returns all insns offset by the specified "count" from insns from the supplied injection point
 	 * 
 	 * @param point
-	 * @return
 	 */
 	public static InjectionPoint shift(InjectionPoint point, int count)
 	{

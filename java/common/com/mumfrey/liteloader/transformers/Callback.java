@@ -277,7 +277,6 @@ public class Callback
 	/**
 	 * @param returnType
 	 * @param args
-	 * @return
 	 */
 	public static String generateDescriptor(Type returnType, Object... args)
 	{
@@ -287,7 +286,6 @@ public class Callback
 	/**
 	 * @param returnType
 	 * @param args
-	 * @return
 	 */
 	public static String generateDescriptor(Obf returnType, Object... args)
 	{
@@ -297,7 +295,6 @@ public class Callback
 	/**
 	 * @param returnType
 	 * @param args
-	 * @return
 	 */
 	public static String generateDescriptor(String returnType, Object... args)
 	{
@@ -308,7 +305,6 @@ public class Callback
 	 * @param obfType
 	 * @param returnType
 	 * @param args
-	 * @return
 	 */
 	public static String generateDescriptor(int obfType, Object returnType, Object... args)
 	{

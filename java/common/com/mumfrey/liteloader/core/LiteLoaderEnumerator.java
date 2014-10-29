@@ -122,10 +122,9 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	protected EnumeratorState state = EnumeratorState.INIT;
 	
 	/**
+	 * @param environment
 	 * @param properties
 	 * @param classLoader
-	 * @param loadTweaks
-	 * @param gameFolder
 	 */
 	public LiteLoaderEnumerator(LoaderEnvironment environment, LoaderProperties properties, LaunchClassLoader classLoader)
 	{
@@ -190,7 +189,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	}
 
 	/**
-	 * @return
+	 * Get the loader environment
 	 */
 	public LoaderEnvironment getEnvironment()
 	{
@@ -199,7 +198,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
 	/**
 	 * Initialise the "shared" mod list if it's not already been created
-	 * @return 
 	 */
 	@Override
 	public Map<String, Map<String, String>> getSharedModList()
@@ -252,7 +250,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	}
 	
 	/**
-	 * @return
+	 * Get the set of disabled containers
 	 */
 	@Override
 	public Collection<? extends ModInfo<Loadable<?>>> getDisabledContainers()
@@ -285,10 +283,9 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	/**
 	 * Get a metadata value for the specified mod
 	 * 
-	 * @param modClassName
+	 * @param modClass
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	@Override
 	public String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue)
@@ -299,8 +296,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	}
 	
 	/**
-	 * @param mod
-	 * @return
+	 * @param identifier
 	 */
 	@Override
 	public LoadableMod<?> getContainer(String identifier)
@@ -321,8 +317,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	}
 	
 	/**
-	 * @param mod
-	 * @return
+	 * @param modClass
 	 */
 	@Override
 	public LoadableMod<?> getContainer(Class<? extends LiteMod> modClass)
@@ -351,7 +346,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	 * Get the mod identifier (metadata key), this is used for versioning, exclusivity, and enablement checks
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	@Override
 	public String getIdentifier(Class<? extends LiteMod> modClass)

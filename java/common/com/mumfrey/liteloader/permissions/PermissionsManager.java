@@ -13,8 +13,7 @@ public interface PermissionsManager
 	/**
 	 * Get the underlying permissions node for this manager for the specified mod
 	 * 
-	 * @param modName Mod to fetch permissions for
-	 * @return
+	 * @param mod Mod to fetch permissions for
 	 */
 	public abstract Permissions getPermissions(Permissible mod);
 	

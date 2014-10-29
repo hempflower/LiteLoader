@@ -250,7 +250,6 @@ public class LoginPanel extends JPanel
 	
 	/**
 	 * @param dialog
-	 * @param panel
 	 */
 	public void setDialog(JDialog dialog)
 	{

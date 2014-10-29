@@ -95,7 +95,7 @@ public class BeforeInvoke extends InjectionPoint
 	/**
 	 * Match the specified invokation of the specified method
 	 * 
-	 * @param methodNames Method names to search for
+	 * @param methodName Method name to search for
 	 * @param ordinal ID of the invokation to hook, or -1 to hook all invokations
 	 */
 	public BeforeInvoke(String methodName, int ordinal)

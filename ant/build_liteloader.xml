@@ -309,6 +309,7 @@
 				</fileset>
 				<pathelement location="${mc.bin.dir}"/>
 			</classpath>
+			<arg value="-XDignore.symbol.file" />
 		</javadoc>
 		<jar destfile="${dist.dir}/${artefact.name}-javadoc.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
 			<manifest>

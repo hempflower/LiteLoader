@@ -62,13 +62,11 @@ public interface APIAdapter
 	
 	/**
 	 * @param api
-	 * @return
 	 */
 	public abstract List<? extends Observer> getPreInitObservers(LiteAPI api);
 
 	/**
 	 * @param observerType
-	 * @return
 	 */
 	public abstract <T extends Observer> List<T> getPreInitObservers(Class<T> observerType);
 }

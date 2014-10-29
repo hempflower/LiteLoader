@@ -128,7 +128,7 @@ public class JsonEvents implements Serializable
 	 * Parse a new JsonEvents object from the supplied JSON string
 	 * 
 	 * @param json
-	 * @return
+	 * @return new JsonEvents instance
 	 * @throws InvalidEventJsonException if the JSON ins invalid
 	 */
 	public static JsonEvents parse(String json) throws InvalidEventJsonException

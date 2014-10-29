@@ -217,10 +217,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		return 1000;
 	}
 
-	/**
-	 * Returns the baked list of all listeners
-	 * 
-	 * @return
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.interfaces.FastIterable#all()
 	 */
 	@Override
 	public T all()

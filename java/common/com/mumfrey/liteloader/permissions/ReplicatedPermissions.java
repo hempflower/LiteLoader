@@ -9,15 +9,11 @@ public interface ReplicatedPermissions extends Permissions
 {
 	/**
 	 * Get the time that this object was received from the remote authority
-	 * 
-	 * @return
 	 */
 	public abstract long getReplicationTime();
 	
 	/**
-	 * True if this permissions object is valid (within cache period)
-	 * 
-	 * @return
+	 * Return true if this permissions object is valid (within cache period)
 	 */
 	public abstract boolean isValid();
 	

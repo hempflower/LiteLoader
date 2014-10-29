@@ -63,7 +63,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	}
 	
 	/**
-	 * @return
+	 * Spawn the handler list instance for this channel manager
 	 */
 	protected abstract FastIterableDeque<L> createHandlerList();
 
@@ -87,7 +87,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	 * Check whether a server plugin channel is registered
 	 * 
 	 * @param channel
-	 * @return
+	 * @return true if the channel is registered at the server side
 	 */
 	public boolean isRemoteChannelRegistered(String channel)
 	{
@@ -136,7 +136,6 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 	}
 
 	/**
-	 * @return 
 	 * 
 	 */
 	protected PacketBuffer getRegistrationData()
@@ -215,7 +214,6 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 		 * True if this policy allows outbound traffic on the specified channel
 		 * 
 		 * @param channel
-		 * @return
 		 */
 		public boolean allows(PluginChannels<?> channels, String channel)
 		{
@@ -225,8 +223,6 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 		
 		/**
 		 * True if this policy does not throw an exception for unregistered outbound channels
-		 * 
-		 * @return
 		 */
 		public boolean isSilent()
 		{

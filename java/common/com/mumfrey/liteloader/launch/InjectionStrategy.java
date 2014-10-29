@@ -38,7 +38,6 @@ public class InjectionStrategy
 		 * Parse an InjectionPosition from the specified "injectAt" string
 		 * 
 		 * @param injectAt
-		 * @return
 		 */
 		public static InjectionPosition parsePosition(String injectAt)
 		{
@@ -52,7 +51,6 @@ public class InjectionStrategy
 		 * Parse InjectionPosition params from the specified "injectAt" string
 		 * 
 		 * @param injectAt
-		 * @return
 		 */
 		public String[] parseParams(String injectAt)
 		{
@@ -124,7 +122,6 @@ public class InjectionStrategy
 	 * Parse an injection strategy from the specified injectAt string
 	 * 
 	 * @param injectAt
-	 * @return
 	 */
 	public static InjectionStrategy parseStrategy(String injectAt)
 	{
@@ -135,7 +132,6 @@ public class InjectionStrategy
 	 * Parse an injection strategy from the specified injectAt string
 	 * 
 	 * @param injectAt
-	 * @return
 	 */
 	public static InjectionStrategy parseStrategy(String injectAt, InjectionStrategy defaultStrategy)
 	{

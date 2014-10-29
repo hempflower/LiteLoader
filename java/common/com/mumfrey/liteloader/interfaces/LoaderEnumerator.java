@@ -36,7 +36,6 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * Check API requirements for the supplied container
 	 * 
 	 * @param container
-	 * @return
 	 */
 	public abstract boolean checkAPIRequirements(LoadableMod<?> container);
 
@@ -44,7 +43,6 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * Check intra-mod dependencies for the supplied container
 	 * 
 	 * @param base
-	 * @return
 	 */
 	public abstract boolean checkDependencies(LoadableMod<?> base);
 
@@ -52,7 +50,6 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * Inflect mod identifier from the supplied mod class
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public abstract String getIdentifier(Class<? extends LiteMod> modClass);
 
@@ -60,7 +57,6 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * Get the container which the specified mod is loaded from
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public abstract LoadableMod<?> getContainer(Class<? extends LiteMod> modClass);
 
@@ -68,14 +64,11 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * Get the container for the specified mod identifier
 	 * 
 	 * @param identifier
-	 * @return
 	 */
 	public abstract LoadableMod<?> getContainer(String identifier);
 
 	/**
 	 * Get all containers identified at discover-time as disabled
-	 * 
-	 * @return
 	 */
 	public abstract Collection<? extends ModInfo<Loadable<?>>> getDisabledContainers();
 	
@@ -83,27 +76,26 @@ public interface LoaderEnumerator extends ModularEnumerator
 	 * @param modClass
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	public abstract String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue);
 
 	/**
-	 * @return
+	 * Get the total number of mods to load
 	 */
 	public abstract int modsToLoadCount();
 
 	/**
-	 * @return
+	 * Get all mods to load
 	 */
 	public abstract Collection<? extends ModInfo<LoadableMod<?>>> getModsToLoad();
 	
 	/**
-	 * @return
+	 * Get all tweakers which were injected
 	 */
 	public abstract List<? extends ModInfo<Loadable<?>>> getInjectedTweaks();
 	
 	/**
-	 * @return
+	 * Get the shared modlist data
 	 */
 	public abstract Map<String, Map<String, String>> getSharedModList();
 }

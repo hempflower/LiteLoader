@@ -86,7 +86,7 @@ public class GuiModListPanel extends Gui
 	 * @param yPosition
 	 * @param width
 	 * @param selected
-	 * @return
+	 * @return calculated height of this panel, used by the list view to calculate spacing
 	 */
 	public int draw(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
 	{
@@ -163,9 +163,7 @@ public class GuiModListPanel extends Gui
 	}
 
 	/**
-	 * @param external
 	 * @param selected
-	 * @return
 	 */
 	protected int getGradientColour(boolean selected)
 	{
@@ -173,11 +171,7 @@ public class GuiModListPanel extends Gui
 	}
 
 	/**
-	 * @param missingDependencies
-	 * @param enabled
-	 * @param external
 	 * @param selected
-	 * @return
 	 */
 	protected int getTitleColour(boolean selected)
 	{
@@ -189,9 +183,7 @@ public class GuiModListPanel extends Gui
 	}
 
 	/**
-	 * @param external
 	 * @param selected
-	 * @return
 	 */
 	protected int getStatusColour(boolean selected)
 	{

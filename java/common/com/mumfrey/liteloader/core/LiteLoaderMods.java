@@ -192,7 +192,6 @@ public class LiteLoaderMods
 	 * Get whether the specified mod is installed
 	 *
 	 * @param modName
-	 * @return
 	 */
 	public boolean isModInstalled(String modName)
 	{
@@ -210,7 +209,6 @@ public class LiteLoaderMods
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
 	 * @param modName Mod's name, identifier or class name
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends LiteMod> T getMod(String modName)
@@ -232,8 +230,7 @@ public class LiteLoaderMods
 	/**
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
-	 * @param modName Mod's name or class name
-	 * @return
+	 * @param modClass Mod class
 	 */
 	@SuppressWarnings("unchecked")
 	public <T extends LiteMod> T getMod(Class<T> modClass)
@@ -251,7 +248,6 @@ public class LiteLoaderMods
 	 * Get the mod which matches the specified identifier
 	 * 
 	 * @param identifier
-	 * @return
 	 */
 	public Class<? extends LiteMod> getModFromIdentifier(String identifier)
 	{
@@ -272,7 +268,6 @@ public class LiteLoaderMods
 	 * @param modNameOrId
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 * @throws InvalidActivityException Thrown by getMod if init is not complete 
 	 * @throws IllegalArgumentException Thrown by getMod if argument is null
 	 */
@@ -287,7 +282,6 @@ public class LiteLoaderMods
 	 * @param mod
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	public String getModMetaData(LiteMod mod, String metaDataKey, String defaultValue)
 	{
@@ -301,7 +295,6 @@ public class LiteLoaderMods
 	 * @param modClass
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	public String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue)
 	{
@@ -313,7 +306,6 @@ public class LiteLoaderMods
 	 * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public String getModIdentifier(Class<? extends LiteMod> modClass)
 	{
@@ -323,8 +315,7 @@ public class LiteLoaderMods
 	/**
 	 * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
 	 * 
-	 * @param modClass
-	 * @return
+	 * @param mod
 	 */
 	public String getModIdentifier(LiteMod mod)
 	{
@@ -335,7 +326,6 @@ public class LiteLoaderMods
 	 * Get the container (mod file, classpath jar or folder) for the specified mod
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public LoadableMod<?> getModContainer(Class<? extends LiteMod> modClass)
 	{
@@ -345,8 +335,7 @@ public class LiteLoaderMods
 	/**
 	 * Get the container (mod file, classpath jar or folder) for the specified mod
 	 * 
-	 * @param modClass
-	 * @return
+	 * @param mod
 	 */
 	public LoadableMod<?> getModContainer(LiteMod mod)
 	{
@@ -381,7 +370,6 @@ public class LiteLoaderMods
 
 	/**
 	 * @param identifier
-	 * @return
 	 */
 	public boolean isModEnabled(String identifier)
 	{
@@ -394,8 +382,7 @@ public class LiteLoaderMods
 	}
 
 	/**
-	 * @param modName
-	 * @return
+	 * @param identifier
 	 */
 	public boolean isModActive(String identifier)
 	{

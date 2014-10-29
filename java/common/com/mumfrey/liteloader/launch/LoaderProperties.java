@@ -29,7 +29,6 @@ public interface LoaderProperties
 	 * Get a boolean property from the properties file
 	 * 
 	 * @param propertyName
-	 * @return
 	 */
 	public abstract boolean getBooleanProperty(String propertyName);
 
@@ -38,7 +37,6 @@ public interface LoaderProperties
 	 * 
 	 * @param propertyName
 	 * @param defaultValue
-	 * @return
 	 */
 	public abstract boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue);
 	
@@ -54,7 +52,6 @@ public interface LoaderProperties
 	 * Get an integer property from the properties file
 	 * 
 	 * @param propertyName
-	 * @return
 	 */
 	public abstract int getIntegerProperty(String propertyName);
 	
@@ -63,7 +60,6 @@ public interface LoaderProperties
 	 * 
 	 * @param propertyName
 	 * @param defaultValue
-	 * @return
 	 */
 	public abstract int getAndStoreIntegerProperty(String propertyName, int defaultValue);
 	
@@ -71,7 +67,6 @@ public interface LoaderProperties
 	 * Get a stored mod revision number from the properties file
 	 * 
 	 * @param modKey
-	 * @return
 	 */
 	public abstract int getLastKnownModRevision(String modKey);
 	

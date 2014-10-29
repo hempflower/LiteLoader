@@ -26,57 +26,59 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
 	public abstract void onStartupComplete();
 
 	/**
-	 * 
+	 * Hide the LiteLoader tab
 	 */
 	public abstract void hideTab();
 
 	/**
-	 * @param show
+	 * Set the LiteLoader tab's visibility
 	 */
 	public abstract void setTabVisible(boolean show);
 
 	/**
-	 * @return
+	 * Get whether the LiteLoader tab is visible
 	 */
 	public abstract boolean isTabVisible();
 
 	/**
-	 * @param show
+	 * Set whether the LiteLoader tab should remain expanded
 	 */
 	public abstract void setTabAlwaysExpanded(boolean expand);
 	
 	/**
-	 * @return
+	 * Get whether the LiteLoader tab should remain expanded
 	 */
 	public abstract boolean isTabAlwaysExpanded();
 
 	/**
-	 * @param parentScreen
+	 * Display the LiteLoader panel
+	 * 
+	 * @param parentScreen Parent screen to display the panel on top of
 	 */
 	public abstract void displayLiteLoaderPanel(TParentScreen parentScreen);
 	
 	/**
-	 * @return
+	 * Get the number of startup errors
 	 */
 	public abstract int getStartupErrorCount();
 	
 	/**
-	 * @return
+	 * Get the number of critical startup errors
 	 */
 	public abstract int getCriticalErrorCount();
 	
 	/**
-	 * @param notification
+	 * Set the current notification text
 	 */
 	public abstract void setNotification(String notification);
 	
 	/**
-	 * @param forceUpdate
+	 * Set whether "force update" is enabled
 	 */
 	public abstract void setForceUpdateEnabled(boolean forceUpdate);
 	
 	/**
-	 * @return
+	 * Get whether "force update" is enabled
 	 */
 	public abstract boolean isForceUpdateEnabled();
 }

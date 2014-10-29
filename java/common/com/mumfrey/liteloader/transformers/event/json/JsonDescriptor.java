@@ -61,7 +61,7 @@ public class JsonDescriptor implements Serializable
 	
 	/**
 	 * @param obfTable
-	 * @return
+	 * @return MethodInfo for this descriptor
 	 */
 	public MethodInfo parse(JsonObfuscationTable obfTable)
 	{

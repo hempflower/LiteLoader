@@ -99,10 +99,11 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	private FastIterable<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
 	
 	/**
-	 * Package private ctor
+	 * ctor
 	 * 
 	 * @param loader
-	 * @param minecraft
+	 * @param engine
+	 * @param properties
 	 */
 	public LiteLoaderEventBroker(LiteLoader loader, GameEngine<TClient, TServer> engine, LoaderProperties properties)
 	{
@@ -241,7 +242,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	 * @param player
 	 * @param oldPlayer
 	 * @param dimension
-	 * @param copy
+	 * @param won
 	 */
 	public void onRespawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, EntityPlayerMP oldPlayer, int dimension, boolean won)
 	{

@@ -160,9 +160,6 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 		return this.engine.getResourceManager();
 	}
 
-	/**
-	 * @return
-	 */
 	public SoundHandler getSoundHandler()
 	{
 		return this.engine.getSoundHandler();

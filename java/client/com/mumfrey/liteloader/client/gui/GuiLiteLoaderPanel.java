@@ -218,7 +218,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	}
 	
 	/**
-	 * @return
+	 * Get the computed branding colour
 	 */
 	public int getBrandColour()
 	{
@@ -242,7 +242,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	}
 
 	/**
-	 * @return
+	 * Return true if the panel is not fully closed (tweening or open)
 	 */
 	public boolean isOpen()
 	{

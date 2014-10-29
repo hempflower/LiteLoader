@@ -166,7 +166,6 @@ class Mod extends ModInfo<LoadableMod<?>>
 	 * Get whether any of the valid identifiers match the supplied name
 	 * 
 	 * @param name
-	 * @return
 	 */
 	public boolean matchesName(String name)
 	{
@@ -177,7 +176,6 @@ class Mod extends ModInfo<LoadableMod<?>>
 	 * Get whether ths mod identifier matches the supplied identifier 
 	 * 
 	 * @param identifier
-	 * @return
 	 */
 	public boolean matchesIdentifier(String identifier)
 	{

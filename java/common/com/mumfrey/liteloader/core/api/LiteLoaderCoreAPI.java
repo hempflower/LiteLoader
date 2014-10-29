@@ -148,7 +148,7 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
 	}
 
 	/**
-	 * @return
+	 * Get the ObjectFactory
 	 */
 	public abstract ObjectFactory<?, ?> getObjectFactory();
 }

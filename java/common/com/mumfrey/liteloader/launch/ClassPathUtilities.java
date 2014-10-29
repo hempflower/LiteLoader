@@ -229,7 +229,6 @@ public abstract class ClassPathUtilities
 	 * Is the specified jar on the game launch classpath
 	 * 
 	 * @param jarFile
-	 * @return
 	 */
 	public static boolean isJarOnClassPath(File jarFile)
 	{
@@ -257,7 +256,6 @@ public abstract class ClassPathUtilities
 	 * 
 	 * @param contextClass
 	 * @param resource
-	 * @return
 	 */
 	public static File getPathToResource(Class<?> contextClass, String resource)
 	{
@@ -288,7 +286,6 @@ public abstract class ClassPathUtilities
 	/**
 	 * @param contextClass
 	 * @param resource
-	 * @return
 	 */
 	public static boolean deleteClassPathJarContaining(Class<?> contextClass, String resource)
 	{
@@ -303,7 +300,6 @@ public abstract class ClassPathUtilities
 	
 	/**
 	 * @param jarFileName
-	 * @return
 	 */
 	public static boolean deleteClassPathJar(String jarFileName)
 	{

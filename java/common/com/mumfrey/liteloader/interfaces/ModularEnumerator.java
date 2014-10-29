@@ -21,13 +21,11 @@ public interface ModularEnumerator
 	
 	/**
 	 * @param container
-	 * @return
 	 */
 	public abstract boolean registerModContainer(LoadableMod<?> container);
 
 	/**
 	 * @param container
-	 * @return
 	 */
 	public abstract boolean registerTweakContainer(TweakContainer<File> container);
 	

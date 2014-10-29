@@ -285,7 +285,6 @@ public class MethodInfo
 	 * Get the signature (combined method name and descriptor) for the method represented by this methodInfo
 	 * 
 	 * @param type Obfuscation type to use 
-	 * @return
 	 */
 	public String getSignature(int type)
 	{

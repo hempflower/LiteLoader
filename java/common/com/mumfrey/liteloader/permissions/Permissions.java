@@ -19,7 +19,6 @@ public interface Permissions
 	 * Returns true if the authority says we have this permission or false if the permission is denied or not set
 	 * 
 	 * @param permission Name of the permission to test for
-	 * @return
 	 */
 	public abstract boolean getHasPermission(String permission);
 

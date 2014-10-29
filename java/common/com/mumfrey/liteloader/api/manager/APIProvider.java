@@ -30,7 +30,6 @@ public interface APIProvider
 	 * 
 	 * @param identifier API identifier (case sensitive)
 	 * @param minRevision minimum required revision
-	 * @return
 	 */
 	public abstract boolean isAPIAvailable(String identifier, int minRevision);
 	
@@ -38,7 +37,6 @@ public interface APIProvider
 	 * Gets a specific API by identifier
 	 * 
 	 * @param identifier API identifier (case sensitive)
-	 * @return
 	 */
 	public abstract LiteAPI getAPI(String identifier);
 	
@@ -46,7 +44,6 @@ public interface APIProvider
 	 * Gets a specific API by class
 	 * 
 	 * @param apiClass
-	 * @return
 	 */
 	public abstract <T extends LiteAPI> T getAPI(Class<T> apiClass);
 }

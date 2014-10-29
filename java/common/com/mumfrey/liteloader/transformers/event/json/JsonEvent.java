@@ -134,8 +134,8 @@ public class JsonEvent implements Serializable
 	}
 	
 	/**
-	 * @param transformer
-	 * @return
+	 * @param transformer Transformer to register events with
+	 * @return Event which was registered
 	 */
 	public Event register(ModEventInjectionTransformer transformer)
 	{

@@ -31,7 +31,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 /**
  * This transformer applies one class to another as an "overlay". This works by merging down and replacing all
  * methods and fields from the "overlay" class into the "target" class being transformed. Fields and methods
- * marked with the {@link Obfuscate} annotation will search through the list of provided names to find a
+ * marked with the {@link Obfuscated} annotation will search through the list of provided names to find a
  * matching member in the target class, this allows methods and fields in the target class to be referenced
  * even if they have different names after obfuscation.
  * 
@@ -110,8 +110,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	protected boolean setSourceFile = true;
 	
 	/**
-	 * @param targetClassName
-	 * @param targetClassNameObf
 	 * @param overlayClassName
 	 */
 	protected ClassOverlayTransformer(String overlayClassName)
@@ -197,7 +195,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	 * 
 	 * @param transformedName
 	 * @param classBytes
-	 * @return
 	 */
 	protected byte[] applyOverlay(String transformedName, byte[] classBytes)
 	{
@@ -379,7 +376,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	 * @param method
 	 * @param fromClass
 	 * @param toClass
-	 * @return
 	 */
 	private void transformMethod(MethodNode method, String fromClass, String toClass)
 	{

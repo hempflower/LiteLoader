@@ -72,7 +72,6 @@ public interface LoaderEnvironment extends GameEnvironment
 	 * Inflect a versioned configuration path for a specific version
 	 * 
 	 * @param version
-	 * @return
 	 */
 	public abstract File inflectVersionedConfigPath(LiteLoaderVersion version);
 	

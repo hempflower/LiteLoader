@@ -104,25 +104,16 @@ public class ModListEntry
 		this.listPanel = new GuiModListPanel(this, fontRenderer, brandColour, modInfo, decorators);
 	}
 	
-	/**
-	 * @return
-	 */
 	protected String getTitleText()
 	{
 		return this.modInfo.getDisplayName();
 	}
 
-	/**
-	 * @return
-	 */
 	protected String getVersionText()
 	{
 		return I18n.format("gui.about.versiontext", this.modInfo.getVersion());
 	}
 
-	/**
-	 * @return
-	 */
 	protected String getStatusText()
 	{
 		String statusText = this.isExternal ? I18n.format("gui.status.loaded") : I18n.format("gui.status.active");

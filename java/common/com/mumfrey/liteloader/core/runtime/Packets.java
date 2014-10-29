@@ -303,7 +303,6 @@ public class Packets extends Obf
 
 	/**
 	 * @param name
-	 * @return
 	 */
 	public static Packets getByName(String name)
 	{

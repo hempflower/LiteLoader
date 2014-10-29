@@ -86,7 +86,6 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
 	 * 
 	 * @param metaKey metadata key
 	 * @param defaultValue metadata value
-	 * @return
 	 */
 	public abstract String getMetaValue(String metaKey, String defaultValue);
 

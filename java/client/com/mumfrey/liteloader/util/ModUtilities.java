@@ -62,7 +62,7 @@ public abstract class ModUtilities
 	}
 
 	/**
-	 * @return
+	 * @return true if FML is present in the current environment
 	 */
 	public static boolean fmlIsPresent()
 	{
@@ -235,7 +235,7 @@ public abstract class ModUtilities
 	/**
 	 * Abstraction helper function
 	 * 
-	 * @param fieldName Name of field to get, returned unmodified if in debug mode
+	 * @param obf Field to get, returned unmodified if in debug mode
 	 * @return Obfuscated field name if present
 	 */
 	public static String getObfuscatedFieldName(Obf obf)

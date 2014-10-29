@@ -274,7 +274,6 @@ public final class Input implements CoreProvider
 	 * 
 	 * @param descriptor
 	 * @param handler
-	 * @return
 	 */
 	public InputEvent getEvent(String descriptor, InputHandler handler)
 	{
@@ -289,7 +288,6 @@ public final class Input implements CoreProvider
 	 * 
 	 * @param descriptor
 	 * @param handler
-	 * @return
 	 */
 	public InputEvent[] getEvents(String descriptor, InputHandler handler)
 	{

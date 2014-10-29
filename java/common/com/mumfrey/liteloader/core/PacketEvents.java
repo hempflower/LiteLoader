@@ -141,9 +141,7 @@ public abstract class PacketEvents implements InterfaceProvider
 	}
 
 	/**
-	 * 
 	 * @param context
-	 * @return
 	 */
 	protected abstract IThreadListener getPacketContextListener(Packets.Context context);
 
@@ -151,7 +149,6 @@ public abstract class PacketEvents implements InterfaceProvider
 	 * @param e
 	 * @param netHandler
 	 * @param packetId
-	 * @param packet
 	 * 
 	 * @return true if the packet was handled by a local handler and shouldn't be forwarded to later handlers
 	 */

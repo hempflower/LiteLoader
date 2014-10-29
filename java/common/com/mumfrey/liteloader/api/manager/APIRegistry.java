@@ -62,7 +62,7 @@ public final class APIRegistry
 	}
 	
 	/**
-	 * @return
+	 * Get all currently registered API classes
 	 */
 	public String[] getRegisteredAPIs()
 	{
@@ -133,8 +133,8 @@ public final class APIRegistry
 	}
 	
 	/**
-	 * @return
-	 * @throws InvalidAPIStateException
+	 * Bakes all currently registered API classes to a new APIProvider containing the API instances
+	 * @throws InvalidAPIStateException if the API list was already baked
 	 */
 	public APIProvider bake() throws InvalidAPIStateException
 	{
@@ -148,8 +148,8 @@ public final class APIRegistry
 	}
 
 	/**
-	 * @return
-	 * @throws InvalidAPIStateException
+	 * Gets the current APIProvider instance
+	 * @throws InvalidAPIStateException if the provider list was not yet baked
 	 */
 	public APIProvider getProvider() throws InvalidAPIStateException
 	{
@@ -162,14 +162,14 @@ public final class APIRegistry
 	}
 
 	/**
-	 * @return
-	 * @throws InvalidAPIStateException
+	 * Gets the current APIAdapter instance
+	 * @throws InvalidAPIStateException if the provider list was not yet baked
 	 */
 	public APIAdapter getAdapter() throws InvalidAPIStateException
 	{
 		if (this.baked == null)
 		{
-			throw new InvalidAPIStateException("Call to APIRegistry.getProvider() failed because the provider list has not been baked");
+			throw new InvalidAPIStateException("Call to APIRegistry.APIAdapter() failed because the provider list has not been baked");
 		}
 		
 		return this.baked;

@@ -63,13 +63,11 @@ public interface GameEngine<TClient, TServer extends MinecraftServer>
 
 	/**
 	 * @param resourcePack
-	 * @return
 	 */
 	public abstract boolean registerResourcePack(IResourcePack resourcePack);
 
 	/**
 	 * @param resourcePack
-	 * @return
 	 */
 	public abstract boolean unRegisterResourcePack(IResourcePack resourcePack);
 

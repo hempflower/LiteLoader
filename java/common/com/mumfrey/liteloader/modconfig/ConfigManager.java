@@ -133,7 +133,6 @@ public class ConfigManager
 	 * Check whether a config panel is available for the specified class
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public boolean hasPanel(Class<? extends LiteMod> modClass)
 	{
@@ -144,7 +143,6 @@ public class ConfigManager
 	 * Instance a new config panel for the specified mod class if one is available
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public ConfigPanel getPanel(Class<? extends LiteMod> modClass)
 	{
@@ -215,7 +213,6 @@ public class ConfigManager
 	
 	/**
 	 * @param exposable
-	 * @return
 	 */
 	public static ConfigStrategy getConfigStrategy(Exposable exposable)
 	{

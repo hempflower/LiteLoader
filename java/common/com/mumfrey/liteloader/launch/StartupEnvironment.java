@@ -48,8 +48,6 @@ public abstract class StartupEnvironment implements GameEnvironment
 
 	/**
 	 * @param args
-	 * @param gameDirectory
-	 * @param assetsDirectory
 	 */
 	@SuppressWarnings("unchecked")
 	public void initArgs(List<String> args)
@@ -128,10 +126,6 @@ public abstract class StartupEnvironment implements GameEnvironment
 		this.launchArgs.put(classifiedArg, arg);
 	}
 
-	/**
-	 * @param gameDirectory
-	 * @param assetsDirectory
-	 */
 	public void provideRequiredArgs()
 	{
 		if (this.launchArgs.get("--version") == null)
@@ -164,7 +158,7 @@ public abstract class StartupEnvironment implements GameEnvironment
 	}
 
 	/**
-	 * @return
+	 * Get the mod filter list
 	 */
 	public List<String> getModFilterList()
 	{
@@ -172,7 +166,7 @@ public abstract class StartupEnvironment implements GameEnvironment
 	}
 
 	/**
-	 * @return
+	 * Get API classes to load
 	 */
 	public List<String> getAPIsToLoad()
 	{

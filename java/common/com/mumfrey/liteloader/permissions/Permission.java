@@ -72,8 +72,6 @@ public class Permission
 	
 	/**
 	 * Get whether this node is a root node (read only)
-	 * 
-	 * @return
 	 */
 	public boolean isRoot()
 	{
@@ -82,8 +80,6 @@ public class Permission
 	
 	/**
 	 * Get whether this node is a wildcard node 
-	 * 
-	 * @return
 	 */
 	public boolean isWildcard()
 	{
@@ -92,8 +88,6 @@ public class Permission
 	
 	/**
 	 * Get the name of this permission node
-	 * 
-	 * @return
 	 */
 	public String getName()
 	{
@@ -102,8 +96,6 @@ public class Permission
 	
 	/**
 	 * Get the value of this permission node
-	 * 
-	 * @return
 	 */
 	public boolean getValue()
 	{
@@ -124,7 +116,6 @@ public class Permission
 	 * Get the specified node name
 	 * 
 	 * @param name
-	 * @return
 	 */
 	public Permission getPermission(String name)
 	{
@@ -162,7 +153,6 @@ public class Permission
 	 * Set the specified node name
 	 * 
 	 * @param name
-	 * @return
 	 */
 	public Permission setPermission(String name)
 	{
@@ -174,7 +164,6 @@ public class Permission
 	 * 
 	 * @param name
 	 * @param value
-	 * @return
 	 */
 	public Permission setPermission(String name, boolean value)
 	{
@@ -207,7 +196,6 @@ public class Permission
 	 * 
 	 * @param name
 	 * @param value
-	 * @return
 	 */
 	public Permission setPermissionAndValue(String name, boolean value)
 	{
@@ -221,7 +209,6 @@ public class Permission
 	 * 
 	 * @param name
 	 * @param value
-	 * @return
 	 */
 	public boolean isSet(String name, boolean value)
 	{

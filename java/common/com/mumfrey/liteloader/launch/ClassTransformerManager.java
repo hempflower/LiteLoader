@@ -94,7 +94,6 @@ public class ClassTransformerManager
 
 	/**
 	 * @param transformerClass
-	 * @return
 	 */
 	public boolean injectTransformer(String transformerClass)
 	{
@@ -109,7 +108,6 @@ public class ClassTransformerManager
 	
 	/**
 	 * @param transformerClasses
-	 * @return
 	 */
 	public boolean injectTransformers(Collection<String> transformerClasses)
 	{
@@ -124,7 +122,6 @@ public class ClassTransformerManager
 	
 	/**
 	 * @param transformerClasses
-	 * @return
 	 */
 	public boolean injectTransformers(String[] transformerClasses)
 	{

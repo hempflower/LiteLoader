@@ -367,8 +367,7 @@ public class GuiPanelMods extends GuiPanel
 	}
 
 	/**
-	 * @param mod
-	 * @return
+	 * @param mod Mod list entry to select
 	 */
 	private void selectMod(ModListEntry mod)
 	{

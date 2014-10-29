@@ -239,7 +239,6 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 
 	/**
 	 * @param api
-	 * @param observers
 	 */
 	@Override
 	public void registerAPI(LiteAPI api)
@@ -275,7 +274,6 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 	 * Register a new interface provider
 	 * 
 	 * @param provider
-	 * @return
 	 */
 	public boolean registerProvider(InterfaceProvider provider)
 	{
@@ -382,7 +380,6 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 
 	/**
 	 * @param interfaceType
-	 * @return
 	 */
 	public List<InterfaceProvider> getProvidersFor(Class<? extends Listener> interfaceType)
 	{
@@ -433,7 +430,6 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 	 * returns null
 	 * 
 	 * @param provider
-	 * @return
 	 */
 	public LiteAPI getAPIForProvider(InterfaceProvider provider)
 	{

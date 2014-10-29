@@ -96,7 +96,6 @@ public class Message
 	 * Check if this message is on the specified channel
 	 * 
 	 * @param channel Full name of the channel to check against (case sensitive)
-	 * @return
 	 */
 	public boolean isChannel(String channel)
 	{
@@ -107,7 +106,6 @@ public class Message
 	 * Check if this message has the specified category
 	 * 
 	 * @param category
-	 * @return
 	 */
 	public boolean isCategory(String category)
 	{
@@ -118,7 +116,6 @@ public class Message
 	 * Get (and implicit cast) a value from this message's payload
 	 * 
 	 * @param key
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T get(String key)
@@ -167,7 +164,6 @@ public class Message
 	 * Build a KV map from interleaved keys and values, convenience function
 	 * 
 	 * @param args
-	 * @return
 	 */
 	public static Map<String, ?> buildMap(Object... args)
 	{

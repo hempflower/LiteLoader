@@ -90,8 +90,8 @@ public abstract class ByteCodeUtilities
 	 * Get the first variable index in the supplied method which is not an argument or "this" reference, this corresponds
 	 * to the size of the arguments passed in to the method plus an extra spot for "this" if the method is non-static 
 	 * 
-	 * @param method
-	 * @return
+	 * @param method MethodNode to inspect
+	 * @return first available local index which is NOT used by a method argument or "this"
 	 */
 	public static int getFirstNonArgLocalIndex(MethodNode method)
 	{
@@ -102,9 +102,9 @@ public abstract class ByteCodeUtilities
 	 * Get the first non-arg variable index based on the supplied arg array and whether to include the "this" reference,
 	 * this corresponds to the size of the arguments passed in to the method plus an extra spot for "this" is specified 
 
-	 * @param args
-	 * @param includeThis
-	 * @return
+	 * @param args Method arguments
+	 * @param includeThis Whether to include a slot for "this" (generally true for all non-static methods)
+	 * @return first available local index which is NOT used by a method argument or "this"
 	 */
 	public static int getFirstNonArgLocalIndex(Type[] args, boolean includeThis)
 	{
@@ -114,8 +114,8 @@ public abstract class ByteCodeUtilities
 	/**
 	 * Get the size of the specified args array in local variable terms (eg. doubles and longs take two spaces)
 	 * 
-	 * @param args
-	 * @return
+	 * @param args Method argument types as array
+	 * @return size of the specified arguments array in terms of stack slots
 	 */
 	public static int getArgsSize(Type[] args)
 	{
@@ -236,11 +236,11 @@ public abstract class ByteCodeUtilities
 	 * Attempts to locate the appropriate entry in the local variable table for the specified local variable index at the location
 	 * specified by node.
 	 * 
-	 * @param classNode
-	 * @param method
-	 * @param node
-	 * @param var
-	 * @return
+	 * @param classNode Containing class
+	 * @param method Method
+	 * @param node Instruction defining the location to get the local variable table at
+	 * @param var Local variable index
+	 * @return a LocalVariableNode containing information about the local variable at the specified location in the specified local slot
 	 */
 	public static LocalVariableNode getLocalVariableAt(ClassNode classNode, MethodNode method, AbstractInsnNode node, int var)
 	{
@@ -268,9 +268,8 @@ public abstract class ByteCodeUtilities
 	 * as part of the obfuscation process, we need to generate the local variable table when running obfuscated. We cache
 	 * the generated tables so that we only need to do the relatively expensive calculation once per method we encounter.
 	 * 
-	 * @param classNode
-	 * @param method
-	 * @return
+	 * @param classNode Containing class
+	 * @param method Method
 	 */
 	public static List<LocalVariableNode> getLocalVariableTable(ClassNode classNode, MethodNode method)
 	{
@@ -295,9 +294,8 @@ public abstract class ByteCodeUtilities
 	/**
 	 * Use ASM Analyzer to generate the local variable table for the specified method
 	 * 
-	 * @param classNode
-	 * @param method
-	 * @return
+	 * @param classNode Containing class
+	 * @param method Method
 	 */
 	public static List<LocalVariableNode> generateLocalVariableTable(ClassNode classNode, MethodNode method)
 	{
@@ -399,8 +397,8 @@ public abstract class ByteCodeUtilities
 	/**
 	 * Get the source code name for the specified type
 	 * 
-	 * @param type
-	 * @return
+	 * @param type Type to generate a friendly name for
+	 * @return String representation of the specified type, eg "int" for an integer primitive or "String" for java.lang.String
 	 */
 	public static String getTypeName(Type type)
 	{
@@ -427,9 +425,8 @@ public abstract class ByteCodeUtilities
 	/**
 	 * Finds a method in the target class, uses names specified in the {@link Obfuscated} annotation if present
 	 * 
-	 * @param targetClass
-	 * @param searchFor
-	 * @return
+	 * @param targetClass Class to search in
+	 * @param searchFor Method to search for
 	 */
 	public static MethodNode findTargetMethod(ClassNode targetClass, MethodNode searchFor)
 	{
@@ -458,9 +455,8 @@ public abstract class ByteCodeUtilities
 	/**
 	 * Finds a field in the target class, uses names specified in the {@link Obfuscated} annotation if present
 	 * 
-	 * @param targetClass
-	 * @param searchFor
-	 * @return
+	 * @param targetClass Class to search in
+	 * @param searchFor Field to search for
 	 */
 	public static FieldNode findTargetField(ClassNode targetClass, FieldNode searchFor)
 	{
@@ -488,10 +484,6 @@ public abstract class ByteCodeUtilities
 
 	/**
 	 * Get an annotation of the specified class from the supplied field node
-	 * 
-	 * @param field
-	 * @param annotationType
-	 * @return
 	 */
 	public static AnnotationNode getAnnotation(FieldNode field, Class<? extends Annotation> annotationClass)
 	{
@@ -500,10 +492,6 @@ public abstract class ByteCodeUtilities
 
 	/**
 	 * Get an annotation of the specified class from the supplied method node
-	 * 
-	 * @param method
-	 * @param annotationType
-	 * @return
 	 */
 	public static AnnotationNode getAnnotation(MethodNode method, Class<? extends Annotation> annotationClass)
 	{
@@ -511,9 +499,7 @@ public abstract class ByteCodeUtilities
 	}
 
 	/**
-	 * @param annotations
-	 * @param annotationType
-	 * @return
+	 * Get an annotation of the specified class from the supplied list of annotations, returns null if no matching annotation was found
 	 */
 	public static AnnotationNode getAnnotation(List<AnnotationNode> annotations, String annotationType)
 	{
@@ -530,10 +516,9 @@ public abstract class ByteCodeUtilities
 	}
 
 	/**
-	 * Get the value of an annotation node
+	 * Get the value of an annotation node (the value at key "value")
 	 * 
-	 * @param annotation
-	 * @return
+	 * @param annotation Annotation node to inspect
 	 */
 	public static <T> T getAnnotationValue(AnnotationNode annotation)
 	{
@@ -541,9 +526,10 @@ public abstract class ByteCodeUtilities
 	}
 
 	/**
+	 * Get the value of an annotation node
+	 * 
 	 * @param annotation
 	 * @param key
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T> T getAnnotationValue(AnnotationNode annotation, String key)

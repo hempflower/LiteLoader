@@ -67,7 +67,6 @@ public interface Loadable<L> extends Comparable<L>
 	 * Get whether this loadable is currently enabled in the context of the supplied mods list
 	 * 
 	 * @param environment
-	 * @return
 	 */
 	public abstract boolean isEnabled(LoaderEnvironment environment);
 	

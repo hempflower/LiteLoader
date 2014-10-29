@@ -256,10 +256,8 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * Get the singleton instance of LiteLoader, initialises the loader if
-	 * necessary
+	 * Get the singleton instance of LiteLoader, initialises the loader if necessary
 	 * 
-	 * @param locationProvider
 	 * @return LiteLoader instance
 	 */
 	public static final LiteLoader getInstance()
@@ -269,8 +267,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get the tweak system classloader
-	 * 
-	 * @return
 	 */
 	public static LaunchClassLoader getClassLoader()
 	{
@@ -279,8 +275,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get LiteLoader version
-	 * 
-	 * @return
 	 */
 	public static final String getVersion()
 	{
@@ -289,8 +283,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get LiteLoader version
-	 * 
-	 * @return
 	 */
 	public static final String getVersionDisplayString()
 	{
@@ -299,8 +291,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get the loader revision
-	 * 
-	 * @return
 	 */
 	public static final int getRevision()
 	{
@@ -308,7 +298,7 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @return
+	 * Get all active API instances
 	 */
 	public static final LiteAPI[] getAPIs()
 	{
@@ -319,12 +309,21 @@ public final class LiteLoader
 	}
 	
 	/**
+	 * Get an API instance by identifier (returns null if no instance matching the supplied identifier exists)
+	 * 
 	 * @param identifier
-	 * @return
 	 */
 	public static final LiteAPI getAPI(String identifier)
 	{
 		return LiteLoader.instance.apiProvider.getAPI(identifier);
+	}
+	
+	/**
+	 * @param identifier
+	 */
+	public static boolean isAPIAvailable(String identifier)
+	{
+		return LiteLoader.getAPI(identifier) != null;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -339,33 +338,33 @@ public final class LiteLoader
 		
 		return null;
 	}
-	
+
 	/**
-	 * @param identifier
-	 * @return
+	 * Get the client-side permissions manager
 	 */
-	public static boolean isAPIAvailable(String identifier)
-	{
-		return LiteLoader.getAPI(identifier) != null;
-	}
-	
 	public static PermissionsManagerClient getClientPermissionsManager()
 	{
 		return LiteLoader.instance.permissionsManagerClient;
 	}
 
+	/**
+	 * Get the server-side permissions manager
+	 */
 	public static PermissionsManagerServer getServerPermissionsManager()
 	{
 		return LiteLoader.instance.permissionsManagerServer;
 	}
 	
+	/**
+	 * Get the current game engine wrapper
+	 */
 	public static GameEngine<?, ?> getGameEngine()
 	{
 		return LiteLoader.instance.engine;
 	}
 	
 	/**
-	 * @return
+	 * Get the interface manager
 	 */
 	public static LiteLoaderInterfaceManager getInterfaceManager()
 	{
@@ -374,8 +373,6 @@ public final class LiteLoader
 
 	/**
 	 * Get the client-side plugin channel manager
-	 * 
-	 * @return
 	 */
 	public static ClientPluginChannels getClientPluginChannels()
 	{
@@ -384,8 +381,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get the server-side plugin channel manager
-	 * 
-	 * @return
 	 */
 	public static ServerPluginChannels getServerPluginChannels()
 	{
@@ -402,8 +397,6 @@ public final class LiteLoader
 	
 	/**
 	 * Get the mod panel manager
-	 * 
-	 * @return
 	 */
 	@SuppressWarnings({ "cast", "unchecked" })
 	public static <T> PanelManager<T> getModPanelManager()
@@ -436,7 +429,7 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @return
+	 * Get the game directory
 	 */
 	public static File getGameDirectory()
 	{
@@ -444,7 +437,7 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @return
+	 * Get the "assets" root directory
 	 */
 	public static File getAssetsDirectory()
 	{
@@ -452,7 +445,7 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @return
+	 * Get the name of the profile which launched the game
 	 */
 	public static String getProfile()
 	{
@@ -470,13 +463,16 @@ public final class LiteLoader
 	}
 	
 	/**
-	 * @return
+	 * Get whether the current environment is MCP
 	 */
 	public static boolean isDevelopmentEnvironment()
 	{
 		return "true".equals(System.getProperty("mcpenv"));
 	}
 	
+	/**
+	 * Dump debugging information to the console
+	 */
 	public static void dumpDebugInfo()
 	{
 		if (LiteLoaderLogger.DEBUG)
@@ -550,7 +546,6 @@ public final class LiteLoader
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
 	 * @param modName Mod's name, identifier or class name
-	 * @return
 	 * @throws InvalidActivityException
 	 */
 	public <T extends LiteMod> T getMod(String modName) throws InvalidActivityException, IllegalArgumentException
@@ -566,9 +561,7 @@ public final class LiteLoader
 	/**
 	 * Get a reference to a loaded mod, if the mod exists
 	 * 
-	 * @param modName Mod's name or class name
-	 * @return
-	 * @throws InvalidActivityException
+	 * @param modClass Mod class
 	 */
 	public <T extends LiteMod> T getMod(Class<T> modClass)
 	{
@@ -584,7 +577,6 @@ public final class LiteLoader
 	 * Get whether the specified mod is installed
 	 *
 	 * @param modName
-	 * @return
 	 */
 	public boolean isModInstalled(String modName)
 	{
@@ -599,7 +591,6 @@ public final class LiteLoader
 	 * @param modNameOrId
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 * @throws InvalidActivityException Thrown by getMod if init is not complete 
 	 * @throws IllegalArgumentException Thrown by getMod if argument is null
 	 */
@@ -614,7 +605,6 @@ public final class LiteLoader
 	 * @param mod
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	public String getModMetaData(LiteMod mod, String metaDataKey, String defaultValue)
 	{
@@ -627,7 +617,6 @@ public final class LiteLoader
 	 * @param modClass
 	 * @param metaDataKey
 	 * @param defaultValue
-	 * @return
 	 */
 	public String getModMetaData(Class<? extends LiteMod> modClass, String metaDataKey, String defaultValue)
 	{
@@ -638,7 +627,6 @@ public final class LiteLoader
 	 * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public String getModIdentifier(Class<? extends LiteMod> modClass)
 	{
@@ -648,8 +636,7 @@ public final class LiteLoader
 	/**
 	 * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
 	 * 
-	 * @param modClass
-	 * @return
+	 * @param mod
 	 */
 	public String getModIdentifier(LiteMod mod)
 	{
@@ -660,7 +647,6 @@ public final class LiteLoader
 	 * Get the container (mod file, classpath jar or folder) for the specified mod
 	 * 
 	 * @param modClass
-	 * @return
 	 */
 	public LoadableMod<?> getModContainer(Class<? extends LiteMod> modClass)
 	{
@@ -670,8 +656,7 @@ public final class LiteLoader
 	/**
 	 * Get the container (mod file, classpath jar or folder) for the specified mod
 	 * 
-	 * @param modClass
-	 * @return
+	 * @param mod
 	 */
 	public LoadableMod<?> getModContainer(LiteMod mod)
 	{
@@ -682,7 +667,6 @@ public final class LiteLoader
 	 * Get the mod which matches the specified identifier
 	 * 
 	 * @param identifier
-	 * @return
 	 */
 	public Class<? extends LiteMod> getModFromIdentifier(String identifier)
 	{
@@ -716,7 +700,6 @@ public final class LiteLoader
 
 	/**
 	 * @param modName
-	 * @return
 	 */
 	public boolean isModEnabled(String modName)
 	{
@@ -725,7 +708,6 @@ public final class LiteLoader
 	
 	/**
 	 * @param modName
-	 * @return
 	 */
 	public boolean isModActive(String modName)
 	{

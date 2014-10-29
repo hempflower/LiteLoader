@@ -74,8 +74,6 @@ public class ReplicatedPermissionsContainer implements Serializable
 
 	/**
 	 * Serialise this container to a byte array for transmission to a remote host
-	 * 
-	 * @return
 	 */
 	public byte[] getBytes()
 	{

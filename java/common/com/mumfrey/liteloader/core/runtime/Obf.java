@@ -165,7 +165,6 @@ public class Obf
 	}
 	
 	/**
-	 * @param mcpName
 	 * @param seargeName
 	 * @param obfName
 	 */
@@ -191,7 +190,6 @@ public class Obf
 	
 	/**
 	 * @param type
-	 * @return
 	 */
 	public String getDescriptor(int type)
 	{
@@ -200,7 +198,6 @@ public class Obf
 
 	/**
 	 * @param seargeName
-	 * @return
 	 */
 	protected String getDeobfuscatedName(String seargeName)
 	{
@@ -209,7 +206,6 @@ public class Obf
 
 	/**
 	 * @param seargeName
-	 * @return
 	 */
 	static String getDeobfName(String seargeName)
 	{
@@ -238,7 +234,6 @@ public class Obf
 
 	/**
 	 * @param name
-	 * @return
 	 */
 	public static Obf getByName(String name)
 	{

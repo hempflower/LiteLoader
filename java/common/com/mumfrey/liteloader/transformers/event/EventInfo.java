@@ -92,9 +92,7 @@ public class EventInfo<S> implements Cancellable
 	}
 	
 	/**
-	 * @param returnsVoid
-	 * @param isStatic
-	 * @return
+	 * @param returnType
 	 */
 	protected static String getEventInfoClassName(Type returnType)
 	{

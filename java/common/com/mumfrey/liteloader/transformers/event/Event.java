@@ -118,7 +118,7 @@ public class Event implements Comparable<Event>
 	 * the existing event is returned instead.
 	 * 
 	 * @param name Event name (case insensitive)
-	 * @return
+	 * @return new Event instance or existing Event instance
 	 */
 	public static Event getOrCreate(String name)
 	{
@@ -131,7 +131,7 @@ public class Event implements Comparable<Event>
 	 * 
 	 * @param name Event name (case insensitive)
 	 * @param cancellable True if the event should be created as cancellable
-	 * @return
+	 * @return new Event instance or existing Event instance
 	 */
 	public static Event getOrCreate(String name, boolean cancellable)
 	{
@@ -145,7 +145,7 @@ public class Event implements Comparable<Event>
 	 * @param name Event name (case insensitive)
 	 * @param cancellable True if the event should be created as cancellable
 	 * @param priority Priority for the event, only used when multiple events are being injected at the same instruction
-	 * @return
+	 * @return new Event instance or existing Event instance
 	 */
 	public static Event getOrCreate(String name, boolean cancellable, int priority)
 	{

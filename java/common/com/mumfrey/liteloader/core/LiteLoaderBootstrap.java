@@ -182,7 +182,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	
 	/**
 	 * @param version
-	 * @return
 	 */
 	@Override
 	public File inflectVersionedConfigPath(LiteLoaderVersion version)
@@ -196,7 +195,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	}
 
 	/**
-	 * @return 
 	 * 
 	 */
 	private void initAPIs(List<String> apisToLoad)
@@ -301,8 +299,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 
 	/**
 	 * @param classLoader
-	 * @param loadTweaks
-	 * @return
 	 */
 	protected LiteLoaderEnumerator spawnEnumerator(LaunchClassLoader classLoader)
 	{
@@ -531,7 +527,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	}
 	
 	/**
-	 * @return
+	 * Get the common configuration folder
 	 */
 	@Override
 	public File getCommonConfigFolder()
@@ -540,7 +536,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	}
 	
 	/**
-	 * @return
+	 * Get the versioned configuration folder
 	 */
 	@Override
 	public File getVersionedConfigFolder()
@@ -553,7 +549,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * 
 	 * @param propertyName
 	 * @param defaultValue
-	 * @return
 	 */
 	@Override
 	public boolean getAndStoreBooleanProperty(String propertyName, boolean defaultValue)
@@ -567,8 +562,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * Get a boolean propery from the properties file and also write the new value back to the properties file
 	 * 
 	 * @param propertyName
-	 * @param defaultValue
-	 * @return
 	 */
 	@Override
 	public boolean getBooleanProperty(String propertyName)
@@ -627,7 +620,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * Get last know revision for mod from the config file 
 	 * 
 	 * @param modKey
-	 * @return
 	 */
 	@Override
 	public int getLastKnownModRevision(String modKey)
@@ -707,12 +699,18 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.launch.LoaderBootstrap#getRequiredTransformers()
+	 */
 	@Override
 	public List<String> getRequiredTransformers()
 	{
 		return this.apiAdapter.getRequiredTransformers();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.launch.LoaderBootstrap#getRequiredDownstreamTransformers()
+	 */
 	@Override
 	public List<String> getRequiredDownstreamTransformers()
 	{

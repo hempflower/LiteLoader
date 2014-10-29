@@ -79,7 +79,7 @@ public class ServerPermissions implements ReplicatedPermissions
 	}
 	
 	/**
-	 * @return
+	 * Get the permissible mod name
 	 */
 	public String getModName()
 	{

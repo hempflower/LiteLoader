@@ -62,7 +62,7 @@ public class LiteLoaderTweaker implements ITweaker
 		private boolean completed;
 		
 		/**
-		 * @return
+		 * Get whether this state is completed
 		 */
 		public boolean isCompleted()
 		{
@@ -70,7 +70,7 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 		
 		/**
-		 * @return
+		 * Get whether the tweaker is currrently in this state
 		 */
 		public boolean isInState()
 		{
@@ -131,7 +131,7 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 		
 		/**
-		 * @return
+		 * Get the state which follows this state
 		 */
 		private StartupState getNextState()
 		{
@@ -140,7 +140,6 @@ public class LiteLoaderTweaker implements ITweaker
 		
 		/**
 		 * @param next
-		 * @return
 		 */
 		public boolean canGotoState(StartupState next)
 		{
@@ -153,7 +152,7 @@ public class LiteLoaderTweaker implements ITweaker
 		}
 		
 		/**
-		 * @return
+		 * Get the current state
 		 */
 		public static StartupState getCurrent()
 		{
@@ -449,7 +448,6 @@ public class LiteLoaderTweaker implements ITweaker
 	/**
 	 * @param tweakClass
 	 * @param priority
-	 * @return
 	 */
 	public boolean addCascadedTweaker(String tweakClass, int priority)
 	{
@@ -474,7 +472,6 @@ public class LiteLoaderTweaker implements ITweaker
 	 * 
 	 * @param bootstrapClassName
 	 * @param classLoader
-	 * @return
 	 */
 	protected LoaderBootstrap spawnBootstrap(String bootstrapClassName, ClassLoader classLoader)
 	{
@@ -503,7 +500,6 @@ public class LiteLoaderTweaker implements ITweaker
 	 * @param gameDirectory
 	 * @param assetsDirectory
 	 * @param profile
-	 * @return
 	 */
 	protected StartupEnvironment spawnStartupEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
@@ -524,7 +520,7 @@ public class LiteLoaderTweaker implements ITweaker
 	}
 
 	/**
-	 * @return
+	 * Get the game jar url (probably)
 	 */
 	public static URL getJarUrl()
 	{
@@ -586,7 +582,7 @@ public class LiteLoaderTweaker implements ITweaker
 	}
 
 	/**
-	 * @return
+	 * Get whether to enable the loading bar for minecraft startup
 	 */
 	public static boolean loadingBarEnabled()
 	{

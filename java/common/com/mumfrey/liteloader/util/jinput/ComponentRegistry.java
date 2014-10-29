@@ -187,8 +187,8 @@ public class ComponentRegistry
 	 * @param name
 	 * @param portType
 	 * @param portNumber
-	 * @param componentA
-	 * @return
+	 * @param component
+	 * @param index
 	 */
 	public static String getDescriptor(String type, String name, String portType, int portNumber, String component, int index)
 	{
@@ -200,7 +200,6 @@ public class ComponentRegistry
 	 * @param controller
 	 * @param component
 	 * @param index 
-	 * @return
 	 */
 	private static String getDescriptor(String controller, String component, int index)
 	{
@@ -210,9 +209,8 @@ public class ComponentRegistry
 
 	/**
 	 * @param controller
-	 * @return
 	 */
-	private  static String getControllerPath(Controller controller)
+	private static String getControllerPath(Controller controller)
 	{
 		return ComponentRegistry.getControllerPath(
 			controller.getType().toString().toLowerCase(),
@@ -227,7 +225,6 @@ public class ComponentRegistry
 	 * @param name
 	 * @param portType
 	 * @param portNumber
-	 * @return
 	 */
 	public static String getControllerPath(String type, String name, String portType, int portNumber)
 	{

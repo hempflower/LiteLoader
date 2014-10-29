@@ -26,7 +26,7 @@ public class CallableLaunchWrapper implements Callable<String>
 	}
 
 	/**
-	 * @return
+	 * Generates a list of active transformers to display in the crash report
 	 */
 	public static String generateTransformerList()
 	{

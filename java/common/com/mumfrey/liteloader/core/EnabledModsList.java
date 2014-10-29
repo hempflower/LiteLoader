@@ -55,7 +55,6 @@ public class EnabledModsList
 	 * 
 	 * @param profileName
 	 * @param identifier
-	 * @return
 	 */
 	public boolean isEnabled(String profileName, String identifier)
 	{
@@ -143,8 +142,8 @@ public class EnabledModsList
 	 * Factory method which tries to deserialise the enablement list from the file or if failing creates
 	 * and returns a new instance.
 	 * 
-	 * @param file
-	 * @return
+	 * @param file JSON file to create the EnabledModsList from
+	 * @return a new EnabledModsList instance
 	 */
 	public static EnabledModsList createFrom(File file)
 	{

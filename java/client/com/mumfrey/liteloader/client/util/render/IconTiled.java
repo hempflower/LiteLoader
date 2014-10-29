@@ -55,14 +55,6 @@ public class IconTiled implements Icon
 		this.init(iconU, iconV);
 	}
 	
-	/**
-	 * @param iconU
-	 * @param iconV
-	 * @param field_146120_f
-	 * @param field_146121_g
-	 * @param textureWidth
-	 * @param textureHeight
-	 */
 	protected void init(int iconU, int iconV)
 	{
 		this.iconU = iconU;

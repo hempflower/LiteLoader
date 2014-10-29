@@ -94,8 +94,6 @@ public class HttpStringRetriever extends Thread
 	
 	/**
 	 * Create a new string retriever to be used synchronously
-	 * 
-	 * @param url URL to download from
 	 */
 	public HttpStringRetriever()
 	{

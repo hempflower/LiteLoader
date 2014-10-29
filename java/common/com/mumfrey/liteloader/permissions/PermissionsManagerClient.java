@@ -86,8 +86,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 
 	/**
 	 * Get a reference to the singleton instance of the client permissions manager
-	 * 
-	 * @return
 	 */
 	public static PermissionsManagerClient getInstance()
 	{
@@ -205,8 +203,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 
 	/**
 	 * Send permission query packets to the server for all registered mods
-	 * 
-	 * @param minecraft Minecraft instance
 	 */
 	protected void sendPermissionQueries()
 	{
@@ -219,7 +215,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * issued automatically by the client permissions manager when connecting to a new server. However you can call use this
 	 * method to "force" a refresh of permissions when needed.
 	 * 
-	 * @param modName name of the mod to send a query packet for
+	 * @param mod mod to send a query packet for
 	 */
 	public void sendPermissionQuery(Permissible mod)
 	{
@@ -378,7 +374,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * Get the value of the specified permission for all mods.
 	 * 
 	 * @param permission Permission to check for
-	 * @return
 	 */
 	public boolean getPermission(String permission)
 	{
@@ -390,7 +385,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * 
 	 * @param permission Permission to check for
 	 * @param defaultValue Value to return if the permission is not set
-	 * @return
 	 */
 	public boolean getPermission(String permission, boolean defaultValue)
 	{
@@ -403,7 +397,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * 
 	 * @param mod
 	 * @param permission
-	 * @return
 	 */
 	public boolean getModPermission(Permissible mod, String permission)
 	{
@@ -425,7 +418,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * 
 	 * @param modName
 	 * @param permission
-	 * @return
 	 */
 	public boolean getModPermission(String modName, String permission)
 	{
@@ -441,7 +433,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * @param mod
 	 * @param permission
 	 * @param defaultValue
-	 * @return
 	 */
 	public boolean getModPermission(Permissible mod, String permission, boolean defaultValue)
 	{
@@ -463,7 +454,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * 
 	 * @param modName
 	 * @param permission
-	 * @return
 	 */
 	public boolean getModPermission(String modName, String permission, boolean defaultValue)
 	{
@@ -474,7 +464,6 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	/**
 	 * @param modName
 	 * @param permission
-	 * @return
 	 */
 	protected static String formatModPermission(String modName, String permission)
 	{

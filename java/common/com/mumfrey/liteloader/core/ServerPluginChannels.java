@@ -141,9 +141,9 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	}
 
 	/**
+	 * @param sender
 	 * @param channel
 	 * @param data
-	 * @param length
 	 */
 	protected void onModPacketReceived(EntityPlayerMP sender, String channel, PacketBuffer data)
 	{

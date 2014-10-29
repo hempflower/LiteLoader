@@ -122,17 +122,11 @@ public class InputEvent
 		if (this.next != null) this.next.onButtonEvent(pressed);
 	}
 
-	/**
-	 * @return
-	 */
 	public Controller getController()
 	{
 		return this.controller;
 	}
 	
-	/**
-	 * @return
-	 */
 	public Component getComponent()
 	{
 		return this.component;

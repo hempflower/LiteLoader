@@ -15,7 +15,7 @@ public interface LiteMod extends Exposable, Listener
 	/**
 	 * Get the mod version string
 	 * 
-	 * @return
+	 * @return the mod version as a string
 	 */
 	public abstract String getVersion();
 	

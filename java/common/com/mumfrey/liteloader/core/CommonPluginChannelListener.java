@@ -14,7 +14,7 @@ public interface CommonPluginChannelListener extends Listener
 	/**
 	 * Return a list of the plugin channels the mod wants to register
 	 * 
-	 * @return
+	 * @return plugin channel names as a list, it is recommended to use {@link com.google.common.collect.ImmutableList#of} for this purpose
 	 */
 	public abstract List<String> getChannels();
 }

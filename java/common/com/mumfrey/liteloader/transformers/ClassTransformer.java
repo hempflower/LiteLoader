@@ -20,7 +20,6 @@ public abstract class ClassTransformer implements IClassTransformer
 	
 	/**
 	 * @param basicClass
-	 * @return
 	 */
 	protected final ClassNode readClass(byte[] basicClass, boolean cacheReader)
 	{
@@ -34,7 +33,6 @@ public abstract class ClassTransformer implements IClassTransformer
 
 	/**
 	 * @param classNode
-	 * @return
 	 */
 	protected final byte[] writeClass(ClassNode classNode)
 	{

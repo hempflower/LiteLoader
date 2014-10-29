@@ -384,12 +384,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		}
 	}
 	
-	/**
-	 * Registers this file as a minecraft resource pack 
-	 * 
-	 * @param name
-	 * @return true if the pack was added
-	 */
 	@Override
 	public boolean hasResourcePack()
 	{
@@ -490,16 +484,12 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	/**
 	 * @param name
 	 * @param charset
-	 * @return
 	 */
 	public String getFileContents(String name, Charset charset)
 	{
 		return LoadableModFile.getFileContents(this, name, charset);
 	}
 
-	/**
-	 * @return
-	 */
 	protected static List<String> enumerateZipFile(File file)
 	{
 		List<String> classes = new ArrayList<String>();
@@ -572,7 +562,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	/**
 	 * @param zip
 	 * @param entry
-	 * @return
 	 * @throws IOException
 	 */
 	public static String zipEntryToString(ZipFile zip, ZipEntry entry) throws IOException
@@ -616,7 +605,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	 * @param parent
 	 * @param name
 	 * @param charset
-	 * @return
 	 */
 	public static String getFileContents(File parent, String name, Charset charset)
 	{

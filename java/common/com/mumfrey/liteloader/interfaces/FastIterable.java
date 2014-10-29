@@ -18,8 +18,6 @@ public interface FastIterable<T>
 	
 	/**
 	 * Return the baked view of all entries
-	 * 
-	 * @return
 	 */
 	public T all();
 	

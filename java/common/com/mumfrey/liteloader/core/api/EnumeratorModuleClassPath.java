@@ -33,12 +33,6 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
 	
 	private boolean loadTweaks;
 
-	/**
-	 * @param parent
-	 * @param searchProtectionDomain
-	 * @param searchClassPath
-	 * @param loadTweaks
-	 */
 	public EnumeratorModuleClassPath()
 	{
 		// Read the JVM class path into the local array

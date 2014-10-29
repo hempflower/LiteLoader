@@ -91,7 +91,6 @@ public class JsonObfuscationTable implements Serializable
 
 	/**
 	 * @param token
-	 * @return
 	 */
 	public Obf parseClass(String token)
 	{
@@ -100,7 +99,6 @@ public class JsonObfuscationTable implements Serializable
 
 	/**
 	 * @param token
-	 * @return
 	 */
 	public Obf parseMethod(String token)
 	{
@@ -109,7 +107,6 @@ public class JsonObfuscationTable implements Serializable
 	
 	/**
 	 * @param token
-	 * @return
 	 */
 	public Obf parseField(String token)
 	{
@@ -119,7 +116,6 @@ public class JsonObfuscationTable implements Serializable
 	/**
 	 * @param token
 	 * @param obfs
-	 * @return
 	 */
 	private Obf parseObf(String token, Map<String, Obf> obfs)
 	{

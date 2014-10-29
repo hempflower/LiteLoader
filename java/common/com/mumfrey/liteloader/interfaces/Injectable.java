@@ -28,13 +28,13 @@ public interface Injectable
 	/**
 	 * @param classLoader
 	 * @param injectIntoParent
-	 * @return
+	 * @return whether the injection was successful or not
 	 * @throws MalformedURLException
 	 */
 	public abstract boolean injectIntoClassPath(LaunchClassLoader classLoader, boolean injectIntoParent) throws MalformedURLException;
 	
 	/**
-	 * @return
+	 * Get the injection strategy for this object
 	 */
 	public abstract InjectionStrategy getInjectionStrategy();
 }

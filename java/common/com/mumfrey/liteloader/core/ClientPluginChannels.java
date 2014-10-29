@@ -104,7 +104,6 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 	/**
 	 * @param channel
 	 * @param data
-	 * @param length
 	 */
 	protected void onModPacketReceived(String channel, PacketBuffer data)
 	{

@@ -59,7 +59,6 @@ public class JsonMethods
 	 * Fetches a method descriptor by token
 	 * 
 	 * @param token
-	 * @return
 	 */
 	public MethodInfo get(String token)
 	{

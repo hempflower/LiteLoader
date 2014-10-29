@@ -83,6 +83,9 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 		properties.setBooleanProperty(LoaderProperties.OPTION_SEARCH_JARFILES, this.readJarFiles);
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	@Override
 	public String toString()
 	{
@@ -90,7 +93,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	}
 	
 	/**
-	 * @return
+	 * Get the directory this module will inspect
 	 */
 	public File getDirectory()
 	{
@@ -202,7 +205,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	}
 
 	/**
-	 * @return
+	 * Get the {@link FilenameFilter} to use to filter candidate files
 	 */
 	protected FilenameFilter getFilenameFilter()
 	{
@@ -212,7 +215,6 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 
 	/**
 	 * @param modFile
-	 * @return
 	 */
 	protected boolean isFileSupported(LoadableModFile modFile)
 	{

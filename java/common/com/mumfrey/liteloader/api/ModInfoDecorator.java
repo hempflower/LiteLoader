@@ -26,7 +26,7 @@ public interface ModInfoDecorator extends CustomisationProvider
 	 * Allows this decorator to modify the status text for the specified mod, return null if no modification required
 	 * 
 	 * @param statusText
-	 * @return
+	 * @return new status text or NULL to indicate the text should remain default 
 	 */
 	public abstract String modifyStatusText(ModInfo<?> mod, String statusText);
 	
