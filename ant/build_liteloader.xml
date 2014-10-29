@@ -16,70 +16,56 @@
 	<property name="tweakclass" value="com.mumfrey.liteloader.launch.LiteLoaderTweaker" />
 
 	<property name="mcp.dir" location="../../.." />
-	<property name="build" location="${mcp.dir}/build" />
-	<property name="eclipse" location="${mcp.dir}/eclipse" />
-	<property name="temp" location="${mcp.dir}/temp" />
+	<property name="build.dir" location="${mcp.dir}/build" />
+	<property name="eclipse.dir" location="${mcp.dir}/eclipse" />
+	<property name="temp.dir" location="${mcp.dir}/temp" />
 	<property name="md5.dir" location="${mcp.dir}/md5" />
-	<property name="libs" location="${mcp.dir}/lib" />
+	<property name="libs.dir" location="${mcp.dir}/lib" />
+	<property name="src.dir" location="${build.dir}/src"/>
+	<property name="mc.src.dir" location="${mcp.dir}/src/minecraft" />
+	<property name="mc.bin.dir" location="${mcp.dir}/bin/minecraft" />
+	<property name="mc.libs.dir" location="${mcp.dir}/jars/libraries" />
 
-	<property name="dist.dir" location="${build}/dist" />
-	<property name="stage.dir" location="${build}/stage/${ant.project.name}/${version}" />
+	<property name="dist.dir" location="${build.dir}/dist" />
 	<property name="filetype" value="jar" />
 
 	<property name="python_windows" location="${mcp.dir}/runtime/bin/python/python_mcp.exe" />
 	<property name="python_linux" location="/usr/bin/python" />
-	
-	<target name="findmcp">
-		<echo level="info" message="Searching for clean MCP source..." />
-		<condition property="mcpsrc.exists">
-			<available file="${mcp.dir}/src/mcp" type="dir"/>
-		</condition>
-	</target>
-	
+
+	<property environment="env" />
+
 	<target name="setup_development">
 		<property name="skipremoval" value="DEV" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}.md5" />
-		<property name="artefact.name" value="${ant.project.name}-${mcversion}-DEV" />
+		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="stage.dir" location="${build.dir}/stage/${ant.project.name}/${version}" />
+		<property name="meta.version" value="${version}" />
 	</target>
-	
+
 	<target name="setup_production">
 		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
 		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="stage.dir" location="${build.dir}/stage/${ant.project.name}/${version}" />
+		<property name="meta.version" value="${version}" />
 	</target>
-	
+
 	<target name="setup_jenkins">
 		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
 		<property name="artefact.name" value="${ant.project.name}-${mcversion}-SNAPSHOT" />
+		<property name="stage.dir" location="${build.dir}/stage" />
+		<property name="brand" value="${mcversion}-SNAPSHOT-r${env.SVN_REVISION}-b${env.BUILD_NUMBER}-${env.BUILD_ID}" />
+		<property name="meta.version" value="${version} [${brand}]" />
+		<property name="jenkins" value="" />
 	</target>
-	
+
 	<!-- Main target -->
-	<target name="development" depends="setup_development, findmcp, setdirsold, setdirsnew, build" description="Entry point for MCP and upstream builds" />
-	
-	<target name="production" depends="setup_production, findmcp, setdirsold, setdirsnew, build, javadoc, mcpjar" description="Entry point for production builds" />
-	
-	<target name="jenkins" depends="setup_jenkins, findmcp, setdirsold, setdirsnew, build, javadoc, mcpjar" description="Entry point for CI builds" />
+	<target name="development" depends="setup_development, build" description="Entry point for MCP and upstream builds" />
 
-	<target name="setdirsnew" description="Set the MCP source directories for the new layout" unless="mcpsrc.exists">
-		<echo level="info" message="Setting MCP source directories for NEW configuration" />
-		<property name="src" location="${build}/src"/>
-		<property name="mc.src" location="${mcp.dir}/src/minecraft" />
-		<echo append="false" file="${temp}/build.cfg" message="[OUTPUT]&#x0A;SrcClient  = build/src" />
-	</target>
+	<target name="production" depends="setup_production, build, javadoc, mcpjar" description="Entry point for production builds" />
 
-	<target name="setdirsold" description="Set the MCP source directories for the old layout" if="mcpsrc.exists">
-		<echo level="warning" message="--------------------------------------------------------------------------------" />
-		<echo level="warning" message=" "                                                                                />
-		<echo level="warning" message=" Setting MCP source directories for OLD configuration!"                           />
-		<echo level="warning" message=" "                                                                                />
-		<echo level="warning" message=" Renaming the MCP 'src' directory is no longer required and support for this"     />
-		<echo level="warning" message=" be removed in a future version."                                                 />
-		<echo level="warning" message=" "                                                                                />
-		<echo level="warning" message="--------------------------------------------------------------------------------" />
-		<property name="src" location="${mcp.dir}/src/minecraft"/>
-		<property name="mc.src" location="${mcp.dir}/src/mcp" />
-	</target>
+	<target name="jenkins" depends="setup_jenkins, build, javadoc, mcpjar" description="Entry point for CI builds" />
 
 	<target name="build" description="Perform all tasks for a build" depends="init, recompile, reobfuscate, savemd5, stage, zip" >
 	</target>
@@ -87,18 +73,18 @@
 	<target name="clean">
 		<echo level="info" message="Cleaning output directories" />
 		
-		<delete dir="${src}" />
+		<delete dir="${src.dir}" />
 		<delete dir="${mcp.dir}/reobf" />
 	</target>
 
 	<target name="contributesource" description="Contribute an upstream project source code to the source path">
 		<echo level="info" message="Contributing project ${lib}" />
-		<copy todir="${src}" verbose="false" overwrite="true" failonerror="false">
-			<fileset dir="${eclipse}/${lib}/java">
+		<copy todir="${src.dir}" verbose="false" overwrite="true" failonerror="false">
+			<fileset dir="${eclipse.dir}/${lib}/java">
 				<exclude name="**/debug" />
 				<exclude name="**/debug/*.java" />
 			</fileset>
-			<fileset dir="${eclipse}/${lib}/src" />
+			<fileset dir="${eclipse.dir}/${lib}/src" />
 			<filterchain>
 				<linecontains negate="true">
 					<contains value="@MCPONLY${skipremoval}" />
@@ -110,7 +96,7 @@
 	<target name="contributeresources" description="Contribute resources to the staging path">
 		<echo level="info" message="Contributing project resources for ${lib}" />
 		<copy todir="${stage.dir}" verbose="false" failonerror="false">
-			<fileset dir="${eclipse}/${lib}/resources" excludes=".svn/**">
+			<fileset dir="${eclipse.dir}/${lib}/resources" excludes=".svn/**">
 				<exclude name="**/Thumbs.db" />
 				<exclude name="**/minecraft.key" />
 			</fileset>
@@ -143,23 +129,23 @@
 	<target name="preparemd5" description="Copy patched MD5 to the temp directory" depends="seedmd5, notifymd5ok, clean">
 		<echo level="info" message="Prepare exclusion MD5s, using exclusion set &quot;${md5set}&quot;" />
 
-		<copy tofile="${temp}/client.md5" file="${md5.dir}/client_${md5set}.md5" failonerror="true" verbose="true" overwrite="true" />
+		<copy tofile="${temp.dir}/client.md5" file="${md5.dir}/client_${md5set}.md5" failonerror="true" verbose="true" overwrite="true" />
 	</target>
 
 	<target name="prepare" description="Prepare source for MCP" depends="preparemd5">
 		<echo level="info" message="Prepare sources for compile" />
 
 		<echo level="info" message="Contributing libs" />
-		<copy todir="${libs}" verbose="true" overwrite="true">
-			<fileset dir="${eclipse}/LiteLoader/lib">
+		<copy todir="${libs.dir}" verbose="true" overwrite="true">
+			<fileset dir="${eclipse.dir}/LiteLoader/lib">
 				<exclude name="**/authlib*.jar" />
 				<exclude name="**/log4j*.jar" />
 			</fileset>
 		</copy>
 
 		<echo level="info" message="Contributing MC source" />
-		<copy todir="${src}" verbose="false" overwrite="true">
-			<fileset dir="${mc.src}" />
+		<copy todir="${src.dir}" verbose="false" overwrite="true">
+			<fileset dir="${mc.src.dir}" />
 		</copy>
 
 		<echo level="info" message="Contributing upstream projects" />
@@ -171,6 +157,8 @@
 	</target>
 
 	<target name="init" description="Initialize build environment" depends="prepare">
+		<echo append="false" file="${temp.dir}/build.cfg" message="[OUTPUT]&#x0A;SrcClient  = build/src" />
+
 		<echo level="info" message="Cleaning old stage and dist, MCP reobf directories" />
 
 		<delete dir="${stage.dir}" />
@@ -188,7 +176,7 @@
 			<arg value="runtime/recompile.py" />
 			<arg value="--client" />
 			<arg value="--config" />
-			<arg value="${temp}/build.cfg" />
+			<arg value="${temp.dir}/build.cfg" />
 			<arg value="%*" />
 		</exec>
 
@@ -196,7 +184,7 @@
 			<arg value="runtime/recompile.py" />
 			<arg value="--client" />
 			<arg value="--config" />
-			<arg value="${temp}/build.cfg" />
+			<arg value="${temp.dir}/build.cfg" />
 			<arg value="%*" />
 		</exec>
 	</target>
@@ -214,15 +202,13 @@
 			<arg value="runtime/reobfuscate.py" />
 			<arg value="--client" />
 			<arg value="%*" />
-		</exec>				
-			
-		
+		</exec>
 	</target>
 
 	<target name="savemd5" description="Put post-obfuscation MD5 to stored md5 set" if="outmd5set">
 		<echo level="info" message="Storing obfuscated MD5s" />
 
-		<copy file="${temp}/client_reobf.md5" tofile="${md5.outfile}" overwrite="true" verbose="true" />
+		<copy file="${temp.dir}/client_reobf.md5" tofile="${md5.outfile}" overwrite="true" verbose="true" />
 	</target>
 
 	<target name="stage" description="Stage resources into staging directory">
@@ -233,6 +219,7 @@
 				<exclude name="?.class" />
 				<exclude name="??.class" />
 				<exclude name="???.class" />
+				<exclude name="/net/minecraft/**" />
 			</fileset>
 		</copy>
 
@@ -242,19 +229,28 @@
 			<param name="lib" value="${project}" />
 		</antcall>
 
+		<antcall target="stamp">
+		</antcall>
+	</target>
+	
+	<target name="stamp" description="Stamp build information into staged resources" if="jenkins">
+		<echo level="info" message="Writing branding information into artefact staging area" />
+		<echo level="info" message="Brand: ${brand}" />
+
+		<replaceregexp file="${stage.dir}/liteloader.properties" byline="true" match="^brand=.*$" replace="brand=${brand}" />
 	</target>
 
 	<target name="zip" description="Build the output zip file">
 		<echo level="info" message="Building final output" />
 
 		<mkdir dir="${dist.dir}" />
-		
+
 		<jar destfile="${dist.dir}/${artefact.name}.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
 			<manifest>
 				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
 				<attribute name="Implementation-Vendor" value="${author}" />
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
-				<attribute name="Implementation-Version" value="${version}" />
+				<attribute name="Implementation-Version" value="${meta.version}" />
 				<attribute name="TweakClass" value="${tweakclass}" />
 				<attribute name="TweakName" value="LiteLoader" />
 				<attribute name="TweakVersion" value="${version}" />
@@ -263,7 +259,7 @@
 			<fileset dir="${stage.dir}" />
 		</jar>
 	</target>
-	
+
 	<target name="mcpjar" description="Build the MCP-names">
 		<echo level="info" message="Building mcpnamesjars" />
 
@@ -277,7 +273,7 @@
 				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
 				<attribute name="Implementation-Vendor" value="${author}" />
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
-				<attribute name="Implementation-Version" value="${version}" />
+				<attribute name="Implementation-Version" value="${meta.version}" />
 				<attribute name="TweakClass" value="${tweakclass}" />
 				<attribute name="TweakName" value="LiteLoader" />
 				<attribute name="TweakVersion" value="${version}" />
@@ -289,36 +285,45 @@
 			</fileset>
 		</jar>
 		<jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
-			<fileset dir="${eclipse}/LiteLoader/java/common" />
-			<fileset dir="${eclipse}/LiteLoader/java/client" />
-			<fileset dir="${eclipse}/LiteLoader/debug" />
-			<fileset dir="${eclipse}/LiteLoader/resources" />
+			<fileset dir="${eclipse.dir}/LiteLoader/java/common" />
+			<fileset dir="${eclipse.dir}/LiteLoader/java/client" />
+			<fileset dir="${eclipse.dir}/LiteLoader/debug" />
+			<fileset dir="${eclipse.dir}/LiteLoader/resources" />
 		</jar>
 	</target>
-	
+
 	<target name="javadoc" description="Create the javadoc jar">
+		<echo level="info" message="Generating javadoc" />
+
 		<javadoc destdir="${stage.dir}/docs" useexternalfile="true">
-			<fileset dir="${eclipse}/${project}/java">
+			<fileset dir="${eclipse.dir}/${project}/java">
 				<exclude name="**/debug" />
 				<exclude name="**/debug/*.java" />
 			</fileset>
+			<classpath>
+				<fileset dir="${mc.libs.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${libs.dir}">
+					<include name="*.jar" />
+				</fileset>
+				<pathelement location="${mc.bin.dir}"/>
+			</classpath>
 		</javadoc>
-		  <jar destfile="${dist.dir}/${artefact.name}-javadoc.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
-				<manifest>
-					<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
-					<attribute name="Implementation-Vendor" value="${author}" />
-					<attribute name="Implementation-Title" value="${ant.project.name}" />
-					<attribute name="Implementation-Version" value="${version}" />
-				</manifest>
-				<fileset dir="${stage.dir}/docs" />
-			</jar>
+		<jar destfile="${dist.dir}/${artefact.name}-javadoc.${filetype}" duplicate="preserve" index="true" manifestencoding="UTF-8">
+			<manifest>
+				<attribute name="Built-By" value="MCP (http://mcp.ocean-labs.de)" />
+				<attribute name="Implementation-Vendor" value="${author}" />
+				<attribute name="Implementation-Title" value="${ant.project.name}" />
+				<attribute name="Implementation-Version" value="${version}" />
+			</manifest>
+			<fileset dir="${stage.dir}/docs" />
+		</jar>
 	</target>
-	
-	<property environment="env" />
 	
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
 		<mkdir dir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}"/>
 		<copy todir="${env.APPDATA}/.minecraft/libraries/com/mumfrey/liteloader/${mcversion}" file="${dist.dir}/${artefact.name}.${filetype}" failonerror="false" overwrite="true" />
-		<copy todir="${eclipse}/LiteLoaderInstaller/src/main/resources" file="${dist.dir}/${artefact.name}.${filetype}" failonerror="false" overwrite="true" />
+		<copy todir="${eclipse.dir}/LiteLoaderInstaller/src/main/resources" file="${dist.dir}/${artefact.name}.${filetype}" failonerror="false" overwrite="true" />
 	</target>
 </project>

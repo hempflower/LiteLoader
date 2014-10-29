@@ -124,6 +124,8 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	
 	private String notification;
 	
+	private boolean isSnapshot;
+	
 	/**
 	 * @param minecraft
 	 * @param parentScreen
@@ -151,6 +153,13 @@ public class GuiLiteLoaderPanel extends GuiScreen
 		
 		this.startupErrorCount = mods.getStartupErrorCount();
 		this.criticalErrorCount = mods.getCriticalErrorCount();
+		
+		String branding = LiteLoader.getBranding();
+		if (branding != null && branding.contains("SNAPSHOT"))
+		{
+			this.isSnapshot = true;
+			this.versionText = "\247c" + branding;
+		}
 	}
 
 	/**
@@ -264,7 +273,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
 		this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRendererObj, I18n.format("gui.about.taboptions"), this.brandColour));
 		
-		if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.theWorld == null)
+		if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.theWorld == null && !this.isSnapshot)
 		{
 			this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50, this.fontRendererObj, I18n.format("gui.about.checkupdates"), this.brandColour));
 		}

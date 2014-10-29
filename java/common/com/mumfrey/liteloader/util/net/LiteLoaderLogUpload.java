@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -39,6 +40,8 @@ public class LiteLoaderLogUpload extends Thread
 		data.put("nick", nick);
 		data.put("uuid", uuid);
 		data.put("token", LITELOADER_KEY);
+		data.put("version", LiteLoader.getVersion());
+		data.put("brand", "" + LiteLoader.getBranding());
 		data.put("log", content); 
 		
 		StringBuilder sb = new StringBuilder();
