@@ -278,8 +278,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	/**
 	 * Callback from the tick hook, post render entities
 	 * 
+	 * @param partialTicks
 	 * @param timeSlice 
-	 * @param partialTicks2 
 	 */
 	void postRenderEntities(float partialTicks, long timeSlice)
 	{
@@ -289,8 +289,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	/**
 	 * Callback from the tick hook, post render
 	 * 
+	 * @param partialTicks 
 	 * @param timeSlice 
-	 * @param partialTicks2 
 	 */
 	void postRender(float partialTicks, long timeSlice)
 	{
@@ -366,8 +366,6 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	
 	/**
 	 * Callback from the tick hook, ticks all tickable mods
-	 * 
-	 * @param clock True if this is a new tick (otherwise it's just a new frame)
 	 */
 	void onTick()
 	{

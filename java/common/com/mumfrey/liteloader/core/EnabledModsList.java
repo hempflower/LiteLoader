@@ -123,7 +123,6 @@ public class EnabledModsList
 	 * Internal method which returns the map for the specified profile
 	 * 
 	 * @param profileName
-	 * @return
 	 */
 	private Map<String, Boolean> getProfile(String profileName)
 	{

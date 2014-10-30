@@ -142,7 +142,6 @@ public abstract class GuiPanel extends Gui
 	/**
 	 * @param mouseX
 	 * @param mouseY
-	 * @return
 	 */
 	boolean mouseOverPanel(int mouseX, int mouseY)
 	{

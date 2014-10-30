@@ -275,10 +275,10 @@ public class LiteLoaderTweaker implements ITweaker
 	}
 
 	/**
+	 * @param args
 	 * @param gameDirectory
 	 * @param assetsDirectory
 	 * @param profile
-	 * @param apisToLoad
 	 */
 	private void onPrepare(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
@@ -554,7 +554,6 @@ public class LiteLoaderTweaker implements ITweaker
 
 	/**
 	 * @param clazz
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	private static boolean isTweakAlreadyEnqueued(String clazz)

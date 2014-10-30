@@ -124,7 +124,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	/**
 	 * @param basicClass
 	 * @param profilerMappings
-	 * @return
 	 */
 	private byte[] injectCallbacks(byte[] basicClass, Map<String, Callback> profilerMappings, Map<String, Callback> mappings)
 	{
@@ -240,7 +239,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	 * @param classType
 	 * @param methodNode
 	 * @param callback
-	 * @return
 	 */
 	private InsnList genCallbackInsns(String classType, MethodNode methodNode, Callback callback)
 	{
@@ -254,7 +252,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	 * @param methodNode
 	 * @param callback
 	 * @param returnNumber
-	 * @return
 	 */
 	private InsnList genCallbackInsns(String classType, MethodNode methodNode, Callback callback, int returnNumber)
 	{
@@ -267,7 +264,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	 * @param methodNode
 	 * @param callback
 	 * @param returnNumber
-	 * @return
 	 */
 	private InsnList genCallbackInsns(InsnList injected, String classType, MethodNode methodNode, Callback callback, int returnNumber)
 	{
@@ -320,7 +316,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 
 	/**
 	 * @param method
-	 * @return
 	 */
 	private static String getMethodArgs(MethodNode method)
 	{
@@ -334,7 +329,6 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	 * @param invokeName
 	 * @param invokeSig
 	 * @param section
-	 * @return
 	 */
 	private static String generateSignature(String className, String methodName, String methodSignature, String invokeName, String invokeSig, String section)
 	{
@@ -345,10 +339,7 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
 	 * @param className
 	 * @param methodName
 	 * @param methodSignature
-	 * @param invokeName
-	 * @param invokeSig
-	 * @param section
-	 * @return
+	 * @param callbackType
 	 */
 	private static String generateSignature(String className, String methodName, String methodSignature, Callback.CallbackType callbackType)
 	{

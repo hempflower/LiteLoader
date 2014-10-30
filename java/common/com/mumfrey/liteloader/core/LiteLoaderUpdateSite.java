@@ -47,7 +47,7 @@ public class LiteLoaderUpdateSite extends UpdateSite
 	}
 
 	/**
-	 * @return
+	 * 
 	 */
 	private boolean findJarFile()
 	{

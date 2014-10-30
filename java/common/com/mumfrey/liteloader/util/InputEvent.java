@@ -49,7 +49,6 @@ public class InputEvent
 	 * Link this delegate to the specified delegate and return the start of the delegate chain
 	 * 
 	 * @param chain delegate to link to (will be null if the chain is empty)
-	 * @return
 	 */
 	InputEvent link(InputEvent chain)
 	{
@@ -61,7 +60,6 @@ public class InputEvent
 	 * Append specified delegate to the end of the delegate chain 
 	 * 
 	 * @param delegate
-	 * @return
 	 */
 	private InputEvent append(InputEvent delegate)
 	{

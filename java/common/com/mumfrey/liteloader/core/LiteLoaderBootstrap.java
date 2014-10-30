@@ -426,7 +426,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * Get the properties stream either from the jar or from the properties file
 	 * in the minecraft folder
 	 * 
-	 * @return
 	 * @throws FileNotFoundException
 	 */
 	private InputStream getLocalPropertiesStream() throws FileNotFoundException

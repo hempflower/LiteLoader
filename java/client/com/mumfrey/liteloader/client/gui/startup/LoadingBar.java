@@ -410,7 +410,6 @@ public class LoadingBar extends LoadingProgress
 	 * Pad LSB with 1's if any MSB are 1 (effectively a bitwise ceil() function)
 	 * 
 	 * @param component
-	 * @return
 	 */
 	private int padComponent(int component)
 	{

@@ -163,7 +163,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 	 * Register a new client mod with this manager
 	 * 
 	 * @param modName Mod name
-	 * @param modVersion Mod version
+	 * @param mod Mod instance
 	 */
 	private void registerClientMod(String modName, Permissible mod)
 	{

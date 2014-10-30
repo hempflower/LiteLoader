@@ -68,7 +68,6 @@ class Mod extends ModInfo<LoadableMod<?>>
 	/**
 	 * Called by the mod manager to instance the mod
 	 * 
-	 * @return
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */

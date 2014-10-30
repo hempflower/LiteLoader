@@ -54,10 +54,8 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 	private int debugInfoTimer = 0;
 	
 	/**
-	 * @param parent
 	 * @param minecraft
-	 * @param panel
-	 * @param mod
+	 * @param parent
 	 */
 	GuiPanelLiteLoaderLog(Minecraft minecraft, GuiLiteLoaderPanel parent)
 	{

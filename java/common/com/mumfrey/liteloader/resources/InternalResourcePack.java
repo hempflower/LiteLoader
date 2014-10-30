@@ -60,7 +60,6 @@ public class InternalResourcePack implements IResourcePack
 
 	/**
 	 * @param resourceLocation
-	 * @return
 	 */
 	private InputStream getResourceStream(ResourceLocation resourceLocation)
 	{

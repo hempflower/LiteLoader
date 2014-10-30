@@ -93,7 +93,6 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 		/**
 		 * @param provider
 		 * @param interfaceType
-		 * @return
 		 */
 		@SuppressWarnings("unchecked")
 		private Method findRegistrationMethod(InterfaceProvider provider, Class<? extends Listener> interfaceType)

@@ -308,7 +308,6 @@ public final class Input implements CoreProvider
 	 * @param controller
 	 * @param component
 	 * @param handler
-	 * @return
 	 */
 	private InputEvent addEventHandler(Controller controller, Component component, InputHandler handler)
 	{
@@ -336,7 +335,7 @@ public final class Input implements CoreProvider
 	}
 
 	/**
-	 * @return
+	 * 
 	 */
 	private Set<Controller> getActiveControllers()
 	{

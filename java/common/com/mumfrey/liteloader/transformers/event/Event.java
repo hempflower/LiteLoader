@@ -485,7 +485,6 @@ public class Event implements Comparable<Event>
 	 * Get an event by name (case insensitive)
 	 * 
 	 * @param eventName
-	 * @return
 	 */
 	static Event getEvent(String eventName)
 	{
@@ -500,8 +499,7 @@ public class Event implements Comparable<Event>
 	 * Populates the event proxy class with delegating methods for all injected events 
 	 * 
 	 * @param classNode
-	 * @param proxyIndex TODO
-	 * @return
+	 * @param proxyIndex
 	 */
 	static ClassNode populateProxy(final ClassNode classNode, int proxyIndex)
 	{

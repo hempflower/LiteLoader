@@ -143,7 +143,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
 	/**
 	 * @param environment
-	 * @return
 	 */
 	private String[] getSupportedPrefixes(LoaderEnvironment environment)
 	{
@@ -308,7 +307,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
 	/**
 	 * @param identifier
-	 * @return
 	 */
 	private LoadableMod<?> getContainerById(String identifier)
 	{
@@ -329,7 +327,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
 	/**
 	 * @param modClass
-	 * @return
 	 */
 	private LoadableMod<?> getContainerForMod(Class<? extends LiteMod> modClass)
 	{
@@ -671,7 +668,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	 * class
 	 * 
 	 * @param superClass
-	 * @return
 	 */
 	private static <T> LinkedList<Class<? extends T>> getSubclassesFor(LoadableMod<?> container, ClassLoader classloader, Class<T> superClass, String[] supportedPrefixes)
 	{

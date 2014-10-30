@@ -99,8 +99,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
 	}
 
 	/**
-	 * @param channel
-	 * @param data
+	 * @param payload
 	 */
 	static boolean dispatch(C17PacketCustomPayload payload)
 	{

@@ -313,7 +313,6 @@ public class BeforeInvoke extends InjectionPoint
 	 * 
 	 * @param haystack
 	 * @param needle
-	 * @return
 	 */
 	private static int arrayIndexOf(String[] haystack, String needle, int pos)
 	{

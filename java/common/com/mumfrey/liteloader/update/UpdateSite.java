@@ -355,7 +355,6 @@ public class UpdateSite implements Comparator<Long>
 	 * @param artefact
 	 * @param bestTimeStamp
 	 * @param checkOnly
-	 * @return
 	 */
 	private boolean checkAndUseRemoteArtefact(Map<?, ?> artefact, long bestTimeStamp, boolean checkOnly)
 	{
@@ -382,7 +381,6 @@ public class UpdateSite implements Comparator<Long>
 	/**
 	 * @param bestTimeStamp
 	 * @param remoteTimeStamp
-	 * @return
 	 */
 	private boolean compareTimeStamps(long bestTimeStamp, Long remoteTimeStamp)
 	{
@@ -391,7 +389,6 @@ public class UpdateSite implements Comparator<Long>
 
 	/**
 	 * @param file
-	 * @return
 	 */
 	private String createArtefactURL(String file)
 	{

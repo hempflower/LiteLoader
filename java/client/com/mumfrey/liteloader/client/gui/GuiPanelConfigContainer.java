@@ -39,7 +39,6 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
 	private int totalHeight = -1;
 	
 	/**
-	 * @param parent
 	 * @param minecraft
 	 * @param panel
 	 * @param mod
@@ -53,7 +52,7 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
 	}
 
 	/**
-	 * @return
+	 * 
 	 */
 	String getPanelTitle()
 	{

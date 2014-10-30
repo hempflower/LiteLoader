@@ -118,14 +118,6 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		return this.add(event, targetMethod, injectionPoint, callback, Obf.CallbackProxyClient);
 	}
 
-	/**
-	 * @param event
-	 * @param targetMethod
-	 * @param injectionPoint
-	 * @param callback
-	 * @param proxy
-	 * @return
-	 */
 	private Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback, Obf proxy)
 	{
 		return this.addEvent(event, targetMethod, injectionPoint).addListener(new MethodInfo(proxy, callback));

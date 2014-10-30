@@ -71,7 +71,6 @@ public final class APIRegistry
 	
 	/**
 	 * @param apiClassName
-	 * @return
 	 */
 	private LiteAPI spawnAPI(String apiClassName)
 	{
@@ -108,7 +107,7 @@ public final class APIRegistry
 	}
 	
 	/**
-	 * @return
+	 * Populate and return the API instance array
 	 */
 	private LiteAPI[] getAllAPIs()
 	{

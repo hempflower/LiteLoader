@@ -269,7 +269,6 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
 	 * @param exposable
 	 * @param strategy
 	 * @param fileName
-	 * @return
 	 */
 	static ExposableConfigWriter create(Exposable exposable, ConfigStrategy strategy, String fileName, boolean aggressive)
 	{

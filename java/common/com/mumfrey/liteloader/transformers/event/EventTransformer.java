@@ -248,7 +248,6 @@ public final class EventTransformer extends ClassTransformer
 	 * @param classNode
 	 * @param method
 	 * @param methodInjections
-	 * @return
 	 */
 	private Map<AbstractInsnNode, Injection> findInjectionPoints(ClassNode classNode, MethodNode method, Map<Event, InjectionPoint> methodInjections)
 	{

@@ -69,9 +69,13 @@ public class ModListEntry
 	
 	/**
 	 * Mod list entry for an ACTIVE mod
+	 * 
+	 * @param mods
+	 * @param environment
 	 * @param fontRenderer
+	 * @param brandColour
+	 * @param decorators
 	 * @param modInfo
-	 * @param enabledMods
 	 */
 	ModListEntry(LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
 	{

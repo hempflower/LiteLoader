@@ -357,7 +357,6 @@ public abstract class ClassPathUtilities
 	 * @param classLoader
 	 * @param fileName
 	 * @param removeFromClassPath
-	 * @return
 	 * @throws MalformedURLException
 	 */
 	@SuppressWarnings("unchecked")

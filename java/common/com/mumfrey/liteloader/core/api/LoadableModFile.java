@@ -240,9 +240,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		return this.getMetaValue(descriptionKey, this.getMetaValue("description", ""));
 	}
 
-	/**
-	 * @return
-	 */
 	private String compileMissingAPIList()
 	{
 		StringBuilder missingAPIList = new StringBuilder();

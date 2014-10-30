@@ -631,7 +631,6 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	/**
 	 * @param partialTicks
 	 * @param active
-	 * @return
 	 */
 	private float calcTween(float partialTicks, boolean active)
 	{
@@ -764,10 +763,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	}
 
 	/**
-	 * @param resource
 	 * @param x
 	 * @param y
 	 * @param icon
+	 * @param alpha
 	 */
 	static void glDrawTexturedRect(int x, int y, Icon icon, float alpha)
 	{

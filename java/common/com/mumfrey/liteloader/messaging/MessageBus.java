@@ -156,7 +156,6 @@ public class MessageBus implements InterfaceProvider
 	 * Get messengers for the specified channel
 	 * 
 	 * @param channel
-	 * @return
 	 */
 	private FastIterable<Messenger> getMessengerList(String channel)
 	{

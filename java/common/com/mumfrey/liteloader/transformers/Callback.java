@@ -320,7 +320,6 @@ public class Callback
 
 	/**
 	 * @param obfType
-	 * @param sb
 	 * @param arg
 	 */
 	private static String toDescriptor(int obfType, Object arg)

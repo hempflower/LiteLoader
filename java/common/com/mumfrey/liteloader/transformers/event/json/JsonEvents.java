@@ -91,7 +91,6 @@ public class JsonEvents implements Serializable
 	 * Parse a token name, returns the token name as a string if the token is valid, or null if the token is not valid
 	 * 
 	 * @param token
-	 * @return
 	 */
 	static String parseToken(String token)
 	{

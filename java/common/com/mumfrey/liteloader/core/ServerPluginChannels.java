@@ -72,10 +72,6 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 		super.addPluginChannelListener(pluginChannelListener);
 	}
 
-	/**
-	 * @param netHandler
-	 * @param loginPacket
-	 */
 	void onServerStartup()
 	{
 		this.clearPluginChannels(null);
@@ -87,10 +83,6 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 		}
 	}
 
-	/**
-	 * @param netHandler
-	 * @param loginPacket
-	 */
 	void onPlayerJoined(EntityPlayerMP player)
 	{
 		this.sendRegisteredPluginChannels(player);
@@ -190,7 +182,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	}
 
 	/**
-	 * @param netHandler
+	 * @param recipient
 	 * @param registrationData
 	 */
 	private void sendRegistrationData(EntityPlayerMP recipient, PacketBuffer registrationData)
@@ -240,8 +232,8 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 	}
 	
 	/**
-	 * @param channel
-	 * @param data
+	 * @param recipient
+	 * @param payload
 	 */
 	static boolean dispatch(EntityPlayerMP recipient, S3FPacketCustomPayload payload)
 	{

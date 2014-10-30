@@ -178,9 +178,10 @@ public final class LiteLoader
 	private Input input;
 	
 	/**
-	 * LiteLoader constructor
-	 * @param profile 
-	 * @param modNameFilter 
+	 * ctor
+	 * 
+	 * @param environment
+	 * @param properties
 	 */
 	private LiteLoader(LoaderEnvironment environment, LoaderProperties properties)
 	{

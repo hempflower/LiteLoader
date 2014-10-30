@@ -399,8 +399,6 @@ public class LiteLoaderMods
 
 	/**
 	 * Create mod instances from the enumerated classes
-	 * 
-	 * @param modsToLoad List of mods to load
 	 */
 	void loadMods()
 	{
@@ -651,7 +649,6 @@ public class LiteLoaderMods
 	 * for inclusion in the properties file
 	 * 
 	 * @param modName
-	 * @return
 	 */
 	String getModNameForConfig(Class<? extends LiteMod> modClass, String modName)
 	{

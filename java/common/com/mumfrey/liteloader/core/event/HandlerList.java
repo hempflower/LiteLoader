@@ -596,7 +596,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
 		/**
 		 * @param type
-		 * @param size
+		 * @param logicOp
 		 */
 		HandlerListClassLoader(Class<T> type, ReturnLogicOp logicOp)
 		{
@@ -995,7 +995,6 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		/**
 		 * @param baseName
 		 * @param typeName
-		 * @return
 		 */
 		private static String getNextClassName(String baseName, String typeName)
 		{
@@ -1004,7 +1003,6 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
 		/**
 		 * @param name
-		 * @return
 		 * @throws IOException
 		 */
 		private static byte[] getInterfaceBytes(String name) throws IOException

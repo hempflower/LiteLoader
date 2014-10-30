@@ -95,12 +95,12 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	private final String targetClassName;
 	
 	/**
-	 * Fields which get a different name from an {@link Obfuscate} annotation
+	 * Fields which get a different name from an {@link Obfuscated} annotation
 	 */
 	private final Map<String, String> renamedFields = new HashMap<String, String>();
 
 	/**
-	 * Methods which get a different name from an {@link Obfuscate} annotation
+	 * Methods which get a different name from an {@link Obfuscated} annotation
 	 */
 	private final Map<String, String> renamedMethods = new HashMap<String, String>();
 
@@ -177,7 +177,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	 * 
 	 * @param transformedName
 	 * @param basicClass
-	 * @return
 	 */
 	private byte[] remapClass(String transformedName, byte[] basicClass)
 	{
@@ -481,7 +480,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 
 	/**
 	 * @param transformedName
-	 * @return
 	 * @throws InvalidOverlayException
 	 */
 	private ClassNode loadOverlayClass(String transformedName, boolean runTransformers)
@@ -514,7 +512,6 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	 * 
 	 * @param name
 	 * @param basicClass
-	 * @return
 	 */
 	private byte[] applyTransformers(String name, byte[] basicClass)
 	{
