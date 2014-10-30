@@ -457,21 +457,18 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		{
 			if (!container.isEnabled(this.environment))
 			{
-				LiteLoaderLogger.info("Container %s is disabled", container.getLocation());
 				this.registerDisabledContainer(container, DisabledReason.USER_DISABLED);
 				return false;
 			}
 			
 			if (!this.checkDependencies(container))
 			{
-				LiteLoaderLogger.info("Container %s is missing one or more dependencies", container.getLocation());
 				this.registerDisabledContainer(container, DisabledReason.MISSING_DEPENDENCY);
 				return false;
 			}
 				
 			if (!this.checkAPIRequirements(container))
 			{
-				LiteLoaderLogger.info("Container %s is missing one or more required APIs", container.getLocation());
 				this.registerDisabledContainer(container, DisabledReason.MISSING_API);
 				return false;
 			}
@@ -501,6 +498,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	protected void registerDisabledContainer(LoadableMod<?> container, DisabledReason reason)
 	{
 		this.checkState(EnumeratorState.DISCOVER, "registerDisabledContainer");
+
+		LiteLoaderLogger.info(reason.getMessage(container));
 		
 		this.enabledContainers.remove(container.getIdentifier());
 		this.disabledContainers.put(container.getIdentifier(), new NonMod(container, false));

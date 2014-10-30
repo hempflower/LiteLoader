@@ -16,10 +16,22 @@ public interface LoaderEnumerator extends ModularEnumerator
 {
 	public enum DisabledReason
 	{
-		UNKNOWN,
-		USER_DISABLED,
-		MISSING_DEPENDENCY,
-		MISSING_API
+		UNKNOWN("Container %s is could not be loaded for UNKNOWN reason"),
+		USER_DISABLED("Container %s is disabled"),
+		MISSING_DEPENDENCY("Container %s is missing one or more dependencies"),
+		MISSING_API("Container %s is missing one or more required APIs");
+		
+		private final String message;
+		
+		private DisabledReason(String message)
+		{
+			this.message = message;
+		}
+
+		public String getMessage(LoadableMod<?> container)
+		{
+			return String.format(this.message, container);
+		}
 	}
 	
 	/**
