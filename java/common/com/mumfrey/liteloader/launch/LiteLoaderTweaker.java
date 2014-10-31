@@ -325,6 +325,11 @@ public class LiteLoaderTweaker implements ITweaker
 	 */
 	private void onPreBeginGame()
 	{
+		if (StartupState.BEGINGAME.isCompleted())
+		{
+			return;
+		}
+		
 		StartupState.BEGINGAME.gotoState();
 		try
 		{

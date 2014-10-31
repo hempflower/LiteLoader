@@ -311,12 +311,13 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	@Override
 	public void preBeginGame()
 	{
-		LoadingProgress.setEnabled(this.getAndStoreBooleanProperty(LoaderProperties.OPTION_LOADING_BAR, true));
 		LiteAPI api = this.getAPIProvider().getAPI("liteloader");
 		if (api instanceof LiteLoaderCoreAPI)
 		{
 			((LiteLoaderCoreAPI)api).getObjectFactory().preBeginGame();
 		}
+
+		LoadingProgress.setEnabled(this.getAndStoreBooleanProperty(LoaderProperties.OPTION_LOADING_BAR, true));
 	}
 	
 	/* (non-Javadoc)
