@@ -5,9 +5,7 @@ import java.net.MalformedURLException;
 
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
-import com.google.common.base.Charsets;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
-import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.resources.ModResourcePack;
 import com.mumfrey.liteloader.resources.ModResourcePackDir;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -30,7 +28,7 @@ public class LoadableModClassPath extends LoadableModFile
 	
 	LoadableModClassPath(File file, String fallbackName)
 	{
-		super(file, LoadableModClassPath.getVersionMetaDataString(file));
+		super(file, LoadableModFile.getVersionMetaDataString(file));
 
 		if (this.modName == null)
 		{
@@ -50,6 +48,12 @@ public class LoadableModClassPath extends LoadableModFile
 		}
 		
 		if (this.targetVersion == null) this.targetVersion = LiteLoaderVersion.CURRENT.getMinecraftVersion();
+	}
+	
+	@Override
+	protected void readJarMetaData()
+	{
+		// Nope
 	}
 	
 	@Override
@@ -103,10 +107,5 @@ public class LoadableModClassPath extends LoadableModFile
 			this.modNameRequired = false;
 			this.modName = modName;
 		}
-	}
-
-	private static String getVersionMetaDataString(File file)
-	{
-		return LoadableModFile.getFileContents(file, LoadableMod.METADATA_FILENAME, Charsets.UTF_8);
 	}
 }

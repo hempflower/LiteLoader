@@ -94,8 +94,6 @@ public interface LoaderProperties
 
 	// Enumerator properties
 	public static final String OPTION_SEARCH_MODS       = "search.mods";
-	public static final String OPTION_SEARCH_JAR        = "search.jar";
 	public static final String OPTION_SEARCH_CLASSPATH  = "search.classpath";
-	public static final String OPTION_SEARCH_ZIPFILES   = "search.zipfiles";
 	public static final String OPTION_SEARCH_JARFILES   = "search.jarfiles";
 }

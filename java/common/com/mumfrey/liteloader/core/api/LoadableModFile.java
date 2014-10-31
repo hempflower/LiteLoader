@@ -22,7 +22,6 @@ import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mumfrey.liteloader.api.manager.APIProvider;
@@ -126,21 +125,38 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	
 	/**
 	 * @param file
-	 * @param strVersion
+	 * @param metaData
 	 */
-	@SuppressWarnings("unchecked")
-	protected LoadableModFile(File file, String strVersion)
+	protected LoadableModFile(File file, String metaData)
 	{
 		super(file.getAbsolutePath());
-		
+		this.init(metaData);
+	}
+	
+	/**
+	 * @param file
+	 * @param metaData
+	 */
+	protected LoadableModFile(LoadableFile file, String metaData)
+	{
+		super(file);
+		this.init(metaData);
+	}
+
+	/**
+	 * @param metaData
+	 */
+	@SuppressWarnings("unchecked")
+	protected void init(String metaData)
+	{
 		this.timeStamp = this.lastModified();
 		this.tweakPriority = 0;
 		
-		if (!Strings.isNullOrEmpty(strVersion))
+		if (!Strings.isNullOrEmpty(metaData))
 		{
 			try
 			{
-				this.metaData = LoadableModFile.gson.fromJson(strVersion, HashMap.class);
+				this.metaData = LoadableModFile.gson.fromJson(metaData, HashMap.class);
 			}
 			catch (JsonSyntaxException jsx)
 			{
@@ -148,11 +164,11 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 				return;
 			}
 			
-			this.valid = this.parseVersionFile(strVersion);
+			this.valid = this.parseMetaData();
 		}
 	}
 
-	protected boolean parseVersionFile(String strVersionData)
+	protected boolean parseMetaData()
 	{
 		try
 		{
@@ -165,7 +181,7 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 
 			this.injectionStrategy = InjectionStrategy.parseStrategy(this.getMetaValue("injectAt", null));
 
-			this.tweakClassName = this.getMetaValue("tweakClass", null);
+			this.tweakClassName = this.getMetaValue("tweakClass", this.tweakClassName);
 			
 			this.getMetaValuesInto(this.classTransformerClassNames, "classTransformerClasses", ",");
 			this.getMetaValuesInto(this.dependencies, "dependsOn", ",");
@@ -477,15 +493,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		// Give up and use timestamp
 		return (int)(otherMod.timeStamp - this.timeStamp);
 	}
-	
-	/**
-	 * @param name
-	 * @param charset
-	 */
-	public String getFileContents(String name, Charset charset)
-	{
-		return LoadableModFile.getFileContents(this, name, charset);
-	}
 
 	protected static List<String> enumerateZipFile(File file)
 	{
@@ -598,46 +605,8 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		return new String(bytes, bomOffset, bytes.length - bomOffset, charset);
 	}
 
-	/**
-	 * @param parent
-	 * @param name
-	 * @param charset
-	 */
-	public static String getFileContents(File parent, String name, Charset charset)
+	protected static String getVersionMetaDataString(File file)
 	{
-		try
-		{
-			if (parent.isDirectory())
-			{
-				File file = new File(parent, name);
-				if (file.isFile())
-				{
-					return Files.toString(file, charset);
-				}
-			}
-			else
-			{
-				String content = null;
-				ZipFile zipFile = new ZipFile(parent);
-				ZipEntry zipEntry = zipFile.getEntry(name);
-				if (zipEntry != null)
-				{
-					try
-					{
-						content = LoadableModFile.zipEntryToString(zipFile, zipEntry);
-					}
-					catch (IOException ex) {}
-				}
-				
-				zipFile.close();
-				return content;
-			}
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		
-		return null;
+		return LoadableFile.getFileContents(file, LoadableMod.METADATA_FILENAME, Charsets.UTF_8);
 	}
 }

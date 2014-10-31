@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import com.mumfrey.liteloader.launch.InjectionStrategy;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 
@@ -24,8 +25,11 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
 {
 	static final String METADATA_FILENAME = "litemod.json";
 	
-	static final String LEGACY_METADATA_FILENAME = "version.txt";
-
+	/**
+	 * Get the mod systems declared in the jar metadata
+	 */
+	public abstract Set<String> getModSystems();
+	
 	/**
 	 * Get the name of the mod
 	 */
@@ -132,12 +136,20 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
 	 */
 	public class EmptyModContainer implements LoadableMod<File>
 	{
+		private static final ImmutableSet<String> EMPTY_SET = ImmutableSet.<String>of();
+
 		EmptyModContainer() {}
 		
 		@Override
 		public File getTarget()
 		{
 			return null;
+		}
+		
+		@Override
+		public Set<String> getModSystems()
+		{
+			return EmptyModContainer.EMPTY_SET;
 		}
 
 		@Override

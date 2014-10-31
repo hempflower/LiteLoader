@@ -28,7 +28,6 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
 	protected LoaderProperties properties;
 	
 	protected boolean searchClassPath;
-	protected boolean searchProtectionDomain;
 	protected boolean searchModsFolder;
 	
 	/* (non-Javadoc)
@@ -92,10 +91,9 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
 	void readDiscoverySettings()
 	{
 		this.searchModsFolder       = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_SEARCH_MODS,      true);
-		this.searchProtectionDomain = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_SEARCH_JAR,       false);
 		this.searchClassPath        = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_SEARCH_CLASSPATH, true);
 		
-		if (!this.searchModsFolder && !this.searchProtectionDomain && !this.searchClassPath)
+		if (!this.searchModsFolder && !this.searchClassPath)
 		{
 			LiteLoaderLogger.warning("Invalid configuration, no search locations defined. Enabling all search locations.");
 			
@@ -110,7 +108,6 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
 	void writeDiscoverySettings()
 	{
 		this.properties.setBooleanProperty(LoaderProperties.OPTION_SEARCH_MODS,      this.searchModsFolder);
-		this.properties.setBooleanProperty(LoaderProperties.OPTION_SEARCH_JAR,       this.searchProtectionDomain);
 		this.properties.setBooleanProperty(LoaderProperties.OPTION_SEARCH_CLASSPATH, this.searchClassPath);
 	}
 
@@ -129,19 +126,13 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
 			enumeratorModules.add(new EnumeratorModuleClassPath());
 		}
 		
-		if (this.searchProtectionDomain)
-		{
-			LiteLoaderLogger.warning("Protection domain searching is no longer required or supported, protection domain search has been disabled");
-			this.searchProtectionDomain = false;
-		}
-		
 		if (this.searchModsFolder)
 		{
 			File modsFolder = this.environment.getModsFolder();
-			enumeratorModules.add(new EnumeratorModuleFolder(this, modsFolder, true));
+			enumeratorModules.add(new EnumeratorModuleFolder(this, modsFolder, false));
 			
 			File versionedModsFolder = this.environment.getVersionedModsFolder();
-			enumeratorModules.add(new EnumeratorModuleFolder(this, versionedModsFolder, false));
+			enumeratorModules.add(new EnumeratorModuleFolder(this, versionedModsFolder, true));
 		}
 		
 		return Collections.unmodifiableList(enumeratorModules);
