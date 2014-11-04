@@ -1,4 +1,6 @@
-package com.mumfrey.liteloader.client.gui;
+package com.mumfrey.liteloader.client.gui.modlist;
+
+import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 
 public interface ModListContainer
 {

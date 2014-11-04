@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.gui;
+package com.mumfrey.liteloader.client.gui.modlist;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +12,7 @@ import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
+import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.Loadable;

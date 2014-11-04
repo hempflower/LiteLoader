@@ -703,7 +703,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	 * @param colour
 	 * @param backgroundColour
 	 */
-	protected static void drawTooltip(FontRenderer fontRenderer, String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight, int colour, int backgroundColour)
+	public static void drawTooltip(FontRenderer fontRenderer, String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight, int colour, int backgroundColour)
 	{
 		int textSize = fontRenderer.getStringWidth(tooltipText);
 		mouseX = Math.max(0, Math.min(screenWidth - 4, mouseX - 4));

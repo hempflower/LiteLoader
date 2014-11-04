@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.gui;
+package com.mumfrey.liteloader.client.gui.modlist;
 
 import java.util.List;
 import java.util.Set;

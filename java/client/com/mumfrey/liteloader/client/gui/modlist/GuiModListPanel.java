@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.gui;
+package com.mumfrey.liteloader.client.gui.modlist;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
@@ -11,6 +11,7 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 
 import com.mumfrey.liteloader.api.ModInfoDecorator;
+import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.util.render.IconClickable;
 import com.mumfrey.liteloader.util.render.IconTextured;

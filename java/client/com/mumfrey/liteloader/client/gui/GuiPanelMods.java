@@ -13,6 +13,8 @@ import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
+import com.mumfrey.liteloader.client.gui.modlist.ModList;
+import com.mumfrey.liteloader.client.gui.modlist.ModListContainer;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.modconfig.ConfigManager;

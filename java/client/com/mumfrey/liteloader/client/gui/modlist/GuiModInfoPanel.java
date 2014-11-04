@@ -1,4 +1,4 @@
-package com.mumfrey.liteloader.client.gui;
+package com.mumfrey.liteloader.client.gui.modlist;
 
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
 import net.minecraft.client.gui.FontRenderer;
@@ -6,6 +6,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Strings;
+import com.mumfrey.liteloader.client.gui.GuiSimpleScrollBar;
 import com.mumfrey.liteloader.core.ModInfo;
 
 public class GuiModInfoPanel extends Gui
