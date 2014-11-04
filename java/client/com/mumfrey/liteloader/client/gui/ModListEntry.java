@@ -22,13 +22,15 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
  */
 public class ModListEntry
 {
+	private final ModList modList;
+	
 	private final LiteLoaderMods mods;
 
 	private final ModInfo<?> modInfo;
 	
-	private final GuiModListPanel listPanel;
+	private GuiModListPanel listPanel;
 	
-	private final GuiModInfoPanel infoPanel;
+	private GuiModInfoPanel infoPanel;
 	
 	/**
 	 * Whether the mod is currently active
@@ -68,8 +70,12 @@ public class ModListEntry
 	private boolean isExternal;
 	
 	/**
-	 * Mod list entry for an ACTIVE mod
-	 * 
+	 * Timer used to handle double-clicking on a mod
+	 */
+	private int doubleClickTime = 0;
+
+	/**
+	 * @param modList
 	 * @param mods
 	 * @param environment
 	 * @param fontRenderer
@@ -77,8 +83,9 @@ public class ModListEntry
 	 * @param decorators
 	 * @param modInfo
 	 */
-	ModListEntry(LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
+	ModListEntry(ModList modList, LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
 	{
+		this.modList       = modList;
 		this.mods          = mods;
 		this.modInfo       = modInfo;
 		
@@ -104,10 +111,55 @@ public class ModListEntry
 			}
 		}
 
+		this.initPanels(fontRenderer, brandColour, decorators, modInfo);
+	}
+
+	/**
+	 * @param fontRenderer
+	 * @param brandColour
+	 * @param decorators
+	 * @param modInfo
+	 */
+	protected void initPanels(FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
+	{
 		this.infoPanel = new GuiModInfoPanel(this, fontRenderer, brandColour, modInfo);
 		this.listPanel = new GuiModListPanel(this, fontRenderer, brandColour, modInfo, decorators);
 	}
-	
+
+	public void onTick()
+	{
+		if (this.doubleClickTime > 0)
+			this.doubleClickTime--;
+	}
+
+	public void mousePressed(int mouseX, int mouseY, int mouseButton)
+	{
+		if (this.getListPanel().isMouseOver())
+		{
+			this.modList.selectMod(this);
+			
+			if (this.getListPanel().isMouseOverIcon())
+			{
+				this.getListPanel().iconClick(this.modList.getParentScreen());
+			}
+			else
+			{
+				// handle double-click
+				if (this.doubleClickTime > 0)
+				{
+					this.onDoubleClicked();
+				}
+			}
+			
+			this.doubleClickTime = 5;
+		}
+	}
+
+	protected void onDoubleClicked()
+	{
+		this.modList.showConfig(this);
+	}
+
 	protected String getTitleText()
 	{
 		return this.modInfo.getDisplayName();
@@ -161,6 +213,11 @@ public class ModListEntry
 	public String getKey()
 	{
 		return (this.isErrored ? "0000" : "") + this.modInfo.getIdentifier() + Integer.toHexString(this.hashCode());
+	}
+	
+	public ModInfo<?> getModInfo()
+	{
+		return this.modInfo;
 	}
 	
 	public LiteMod getModInstance()

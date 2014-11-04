@@ -3,10 +3,7 @@ package com.mumfrey.liteloader.client.gui;
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -17,9 +14,6 @@ import org.lwjgl.input.Keyboard;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
-import com.mumfrey.liteloader.core.ModInfo;
-import com.mumfrey.liteloader.interfaces.Loadable;
-import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
@@ -29,7 +23,7 @@ import com.mumfrey.liteloader.modconfig.ConfigPanel;
  * 
  * @author Adam Mummery-Smith
  */
-public class GuiPanelMods extends GuiPanel
+public class GuiPanelMods extends GuiPanel implements ModListContainer
 {	
 	private static final int SCROLLBAR_WIDTH = 5;
 	
@@ -40,17 +34,7 @@ public class GuiPanelMods extends GuiPanel
 	/**
 	 * List of enumerated mods
 	 */
-	private List<ModListEntry> mods = new ArrayList<ModListEntry>();
-	
-	/**
-	 * Currently selected mod
-	 */
-	private ModListEntry selectedMod = null;
-	
-	/**
-	 * Timer used to handle double-clicking on a mod
-	 */
-	private int doubleClickTime = 0;
+	private ModList modList;
 
 	/**
 	 * Enable / disable button
@@ -72,57 +56,38 @@ public class GuiPanelMods extends GuiPanel
 	 */
 	private GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
 
-	private int brandColour;
-
 	public GuiPanelMods(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, int brandColour, List<ModInfoDecorator> decorators)
 	{
 		super(minecraft);
 		
 		this.parentScreen = parentScreen;
 		this.configManager = configManager;
-		this.brandColour = brandColour;
 		
-		this.populateModList(mods, environment, decorators);
+		this.modList = new ModList(this, minecraft, mods, environment, configManager, brandColour, decorators);
 	}
 	
-	/**
-	 * Populate the mods list
-	 * 
-	 * @param mods
-	 * @param environment
-	 */
-	private void populateModList(LiteLoaderMods mods, LoaderEnvironment environment, List<ModInfoDecorator> decorators)
+	@Override
+	public GuiLiteLoaderPanel getParentScreen()
 	{
-		// Add mods to this treeset first, in order to sort them
-		Map<String, ModListEntry> sortedMods = new TreeMap<String, ModListEntry>();
-		
-		// Active mods
-		for (ModInfo<LoadableMod<?>> mod : mods.getLoadedMods())
-		{
-			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, mod);
-			sortedMods.put(modListEntry.getKey(), modListEntry);
-		}
-		
-		// Disabled mods
-		for (ModInfo<?> disabledMod : mods.getDisabledMods())
-		{
-			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, disabledMod);
-			sortedMods.put(modListEntry.getKey(), modListEntry);
-		}
-
-		// Injected tweaks
-		for (ModInfo<Loadable<?>> injectedTweak : mods.getInjectedTweaks())
-		{
-			ModListEntry modListEntry = new ModListEntry(mods, environment, this.mc.fontRendererObj, this.brandColour, decorators, injectedTweak);
-			sortedMods.put(modListEntry.getKey(), modListEntry);
-		}
-		
-		// Add the sorted mods to the mods list
-		this.mods.addAll(sortedMods.values());
-		
-		// Select the first mod in the list
-		if (this.mods.size() > 0)
-			this.selectedMod = this.mods.get(0);
+		return this.parentScreen;
+	}
+	
+	@Override
+	public void setConfigButtonVisible(boolean visible)
+	{
+		this.btnConfig.visible = visible;
+	}
+	
+	@Override
+	public void setEnableButtonVisible(boolean visible)
+	{
+		this.btnToggle.visible = visible;
+	}
+	
+	@Override
+	public void setEnableButtonText(String displayString)
+	{
+		this.btnToggle.displayString = displayString;
 	}
 	
 	@Override
@@ -141,15 +106,14 @@ public class GuiPanelMods extends GuiPanel
 		this.controls.clear();
 		this.controls.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 90, 20, I18n.format("gui.enablemod")));
 		this.controls.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 69, 20, I18n.format("gui.modsettings")));
-		
-		this.selectMod(this.selectedMod);
+
+		this.modList.setSize(width, height);
 	}
 	
 	@Override
 	void onTick()
 	{
-		if (this.doubleClickTime > 0)
-			this.doubleClickTime--;
+		this.modList.onTick();
 	}
 	
 	@Override
@@ -174,35 +138,7 @@ public class GuiPanelMods extends GuiPanel
 			
 			if (mouseY > GuiLiteLoaderPanel.PANEL_TOP && mouseY < this.height - GuiLiteLoaderPanel.PANEL_BOTTOM)
 			{
-				ModListEntry lastSelectedMod = this.selectedMod;
-				
-				for (ModListEntry mod : this.mods)
-				{
-					if (mod.getListPanel().isMouseOver())
-					{
-						this.selectMod(mod);
-						
-						if (mod.getListPanel().isMouseOverIcon())
-						{
-							mod.getListPanel().iconClick(this.parentScreen);
-						}
-						else
-						{
-							// handle double-click
-							if (mod == lastSelectedMod && this.doubleClickTime > 0 && this.btnConfig.visible)
-							{
-								this.actionPerformed(this.btnConfig);
-							}
-						}
-						
-						this.doubleClickTime = 5;
-					}
-				}
-				
-				if (this.selectedMod != null && this.selectedMod == lastSelectedMod)
-				{
-					this.selectedMod.getInfoPanel().mousePressed();
-				}
+				this.modList.mousePressed(mouseX, mouseY, mouseButton);
 			}
 		}
 
@@ -217,21 +153,9 @@ public class GuiPanelMods extends GuiPanel
 			this.parentScreen.onToggled();
 			return;
 		}
-		else if (keyCode == Keyboard.KEY_UP)
+		else if (this.modList.keyPressed(keyChar, keyCode))
 		{
-			int selectedIndex = this.mods.indexOf(this.selectedMod) - 1;
-			if (selectedIndex > -1) this.selectMod(this.mods.get(selectedIndex));
-			this.scrollSelectedModIntoView();
-		}
-		else if (keyCode == Keyboard.KEY_DOWN)
-		{
-			int selectedIndex = this.mods.indexOf(this.selectedMod);
-			if (selectedIndex > -1 && selectedIndex < this.mods.size() - 1) this.selectMod(this.mods.get(selectedIndex + 1));
-			this.scrollSelectedModIntoView();
-		}
-		else if (keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RIGHT)
-		{
-			this.toggleSelectedMod();
+			// Suppress further handling
 		}
 		else if (keyCode == Keyboard.KEY_F3)
 		{
@@ -254,21 +178,23 @@ public class GuiPanelMods extends GuiPanel
 		if (mouseButton == 0)
 		{
 			this.scrollBar.setDragging(false);
-			
-			if (this.selectedMod != null)
-			{
-				this.selectedMod.getInfoPanel().mouseReleased();
-			}
+			this.modList.mouseReleased(mouseX, mouseY, mouseButton);
 		}
 	}
 	
 	@Override
 	void mouseWheelScrolled(int mouseWheelDelta)
 	{
-		if (this.selectedMod == null || !this.selectedMod.getInfoPanel().mouseWheelScrolled(mouseWheelDelta))
+		if (!this.modList.mouseWheelScrolled(mouseWheelDelta))
 		{
 			this.scrollBar.offsetValue(-mouseWheelDelta / 8);
 		}
+	}
+	
+	@Override
+	public void showConfig()
+	{
+		this.actionPerformed(this.btnConfig);
 	}
 	
 	@Override
@@ -276,15 +202,17 @@ public class GuiPanelMods extends GuiPanel
 	{
 		if (control.id == 0)
 		{
-			this.toggleSelectedMod();
+			this.modList.toggleSelectedMod();
 		}
 		
 		if (control.id == 1)
 		{
-			if (this.selectedMod != null && this.selectedMod.getModClass() != null)
+			Class<? extends LiteMod> modClass = this.modList.getSelectedModClass();
+			
+			if (modClass != null)
 			{
-				ConfigPanel panel = this.configManager.getPanel(this.selectedMod.getModClass());
-				LiteMod mod = this.selectedMod.getModInstance();
+				ConfigPanel panel = this.configManager.getPanel(modClass);
+				LiteMod mod = this.modList.getSelectedModInstance();
 				this.parentScreen.openConfigPanel(panel, mod);
 			}
 		}
@@ -298,9 +226,17 @@ public class GuiPanelMods extends GuiPanel
 		int innerWidth = this.width - MARGIN - MARGIN - 4;
 		int panelWidth = innerWidth / 2;
 		int panelHeight = this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - GuiLiteLoaderPanel.PANEL_TOP;
-		
+
 		this.drawModsList(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
-		this.drawSelectedMod(mouseX, mouseY, partialTicks, panelWidth, panelHeight);
+
+		int left = MARGIN + panelWidth;
+		int top = GuiLiteLoaderPanel.PANEL_TOP;
+		int spaceForButtons = (this.btnConfig.visible || this.btnToggle.visible ? 28 : 0);
+		int bottom = this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - spaceForButtons;
+		
+		glEnableClipping(left, this.width - MARGIN, top, bottom);
+		this.modList.drawModPanel(mouseX, mouseY, partialTicks, left, top, this.width - MARGIN - left, panelHeight - spaceForButtons);
+		glDisableClipping();
 
 		super.draw(mouseX, mouseY, partialTicks);
 	}
@@ -324,108 +260,30 @@ public class GuiPanelMods extends GuiPanel
 		glTranslatef(0.0F, GuiLiteLoaderPanel.PANEL_TOP - this.scrollBar.getValue(), 0.0F);
 		
 		mouseY -= (GuiLiteLoaderPanel.PANEL_TOP - this.scrollBar.getValue());
-		
-		int yPos = 0;
-		for (ModListEntry mod : this.mods)
-		{
-			// drawListEntry returns a value indicating the height of the item drawn
-			yPos += mod.getListPanel().draw(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
-		}
-		
-		yPos = 0;
-		for (ModListEntry mod : this.mods)
-		{
-			yPos += mod.getListPanel().postRender(mouseX, mouseY, partialTicks, MARGIN, yPos, width - 6, mod == this.selectedMod);
-		}
+
+		this.listHeight = this.modList.drawModList(mouseX, mouseY, partialTicks, MARGIN, 0, width - SCROLLBAR_WIDTH - 1, height);
+		this.scrollBar.setMaxValue(this.listHeight - height);
 		
 		glPopMatrix();
 		glDisableClipping();
-		
-		this.listHeight = yPos;
-		this.scrollBar.setMaxValue(this.listHeight - height);
 	}
-
-	/**
-	 * @param mouseX
-	 * @param mouseY
-	 * @param partialTicks
-	 * @param width
-	 * @param height
-	 */
-	private void drawSelectedMod(int mouseX, int mouseY, float partialTicks, int width, int height)
+	
+	@Override
+	public void scrollTo(int yPosTop, int yPosBottom)
 	{
-		if (this.selectedMod != null)
-		{
-			int left = MARGIN + width;
-			int right = this.width - MARGIN;
-			
-			int spaceForButtons = this.btnConfig.visible || this.btnToggle.visible ? 28 : 0;
-			glEnableClipping(left, right, GuiLiteLoaderPanel.PANEL_TOP, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - spaceForButtons);
-			this.selectedMod.getInfoPanel().draw(mouseX, mouseY, partialTicks, left, GuiLiteLoaderPanel.PANEL_TOP, right - left, height - spaceForButtons);
-			glDisableClipping();
-		}
-	}
-
-	/**
-	 * @param mod Mod list entry to select
-	 */
-	private void selectMod(ModListEntry mod)
-	{
-		if (this.selectedMod != null)
-		{
-			this.selectedMod.getInfoPanel().mouseReleased();
-		}
-		
-		this.selectedMod = mod;
-		this.btnToggle.visible = false;
-		this.btnConfig.visible = false;
-		
-		if (this.selectedMod != null && this.selectedMod.canBeToggled())
-		{
-			this.btnToggle.visible = true;
-			this.btnToggle.displayString = this.selectedMod.willBeEnabled() ? I18n.format("gui.disablemod") : I18n.format("gui.enablemod");
-			
-			this.btnConfig.visible = this.configManager.hasPanel(this.selectedMod.getModClass());
-		}
-	}
-
-	/**
-	 * Toggle the selected mod's enabled status
-	 */
-	private void toggleSelectedMod()
-	{
-		if (this.selectedMod != null)
-		{
-			this.selectedMod.toggleEnabled();
-			this.selectMod(this.selectedMod);
-		}
-	}
-
-	private void scrollSelectedModIntoView()
-	{
-		if (this.selectedMod == null) return;
-		
-		int yPos = 0;
-		for (ModListEntry mod : this.mods)
-		{
-			if (mod == this.selectedMod) break;
-			yPos += mod.getListPanel().getHeight();
-		}
-		
 		// Mod is above the top of the visible window
-		if (yPos < this.scrollBar.getValue())
+		if (yPosTop < this.scrollBar.getValue())
 		{
-			this.scrollBar.setValue(yPos);
+			this.scrollBar.setValue(yPosTop);
 			return;
 		}
 		
 		int panelHeight = this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - GuiLiteLoaderPanel.PANEL_TOP;
-		int modHeight = this.selectedMod.getListPanel().getHeight();
 		
 		// Mod is below the bottom of the visible window
-		if (yPos - this.scrollBar.getValue() + modHeight > panelHeight)
+		if (yPosBottom - this.scrollBar.getValue() > panelHeight)
 		{
-			this.scrollBar.setValue(yPos - panelHeight + modHeight);
+			this.scrollBar.setValue(yPosBottom - panelHeight);
 		}
 	}
 }

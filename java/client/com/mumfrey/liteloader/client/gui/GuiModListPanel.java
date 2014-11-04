@@ -38,7 +38,7 @@ public class GuiModListPanel extends Gui
 	static final int HANGER_COLOUR_MOUSEOVER   = GuiModListPanel.WHITE;
 
 	static final int PANEL_HEIGHT              = 32;
-	static final int PANEL_SPACING             = 4;
+	static final int PANEL_SPACING             = 3;
 	
 	private ModListEntry owner;
 
@@ -75,6 +75,18 @@ public class GuiModListPanel extends Gui
 			decorator.addIcons(modInfo, this.modIcons);
 		}
 	}
+	
+	public void draw(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected, int pass)
+	{
+		if (pass == 0)
+		{
+			this.render(mouseX, mouseY, partialTicks, xPosition, yPosition, width, selected);
+		}
+		else if (pass == 1)
+		{
+			this.postRender(mouseX, mouseY, partialTicks, xPosition, yPosition, width, selected);
+		}
+	}
 
 	/**
 	 * Draw this list entry as a list item
@@ -86,9 +98,8 @@ public class GuiModListPanel extends Gui
 	 * @param yPosition
 	 * @param width
 	 * @param selected
-	 * @return calculated height of this panel, used by the list view to calculate spacing
 	 */
-	public int draw(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
+	protected void render(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
 	{
 		int gradientColour = this.getGradientColour(selected);
 		int titleColour    = this.getTitleColour(selected);
@@ -118,11 +129,9 @@ public class GuiModListPanel extends Gui
 		{
 			decorator.onDrawListEntry(mouseX, mouseY, partialTicks, xPosition, yPosition, width, GuiModListPanel.PANEL_HEIGHT, selected, this.modInfo, gradientColour, titleColour, statusColour);
 		}
-		
-		return GuiModListPanel.PANEL_HEIGHT + GuiModListPanel.PANEL_SPACING;
 	}
-
-	public int postRender(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
+	
+	protected void postRender(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
 	{
 		xPosition += (width - 14);
 		yPosition += (GuiModListPanel.PANEL_HEIGHT - 14);
@@ -133,8 +142,6 @@ public class GuiModListPanel extends Gui
 		{
 			xPosition = this.drawPropertyIcon(xPosition, yPosition, icon, mouseX, mouseY);
 		}
-		
-		return GuiModListPanel.PANEL_HEIGHT + GuiModListPanel.PANEL_SPACING;
 	}
 
 	protected int drawPropertyIcon(int xPosition, int yPosition, IconTextured icon, int mouseX, int mouseY)
@@ -190,7 +197,22 @@ public class GuiModListPanel extends Gui
 		return this.owner.isExternal() ? GuiModListPanel.EXTERNAL_ENTRY_COLOUR : this.brandColour;
 	}
 
+	public boolean isVisible()
+	{
+		return true;
+	}
+
+	public int getSpacing()
+	{
+		return GuiModListPanel.PANEL_SPACING;
+	}
+	
 	public int getHeight()
+	{
+		return GuiModListPanel.PANEL_HEIGHT;
+	}
+	
+	public int getTotalHeight()
 	{
 		return GuiModListPanel.PANEL_HEIGHT + GuiModListPanel.PANEL_SPACING;
 	}
