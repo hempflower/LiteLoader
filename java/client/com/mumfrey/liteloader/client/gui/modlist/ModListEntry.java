@@ -37,6 +37,8 @@ public class ModListEntry
 	 */
 	private boolean isActive;
 	
+	private boolean isValid;
+	
 	private boolean isMissingDependencies;
 	
 	private boolean isMissingAPIs;
@@ -90,12 +92,13 @@ public class ModListEntry
 		this.modInfo       = modInfo;
 		
 		this.isActive      = modInfo.isActive();
+		this.isValid       = modInfo.isValid();
 		this.canBeToggled  = modInfo.isToggleable() && mods.getEnabledModsList().saveAllowed();
 		this.willBeEnabled = mods.isModEnabled(this.modInfo.getIdentifier());;
 		this.isExternal    = modInfo.getContainer().isExternalJar();
 		this.isErrored     = modInfo.getStartupErrors() != null && modInfo.getStartupErrors().size() > 0;
 		
-		if (!modInfo.isActive())
+		if (!modInfo.isActive() && this.isValid)
 		{
 			this.isActive = modInfo.getContainer().isEnabled(environment);
 
@@ -123,7 +126,15 @@ public class ModListEntry
 	protected void initPanels(FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
 	{
 		this.infoPanel = new GuiModInfoPanel(this, fontRenderer, brandColour, modInfo);
-		this.listPanel = new GuiModListPanel(this, fontRenderer, brandColour, modInfo, decorators);
+		
+		if (this.isValid)
+		{
+			this.listPanel = new GuiModListPanel(this, fontRenderer, brandColour, modInfo, decorators);
+		}
+		else
+		{
+			this.listPanel = new GuiModListPanelInvalid(this, fontRenderer, brandColour, modInfo, decorators);
+		}
 	}
 
 	public void onTick()

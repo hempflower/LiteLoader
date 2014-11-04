@@ -173,7 +173,7 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 		try
 		{
 			this.modName     = this.getMetaValue("name", this.getDefaultName());
-			this.displayName = this.getMetaValue("displayName", null);
+			this.displayName = this.getMetaValue("displayName", this.modName);
 			this.version     = this.getMetaValue("version", "Unknown");
 			this.author      = this.getMetaValue("author", "Unknown");
 			

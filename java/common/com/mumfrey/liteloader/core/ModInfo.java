@@ -60,6 +60,14 @@ public abstract class ModInfo<TContainer extends Loadable<?>>
 	}
 	
 	/**
+	 * Get whether this mod is valid
+	 */
+	public boolean isValid()
+	{
+		return true;
+	}
+	
+	/**
 	 * Get whether this mod can be toggled
 	 */
 	public boolean isToggleable()

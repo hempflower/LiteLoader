@@ -23,6 +23,12 @@ public interface ModularEnumerator
 	 * @param container
 	 */
 	public abstract boolean registerModContainer(LoadableMod<?> container);
+	
+	/**
+	 * @param container
+	 * @param reason
+	 */
+	public abstract void registerBadContainer(Loadable<?> container, String reason);
 
 	/**
 	 * @param container

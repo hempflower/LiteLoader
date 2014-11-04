@@ -94,6 +94,11 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	 * Mapping of identifiers to mod containers 
 	 */
 	private final Map<String, LoadableMod<?>> enabledContainers = new HashMap<String, LoadableMod<?>>();
+
+	/**
+	 * Map of containers which cannot be loaded to reasons
+	 */
+	private final Set<ModInfo<Loadable<?>>> badContainers = new HashSet<ModInfo<Loadable<?>>>();
 	
 	/**
 	 * Containers which have already been checked for potential mod candidates 
@@ -257,6 +262,14 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		this.checkState(EnumeratorState.FINALISED, "getDisabledContainers");
 		
 		return this.disabledContainers.values();
+	}
+	
+	@Override
+	public Collection<? extends ModInfo<Loadable<?>>> getBadContainers()
+	{
+		this.checkState(EnumeratorState.FINALISED, "getBadContainers");
+		
+		return this.badContainers;
 	}
 	
 	/**
@@ -446,7 +459,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	}
 
 	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.interfaces.PluggableEnumerator#registerModContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
+	 * @see com.mumfrey.liteloader.interfaces.ModularEnumerator#registerModContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
 	 */
 	@Override
 	public final boolean registerModContainer(LoadableMod<?> container)
@@ -477,6 +490,15 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		}
 
 		return true;
+	}
+	
+	@Override
+	public void registerBadContainer(Loadable<?> container, String reason)
+	{
+		this.checkState(EnumeratorState.DISCOVER, "registerBadContainer");
+		
+		BadContainerInfo badMod = new BadContainerInfo(container, reason);
+		this.badContainers.add(badMod);
 	}
 
 	/**

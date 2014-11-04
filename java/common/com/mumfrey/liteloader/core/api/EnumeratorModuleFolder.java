@@ -117,6 +117,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 		if (fileName.endsWith(".litemod.zip"))
 		{
 			LiteLoaderLogger.warning("Found %s with unsupported extension .litemod.zip. Please change file extension to .litemod to allow this file to be loaded!", fileName);
+			return true;
 		}
 		
 		return fileName.endsWith(".litemod") || fileName.endsWith(".jar");
@@ -164,7 +165,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	 */
 	protected void inspectFile(ModularEnumerator enumerator, LoadableFile candidateFile)
 	{
-		if (this.isValidFile(candidateFile))
+		if (this.isValidFile(enumerator, candidateFile))
 		{
 			String metaData = candidateFile.getFileContents(LoadableMod.METADATA_FILENAME, Charsets.UTF_8);
 			if (metaData != null)
@@ -182,19 +183,30 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 			else
 			{
 				LiteLoaderLogger.info("Ignoring %s", candidateFile);
+//				enumerator.registerBadContainer(candidateFile, "No metadata");
 			}
 		}
+//		else
+//		{
+//			enumerator.registerBadContainer(candidateFile, "Not a valid file");
+//		}
 	}
 
 	/**
 	 * Check whether the specified file is a valid mod container
 	 * 
+	 * @param enumerator
 	 * @param candidateFile
 	 */
-	protected boolean isValidFile(LoadableFile candidateFile)
+	protected boolean isValidFile(ModularEnumerator enumerator, LoadableFile candidateFile)
 	{
 		String filename = candidateFile.getName().toLowerCase();
-		if (filename.endsWith(".litemod"))
+		if (filename.endsWith(".litemod.zip"))
+		{
+			enumerator.registerBadContainer(candidateFile, "Invalid file extension .litemod.zip");
+			return false;
+		}
+		else if (filename.endsWith(".litemod"))
 		{
 			return true;
 		}
@@ -281,6 +293,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 			else
 			{
 				LiteLoaderLogger.info("Not adding invalid or version-mismatched mod file: %s", modFile);
+				enumerator.registerBadContainer(modFile, "Version not supported");
 			}
 		}
 	}

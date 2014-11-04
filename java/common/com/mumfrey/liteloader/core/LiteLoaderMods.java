@@ -2,6 +2,7 @@ package com.mumfrey.liteloader.core;
 
 import java.io.File;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -79,22 +80,32 @@ public class LiteLoaderMods
 	/**
 	 * Global list of mods which we can load
 	 */
-	protected final LinkedList<Mod> allMods = new LinkedList<Mod>();
+	protected final List<Mod> allMods = new LinkedList<Mod>();
 	
 	/**
 	 * Global list of mods which are still waiting for initialisiation
 	 */
-	protected final LinkedList<Mod> initMods = new LinkedList<Mod>();
+	protected final Deque<Mod> initMods = new LinkedList<Mod>();
 	
 	/**
 	 * Global list of mods which we have loaded
 	 */
-	protected final LinkedList<Mod> loadedMods = new LinkedList<Mod>();
+	protected final List<Mod> loadedMods = new LinkedList<Mod>();
+	
+	/**
+	 * Global list of mods which we found but ignored (eg. outdated, invalid)
+	 */
+	protected final List<Mod> badMods = new LinkedList<Mod>();
 	
 	/**
 	 * Mods which are loaded but disabled
 	 */
-	protected final LinkedList<ModInfo<?>> disabledMods = new LinkedList<ModInfo<?>>();
+	protected final List<ModInfo<?>> disabledMods = new LinkedList<ModInfo<?>>();
+	
+	/**
+	 * Bad containers
+	 */
+	protected final List<ModInfo<?>> badContainers = new LinkedList<ModInfo<?>>();
 
 	private int startupErrorCount, criticalErrorCount;
 
@@ -112,6 +123,7 @@ public class LiteLoaderMods
 	{
 		this.observers.addAll(observers);
 		this.disabledMods.addAll(this.enumerator.getDisabledContainers());
+		this.badContainers.addAll(this.enumerator.getBadContainers());
 	}
 	
 	void onPostInit()
@@ -155,6 +167,14 @@ public class LiteLoaderMods
 	public List<? extends ModInfo<?>> getDisabledMods()
 	{
 		return this.disabledMods;
+	}
+
+	/**
+	 * Get a list of all bad containers
+	 */
+	public List<? extends ModInfo<?>> getBadContainers()
+	{
+		return this.badContainers;
 	}
 	
 	/**

@@ -85,6 +85,11 @@ public interface LoaderEnumerator extends ModularEnumerator
 	public abstract Collection<? extends ModInfo<Loadable<?>>> getDisabledContainers();
 	
 	/**
+	 * Get all bad containers
+	 */
+	public abstract Collection<? extends ModInfo<Loadable<?>>> getBadContainers();
+	
+	/**
 	 * @param modClass
 	 * @param metaDataKey
 	 * @param defaultValue

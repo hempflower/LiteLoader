@@ -41,18 +41,18 @@ public class GuiModListPanel extends Gui
 	static final int PANEL_HEIGHT              = 32;
 	static final int PANEL_SPACING             = 3;
 	
-	private ModListEntry owner;
+	protected ModListEntry owner;
 
 	/**
 	 * For text display
 	 */
-	private final FontRenderer fontRenderer;
+	protected final FontRenderer fontRenderer;
 	
-	private final int brandColour;
+	protected final int brandColour;
 	
-	private final List<ModInfoDecorator> decorators;
+	protected final List<ModInfoDecorator> decorators;
 	
-	private final ModInfo<?> modInfo;
+	protected final ModInfo<?> modInfo;
 
 	/**
 	 * True if the mouse was over this mod on the last render
@@ -65,11 +65,11 @@ public class GuiModListPanel extends Gui
 
 	public GuiModListPanel(ModListEntry owner, FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo, List<ModInfoDecorator> decorators)
 	{
-		this.owner = owner;
+		this.owner        = owner;
 		this.fontRenderer = fontRenderer;
-		this.brandColour = brandColour;
-		this.modInfo = modInfo;
-		this.decorators = decorators;
+		this.brandColour  = brandColour;
+		this.modInfo      = modInfo;
+		this.decorators   = decorators;
 		
 		for (ModInfoDecorator decorator : this.decorators)
 		{
@@ -122,7 +122,7 @@ public class GuiModListPanel extends Gui
 		this.fontRenderer.drawString(versionText, xPosition + 5, yPosition + 12, GuiModListPanel.VERSION_TEXT_COLOUR);
 		this.fontRenderer.drawString(statusText,  xPosition + 5, yPosition + 22, statusColour);
 		
-		this.mouseOver = this.isMouseOver(mouseX, mouseY, xPosition, yPosition, width, PANEL_HEIGHT); 
+		this.updateMouseOver(mouseX, mouseY, xPosition, yPosition, width); 
 		int hangerColour = this.mouseOver ? GuiModListPanel.HANGER_COLOUR_MOUSEOVER : GuiModListPanel.HANGER_COLOUR;
 		drawRect(xPosition, yPosition, xPosition + 1, yPosition + PANEL_HEIGHT, hangerColour);
 		
@@ -130,6 +130,18 @@ public class GuiModListPanel extends Gui
 		{
 			decorator.onDrawListEntry(mouseX, mouseY, partialTicks, xPosition, yPosition, width, GuiModListPanel.PANEL_HEIGHT, selected, this.modInfo, gradientColour, titleColour, statusColour);
 		}
+	}
+
+	/**
+	 * @param mouseX
+	 * @param mouseY
+	 * @param xPosition
+	 * @param yPosition
+	 * @param width
+	 */
+	protected void updateMouseOver(int mouseX, int mouseY, int xPosition, int yPosition, int width)
+	{
+		this.mouseOver = this.isMouseOver(mouseX, mouseY, xPosition, yPosition, width, PANEL_HEIGHT);
 	}
 	
 	protected void postRender(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, boolean selected)
@@ -218,7 +230,7 @@ public class GuiModListPanel extends Gui
 		return GuiModListPanel.PANEL_HEIGHT + GuiModListPanel.PANEL_SPACING;
 	}
 	
-	private boolean isMouseOver(int mouseX, int mouseY, int x, int y, int width, int height)
+	protected boolean isMouseOver(int mouseX, int mouseY, int x, int y, int width, int height)
 	{
 		return mouseX > x && mouseX < x + width && mouseY > y && mouseY < y + height;
 	}

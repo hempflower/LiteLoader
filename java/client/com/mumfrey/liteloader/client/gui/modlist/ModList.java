@@ -71,6 +71,16 @@ public class ModList
 			ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, disabledMod);
 			sortedMods.put(modListEntry.getKey(), modListEntry);
 		}
+		
+		// Show bad containers if no other containers are found, should help users realise they have the wrong mod version!
+		if (sortedMods.size() == 0)
+		{
+			for (ModInfo<?> badMod : mods.getBadContainers())
+			{
+				ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, badMod);
+				sortedMods.put(modListEntry.getKey(), modListEntry);
+			}
+		}
 
 		// Injected tweaks
 		for (ModInfo<Loadable<?>> injectedTweak : mods.getInjectedTweaks())
