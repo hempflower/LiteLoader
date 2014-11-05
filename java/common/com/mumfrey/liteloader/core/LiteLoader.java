@@ -595,7 +595,7 @@ public final class LiteLoader
 	 * @throws InvalidActivityException Thrown by getMod if init is not complete 
 	 * @throws IllegalArgumentException Thrown by getMod if argument is null
 	 */
-	public String getModMetaData(String modNameOrId, String metaDataKey, String defaultValue) throws InvalidActivityException, IllegalArgumentException
+	public String getModMetaData(String modNameOrId, String metaDataKey, String defaultValue) throws IllegalArgumentException
 	{
 		return this.mods.getModMetaData(modNameOrId, metaDataKey, defaultValue);
 	}

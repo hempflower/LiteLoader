@@ -41,7 +41,6 @@ public class LiteLoaderUpdateSite extends UpdateSite
 			return false;
 		}
 		
-		// TODO Enable force update
 		if (this.hasJarFile()) return true;
 		return this.findJarFile();
 	}
@@ -107,7 +106,6 @@ public class LiteLoaderUpdateSite extends UpdateSite
 		{
 			LiteLoaderLogger.info("Attempting to force update, extracting jar assassin...");
 			
-			// TODO Enable force update
 			File jarAssassinOutput = new File(this.jarFile.getParentFile(), "liteloader-update-agent.jar");
 			
 			if (!LiteLoaderUpdateSite.extractFile("/update/liteloader-update-agent.jar", jarAssassinOutput) || !jarAssassinOutput.isFile())

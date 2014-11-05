@@ -1,11 +1,15 @@
 package com.mumfrey.liteloader.gl;
 
+import java.nio.ByteBuffer;
+import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
-
-import org.lwjgl.opengl.GL11;
+import java.nio.IntBuffer;
 
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.TexGen;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
 
 /**
  * Convenience class for working with Mojang's GLStateManager:
@@ -854,6 +858,21 @@ public class GL
 		GlStateManager.disableLight(light); // TODO OBF MCPTEST disableBooleanStateAt - disableLight
 	}
 	
+	public static void glLight(int light, int pname, FloatBuffer params)
+	{
+		GL11.glLight(light, pname, params);
+	}
+	
+	public static void glLightModel(int pname, FloatBuffer params)
+	{
+		GL11.glLightModel(pname, params);
+	}
+	
+	public static void glLightModeli(int pname, int param)
+	{
+		GL11.glLightModeli(pname, param);
+	}
+	
 	public static void glEnableColorMaterial()
 	{
 		GlStateManager.enableColorMaterial();
@@ -937,6 +956,21 @@ public class GL
 	public static void glSetFogEnd(float end)
 	{
 		GlStateManager.setFogEnd(end);
+	}
+	
+	public static void glSetFogColour(FloatBuffer colour)
+	{
+		GL11.glFog(GL_FOG_COLOR, colour);
+	}
+	
+	public static void glFogi(int pname, int param)
+	{
+		GL11.glFogi(pname, param);
+	}
+	
+	public static void glFogf(int pname, float param)
+	{
+		GL11.glFogf(pname, param);
 	}
 	
 	public static void glEnableCulling()
@@ -1024,7 +1058,7 @@ public class GL
 		return GlStateManager.generateTexture(); // TODO OBF MCPTEST func_179146_y - generateTexture
 	}
 	
-	public static void glDeleteTexture(int textureName)
+	public static void glDeleteTextures(int textureName)
 	{
 		GlStateManager.deleteTexture(textureName); // TODO OBF MCPTEST func_179150_h - deleteTexture
 	}
@@ -1109,6 +1143,51 @@ public class GL
 		GlStateManager.getFloat(pname, params);
 	}
 	
+	public static float glGetFloat(int pname)
+	{
+		return GL11.glGetFloat(pname);
+	}
+	
+	public static void glGetDouble(int pname, DoubleBuffer params)
+	{
+		GL11.glGetDouble(pname, params);
+	}
+	
+	public static double glGetDouble(int pname)
+	{
+		return GL11.glGetDouble(pname);
+	}
+
+	public static void glGetInteger(int pname, IntBuffer params)
+	{
+		GL11.glGetInteger(pname, params);
+	}
+	
+	public static int glGetInteger(int pname)
+	{
+		return GL11.glGetInteger(pname);
+	}
+
+	public static void glGetBoolean(int pname, ByteBuffer params)
+	{
+		GL11.glGetBoolean(pname, params);
+	}
+	
+	public static boolean glGetBoolean(int pname)
+	{
+		return GL11.glGetBoolean(pname);
+	}
+	
+	public static void gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer win_pos)
+	{
+		GLU.gluProject(objx, objy, objz, modelMatrix, projMatrix, viewport, win_pos);
+	}
+	
+	public static void gluPerspective(float fovy, float aspect, float zNear, float zFar)
+	{
+		GLU.gluPerspective(fovy, aspect, zNear, zFar);
+	}
+
 	public static void glOrtho(double left, double right, double bottom, double top, double zNear, double zFar)
 	{
 		GlStateManager.ortho(left, right, bottom, top, zNear, zFar);
@@ -1117,6 +1196,11 @@ public class GL
 	public static void glRotatef(float angle, float x, float y, float z)
 	{
 		GlStateManager.rotate(angle, x, y, z);
+	}
+	
+	public static void glRotated(double angle, double x, double y, double z)
+	{
+		GL11.glRotated(angle, x, y, z);
 	}
 	
 	public static void glScalef(float x, float y, float z)

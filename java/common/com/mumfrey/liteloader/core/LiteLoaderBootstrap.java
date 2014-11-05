@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -373,7 +372,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	 * @throws SecurityException
 	 * @throws IOException
 	 */
-	private void prepareLogger() throws SecurityException, IOException
+	private void prepareLogger() throws SecurityException
 	{
 		LiteLoaderLogger.info("Setting up logger...");
 		
