@@ -39,6 +39,8 @@ public class LoadableFile extends File implements TweakContainer<File>
 	 */
 	protected boolean injected;
 	
+	protected boolean forceInjection;
+	
 	/**
 	 * Position to inject the mod file at in the class path, if blank injects at the bottom as usual, alternatively
 	 * the developer can specify "top" to inject at the top, "base" to inject above the game jar, or "above: name" to
@@ -87,6 +89,7 @@ public class LoadableFile extends File implements TweakContainer<File>
 	{
 		super(file.getAbsolutePath());
 		this.displayName = this.getName();
+		this.forceInjection = file.forceInjection;
 		this.assignJarMetaData(file);
 	}
 
@@ -295,6 +298,15 @@ public class LoadableFile extends File implements TweakContainer<File>
 		return new ArrayList<String>();
 	}
 
+	public boolean isInjectionForced()
+	{
+		return this.forceInjection;
+	}
+	
+	public void setForceInjection(boolean forceInjection)
+	{
+		this.forceInjection = forceInjection;
+	}
 	
 	@Override
 	public boolean isInjected()
@@ -307,6 +319,15 @@ public class LoadableFile extends File implements TweakContainer<File>
 	{
 		if (!this.injected)
 		{
+			this.injected = true;
+			
+			boolean isOnClassPath = ClassPathUtilities.isJarOnClassPath(this, classLoader);
+			if (!this.forceInjection && isOnClassPath)
+			{
+				LiteLoaderLogger.info("%s already exists on the classpath, skipping injection", this);
+				return false;
+			}
+			
 			ClassPathUtilities.injectIntoClassPath(classLoader, this.getURL(), this.getInjectionStrategy());
 			
 			if (injectIntoParent)
@@ -314,8 +335,8 @@ public class LoadableFile extends File implements TweakContainer<File>
 				LiteLoaderTweaker.addURLToParentClassLoader(this.getURL());
 			}
 			
-			this.injected = true;
 			return true;
+			
 		}
 		
 		return false;

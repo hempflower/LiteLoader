@@ -96,4 +96,5 @@ public interface LoaderProperties
 	public static final String OPTION_SEARCH_MODS       = "search.mods";
 	public static final String OPTION_SEARCH_CLASSPATH  = "search.classpath";
 	public static final String OPTION_SEARCH_JARFILES   = "search.jarfiles";
+	public static final String OPTION_FORCE_INJECTION   = "forceInjection";
 }

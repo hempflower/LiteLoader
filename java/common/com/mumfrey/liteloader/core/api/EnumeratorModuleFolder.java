@@ -48,12 +48,13 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 
 	protected boolean readJarFiles;
 	protected boolean loadTweaks;
+	protected boolean forceInjection;
 
 	/**
 	 * True if this is a versioned folder and the enumerator should also try to load tweak jars which would normally be ignored
 	 */
 	protected final boolean loadTweakJars;
-
+	
 	public EnumeratorModuleFolder(LiteLoaderCoreAPI coreAPI, File directory, boolean loadTweakJars)
 	{
 		this.coreAPI         = coreAPI;
@@ -66,6 +67,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	{
 		this.loadTweaks = properties.loadTweaksEnabled();
 		this.readJarFiles = properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_SEARCH_JARFILES, true);
+		this.forceInjection = properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_FORCE_INJECTION, false);
 		
 		this.coreAPI.writeDiscoverySettings();
 	}
@@ -77,6 +79,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	public void writeSettings(LoaderEnvironment environment, LoaderProperties properties)
 	{
 		properties.setBooleanProperty(LoaderProperties.OPTION_SEARCH_JARFILES, this.readJarFiles);
+		properties.setBooleanProperty(LoaderProperties.OPTION_FORCE_INJECTION, this.forceInjection);
 	}
 	
 	/* (non-Javadoc)
@@ -146,6 +149,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 		for (File file : this.directory.listFiles(this.getFilenameFilter()))
 		{
 			LoadableFile candidateFile = new LoadableFile(file);
+			candidateFile.setForceInjection(this.forceInjection);
 			try
 			{
 				this.inspectFile(enumerator, candidateFile);

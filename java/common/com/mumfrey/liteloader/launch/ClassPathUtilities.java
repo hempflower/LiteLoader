@@ -232,11 +232,21 @@ public abstract class ClassPathUtilities
 	 */
 	public static boolean isJarOnClassPath(File jarFile)
 	{
+		URLClassLoader classLoader = (URLClassLoader)Launch.class.getClassLoader();
+		return ClassPathUtilities.isJarOnClassPath(jarFile, classLoader);
+	}
+
+	/**
+	 * @param jarFile
+	 * @param classLoader
+	 */
+	public static boolean isJarOnClassPath(File jarFile, URLClassLoader classLoader)
+	{
 		try
 		{
 			String jarURL = jarFile.toURI().toURL().toString();
 			
-			URL[] classPath = ((URLClassLoader)Launch.class.getClassLoader()).getURLs();
+			URL[] classPath = classLoader.getURLs();
 			for (URL classPathEntry : classPath)
 			{
 				if (classPathEntry.toString().equals(jarURL))
