@@ -46,7 +46,7 @@ public class PacketEventsClient extends PacketEvents
 	private FastIterableDeque<JoinGameListener> joinGameListeners = new HandlerList<JoinGameListener>(JoinGameListener.class);
 	private FastIterableDeque<ChatListener> chatListeners = new HandlerList<ChatListener>(ChatListener.class);
 	private FastIterableDeque<ChatFilter> chatFilters = new HandlerList<ChatFilter>(ChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
-	private FastIterableDeque<PreJoinGameListener> preJoinGameListeners = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class, ReturnLogicOp.OR);
+	private FastIterableDeque<PreJoinGameListener> preJoinGameListeners = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	private FastIterableDeque<PostLoginListener> postLoginListeners = new HandlerList<PostLoginListener>(PostLoginListener.class);
 
 	@Override
@@ -156,7 +156,7 @@ public class PacketEventsClient extends PacketEvents
 		
 		e.cancel();
 
-		return this.preJoinGameListeners.all().onPreJoinGame(netHandler, packet);
+		return !this.preJoinGameListeners.all().onPreJoinGame(netHandler, packet);
 	}
 
 	/**
