@@ -9,21 +9,14 @@ import java.util.Map;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.FrameNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
 import org.objectweb.asm.tree.analysis.BasicValue;
 import org.objectweb.asm.tree.analysis.Frame;
 import org.objectweb.asm.tree.analysis.SimpleVerifier;
+
+import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
  * Utility methods for working with bytecode using ASM
@@ -35,7 +28,54 @@ public abstract class ByteCodeUtilities
 	private static Map<String, List<LocalVariableNode>> calculatedLocalVariables = new HashMap<String, List<LocalVariableNode>>();
 	
 	private ByteCodeUtilities() {}
-	
+
+	/**
+	 * Replace all constructor invokations for the target class in the supplied classNode with invokations of the replacement class
+	 * 
+	 * @param classNode Class to search in
+	 * @param target Target type
+	 * @param replacement Replacement type
+	 */
+	public static void replaceConstructors(ClassNode classNode, Obf target, Obf replacement)
+	{
+		for (MethodNode method : classNode.methods)
+		{
+			ByteCodeUtilities.replaceConstructors(method, target, replacement);
+		}
+	}
+
+	/**
+	 * Replace all constructor invokations for the target class in the supplied method with invokations of the replacement class
+	 * 
+	 * @param method Method to look in
+	 * @param target Target type
+	 * @param replacement Replacement type
+	 */
+	public static void replaceConstructors(MethodNode method, Obf target, Obf replacement)
+	{
+		Iterator<AbstractInsnNode> iter = method.instructions.iterator();
+		while (iter.hasNext())
+		{
+			AbstractInsnNode insn = iter.next();
+			if (insn.getOpcode() == Opcodes.NEW)
+			{
+				TypeInsnNode typeInsn = (TypeInsnNode)insn;
+				if (target.obf.equals(typeInsn.desc) || target.name.equals(typeInsn.desc))
+				{
+					typeInsn.desc = replacement.name;
+				}
+			}
+			else if (insn instanceof MethodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL)
+			{
+				MethodInsnNode methodInsn = (MethodInsnNode)insn;
+				if ((target.obf.equals(methodInsn.owner) || target.name.equals(methodInsn.owner)) && "<init>".equals(methodInsn.name))
+				{
+					methodInsn.owner = replacement.name;
+				}
+			}
+		}
+	}
+
 	/**
 	 * Injects appropriate LOAD opcodes into the supplied InsnList appropriate for each entry in the args array starting at pos
 	 * 
