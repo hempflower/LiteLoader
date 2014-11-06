@@ -60,17 +60,17 @@ public abstract class ByteCodeUtilities
 			if (insn.getOpcode() == Opcodes.NEW)
 			{
 				TypeInsnNode typeInsn = (TypeInsnNode)insn;
-				if (target.obf.equals(typeInsn.desc) || target.name.equals(typeInsn.desc))
+				if (target.obf.equals(typeInsn.desc) || target.ref.equals(typeInsn.desc))
 				{
-					typeInsn.desc = replacement.name;
+					typeInsn.desc = replacement.ref;
 				}
 			}
 			else if (insn instanceof MethodInsnNode && insn.getOpcode() == Opcodes.INVOKESPECIAL)
 			{
 				MethodInsnNode methodInsn = (MethodInsnNode)insn;
-				if ((target.obf.equals(methodInsn.owner) || target.name.equals(methodInsn.owner)) && "<init>".equals(methodInsn.name))
+				if ((target.obf.equals(methodInsn.owner) || target.ref.equals(methodInsn.owner)) && "<init>".equals(methodInsn.name))
 				{
-					methodInsn.owner = replacement.name;
+					methodInsn.owner = replacement.ref;
 				}
 			}
 		}
