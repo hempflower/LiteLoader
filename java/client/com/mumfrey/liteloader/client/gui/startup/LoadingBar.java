@@ -282,7 +282,7 @@ public class LoadingBar extends LoadingProgress
 		
 		glEnableTexture2D();
 		glEnableColorLogic();
-		glColorLogicOp(GL_OR_REVERSE);
+		glLogicOp(GL_OR_REVERSE);
 		this.fontRenderer.drawString(this.message, 1, scaledHeight - 19, 0xFF000000);
 		
 		if (LiteLoaderLogger.DEBUG)

@@ -1013,7 +1013,7 @@ public class GL
 		GlStateManager.disableColorLogic();
 	}
 	
-	public static void glColorLogicOp(int opcode)
+	public static void glLogicOp(int opcode)
 	{
 		GlStateManager.colorLogicOp(opcode);
 	}
@@ -1247,4 +1247,25 @@ public class GL
 	{
 		GlStateManager.callList(list);
 	}
+	
+	public static void glCallLists(IntBuffer lists)
+	{
+		GL11.glCallLists(lists);
+	}
+	
+	public static void glNewList(int list, int mode)
+	{
+		GL11.glNewList(list, mode);
+	}
+	
+	public static void glEndList()
+	{
+		GL11.glEndList();
+	}
+	
+	public static void glLineWidth(float width)
+	{
+		GL11.glLineWidth(width);
+	}
+	
 }
