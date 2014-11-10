@@ -145,12 +145,12 @@ public class JsonInjection implements Serializable
 		{
 			if (this.target.startsWith("before(") && this.target.endsWith(")"))
 			{
-				this.target = this.target.substring(7, this.target.length() - 8);
+				this.target = this.target.substring(7, this.target.length() - 1);
 				this.shift = JsonInjectionShiftType.BEFORE;
 			}
 			else if (this.target.startsWith("after(") && this.target.endsWith(")"))
 			{
-				this.target = this.target.substring(6, this.target.length() - 7);
+				this.target = this.target.substring(6, this.target.length() - 1);
 				this.shift = JsonInjectionShiftType.AFTER;
 			}
 		}
