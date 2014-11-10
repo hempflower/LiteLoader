@@ -10,7 +10,7 @@ public class JsonObf implements Serializable
 {
 	private static final long serialVersionUID = 1L;
 
-	@SerializedName("key")
+	@SerializedName("id")
 	private String key;
 	
 	@SerializedName("mcp")

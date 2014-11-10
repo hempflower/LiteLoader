@@ -19,7 +19,7 @@ public class JsonDescriptor implements Serializable
 	/**
 	 * Key used to refer to this method descriptor elsewhere
 	 */
-	@SerializedName("key")
+	@SerializedName("id")
 	private String key;
 	
 	/**
