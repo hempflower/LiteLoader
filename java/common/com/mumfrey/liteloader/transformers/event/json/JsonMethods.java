@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.mumfrey.liteloader.core.runtime.Methods;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
 /**
@@ -69,10 +70,17 @@ public class JsonMethods
 		}
 
 		MethodInfo method = this.methods.get(key);
-		if (method == null)
+		if (method != null)
 		{
-			throw new InvalidEventJsonException("Could not locate method with token " + token);
+			return method;
 		}
-		return method;
+		
+		MethodInfo builtinMethod = Methods.getByName(key);
+		if (builtinMethod != null)
+		{
+			return builtinMethod;
+		}
+		
+		throw new InvalidEventJsonException("Could not locate method descriptor with token " + token);
 	}
 }

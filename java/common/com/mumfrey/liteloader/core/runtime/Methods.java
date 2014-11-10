@@ -1,6 +1,9 @@
 package com.mumfrey.liteloader.core.runtime;
 
 import java.io.File;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
@@ -44,4 +47,26 @@ public abstract class Methods
 	public static final MethodInfo endStartSection        = new MethodInfo(Obf.Profiler,                   Obf.endStartSection,              Void.TYPE, String.class);
 	
 	private Methods() {}
+	
+	private static final Map<String, MethodInfo> methodMap = new HashMap<String, MethodInfo>();
+	
+	static
+	{
+		try
+		{
+			for (Field fd : Methods.class.getFields())
+			{
+				if (fd.getType().equals(MethodInfo.class))
+				{
+					Methods.methodMap.put(fd.getName(), (MethodInfo)fd.get(null));
+				}
+			}
+		}
+		catch (IllegalAccessException ex) {}
+	}
+
+	public static MethodInfo getByName(String name)
+	{
+		return Methods.methodMap.get(name);
+	}
 }

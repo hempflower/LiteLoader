@@ -84,7 +84,14 @@ public class JsonInjection implements Serializable
 	
 	private MethodInfo parseMethod(JsonMethods methods)
 	{
-		return methods.get(this.methodName);
+		try
+		{
+			return methods.get(this.methodName);
+		}
+		catch (NullPointerException ex)
+		{
+			throw new InvalidEventJsonException("'method' must not be null for injection");
+		}
 	}
 
 	public InjectionPoint parseInjectionPoint(JsonMethods methods)
@@ -146,6 +153,11 @@ public class JsonInjection implements Serializable
 				this.target = this.target.substring(6, this.target.length() - 7);
 				this.shift = JsonInjectionShiftType.AFTER;
 			}
+		}
+		
+		if (this.target == null)
+		{
+			throw new InvalidEventJsonException("'target' is required for injection type " + this.type.name());
 		}
 		
 		return this.target;
