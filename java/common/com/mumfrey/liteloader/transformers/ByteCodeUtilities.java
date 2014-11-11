@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.transformers;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,6 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraft.launchwrapper.Launch;
+
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -476,7 +481,7 @@ public abstract class ByteCodeUtilities
 				return target;
 		}
 		
-		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getAnnotation(searchFor, Obfuscated.class);
+		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getVisibleAnnotation(searchFor, Obfuscated.class);
 		if (obfuscatedAnnotation != null)
 		{
 			for (String obfuscatedName : ByteCodeUtilities.<List<String>>getAnnotationValue(obfuscatedAnnotation))
@@ -506,7 +511,7 @@ public abstract class ByteCodeUtilities
 				return target;
 		}
 		
-		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getAnnotation(searchFor, Obfuscated.class);
+		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getVisibleAnnotation(searchFor, Obfuscated.class);
 		if (obfuscatedAnnotation != null)
 		{
 			for (String obfuscatedName : ByteCodeUtilities.<List<String>>getAnnotationValue(obfuscatedAnnotation))
@@ -521,23 +526,110 @@ public abstract class ByteCodeUtilities
 			
 		return null;
 	}
+	
+	public static ClassNode loadClass(String className) throws IOException
+	{
+		return ByteCodeUtilities.loadClass(className, true, null);
+	}
+	
+	public static ClassNode loadClass(String className, boolean runTransformers) throws IOException
+	{
+		return ByteCodeUtilities.loadClass(className, runTransformers, null);
+	}
+	
+	public static ClassNode loadClass(String className, IClassTransformer source) throws IOException
+	{
+		return ByteCodeUtilities.loadClass(className, source != null, source);
+	}
+	
+	public static ClassNode loadClass(String className, boolean runTransformers, IClassTransformer source) throws IOException
+	{
+		byte[] bytes = Launch.classLoader.getClassBytes(className);
+
+		if (runTransformers)
+		{
+			bytes = ByteCodeUtilities.applyTransformers(className, bytes, source);
+		}
+		
+		return ByteCodeUtilities.readClass(bytes);
+	}
+	
+	public static ClassNode readClass(byte[] basicClass)
+	{
+		ClassReader classReader = new ClassReader(basicClass);
+		ClassNode classNode = new ClassNode();
+		classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
+		return classNode;
+	}
+
+	public static byte[] applyTransformers(String className, byte[] basicClass)
+	{
+		return ByteCodeUtilities.applyTransformers(className, basicClass, null);
+	}
+	
+	public static byte[] applyTransformers(String className, byte[] basicClass, IClassTransformer source)
+	{
+		final List<IClassTransformer> transformers = Launch.classLoader.getTransformers();
+		
+		for (final IClassTransformer transformer : transformers)
+		{
+			if (transformer != source)
+			{
+				basicClass = transformer.transform(className, className, basicClass);
+			}
+		}
+		
+		return basicClass;
+	}
 
 	/**
 	 * Get an annotation of the specified class from the supplied field node
 	 */
-	public static AnnotationNode getAnnotation(FieldNode field, Class<? extends Annotation> annotationClass)
+	public static AnnotationNode getVisibleAnnotation(FieldNode field, Class<? extends Annotation> annotationClass)
 	{
 		return ByteCodeUtilities.getAnnotation(field.visibleAnnotations, Type.getDescriptor(annotationClass));
+	}
+	
+	/**
+	 * Get an annotation of the specified class from the supplied field node
+	 */
+	public static AnnotationNode getInvisibleAnnotation(FieldNode field, Class<? extends Annotation> annotationClass)
+	{
+		return ByteCodeUtilities.getAnnotation(field.invisibleAnnotations, Type.getDescriptor(annotationClass));
 	}
 
 	/**
 	 * Get an annotation of the specified class from the supplied method node
 	 */
-	public static AnnotationNode getAnnotation(MethodNode method, Class<? extends Annotation> annotationClass)
+	public static AnnotationNode getVisibleAnnotation(MethodNode method, Class<? extends Annotation> annotationClass)
 	{
 		return ByteCodeUtilities.getAnnotation(method.visibleAnnotations, Type.getDescriptor(annotationClass));
 	}
+	
+	/**
+	 * Get an annotation of the specified class from the supplied method node
+	 */
+	public static AnnotationNode getInvisibleAnnotation(MethodNode method, Class<? extends Annotation> annotationClass)
+	{
+		return ByteCodeUtilities.getAnnotation(method.invisibleAnnotations, Type.getDescriptor(annotationClass));
+	}
 
+	/**
+	 * Get an annotation of the specified class from the supplied class node
+	 */
+	public static AnnotationNode getVisibleAnnotation(ClassNode classNode, Class<? extends Annotation> annotationClass)
+	{
+		return ByteCodeUtilities.getAnnotation(classNode.visibleAnnotations, Type.getDescriptor(annotationClass));
+	}
+	
+	/**
+	 * Get an annotation of the specified class from the supplied class node
+	 */
+	public static AnnotationNode getInvisibleAnnotation(ClassNode classNode, Class<? extends Annotation> annotationClass)
+	{
+		return ByteCodeUtilities.getAnnotation(classNode.invisibleAnnotations, Type.getDescriptor(annotationClass));
+	}
+	
 	/**
 	 * Get an annotation of the specified class from the supplied list of annotations, returns null if no matching annotation was found
 	 */
@@ -574,6 +666,9 @@ public abstract class ByteCodeUtilities
 	@SuppressWarnings("unchecked")
 	public static <T> T getAnnotationValue(AnnotationNode annotation, String key)
 	{
+		if (annotation == null || annotation.values == null)
+			return null;
+		
 		boolean getNextValue = false;
 		for (Object value : annotation.values)
 		{

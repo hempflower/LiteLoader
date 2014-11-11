@@ -19,6 +19,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
+import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -55,12 +56,14 @@ public final class EventTransformer extends ClassTransformer
 	 */
 	private static Map<String, Map<String, Map<Event, InjectionPoint>>> eventMappings = new HashMap<String, Map<String, Map<Event, InjectionPoint>>>();
 	
+	private static AccessorTransformer accessorTransformer;
+	
 	/**
 	 * Runs the validator on the generated classes, only for debugging purposes 
 	 */
 	private final boolean runValidator = false;
 	
-	private int globalEventID = 0; 
+	private int globalEventID = 0;
 	
 	static class Injection
 	{
@@ -186,18 +189,37 @@ public final class EventTransformer extends ClassTransformer
 		events.put(event, injectionPoint);
 	}
 
+	static void addAccessor(String interfaceName)
+	{
+		if (EventTransformer.accessorTransformer == null)
+		{
+			EventTransformer.accessorTransformer = new AccessorTransformer()
+			{
+				@Override
+				protected void addAccessors() {}
+			};
+		}
+		
+		EventTransformer.accessorTransformer.addAccessor(interfaceName);
+	}
+
 	@Override
 	public final byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
 		if (basicClass != null && EventTransformer.eventMappings.containsKey(transformedName))
 		{
-			return this.injectEvents(basicClass, EventTransformer.eventMappings.get(transformedName));
+			return this.injectEvents(name, transformedName, basicClass, EventTransformer.eventMappings.get(transformedName));
+		}
+		
+		if (EventTransformer.accessorTransformer != null)
+		{
+			return EventTransformer.accessorTransformer.transform(name, transformedName, basicClass);
 		}
 		
 		return basicClass;
 	}
 
-	private byte[] injectEvents(byte[] basicClass, Map<String, Map<Event, InjectionPoint>> mappings)
+	private byte[] injectEvents(String name, String transformedName, byte[] basicClass, Map<String, Map<Event, InjectionPoint>> mappings)
 	{
 		if (mappings == null) return basicClass;
 		
@@ -211,6 +233,11 @@ public final class EventTransformer extends ClassTransformer
 			{
 				this.injectIntoMethod(classNode, signature, method, methodInjections);
 			}
+		}
+		
+		if (EventTransformer.accessorTransformer != null)
+		{
+			EventTransformer.accessorTransformer.apply(name, transformedName, basicClass, classNode);
 		}
 		
 		if (this.runValidator)

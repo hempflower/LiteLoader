@@ -75,4 +75,14 @@ public abstract class EventInjectionTransformer implements IClassTransformer
 		
 		return event;
 	}
+	
+	/**
+	 * Register an access injection interface
+	 * 
+	 * @param interfaceName
+	 */
+	protected final void addAccessor(String interfaceName)
+	{
+		EventTransformer.addAccessor(interfaceName);
+	}
 }

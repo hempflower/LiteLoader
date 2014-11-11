@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.transformers.event.json;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,6 +9,7 @@ import java.util.regex.Pattern;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
  * Serialisable class which represents a set of event injection definitions. Instances of this class are
@@ -49,9 +51,20 @@ public class JsonEvents implements Serializable
 	private List<JsonEvent> events;
 	
 	/**
+	 * List of accessor interfaces 
+	 */
+	@SerializedName("accessors")
+	private List<String> accessors;
+	
+	/**
 	 * Parsed method descriptors 
 	 */
 	private transient JsonMethods methods;
+	
+	/**
+	 * Parsed accessors
+	 */
+	private transient List<String> accessorInterfaces = new ArrayList<String>();
 	
 	/**
 	 * Attempts to parse the information in this object
@@ -75,6 +88,18 @@ public class JsonEvents implements Serializable
 			for (JsonEvent event : this.events)
 			{
 				event.parse(this.methods);
+			}
+			
+			if (this.accessors != null)
+			{
+				for (String accessor : this.accessors)
+				{
+					if (accessor != null)
+					{
+						Obf accessorName = this.obfuscation.parseClass(accessor);
+						this.accessorInterfaces.add(accessorName.name);
+					}
+				}
 			}
 		}
 		catch (InvalidEventJsonException ex)
@@ -115,6 +140,11 @@ public class JsonEvents implements Serializable
 		for (JsonEvent event : this.events)
 		{
 			event.register(transformer);
+		}
+		
+		for (String interfaceName : this.accessorInterfaces)
+		{
+			transformer.registerAccessor(interfaceName);
 		}
 	}
 

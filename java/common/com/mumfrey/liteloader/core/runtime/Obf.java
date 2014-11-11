@@ -25,11 +25,14 @@ public class Obf
 	public static final Obf                 PacketEvents = new Obf("com.mumfrey.liteloader.core.PacketEvents"                          );
 	public static final Obf           PacketEventsClient = new Obf("com.mumfrey.liteloader.client.PacketEventsClient"                  );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
+	public static final Obf                   IMinecraft = new Obf("com.mumfrey.liteloader.client.overlays.IMinecraft"                 );
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
 	public static final Obf              MinecraftServer = new Obf("net.minecraft.server.MinecraftServer"                              );
 	public static final Obf                         GL11 = new Obf("org.lwjgl.opengl.GL11"                                             );
 	public static final Obf             RealmsMainScreen = new Obf("com.mojang.realmsclient.RealmsMainScreen"                          );
+	public static final Obf                         init = new Obf("init"                                                              );
+	public static final Obf                     postInit = new Obf("postInit"                                                          );
 	public static final Obf                  constructor = new Obf("<init>"                                                            );
 
 	// Classes
@@ -73,6 +76,12 @@ public class Obf
 	public static final Obf          mapSpecialRenderers = new Obf("field_147559_m",                                             "m"   );
 	public static final Obf     tileEntityNameToClassMap = new Obf("field_145855_i",                                             "f"   );
 	public static final Obf     tileEntityClassToNameMap = new Obf("field_145853_j",                                             "g"   );
+	public static final Obf                        timer = new Obf("field_71428_T",                                              "U"   );
+	public static final Obf                   mcProfiler = new Obf("field_71424_I",                                              "y"   ); 
+	public static final Obf                      running = new Obf("field_71425_J",                                              "z"   ); 
+	public static final Obf         defaultResourcePacks = new Obf("field_110449_ao",                                            "aw"  );
+	public static final Obf                   serverName = new Obf("field_71475_ae",                                             "am"  );
+	public static final Obf                   serverPort = new Obf("field_71477_af",                                             "an"  );
 
 	// Methods
 	// -----------------------------------------------------------------------------------------
@@ -107,6 +116,7 @@ public class Obf
 	public static final Obf               doRenderEntity = new Obf("func_147939_a",                                              "a"   );
 	public static final Obf                     doRender = new Obf("func_76986_a",                                               "a"   );
 	public static final Obf        doRenderShadowAndFire = new Obf("func_76979_b",                                               "b"   );
+	public static final Obf                       resize = new Obf("func_71370_a",                                               "a"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;
@@ -238,5 +248,25 @@ public class Obf
 	public static Obf getByName(String name)
 	{
 		return Obf.obfs.get(name);
+	}
+	
+	public static Obf getByName(Class<? extends Obf> obf, String name)
+	{
+		try
+		{
+			for (Field fd : obf.getFields())
+			{
+				if (fd.getType().equals(Obf.class))
+				{
+					String fieldName = fd.getName();
+					Obf entry = (Obf)fd.get(null);
+					if (name.equals(fieldName) || name.equals(entry.name))
+						return entry;
+				}
+			}
+		}
+		catch (Exception ex) {}
+
+		return Obf.getByName(name);
 	}
 }

@@ -35,7 +35,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	private static final String[] requiredDownstreamTransformers = {
 		LiteLoaderCoreAPI.PKG_LITELOADER_COMMON + ".transformers.LiteLoaderPacketTransformer",
 		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.LiteLoaderEventInjectionTransformer",
-		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftOverlayTransformer",
+		LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftTransformer",
 		LiteLoaderCoreAPI.PKG_LITELOADER + ".transformers.event.json.ModEventInjectionTransformer"
 	};
 	

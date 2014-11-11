@@ -13,30 +13,25 @@ import org.objectweb.asm.tree.TypeInsnNode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
-import com.mumfrey.liteloader.transformers.ClassOverlayTransformer;
+import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-public class MinecraftOverlayTransformer extends ClassOverlayTransformer
+public class MinecraftTransformer extends AccessorTransformer
 {
-	private static final String overlayClassName = "com.mumfrey.liteloader.client.overlays.MinecraftOverlay";
+	private static final String TWEAKCLASS = LiteLoaderTweaker.class.getName().replace('.', '/');
 
-	private static final String LITELOADER_TWEAKER_CLASS = LiteLoaderTweaker.class.getName().replace('.', '/');
-
-	private static final String METHOD_INIT = "init";
-	private static final String METHOD_POSTINIT = "postInit";
-	
-	public MinecraftOverlayTransformer()
+	@Override
+	protected void addAccessors()
 	{
-		super(MinecraftOverlayTransformer.overlayClassName);
-		this.setSourceFile = false;
+		this.addAccessor(Obf.IMinecraft.name);
 	}
 	
 	@Override
-	protected void postOverlayTransform(String transformedName, ClassNode targetClass, ClassNode overlayClass)
+	protected void postTransform(String name, String transformedName, ClassNode classNode)
 	{
 		if ((Obf.Minecraft.name.equals(transformedName) || Obf.Minecraft.obf.equals(transformedName)))
 		{
-			for (MethodNode method : targetClass.methods)
+			for (MethodNode method : classNode.methods)
 			{
 				if (Obf.startGame.obf.equals(method.name) || Obf.startGame.srg.equals(method.name) || Obf.startGame.name.equals(method.name))
 				{
@@ -63,11 +58,11 @@ public class MinecraftOverlayTransformer extends ClassOverlayTransformer
 				TypeInsnNode typeNode = (TypeInsnNode)insn;
 				if (!found && (Obf.EntityRenderer.obf.equals(typeNode.desc) || Obf.EntityRenderer.ref.equals(typeNode.desc)))
 				{
-					LiteLoaderLogger.info("MinecraftOverlayTransformer found INIT injection point, this is good.");
+					LiteLoaderLogger.info("MinecraftTransformer found INIT injection point, this is good.");
 					found = true;
 					
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_INIT, "()V", false));
-					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftOverlayTransformer.LITELOADER_TWEAKER_CLASS, MinecraftOverlayTransformer.METHOD_POSTINIT, "()V", false));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftTransformer.TWEAKCLASS, Obf.init.name, "()V", false));
+					insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, MinecraftTransformer.TWEAKCLASS, Obf.postInit.name, "()V", false));
 				}
 			}
 			
@@ -88,6 +83,6 @@ public class MinecraftOverlayTransformer extends ClassOverlayTransformer
 		
 		method.instructions = insns;
 
-		if (!found) LiteLoaderLogger.severe("MinecraftOverlayTransformer failed to find the INIT injection point, the game will probably crash pretty soon.");
+		if (!found) LiteLoaderLogger.severe("MinecraftTransformer failed to find the INIT injection point, the game will probably crash pretty soon.");
 	}
 }

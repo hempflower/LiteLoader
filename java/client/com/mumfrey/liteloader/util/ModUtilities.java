@@ -6,6 +6,10 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.Tessellator;
@@ -25,6 +29,7 @@ import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
 import net.minecraft.util.ResourceLocation;
 
+import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.client.util.PrivateFields;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -74,6 +79,21 @@ public abstract class ModUtilities
 		return false;
 	}
 	
+    public static void setWindowSize(int width, int height)
+    {
+        try
+        {
+        	Minecraft mc = Minecraft.getMinecraft();
+            Display.setDisplayMode(new DisplayMode(width, height));
+			((IMinecraft)mc).onResizeWindow(width, height);
+            Display.setVSyncEnabled(mc.gameSettings.enableVsync);
+        }
+        catch (LWJGLException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
 	/**
 	 * Add a renderer map entry for the specified entity class
 	 * 

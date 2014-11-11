@@ -74,4 +74,9 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 	{
 		return super.addEvent(event, targetMethod, injectionPoint);
 	}
+	
+	protected void registerAccessor(String interfaceName)
+	{
+		super.addAccessor(interfaceName);
+	}
 }

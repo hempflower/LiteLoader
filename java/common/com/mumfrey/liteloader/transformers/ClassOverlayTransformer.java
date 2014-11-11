@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
 
 import org.objectweb.asm.ClassReader;
@@ -314,7 +313,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 	{
 		for (MethodNode overlayMethod : overlayClass.methods)
 		{
-			if (ByteCodeUtilities.getAnnotation(overlayMethod, Stub.class) != null || (ByteCodeUtilities.getAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
+			if (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, Stub.class) != null || (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
 			{
 				this.checkRenameMethod(targetClass, overlayMethod);
 			}
@@ -333,8 +332,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		{
 			this.transformMethod(overlayMethod, overlayClass.name, targetClass.name);
 			
-			AnnotationNode appendAnnotation = ByteCodeUtilities.getAnnotation(overlayMethod, AppendInsns.class);
-			AnnotationNode stubAnnotation = ByteCodeUtilities.getAnnotation(overlayMethod, Stub.class);
+			AnnotationNode appendAnnotation = ByteCodeUtilities.getVisibleAnnotation(overlayMethod, AppendInsns.class);
+			AnnotationNode stubAnnotation = ByteCodeUtilities.getVisibleAnnotation(overlayMethod, Stub.class);
 
 			if (stubAnnotation != null)
 			{
@@ -428,7 +427,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		if (targetMethodName == null || targetMethodName.length() == 0) targetMethodName = sourceMethod.name;
 
 		Set<String> obfuscatedNames = new HashSet<String>();
-		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getAnnotation(sourceMethod, Obfuscated.class);
+		AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getVisibleAnnotation(sourceMethod, Obfuscated.class);
 		if (obfuscatedAnnotation != null)
 		{
 			obfuscatedNames.addAll(ByteCodeUtilities.<List<String>>getAnnotationValue(obfuscatedAnnotation));
@@ -495,7 +494,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 			
 			if (runTransformers)
 			{
-				overlayBytes = this.applyTransformers(this.overlayClassName, overlayBytes);
+				overlayBytes = ByteCodeUtilities.applyTransformers(this.overlayClassName, overlayBytes, this);
 			}
 		}
 		catch (IOException ex)
@@ -505,26 +504,5 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
 		}
 		
 		return this.readClass(overlayBytes, false);
-	}
-
-	/**
-	 * Since we obtain the overlay class bytes with getClassBytes(), we need to apply the transformers ourself
-	 * 
-	 * @param name
-	 * @param basicClass
-	 */
-	private byte[] applyTransformers(String name, byte[] basicClass)
-	{
-		final List<IClassTransformer> transformers = Launch.classLoader.getTransformers();
-		
-		for (final IClassTransformer transformer : transformers)
-		{
-			if (transformer != this)
-			{
-				basicClass = transformer.transform(name, name, basicClass);
-			}
-		}
-		
-		return basicClass;
 	}
 }
