@@ -1267,5 +1267,9 @@ public class GL
 	{
 		GL11.glLineWidth(width);
 	}
-	
+
+	public static void glPolygonMode(int face, int mode)
+	{
+		GL11.glPolygonMode(face, mode);
+	}
 }
