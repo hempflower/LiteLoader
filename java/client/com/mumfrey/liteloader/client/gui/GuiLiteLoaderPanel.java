@@ -385,6 +385,8 @@ public class GuiLiteLoaderPanel extends GuiScreen
 	{
 		this.mouseOverLogo = false;
 		
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
 		glPushMatrix();
 		glTranslatef(xOffset, 0.0F, 0.0F);
 		
