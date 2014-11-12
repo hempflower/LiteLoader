@@ -10,6 +10,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
 import com.mumfrey.liteloader.core.runtime.Obf;
+import com.mumfrey.liteloader.transformers.ObfProvider;
 
 /**
  * Serialisable class which represents a set of event injection definitions. Instances of this class are
@@ -21,7 +22,7 @@ import com.mumfrey.liteloader.core.runtime.Obf;
  * 
  * @author Adam Mummery-Smith
  */
-public class JsonEvents implements Serializable
+public class JsonEvents implements Serializable, ObfProvider
 {
 	private static final long serialVersionUID = 1L;
 
@@ -71,9 +72,9 @@ public class JsonEvents implements Serializable
 	 */
 	private void parse()
 	{
-		if (this.events == null || this.events.isEmpty())
+		if (this.obfuscation == null)
 		{
-			throw new InvalidEventJsonException("No events were defined in the supplied JSON");
+			this.obfuscation = new JsonObfuscationTable();
 		}
 		
 		try
@@ -84,10 +85,13 @@ public class JsonEvents implements Serializable
 			// Parse the descriptor list
 			this.methods = new JsonMethods(this.obfuscation, this.descriptors);
 			
-			// Parse the events
-			for (JsonEvent event : this.events)
+			if (this.events != null)
 			{
-				event.parse(this.methods);
+				// Parse the events
+				for (JsonEvent event : this.events)
+				{
+					event.parse(this.methods);
+				}
 			}
 			
 			if (this.accessors != null)
@@ -144,8 +148,17 @@ public class JsonEvents implements Serializable
 		
 		for (String interfaceName : this.accessorInterfaces)
 		{
-			transformer.registerAccessor(interfaceName);
+			transformer.registerAccessor(interfaceName, this);
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.mumfrey.liteloader.transformers.ObfProvider#getByName(java.lang.String)
+	 */
+	@Override
+	public Obf getByName(String name)
+	{
+		return this.obfuscation.getByName(name);
 	}
 
 //	public String toJson()

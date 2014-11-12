@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.transformers.event;
 
+import com.mumfrey.liteloader.transformers.ObfProvider;
+
 import net.minecraft.launchwrapper.IClassTransformer;
 
 public abstract class EventInjectionTransformer implements IClassTransformer
@@ -84,5 +86,16 @@ public abstract class EventInjectionTransformer implements IClassTransformer
 	protected final void addAccessor(String interfaceName)
 	{
 		EventTransformer.addAccessor(interfaceName);
+	}
+	
+	/**
+	 * Register an access injection interface and provide a contextual obfuscation provider
+	 * 
+	 * @param interfaceName
+	 * @param obfProvider
+	 */
+	protected final void addAccessor(String interfaceName, ObfProvider obfProvider)
+	{
+		EventTransformer.addAccessor(interfaceName, obfProvider);
 	}
 }

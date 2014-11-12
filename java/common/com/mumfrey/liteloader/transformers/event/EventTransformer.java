@@ -19,6 +19,7 @@ import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
+import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -191,6 +192,11 @@ public final class EventTransformer extends ClassTransformer
 
 	static void addAccessor(String interfaceName)
 	{
+		EventTransformer.addAccessor(interfaceName, null);
+	}
+	
+	static void addAccessor(String interfaceName, ObfProvider obfProvider)
+	{
 		if (EventTransformer.accessorTransformer == null)
 		{
 			EventTransformer.accessorTransformer = new AccessorTransformer()
@@ -200,7 +206,7 @@ public final class EventTransformer extends ClassTransformer
 			};
 		}
 		
-		EventTransformer.accessorTransformer.addAccessor(interfaceName);
+		EventTransformer.accessorTransformer.addAccessor(interfaceName, obfProvider);
 	}
 
 	@Override

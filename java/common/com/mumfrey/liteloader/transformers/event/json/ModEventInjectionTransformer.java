@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.transformers.event.json;
 import java.util.Map.Entry;
 
 import com.mumfrey.liteloader.transformers.ClassTransformer;
+import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
@@ -75,8 +76,8 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 		return super.addEvent(event, targetMethod, injectionPoint);
 	}
 	
-	protected void registerAccessor(String interfaceName)
+	protected void registerAccessor(String interfaceName, ObfProvider obfProvider)
 	{
-		super.addAccessor(interfaceName);
+		super.addAccessor(interfaceName, obfProvider);
 	}
 }

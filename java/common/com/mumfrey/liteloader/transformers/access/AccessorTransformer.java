@@ -22,6 +22,7 @@ import org.objectweb.asm.tree.VarInsnNode;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
+import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -49,18 +50,29 @@ public abstract class AccessorTransformer extends ClassTransformer
 		private final Class<? extends Obf> table;
 		
 		/**
+		 * Obfuscation provider for this context
+		 */
+		private final ObfProvider obfProvider;
+		
+		/**
 		 * Target class to inject into 
 		 */
 		private final Obf target;
 		
 		protected AccessorInjection(String iface) throws IOException
 		{
+			this(iface, null);
+		}
+
+		protected AccessorInjection(String iface, ObfProvider obfProvider) throws IOException
+		{
 			ClassNode ifaceNode = this.loadClass(iface);
 			this.table = this.setupTable(ifaceNode);
 			this.target = this.setupTarget(ifaceNode);
 			this.iface = iface;
+			this.obfProvider = obfProvider;
 		}
-
+		
 		private ClassNode loadClass(String iface) throws IOException
 		{
 			byte[] bytes = this.getClassBytes(iface);
@@ -77,7 +89,22 @@ public abstract class AccessorTransformer extends ClassTransformer
 
 		private Obf getObf(String name)
 		{
-			return Obf.getByName(this.table, name);
+			if (this.obfProvider != null)
+			{
+				Obf obf = this.obfProvider.getByName(name);
+				if (obf != null)
+				{
+					return obf;
+				}
+			}
+			
+			Obf obf = Obf.getByName(this.table, name);
+			if (obf != null)
+			{
+				return obf;
+			}
+			
+			throw new RuntimeException("No obfuscation table entry could be found for '" + name + "'");
 		}
 
 		protected Obf getTarget()
@@ -318,7 +345,7 @@ public abstract class AccessorTransformer extends ClassTransformer
 		}
 	}
 	
-	private List<AccessorInjection> accessors = new ArrayList<AccessorInjection>();
+	private final List<AccessorInjection> accessors = new ArrayList<AccessorInjection>();
 	
 	public AccessorTransformer()
 	{
@@ -327,9 +354,14 @@ public abstract class AccessorTransformer extends ClassTransformer
 	
 	public void addAccessor(String interfaceName)
 	{
+		this.addAccessor(interfaceName, null);
+	}
+	
+	public void addAccessor(String interfaceName, ObfProvider obfProvider)
+	{
 		try
 		{
-			this.accessors.add(new AccessorInjection(interfaceName));
+			this.accessors.add(new AccessorInjection(interfaceName, obfProvider));
 		}
 		catch (Exception ex)
 		{

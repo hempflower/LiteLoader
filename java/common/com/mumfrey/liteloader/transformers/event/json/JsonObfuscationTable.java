@@ -88,13 +88,41 @@ public class JsonObfuscationTable implements Serializable
 
 		return this.parseClass(token);
 	}
+	
+	/**
+	 * Find an obf entry of any type by name
+	 * 
+	 * @param name
+	 */
+	public Obf getByName(String name)
+	{
+		Obf classObf = this.classObfs.get(name);
+		if (classObf != null)
+		{
+			return classObf;
+		}
+		
+		Obf methodObf = this.methodObfs.get(name);
+		if (methodObf != null)
+		{
+			return methodObf;
+		}
+		
+		Obf fieldObf = this.fieldObfs.get(name);
+		if (fieldObf != null)
+		{
+			return fieldObf;
+		}
+		
+		return null;
+	}
 
 	/**
 	 * @param token
 	 */
 	public Obf parseClass(String token)
 	{
-		return this.parseObf(token, this.classObfs);
+		return this.parseObf(token, this.classObfs, false);
 	}
 
 	/**
@@ -102,7 +130,7 @@ public class JsonObfuscationTable implements Serializable
 	 */
 	public Obf parseMethod(String token)
 	{
-		return this.parseObf(token, this.methodObfs);
+		return this.parseObf(token, this.methodObfs, false);
 	}
 	
 	/**
@@ -110,14 +138,15 @@ public class JsonObfuscationTable implements Serializable
 	 */
 	public Obf parseField(String token)
 	{
-		return this.parseObf(token, this.fieldObfs);
+		return this.parseObf(token, this.fieldObfs, false);
 	}
 
 	/**
 	 * @param token
 	 * @param obfs
+	 * @param returnNullOnFailure return null instead of throwing an exception
 	 */
-	private Obf parseObf(String token, Map<String, Obf> obfs)
+	private Obf parseObf(String token, Map<String, Obf> obfs, boolean returnNullOnFailure)
 	{
 		String key = JsonEvents.parseToken(token);
 		
@@ -138,6 +167,11 @@ public class JsonObfuscationTable implements Serializable
 			if (packet != null)
 			{
 				return packet;
+			}
+			
+			if (returnNullOnFailure)
+			{
+				return null;
 			}
 			
 			throw new InvalidEventJsonException("The token " + token + " could not be resolved to a type");
