@@ -7,7 +7,6 @@ import java.util.List;
 
 import net.minecraft.launchwrapper.Launch;
 
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -15,8 +14,10 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
@@ -26,7 +27,7 @@ import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Transformer which can inject accessor methods into a target class 
+ * Transformer which can inject accessor methods defined by an annotated interface into a target class 
  * 
  * @author Adam Mummery-Smith
  */
@@ -59,34 +60,47 @@ public abstract class AccessorTransformer extends ClassTransformer
 		 */
 		private final Obf target;
 		
+		/**
+		 * Create a new new accessor using the specified template interface
+		 * 
+		 * @param iface Template interface
+		 * @throws IOException Thrown if an problem occurs when loading the interface bytecode
+		 */
 		protected AccessorInjection(String iface) throws IOException
 		{
 			this(iface, null);
 		}
 
+		/**
+		 * Create a new new accessor using the specified template interface
+		 * 
+		 * @param iface Template interface
+		 * @param obfProvider Obfuscation provider for this context
+		 * @throws IOException Thrown if an problem occurs when loading the interface bytecode
+		 */
 		protected AccessorInjection(String iface, ObfProvider obfProvider) throws IOException
 		{
-			ClassNode ifaceNode = this.loadClass(iface);
+			ClassNode ifaceNode = ByteCodeUtilities.loadClass(iface, false);
+			
+			if (ifaceNode.interfaces.size() > 0)
+			{
+				String interfaceList = ifaceNode.interfaces.toString().replace('/', '.');
+				throw new RuntimeException("Accessor interface must not extend other interfaces. Found " + interfaceList + " in " + iface);
+			}
+			
 			this.table = this.setupTable(ifaceNode);
 			this.target = this.setupTarget(ifaceNode);
 			this.iface = iface;
 			this.obfProvider = obfProvider;
 		}
-		
-		private ClassNode loadClass(String iface) throws IOException
-		{
-			byte[] bytes = this.getClassBytes(iface);
-			ClassReader classReader = new ClassReader(bytes);
-			ClassNode classNode = new ClassNode();
-			classReader.accept(classNode, 0);
-			return classNode;
-		}
 
-		private byte[] getClassBytes(String iface) throws IOException
-		{
-			return Launch.classLoader.getClassBytes(iface);
-		}
-
+		/**
+		 * Get an obfuscation table mapping by name, first uses any supplied context provider, then any obfuscation table
+		 * class specified by an {@link ObfTableClass} annotation on the interface itself, and fails over onto the LiteLoader
+		 * obfuscation table. If the entry is not matched in any of the above locations then an exception is thrown 
+		 * 
+		 * @param name Obfuscation table entry to fetch
+		 */
 		private Obf getObf(String name)
 		{
 			if (this.obfProvider != null)
@@ -107,11 +121,18 @@ public abstract class AccessorTransformer extends ClassTransformer
 			throw new RuntimeException("No obfuscation table entry could be found for '" + name + "'");
 		}
 
+		/**
+		 * Get the target class of this injection
+		 */
 		protected Obf getTarget()
 		{
 			return this.target;
 		}
 
+		/**
+		 * Inspects the target class for an {@link ObfTableClass} annotation and attempts to get a handle for the class
+		 * specified. On failure, the LiteLoader {@link Obf} is returned.
+		 */
 		@SuppressWarnings("unchecked")
 		private Class<? extends Obf> setupTable(ClassNode ifaceNode)
 		{
@@ -132,12 +153,31 @@ public abstract class AccessorTransformer extends ClassTransformer
 			return Obf.class;
 		}
 
+		/**
+		 * Locates the {@link Accessor} annotation on the interface in order to determine the target class
+		 */
 		private Obf setupTarget(ClassNode ifaceNode)
 		{
 			AnnotationNode annotation = ByteCodeUtilities.getInvisibleAnnotation(ifaceNode, Accessor.class);
-			return this.getObf(ByteCodeUtilities.<String>getAnnotationValue(annotation));
+			if (annotation == null)
+			{
+				throw new RuntimeException("Accessor interfaces must be annotated with an @Accessor annotation specifying the target class");
+			}
+			
+			String targetClass = ByteCodeUtilities.<String>getAnnotationValue(annotation);
+			if (targetClass == null || targetClass.isEmpty())
+			{
+				throw new RuntimeException("Invalid @Accessor annotation, the annotation must specify a target class");
+			}
+			
+			return this.getObf(targetClass);
 		}
 
+		/**
+		 * Apply this injection to the specified target ClassNode
+		 * 
+		 * @param classNode Class tree to apply to
+		 */
 		protected void apply(ClassNode classNode)
 		{
 			String ifaceRef = this.iface.replace('.', '/');
@@ -166,6 +206,12 @@ public abstract class AccessorTransformer extends ClassTransformer
 			}
 		}
 
+		/**
+		 * Add a method from the interface to the target class
+		 * 
+		 * @param classNode Target class
+		 * @param method Method to add
+		 */
 		private void addMethod(ClassNode classNode, MethodNode method)
 		{
 			if (!this.addMethodToClass(classNode, method))
@@ -176,26 +222,39 @@ public abstract class AccessorTransformer extends ClassTransformer
 			
 			LiteLoaderLogger.debug("[AccessorTransformer] Attempting to add %s to %s", method.name, classNode.name);
 			
+			String targetId = null;
 			AnnotationNode accessor = ByteCodeUtilities.getInvisibleAnnotation(method, Accessor.class);
 			AnnotationNode invoker = ByteCodeUtilities.getInvisibleAnnotation(method, Invoker.class);
 			if (accessor != null)
 			{
-				Obf targetName = this.getObf(ByteCodeUtilities.<String>getAnnotationValue(accessor));
+				targetId = ByteCodeUtilities.<String>getAnnotationValue(accessor);
+				Obf targetName = this.getObf(targetId);
 				if (this.injectAccessor(classNode, method, targetName)) return;
 			}
 			else if (invoker != null)
 			{
-				Obf targetName = this.getObf(ByteCodeUtilities.<String>getAnnotationValue(invoker));
+				targetId = ByteCodeUtilities.<String>getAnnotationValue(invoker);
+				Obf targetName = this.getObf(targetId);
 				if (this.injectInvoker(classNode, method, targetName)) return;
 			}
 			else
 			{
 				LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s has no @Accessor or @Invoker annotation, the method will be ABSTRACT!", method.name, this.iface);
+				this.injectException(classNode, method, "No @Accessor or @Invoker annotation on method");
+				return;
 			}
 
 			LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s could not locate target member, the method will be ABSTRACT!", method.name, this.iface);
+			this.injectException(classNode, method, "Could not locate target class member '" + targetId + "'");
 		}
 
+		/**
+		 * Inject an accessor method into the target class
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param targetName
+		 */
 		private boolean injectAccessor(ClassNode classNode, MethodNode method, Obf targetName)
 		{
 			FieldNode targetField = this.findField(classNode, targetName);
@@ -217,6 +276,13 @@ public abstract class AccessorTransformer extends ClassTransformer
 			return false;
 		}
 
+		/**
+		 * Inject an invoke (proxy) method into the target class
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param targetName
+		 */
 		private boolean injectInvoker(ClassNode classNode, MethodNode method, Obf targetName)
 		{
 			MethodNode targetMethod = this.findMethod(classNode, targetName, method.desc);
@@ -230,6 +296,13 @@ public abstract class AccessorTransformer extends ClassTransformer
 			return false;
 		}
 
+		/**
+		 * Populate the bytecode instructions for a getter accessor
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param field
+		 */
 		private void populateGetter(ClassNode classNode, MethodNode method, FieldNode field)
 		{
 			Type returnType = Type.getReturnType(method.desc);
@@ -238,24 +311,32 @@ public abstract class AccessorTransformer extends ClassTransformer
 			{
 				throw new RuntimeException("Incompatible types! Field type: " + fieldType + " Method type: " + returnType);
 			}
+			boolean isStatic = (field.access & Opcodes.ACC_STATIC) != 0;
 			
 			method.instructions.clear();
 			method.maxLocals = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
 			method.maxStack = fieldType.getSize();
 			
-			if ((field.access & Opcodes.ACC_STATIC) == 0)
+			if (isStatic)
 			{
-				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-				method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, field.name, field.desc));
+				method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, classNode.name, field.name, field.desc));
 			}
 			else
 			{
-				method.instructions.add(new FieldInsnNode(Opcodes.GETSTATIC, classNode.name, field.name, field.desc));
+				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
+				method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, field.name, field.desc));
 			}
 			
 			method.instructions.add(new InsnNode(returnType.getOpcode(Opcodes.IRETURN)));
 		}
 
+		/**
+		 * Populate the bytecode instructions for a setter
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param field
+		 */
 		private void populateSetter(ClassNode classNode, MethodNode method, FieldNode field)
 		{
 			Type[] argTypes = Type.getArgumentTypes(method.desc);
@@ -269,26 +350,34 @@ public abstract class AccessorTransformer extends ClassTransformer
 			{
 				throw new RuntimeException("Incompatible types! Field type: " + fieldType + " Method type: " + argType);
 			}
+			boolean isStatic = (field.access & Opcodes.ACC_STATIC) != 0;
 			
 			method.instructions.clear();
 			method.maxLocals = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
 			method.maxStack = fieldType.getSize();
 			
-			if ((field.access & Opcodes.ACC_STATIC) == 0)
+			if (isStatic)
+			{
+				method.instructions.add(new VarInsnNode(argType.getOpcode(Opcodes.ILOAD), 0));
+				method.instructions.add(new FieldInsnNode(Opcodes.PUTSTATIC, classNode.name, field.name, field.desc));
+			}
+			else
 			{
 				method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 				method.instructions.add(new VarInsnNode(argType.getOpcode(Opcodes.ILOAD), 1));
 				method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, field.name, field.desc));
 			}
-			else
-			{
-				method.instructions.add(new VarInsnNode(argType.getOpcode(Opcodes.ILOAD), 0));
-				method.instructions.add(new FieldInsnNode(Opcodes.PUTSTATIC, classNode.name, field.name, field.desc));
-			}
 			
 			method.instructions.add(new InsnNode(Opcodes.RETURN));
 		}
 
+		/**
+		 * Populate the bytecode instructions for an invoker (proxy) method
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param targetMethod
+		 */
 		private void populateInvoker(ClassNode classNode, MethodNode method, MethodNode targetMethod)
 		{
 			Type[] args = Type.getArgumentTypes(targetMethod.desc);
@@ -313,6 +402,31 @@ public abstract class AccessorTransformer extends ClassTransformer
 			method.instructions.add(new InsnNode(returnType.getOpcode(Opcodes.IRETURN)));
 		}
 
+		/**
+		 * Populate bytecode instructions for a method which throws an exception
+		 * 
+		 * @param classNode
+		 * @param method
+		 * @param message
+		 */
+		private void injectException(ClassNode classNode, MethodNode method, String message)
+		{
+			method.instructions.clear();
+			method.maxStack = 2;
+			
+			method.instructions.add(new TypeInsnNode(Opcodes.NEW, "java/lang/RuntimeException"));
+			method.instructions.add(new InsnNode(Opcodes.DUP));
+			method.instructions.add(new LdcInsnNode(message));
+			method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false));
+			method.instructions.add(new InsnNode(Opcodes.ATHROW));
+		}
+
+		/**
+		 * Find a field in the target class which matches the specified field name
+		 * 
+		 * @param classNode
+		 * @param fieldName
+		 */
 		private FieldNode findField(ClassNode classNode, Obf fieldName)
 		{
 			for (FieldNode field : classNode.fields)
@@ -324,6 +438,13 @@ public abstract class AccessorTransformer extends ClassTransformer
 			return null;
 		}
 
+		/**
+		 * Find a method in the target class which matches the specified method name and descriptor
+		 * 
+		 * @param classNode
+		 * @param methodName
+		 * @param desc
+		 */
 		private MethodNode findMethod(ClassNode classNode, Obf methodName, String desc)
 		{
 			for (MethodNode method : classNode.methods)
@@ -335,6 +456,12 @@ public abstract class AccessorTransformer extends ClassTransformer
 			return null;
 		}
 
+		/**
+		 * Add a method from the template interface to the target class 
+		 * 
+		 * @param classNode
+		 * @param method
+		 */
 		private boolean addMethodToClass(ClassNode classNode, MethodNode method)
 		{
 			MethodNode existingMethod = ByteCodeUtilities.findTargetMethod(classNode, method);
@@ -345,18 +472,33 @@ public abstract class AccessorTransformer extends ClassTransformer
 		}
 	}
 	
+	/**
+	 * List of accessors to inject
+	 */
 	private final List<AccessorInjection> accessors = new ArrayList<AccessorInjection>();
 	
+	/**
+	 * ctor
+	 */
 	public AccessorTransformer()
 	{
 		this.addAccessors();
 	}
 	
+	/**
+	 * @param interfaceName
+	 */
 	public void addAccessor(String interfaceName)
 	{
 		this.addAccessor(interfaceName, null);
 	}
 	
+	/**
+	 * Add an accessor to the accessors list
+	 * 
+	 * @param interfaceName
+	 * @param obfProvider
+	 */
 	public void addAccessor(String interfaceName, ObfProvider obfProvider)
 	{
 		try
@@ -369,6 +511,9 @@ public abstract class AccessorTransformer extends ClassTransformer
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see net.minecraft.launchwrapper.IClassTransformer#transform(java.lang.String, java.lang.String, byte[])
+	 */
 	@Override
 	public byte[] transform(String name, String transformedName, byte[] basicClass)
 	{
@@ -385,6 +530,16 @@ public abstract class AccessorTransformer extends ClassTransformer
 		return basicClass;
 	}
 
+	/**
+	 * Apply this transformer, used when this transformer is acting as a delegate via another transformer
+	 * (eg. an EventTransformer) and the parent transformer already has a ClassNode for the target class.
+	 * 
+	 * @param name
+	 * @param transformedName
+	 * @param basicClass
+	 * @param classNode
+	 * @return
+	 */
 	public ClassNode apply(String name, String transformedName, byte[] basicClass, ClassNode classNode)
 	{
 		for (Iterator<AccessorInjection> iter = this.accessors.iterator(); iter.hasNext(); )
@@ -403,10 +558,20 @@ public abstract class AccessorTransformer extends ClassTransformer
 		return classNode;
 	}
 	
+	/**
+	 * Subclasses should add their accessors here
+	 */
 	protected void addAccessors()
 	{
 	}
 	
+	/**
+	 * Called after transformation is applied, allows custom transforms to be performed by subclasses
+	 * 
+	 * @param name
+	 * @param transformedName
+	 * @param classNode
+	 */
 	protected void postTransform(String name, String transformedName, ClassNode classNode)
 	{
 	}
