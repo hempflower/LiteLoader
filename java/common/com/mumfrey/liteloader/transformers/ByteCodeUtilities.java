@@ -677,4 +677,74 @@ public abstract class ByteCodeUtilities
 		}
 		return null;
 	}
+	
+	/**
+	 * @param returnType
+	 * @param args
+	 */
+	public static String generateDescriptor(Type returnType, Object... args)
+	{
+		return ByteCodeUtilities.generateDescriptor(Obf.MCP, returnType, args);
+	}
+	
+	/**
+	 * @param returnType
+	 * @param args
+	 */
+	public static String generateDescriptor(Obf returnType, Object... args)
+	{
+		return ByteCodeUtilities.generateDescriptor(Obf.MCP, returnType, args);
+	}
+	
+	/**
+	 * @param returnType
+	 * @param args
+	 */
+	public static String generateDescriptor(String returnType, Object... args)
+	{
+		return ByteCodeUtilities.generateDescriptor(Obf.MCP, returnType, args);
+	}
+	
+	/**
+	 * @param obfType
+	 * @param returnType
+	 * @param args
+	 */
+	public static String generateDescriptor(int obfType, Object returnType, Object... args)
+	{
+		StringBuilder sb = new StringBuilder().append('(');;
+
+		for (Object arg : args)
+		{
+			sb.append(ByteCodeUtilities.toDescriptor(obfType, arg));
+		}
+		
+		return sb.append(')').append(returnType != null ? ByteCodeUtilities.toDescriptor(obfType, returnType) : "V").toString();
+	}
+
+	/**
+	 * @param obfType
+	 * @param arg
+	 */
+	private static String toDescriptor(int obfType, Object arg)
+	{
+		if (arg instanceof Obf)
+		{
+			return ((Obf)arg).getDescriptor(obfType);
+		}
+		else if (arg instanceof String)
+		{
+			return (String)arg;
+		}
+		else if (arg instanceof Type)
+		{
+			return arg.toString();
+		}
+		else if (arg instanceof Class)
+		{
+			return Type.getDescriptor((Class<?>)arg).toString();
+		}
+		
+		return arg == null ? "" : arg.toString();
+	}
 }

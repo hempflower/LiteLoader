@@ -3,7 +3,7 @@ package com.mumfrey.liteloader.transformers.event;
 import joptsimple.internal.Strings;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
-import com.mumfrey.liteloader.transformers.Callback;
+import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 
 /**
  * Encapsulates a method descriptor with varying degrees of accuracy from a simpler owner/method mapping up to
@@ -139,7 +139,7 @@ public class MethodInfo
 	 */
 	public MethodInfo(Obf owner, String method, Object returnType, Object... args)
 	{
-		this(owner.name, owner.obf, method, method, method, Callback.generateDescriptor(Obf.MCP, returnType, args), Callback.generateDescriptor(Obf.OBF, returnType, args));
+		this(owner.name, owner.obf, method, method, method, ByteCodeUtilities.generateDescriptor(Obf.MCP, returnType, args), ByteCodeUtilities.generateDescriptor(Obf.OBF, returnType, args));
 	}
 	
 	/**
@@ -158,7 +158,7 @@ public class MethodInfo
 	 */
 	public MethodInfo(Obf owner, Obf method, Object returnType, Object... args)
 	{
-		this(owner.name, owner.obf, method.name, method.srg, method.obf, Callback.generateDescriptor(Obf.MCP, returnType, args), Callback.generateDescriptor(Obf.OBF, returnType, args));
+		this(owner.name, owner.obf, method.name, method.srg, method.obf, ByteCodeUtilities.generateDescriptor(Obf.MCP, returnType, args), ByteCodeUtilities.generateDescriptor(Obf.OBF, returnType, args));
 	}
 
 	/**
