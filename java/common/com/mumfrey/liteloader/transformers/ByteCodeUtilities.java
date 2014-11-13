@@ -526,7 +526,46 @@ public abstract class ByteCodeUtilities
 			
 		return null;
 	}
-	
+
+	/**
+	 * Find a method in the target class which matches the specified method name and descriptor
+	 * 
+	 * @param classNode
+	 * @param methodName
+	 * @param desc
+	 */
+	public static MethodNode findMethod(ClassNode classNode, Obf obf, String desc)
+	{
+		int ordinal = 0;
+		
+		for (MethodNode method : classNode.methods)
+		{
+			if (obf.matches(method.name, ordinal++) && method.desc.equals(desc))
+				return method;
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Find a field in the target class which matches the specified field name
+	 * 
+	 * @param classNode
+	 * @param fieldName
+	 */
+	public static FieldNode findField(ClassNode classNode, Obf obf)
+	{
+		int ordinal = 0;
+		
+		for (FieldNode field : classNode.fields)
+		{
+			if (obf.matches(field.name, ordinal++))
+				return field;
+		}
+		
+		return null;
+	}
+
 	public static ClassNode loadClass(String className) throws IOException
 	{
 		return ByteCodeUtilities.loadClass(className, true, null);

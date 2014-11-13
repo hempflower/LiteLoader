@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.minecraft.launchwrapper.Launch;
 
@@ -33,6 +35,8 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public abstract class AccessorTransformer extends ClassTransformer
 {
+	static final Pattern ordinalRefPattern = Pattern.compile("^#([0-9]{1,5})$");
+	
 	/**
 	 * An injection record
 	 * 
@@ -103,6 +107,13 @@ public abstract class AccessorTransformer extends ClassTransformer
 		 */
 		private Obf getObf(String name)
 		{
+			Matcher ordinalPattern = AccessorTransformer.ordinalRefPattern.matcher(name);
+			if (ordinalPattern.matches())
+			{
+				int ordinal = Integer.parseInt(ordinalPattern.group(1));
+				return new Obf.Ord(ordinal);
+			}
+			
 			if (this.obfProvider != null)
 			{
 				Obf obf = this.obfProvider.getByName(name);
@@ -228,14 +239,14 @@ public abstract class AccessorTransformer extends ClassTransformer
 			if (accessor != null)
 			{
 				targetId = ByteCodeUtilities.<String>getAnnotationValue(accessor);
-				Obf targetName = this.getObf(targetId);
-				if (this.injectAccessor(classNode, method, targetName)) return;
+				Obf target = this.getObf(targetId);
+				if (this.injectAccessor(classNode, method, target)) return;
 			}
 			else if (invoker != null)
 			{
 				targetId = ByteCodeUtilities.<String>getAnnotationValue(invoker);
-				Obf targetName = this.getObf(targetId);
-				if (this.injectInvoker(classNode, method, targetName)) return;
+				Obf target = this.getObf(targetId);
+				if (this.injectInvoker(classNode, method, target)) return;
 			}
 			else
 			{
@@ -255,9 +266,9 @@ public abstract class AccessorTransformer extends ClassTransformer
 		 * @param method
 		 * @param targetName
 		 */
-		private boolean injectAccessor(ClassNode classNode, MethodNode method, Obf targetName)
+		private boolean injectAccessor(ClassNode classNode, MethodNode method, Obf target)
 		{
-			FieldNode targetField = this.findField(classNode, targetName);
+			FieldNode targetField = ByteCodeUtilities.findField(classNode, target);
 			if (targetField != null)
 			{
 				LiteLoaderLogger.debug("[AccessorTransformer] Found field %s for %s", targetField.name, method.name);
@@ -283,9 +294,9 @@ public abstract class AccessorTransformer extends ClassTransformer
 		 * @param method
 		 * @param targetName
 		 */
-		private boolean injectInvoker(ClassNode classNode, MethodNode method, Obf targetName)
+		private boolean injectInvoker(ClassNode classNode, MethodNode method, Obf target)
 		{
-			MethodNode targetMethod = this.findMethod(classNode, targetName, method.desc);
+			MethodNode targetMethod = ByteCodeUtilities.findMethod(classNode, target, method.desc);
 			if (targetMethod != null)
 			{
 				LiteLoaderLogger.debug("[AccessorTransformer] Found method %s for %s", targetMethod.name, method.name);
@@ -419,41 +430,6 @@ public abstract class AccessorTransformer extends ClassTransformer
 			method.instructions.add(new LdcInsnNode(message));
 			method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false));
 			method.instructions.add(new InsnNode(Opcodes.ATHROW));
-		}
-
-		/**
-		 * Find a field in the target class which matches the specified field name
-		 * 
-		 * @param classNode
-		 * @param fieldName
-		 */
-		private FieldNode findField(ClassNode classNode, Obf fieldName)
-		{
-			for (FieldNode field : classNode.fields)
-			{
-				if (fieldName.obf.equals(field.name) || fieldName.srg.equals(field.name)|| fieldName.name.equals(field.name))
-					return field;
-			}
-			
-			return null;
-		}
-
-		/**
-		 * Find a method in the target class which matches the specified method name and descriptor
-		 * 
-		 * @param classNode
-		 * @param methodName
-		 * @param desc
-		 */
-		private MethodNode findMethod(ClassNode classNode, Obf methodName, String desc)
-		{
-			for (MethodNode method : classNode.methods)
-			{
-				if ((methodName.obf.equals(method.name) || methodName.srg.equals(method.name)|| methodName.name.equals(method.name)) && method.desc.equals(desc))
-					return method;
-			}
-			
-			return null;
 		}
 
 		/**

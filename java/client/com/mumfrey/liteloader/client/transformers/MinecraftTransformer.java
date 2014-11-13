@@ -24,6 +24,7 @@ public class MinecraftTransformer extends AccessorTransformer
 	protected void addAccessors()
 	{
 		this.addAccessor(Obf.IMinecraft.name);
+		this.addAccessor(Obf.IGuiTextField.name);
 	}
 	
 	@Override

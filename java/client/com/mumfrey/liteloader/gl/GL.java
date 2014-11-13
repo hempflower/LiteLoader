@@ -1272,4 +1272,19 @@ public class GL
 	{
 		GL11.glPolygonMode(face, mode);
 	}
+	
+	public static void glPixelStorei(int pname, int param)
+	{
+		GL11.glPixelStorei(pname, param);
+	}
+	
+	public static void glReadPixels(int x, int y, int width, int height, int format, int type, ByteBuffer pixels)
+	{
+		GL11.glReadPixels(x, y, width, height, format, type, pixels);
+	}
+	
+	public static void glGetTexImage(int target, int level, int format, int type, ByteBuffer pixels)
+	{
+		GL11.glGetTexImage(target, level, format, type, pixels);
+	}
 }

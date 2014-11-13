@@ -26,6 +26,7 @@ public class Obf
 	public static final Obf           PacketEventsClient = new Obf("com.mumfrey.liteloader.client.PacketEventsClient"                  );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
 	public static final Obf                   IMinecraft = new Obf("com.mumfrey.liteloader.client.overlays.IMinecraft"                 );
+	public static final Obf                IGuiTextField = new Obf("com.mumfrey.liteloader.client.overlays.IGuiTextField"              );
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
 	public static final Obf              MinecraftServer = new Obf("net.minecraft.server.MinecraftServer"                              );
@@ -62,6 +63,7 @@ public class Obf
 	public static final Obf                       Entity = new Obf("net.minecraft.entity.Entity",                                "wv"  );
 	public static final Obf                RenderManager = new Obf("net.minecraft.client.renderer.entity.RenderManager",         "cpt" );
 	public static final Obf                       Render = new Obf("net.minecraft.client.renderer.entity.Render",                "cpu" );
+	public static final Obf                 GuiTextField = new Obf("net.minecraft.client.gui.GuiTextField",                      "bul" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -205,6 +207,48 @@ public class Obf
 	{
 		return String.format("L%s;", this.names[type].replace('.', '/'));
 	}
+	
+	/**
+	 * Test whether any of this Obf's dimensions match the supplied name
+	 * 
+	 * @param name
+	 */
+	public boolean matches(String name)
+	{
+		return this.obf.equals(name) || this.srg.equals(name)|| this.name.equals(name);
+	}
+	
+	/**
+	 * Test whether any of this Obf's dimensions match the supplied name or ordinal
+	 * 
+	 * @param name
+	 * @param ordinal
+	 */
+	public boolean matches(String name, int ordinal)
+	{
+		if (this.isOrdinal() && ordinal > -1)
+		{
+			return this.getOrdinal() == ordinal;
+		}
+		
+		return this.matches(name);
+	}
+	
+	/**
+	 * Returns true if this is an ordinal pointer
+	 */
+	public boolean isOrdinal()
+	{
+		return false;
+	}
+	
+	/**
+	 * Get the ordinal for this entry
+	 */
+	public int getOrdinal()
+	{
+		return -1;
+	}
 
 	/**
 	 * @param seargeName
@@ -268,5 +312,56 @@ public class Obf
 		catch (Exception ex) {}
 
 		return Obf.getByName(name);
+	}
+	
+	/**
+	 * Ordinal reference, can be passed to some methods which accept an {@link Obf} to indicate an offset into a
+	 * class rather than a named reference.
+	 * 
+	 * @author Adam Mummery-Smith
+	 */
+	public static class Ord extends Obf
+	{
+		/**
+		 * Field/method offset 
+		 */
+		private final int ordinal;
+
+		/**
+		 * @param name Field/method name
+		 * @param ordinal Field/method ordinal
+		 */
+		public Ord(String name, int ordinal)
+		{
+			super(name);
+			this.ordinal = ordinal;
+		}
+		
+		/**
+		 * @param ordinal Field ordinal
+		 */
+		public Ord(int ordinal)
+		{
+			super("ord#" + ordinal);
+			this.ordinal = ordinal;
+		}
+		
+		/* (non-Javadoc)
+		 * @see com.mumfrey.liteloader.core.runtime.Obf#isOrdinal()
+		 */
+		@Override
+		public boolean isOrdinal()
+		{
+			return true;
+		}
+
+		/* (non-Javadoc)
+		 * @see com.mumfrey.liteloader.core.runtime.Obf#getOrdinal()
+		 */
+		@Override
+		public int getOrdinal()
+		{
+			return this.ordinal;
+		}
 	}
 }
