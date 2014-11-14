@@ -531,16 +531,16 @@ public abstract class ByteCodeUtilities
 	 * Find a method in the target class which matches the specified method name and descriptor
 	 * 
 	 * @param classNode
-	 * @param methodName
+	 * @param searchFor
 	 * @param desc
 	 */
-	public static MethodNode findMethod(ClassNode classNode, Obf obf, String desc)
+	public static MethodNode findMethod(ClassNode classNode, Obf searchFor, String desc)
 	{
 		int ordinal = 0;
 		
 		for (MethodNode method : classNode.methods)
 		{
-			if (obf.matches(method.name, ordinal++) && method.desc.equals(desc))
+			if (searchFor.matches(method.name, ordinal++) && method.desc.equals(desc))
 				return method;
 		}
 		
@@ -551,15 +551,15 @@ public abstract class ByteCodeUtilities
 	 * Find a field in the target class which matches the specified field name
 	 * 
 	 * @param classNode
-	 * @param fieldName
+	 * @param searchFor
 	 */
-	public static FieldNode findField(ClassNode classNode, Obf obf)
+	public static FieldNode findField(ClassNode classNode, Obf searchFor)
 	{
 		int ordinal = 0;
 		
 		for (FieldNode field : classNode.fields)
 		{
-			if (obf.matches(field.name, ordinal++))
+			if (searchFor.matches(field.name, ordinal++))
 				return field;
 		}
 		

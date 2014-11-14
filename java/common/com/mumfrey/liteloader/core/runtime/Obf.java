@@ -25,8 +25,6 @@ public class Obf
 	public static final Obf                 PacketEvents = new Obf("com.mumfrey.liteloader.core.PacketEvents"                          );
 	public static final Obf           PacketEventsClient = new Obf("com.mumfrey.liteloader.client.PacketEventsClient"                  );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
-	public static final Obf                   IMinecraft = new Obf("com.mumfrey.liteloader.client.overlays.IMinecraft"                 );
-	public static final Obf                IGuiTextField = new Obf("com.mumfrey.liteloader.client.overlays.IGuiTextField"              );
 	public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
 	public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
 	public static final Obf              MinecraftServer = new Obf("net.minecraft.server.MinecraftServer"                              );
@@ -35,6 +33,13 @@ public class Obf
 	public static final Obf                         init = new Obf("init"                                                              );
 	public static final Obf                     postInit = new Obf("postInit"                                                          );
 	public static final Obf                  constructor = new Obf("<init>"                                                            );
+
+	// Overlays and Accessor Interfaces
+	// -----------------------------------------------------------------------------------------
+	public static final Obf                   IMinecraft = new Obf("com.mumfrey.liteloader.client.overlays.IMinecraft"                 );
+	public static final Obf                IGuiTextField = new Obf("com.mumfrey.liteloader.client.overlays.IGuiTextField"              );
+	public static final Obf              IEntityRenderer = new Obf("com.mumfrey.liteloader.client.overlays.IEntityRenderer"            );
+	public static final Obf                ISoundHandler = new Obf("com.mumfrey.liteloader.client.overlays.ISoundHandler"              );
 
 	// Classes
 	// -----------------------------------------------------------------------------------------
@@ -64,6 +69,7 @@ public class Obf
 	public static final Obf                RenderManager = new Obf("net.minecraft.client.renderer.entity.RenderManager",         "cpt" );
 	public static final Obf                       Render = new Obf("net.minecraft.client.renderer.entity.Render",                "cpu" );
 	public static final Obf                 GuiTextField = new Obf("net.minecraft.client.gui.GuiTextField",                      "bul" );
+	public static final Obf                 SoundHandler = new Obf("net.minecraft.client.audio.SoundHandler",                    "czh" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -84,6 +90,9 @@ public class Obf
 	public static final Obf         defaultResourcePacks = new Obf("field_110449_ao",                                            "aw"  );
 	public static final Obf                   serverName = new Obf("field_71475_ae",                                             "am"  );
 	public static final Obf                   serverPort = new Obf("field_71477_af",                                             "an"  );
+	public static final Obf      shaderResourceLocations = new Obf("field_147712_ad",                                            "ab"  );
+	public static final Obf                  shaderIndex = new Obf("field_147713_ae",                                            "ac"  );
+	public static final Obf                    useShader = new Obf("field_175083_ad",                                            "ad"  );
 
 	// Methods
 	// -----------------------------------------------------------------------------------------
@@ -119,6 +128,10 @@ public class Obf
 	public static final Obf                     doRender = new Obf("func_76986_a",                                               "a"   );
 	public static final Obf        doRenderShadowAndFire = new Obf("func_76979_b",                                               "b"   );
 	public static final Obf                       resize = new Obf("func_71370_a",                                               "a"   );
+	public static final Obf                   loadShader = new Obf("func_175069_a",                                              "a"   );
+	public static final Obf               getFOVModifier = new Obf("func_78481_a",                                               "a"   );
+	public static final Obf         setupCameraTransform = new Obf("func_78479_a",                                               "a"   );
+	public static final Obf            loadSoundResource = new Obf("func_147693_a",                                              "a"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;
@@ -249,6 +262,12 @@ public class Obf
 	{
 		return -1;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s[%s,%s,%s]@%d", this.getClass().getSimpleName(), this.name, this.srg, this.obf, this.getOrdinal());
+	}
 
 	/**
 	 * @param seargeName
@@ -300,7 +319,7 @@ public class Obf
 		{
 			for (Field fd : obf.getFields())
 			{
-				if (fd.getType().equals(Obf.class))
+				if (Obf.class.isAssignableFrom(fd.getType()))
 				{
 					String fieldName = fd.getName();
 					Obf entry = (Obf)fd.get(null);

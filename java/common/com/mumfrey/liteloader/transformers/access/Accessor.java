@@ -14,5 +14,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface Accessor
 {
-	public String value();
+	public String[] value();
 }

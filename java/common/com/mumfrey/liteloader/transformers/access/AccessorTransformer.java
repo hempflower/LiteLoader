@@ -105,8 +105,10 @@ public abstract class AccessorTransformer extends ClassTransformer
 		 * 
 		 * @param name Obfuscation table entry to fetch
 		 */
-		private Obf getObf(String name)
+		private Obf getObf(List<String> names)
 		{
+			String name = names.get(0);
+			
 			Matcher ordinalPattern = AccessorTransformer.ordinalRefPattern.matcher(name);
 			if (ordinalPattern.matches())
 			{
@@ -128,8 +130,15 @@ public abstract class AccessorTransformer extends ClassTransformer
 			{
 				return obf;
 			}
-			
-			throw new RuntimeException("No obfuscation table entry could be found for '" + name + "'");
+
+			if (names.size() > 0 && names.size() < 4)
+			{
+				String name2 = names.size() > 1 ? names.get(1) : name;
+				String name3 = names.size() > 2 ? names.get(2) : name;
+				return new AccessorTransformer.Mapping(name, name2, name3);
+			}
+
+			throw new RuntimeException("Invalid obfuscation table entry specified: '" + names + "'");
 		}
 
 		/**
@@ -175,7 +184,7 @@ public abstract class AccessorTransformer extends ClassTransformer
 				throw new RuntimeException("Accessor interfaces must be annotated with an @Accessor annotation specifying the target class");
 			}
 			
-			String targetClass = ByteCodeUtilities.<String>getAnnotationValue(annotation);
+			List<String> targetClass = ByteCodeUtilities.<List<String>>getAnnotationValue(annotation);
 			if (targetClass == null || targetClass.isEmpty())
 			{
 				throw new RuntimeException("Invalid @Accessor annotation, the annotation must specify a target class");
@@ -233,18 +242,18 @@ public abstract class AccessorTransformer extends ClassTransformer
 			
 			LiteLoaderLogger.debug("[AccessorTransformer] Attempting to add %s to %s", method.name, classNode.name);
 			
-			String targetId = null;
+			List<String> targetId = null;
 			AnnotationNode accessor = ByteCodeUtilities.getInvisibleAnnotation(method, Accessor.class);
 			AnnotationNode invoker = ByteCodeUtilities.getInvisibleAnnotation(method, Invoker.class);
 			if (accessor != null)
 			{
-				targetId = ByteCodeUtilities.<String>getAnnotationValue(accessor);
+				targetId = ByteCodeUtilities.<List<String>>getAnnotationValue(accessor);
 				Obf target = this.getObf(targetId);
 				if (this.injectAccessor(classNode, method, target)) return;
 			}
 			else if (invoker != null)
 			{
-				targetId = ByteCodeUtilities.<String>getAnnotationValue(invoker);
+				targetId = ByteCodeUtilities.<List<String>>getAnnotationValue(invoker);
 				Obf target = this.getObf(targetId);
 				if (this.injectInvoker(classNode, method, target)) return;
 			}
@@ -448,6 +457,14 @@ public abstract class AccessorTransformer extends ClassTransformer
 		}
 	}
 	
+	protected static class Mapping extends Obf
+	{
+		protected Mapping(String seargeName, String obfName, String mcpName)
+		{
+			super(seargeName, obfName, mcpName);
+		}
+	}
+	
 	/**
 	 * List of accessors to inject
 	 */
@@ -514,7 +531,6 @@ public abstract class AccessorTransformer extends ClassTransformer
 	 * @param transformedName
 	 * @param basicClass
 	 * @param classNode
-	 * @return
 	 */
 	public ClassNode apply(String name, String transformedName, byte[] basicClass, ClassNode classNode)
 	{
