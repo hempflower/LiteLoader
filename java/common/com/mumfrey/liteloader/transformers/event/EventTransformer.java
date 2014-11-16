@@ -348,7 +348,15 @@ public final class EventTransformer extends ClassTransformer
 	{
 		Event head = injection.getHead();
 
-		LiteLoaderLogger.info("Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name, ClassTransformer.getSimpleClassName(classNode));
+		if (head.isVerbose())
+		{
+			LiteLoaderLogger.info("Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name, ClassTransformer.getSimpleClassName(classNode));
+		}
+		else
+		{
+			LiteLoaderLogger.debug("Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name, ClassTransformer.getSimpleClassName(classNode));
+		}
+		
 		MethodNode handler = head.inject(injectionPoint, injection.isCancellable(), this.globalEventID, injection.captureLocals(), injection.getLocalTypes());
 		injection.addEventsToHandler(handler);
 		

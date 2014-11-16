@@ -29,6 +29,7 @@ public class PacketEvent extends Event
 	{
 		super("on" + packet.getShortName(), true, 1000);
 		this.packetIndex = packet.getIndex();
+		this.verbose = false;
 	}
 	
 	/* (non-Javadoc)
