@@ -16,9 +16,40 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 public class ModEvents implements EnumerationObserver
 {
+	public static class ModEventDefinition
+	{
+		private final LoadableModFile file;
+		
+		private final String identifier;
+		
+		private final String json;
+
+		public ModEventDefinition(LoadableModFile file, String json)
+		{
+			this.file = file;
+			this.identifier = file.getIdentifier();
+			this.json = json;
+		}
+		
+		public String getIdentifier()
+		{
+			return this.identifier;
+		}
+		
+		public String getJson()
+		{
+			return this.json;
+		}
+
+		public void onEventsInjected()
+		{
+			this.file.onEventsInjected();
+		}
+	}
+	
 	private static final String DEFINITION_FILENAME = "events.json";
 	
-	private static Map<String, String> events = new HashMap<String, String>();
+	private static Map<String, ModEventDefinition> events = new HashMap<String, ModEventDefinition>();
 	
 	@Override
 	public void onRegisterEnabledContainer(LoaderEnumerator enumerator, LoadableMod<?> container)
@@ -32,7 +63,7 @@ public class ModEvents implements EnumerationObserver
 			if (json == null) return;
 			
 			LiteLoaderLogger.info("Registering %s for mod with id %s", ModEvents.DEFINITION_FILENAME, file.getIdentifier());
-			ModEvents.events.put(file.getIdentifier(), json);
+			ModEvents.events.put(file.getIdentifier(), new ModEventDefinition(file, json));
 		}
 	}
 
@@ -51,7 +82,7 @@ public class ModEvents implements EnumerationObserver
 	{
 	}
 	
-	static Map<String, String> getEvents()
+	static Map<String, ModEventDefinition> getEvents()
 	{
 		return events;
 	}

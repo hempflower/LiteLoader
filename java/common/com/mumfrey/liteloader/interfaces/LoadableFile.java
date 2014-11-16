@@ -71,6 +71,8 @@ public class LoadableFile extends File implements TweakContainer<File>
 
 	protected String author = "Unknown";
 
+	protected boolean hasEventTransformers;
+
 	/**
 	 * Create a new tweak container wrapping the specified file
 	 */
@@ -296,6 +298,17 @@ public class LoadableFile extends File implements TweakContainer<File>
 	public List<String> getClassTransformerClassNames()
 	{
 		return new ArrayList<String>();
+	}
+	
+	@Override
+	public boolean hasEventTransformers()
+	{
+		return this.hasEventTransformers;
+	}
+	
+	public void onEventsInjected()
+	{
+		this.hasEventTransformers = true;
 	}
 
 	public boolean isInjectionForced()

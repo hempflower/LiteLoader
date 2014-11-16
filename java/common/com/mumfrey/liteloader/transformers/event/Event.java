@@ -98,12 +98,15 @@ public class Event implements Comparable<Event>
 
 	private int injectionCount = 0;
 
+	protected boolean verbose;
+	
 	protected Event(String name, boolean cancellable, int priority)
 	{
 		this.name = name.toLowerCase();
 		this.priority = priority;
 		this.order = Event.eventOrder++;
 		this.cancellable = cancellable;
+		this.verbose = true;
 		
 		if (Event.events.contains(this))
 		{
@@ -190,6 +193,23 @@ public class Event implements Comparable<Event>
 	public int getPriority()
 	{
 		return this.priority;
+	}
+	
+	/**
+	 * Set whether to log at INFO or DEBUG
+	 */
+	public Event setVerbose(boolean verbose)
+	{
+		this.verbose = verbose;
+		return this;
+	}
+	
+	/**
+	 * Get whether to log at INFO or DEBUG
+	 */
+	public boolean isVerbose()
+	{
+		return this.verbose;
 	}
 
 	/**

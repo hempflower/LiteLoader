@@ -252,4 +252,14 @@ public class GuiModListPanel extends Gui
 			this.mouseOverIcon.onClicked(source, this);
 		}
 	}
+
+	public void mousePressed(int mouseX, int mouseY, int mouseButton)
+	{
+		this.owner.clearHelpMessage();
+	}
+
+	public void displayModHelpMessage(ModInfo<?> mod, String title, String text)
+	{
+		this.owner.displayHelpMessage(title, text);
+	}
 }

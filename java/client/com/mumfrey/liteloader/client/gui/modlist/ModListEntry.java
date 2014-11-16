@@ -149,6 +149,11 @@ public class ModListEntry
 		{
 			this.modList.selectMod(this);
 			
+			if (this.getListPanel().isMouseOver())
+			{
+				this.getListPanel().mousePressed(mouseX, mouseY, mouseButton);
+			}
+			
 			if (this.getListPanel().isMouseOverIcon())
 			{
 				this.getListPanel().iconClick(this.modList.getParentScreen());
@@ -221,6 +226,16 @@ public class ModListEntry
 		}
 	}
 	
+	protected void displayHelpMessage(String title, String text)
+	{
+		this.infoPanel.displayHelpMessage(title, text);
+	}
+
+	public void clearHelpMessage()
+	{
+		this.infoPanel.clearHelpMessage();
+	}
+
 	public String getKey()
 	{
 		return (this.isErrored ? "0000" : "") + this.modInfo.getIdentifier() + Integer.toHexString(this.hashCode());

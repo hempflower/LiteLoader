@@ -6,6 +6,7 @@ import net.minecraft.client.resources.I18n;
 
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
+import com.mumfrey.liteloader.client.gui.modlist.GuiModListPanel;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.client.util.render.IconAbsoluteClickable;
 import com.mumfrey.liteloader.core.ModInfo;
@@ -26,12 +27,44 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 	{
 		if (mod.hasTweakClass())
 		{
-			icons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestweak"), 12, 12, 158, 80, 170, 92));
+			icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestweak"), 12, 12, 158, 80, 170, 92){
+				@Override
+				public void onClicked(Object source, Object container)
+				{
+					if (container instanceof GuiModListPanel)
+					{
+						((GuiModListPanel)container).displayModHelpMessage(mod, "gui.mod.providestweak", "gui.mod.help.tweak");
+					}
+				}
+			});
+		}
+		
+		if (mod.hasEventTransformers())
+		{
+			icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providesevents"), 12, 12, 170, 92, 182, 104){
+				@Override
+				public void onClicked(Object source, Object container)
+				{
+					if (container instanceof GuiModListPanel)
+					{
+						((GuiModListPanel)container).displayModHelpMessage(mod, "gui.mod.providesevents", "gui.mod.help.events");
+					}
+				}
+			});
 		}
 		
 		if (mod.hasClassTransformers())
 		{
-			icons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestransformer"), 12, 12, 170, 80, 182, 92));
+			icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestransformer"), 12, 12, 170, 80, 182, 92){
+				@Override
+				public void onClicked(Object source, Object container)
+				{
+					if (container instanceof GuiModListPanel)
+					{
+						((GuiModListPanel)container).displayModHelpMessage(mod, "gui.mod.providestransformer", "gui.mod.help.transformer");
+					}
+				}
+			});
 		}
 		
 		if (mod.usesAPI())

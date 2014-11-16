@@ -1,13 +1,12 @@
 package com.mumfrey.liteloader.transformers.event.json;
 
-import java.util.Map.Entry;
-
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
+import com.mumfrey.liteloader.transformers.event.json.ModEvents.ModEventDefinition;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -20,12 +19,9 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 	@Override
 	protected void addEvents()
 	{
-		for (Entry<String, String> eventsDefinition : ModEvents.getEvents().entrySet())
+		for (ModEventDefinition eventsDefinition : ModEvents.getEvents().values())
 		{
-			String identifier = eventsDefinition.getKey();
-			String json = eventsDefinition.getValue();
-			
-			this.addEvents(identifier, json);
+			this.addEvents(eventsDefinition);
 		}
 	}
 
@@ -33,41 +29,42 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 	 * @param identifier
 	 * @param json
 	 */
-	private void addEvents(String identifier, String json)
+	private void addEvents(ModEventDefinition def)
 	{
 		JsonEvents events = null;
 		
 		try
 		{
-			LiteLoaderLogger.info("Parsing events for mod with id %s", identifier);
-			events = JsonEvents.parse(json);
+			LiteLoaderLogger.info("Parsing events for mod with id %s", def.getIdentifier());
+			events = JsonEvents.parse(def.getJson());
 			events.register(this);
+			def.onEventsInjected();
 		}
 		catch (InvalidEventJsonException ex)
 		{
 			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
 			LiteLoaderLogger.debug(ex.getMessage());
 			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-			LiteLoaderLogger.debug(json);
+			LiteLoaderLogger.debug(def.getJson());
 			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-			LiteLoaderLogger.severe(ex, "Invalid JSON event declarations for mod with id %s", identifier);
+			LiteLoaderLogger.severe(ex, "Invalid JSON event declarations for mod with id %s", def.getIdentifier());
 		}
 		catch (Throwable ex)
 		{
-			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", identifier);
+			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
 		}
 		
 		try
 		{
 			if (events != null)
 			{
-				LiteLoaderLogger.info("Registering events for mod with id %s", identifier);
+				LiteLoaderLogger.info("Registering events for mod with id %s", def.getIdentifier());
 				events.register(this);
 			}
 		}
 		catch (Throwable ex)
 		{
-			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", identifier);
+			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
 		}
 	}
 	

@@ -1,13 +1,18 @@
 package com.mumfrey.liteloader.client.gui.modlist;
 
+import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Strings;
+import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 import com.mumfrey.liteloader.client.gui.GuiSimpleScrollBar;
+import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.ModInfo;
+import com.mumfrey.liteloader.util.render.IconTextured;
 
 public class GuiModInfoPanel extends Gui
 {
@@ -15,6 +20,8 @@ public class GuiModInfoPanel extends Gui
 	private static final int AUTHORS_COLOUR     = GuiModListPanel.WHITE;
 	private static final int DIVIDER_COLOUR     = GuiModListPanel.GREY;
 	private static final int DESCRIPTION_COLOUR = GuiModListPanel.WHITE;
+	
+	private static final IconAbsolute infoIcon = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "Info", 12, 12, 146, 92, 158, 104);
 	
 	private final ModListEntry owner;
 	
@@ -27,6 +34,10 @@ public class GuiModInfoPanel extends Gui
 	private GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
 
 	private boolean mouseOverPanel, mouseOverScrollBar;
+	
+	private boolean showHelp;
+	
+	private String helpTitle, helpText;
 
 	public GuiModInfoPanel(ModListEntry owner, FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo)
 	{
@@ -57,18 +68,48 @@ public class GuiModInfoPanel extends Gui
 		drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModInfoPanel.DIVIDER_COLOUR); yPos += 4; // divider
 		drawRect(xPosition + 5, bottom - 1, xPosition + width, bottom, GuiModInfoPanel.DIVIDER_COLOUR); // divider
 		
-		int scrollHeight = bottom - yPos - 3;
-		int totalHeight = this.fontRenderer.splitStringWidth(this.modInfo.getDescription(), width - 11);
+		glEnableClipping(-1, -1, yPos, bottom - 3);
 		
-		this.scrollBar.setMaxValue(totalHeight - scrollHeight);
-		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, xPosition + width - 5, yPos, 5, scrollHeight, totalHeight);
+		int scrollHeight = bottom - yPos - 3;
+		int contentHeight = this.drawContent(xPosition, width, yPos);
+		
+		this.scrollBar.setMaxValue(contentHeight - scrollHeight);
+		this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, xPosition + width - 5, yPos, 5, scrollHeight, contentHeight);
 		
 		this.mouseOverScrollBar = this.isMouseOver(mouseX, mouseY, xPosition + width - 5, yPos, 5, scrollHeight);
+	}
 
-		glEnableClipping(-1, -1, yPos, bottom - 3);
-		this.fontRenderer.drawSplitString(this.modInfo.getDescription(), xPosition + 5, yPos - this.scrollBar.getValue(), width - 11, GuiModInfoPanel.DESCRIPTION_COLOUR);
+	private int drawContent(int xPosition, int width, int yPos)
+	{
+		yPos -= this.scrollBar.getValue();
+		
+		if (this.showHelp)
+		{
+			this.drawIcon(xPosition + 3, yPos, GuiModInfoPanel.infoIcon); yPos += 2;
+			this.fontRenderer.drawString(this.helpTitle, xPosition + 17, yPos, this.brandColour); yPos += 12;
+			return this.drawText(xPosition + 17, width - 24, yPos, this.helpText, GuiModInfoPanel.DESCRIPTION_COLOUR) + 15;
+		}
+		
+		return this.drawText(xPosition + 5, width - 11, yPos, this.modInfo.getDescription(), GuiModInfoPanel.DESCRIPTION_COLOUR);
 	}
 	
+	protected void drawIcon(int xPosition, int yPosition, IconTextured icon)
+	{
+		glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+		Minecraft.getMinecraft().getTextureManager().bindTexture(icon.getTextureResource());
+		
+		glEnableBlend();
+		this.drawTexturedModalRect(xPosition, yPosition, icon.getUPos(), icon.getVPos(), icon.getIconWidth(), icon.getIconHeight());
+		glDisableBlend();
+	}
+
+	private int drawText(int xPosition, int width, int yPos, String text, int colour)
+	{
+		int totalHeight = this.fontRenderer.splitStringWidth(text, width);
+		this.fontRenderer.drawSplitString(text, xPosition, yPos, width, colour);
+		return totalHeight;
+	}
+
 	private boolean isMouseOver(int mouseX, int mouseY, int x, int y, int width, int height)
 	{
 		return mouseX > x && mouseX < x + width && mouseY > y && mouseY < y + height;
@@ -96,5 +137,18 @@ public class GuiModInfoPanel extends Gui
 		}
 		
 		return false;
+	}
+	
+	public void displayHelpMessage(String title, String text)
+	{
+		this.showHelp = true;
+		this.helpTitle = I18n.format(title);
+		this.helpText = I18n.format(text);
+		this.scrollBar.setValue(0);
+	}
+
+	public void clearHelpMessage()
+	{
+		this.showHelp = false;
 	}
 }

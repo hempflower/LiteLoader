@@ -38,4 +38,9 @@ public interface TweakContainer<L> extends Loadable<L>, Injectable
 	 * Get class transformers defined in the metadata
 	 */
 	public abstract List<String> getClassTransformerClassNames();
+	
+	/**
+	 * True if this container defines event transformers via JSON
+	 */
+	public abstract boolean hasEventTransformers();
 }

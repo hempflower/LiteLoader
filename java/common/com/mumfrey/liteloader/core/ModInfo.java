@@ -172,6 +172,14 @@ public abstract class ModInfo<TContainer extends Loadable<?>>
 	}
 	
 	/**
+	 * If this has JSON event transformers
+	 */
+	public boolean hasEventTransformers()
+	{
+		return (this.container instanceof TweakContainer && ((TweakContainer<?>)this.container).hasEventTransformers());
+	}
+	
+	/**
 	 * Get whether this mod uses external (3rd-party) API
 	 */
 	public boolean usesAPI()
