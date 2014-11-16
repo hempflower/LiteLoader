@@ -115,7 +115,12 @@ public class JsonEvents implements Serializable, ObfProvider
 			throw new InvalidEventJsonException("An error occurred whilst parsing the event definition: " + ex.getClass().getSimpleName() + ": " + ex.getMessage(), ex);
 		}
 	}
-	
+
+	public boolean hasAccessors()
+	{
+		return this.accessorInterfaces.size() > 0;
+	}
+
 	/**
 	 * Parse a token name, returns the token name as a string if the token is valid, or null if the token is not valid
 	 * 

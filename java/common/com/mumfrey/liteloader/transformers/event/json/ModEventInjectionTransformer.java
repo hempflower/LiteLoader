@@ -37,8 +37,6 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 		{
 			LiteLoaderLogger.info("Parsing events for mod with id %s", def.getIdentifier());
 			events = JsonEvents.parse(def.getJson());
-			events.register(this);
-			def.onEventsInjected();
 		}
 		catch (InvalidEventJsonException ex)
 		{
@@ -58,8 +56,15 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 		{
 			if (events != null)
 			{
+				if (events.hasAccessors())
+				{
+					LiteLoaderLogger.info("%s contains Accessor definitions, injecting into classpath...", def.getIdentifier());
+					def.injectIntoClassPath();
+				}
+				
 				LiteLoaderLogger.info("Registering events for mod with id %s", def.getIdentifier());
 				events.register(this);
+				def.onEventsInjected();
 			}
 		}
 		catch (Throwable ex)

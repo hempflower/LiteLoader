@@ -1,8 +1,11 @@
 package com.mumfrey.liteloader.transformers.event.json;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.minecraft.launchwrapper.Launch;
 
 import com.google.common.base.Charsets;
 import com.mumfrey.liteloader.api.EnumerationObserver;
@@ -44,6 +47,18 @@ public class ModEvents implements EnumerationObserver
 		public void onEventsInjected()
 		{
 			this.file.onEventsInjected();
+		}
+
+		public void injectIntoClassPath()
+		{
+			try
+			{
+				this.file.injectIntoClassPath(Launch.classLoader, true);
+			}
+			catch (MalformedURLException ex)
+			{
+				ex.printStackTrace();
+			}
 		}
 	}
 	
