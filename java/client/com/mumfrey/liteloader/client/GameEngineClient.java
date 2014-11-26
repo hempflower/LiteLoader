@@ -1,18 +1,14 @@
 package com.mumfrey.liteloader.client;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.profiler.Profiler;
@@ -20,7 +16,7 @@ import net.minecraft.server.integrated.IntegratedServer;
 
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.GameEngine;
-import com.mumfrey.liteloader.common.LoadingProgress;
+import com.mumfrey.liteloader.common.Resources;
 
 /**
  *
@@ -30,15 +26,7 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 {
 	private final Minecraft engine = Minecraft.getMinecraft();
 	
-	/**
-	 * Registered resource packs 
-	 */
-	private final Map<String, IResourcePack> registeredResourcePacks = new HashMap<String, IResourcePack>();
-
-	/**
-	 * True while initialising mods if we need to do a resource manager reload once the process is completed
-	 */
-	private boolean pendingResourceReload;
+	private final Resources<?, ?> resources = new ResourcesClient();
 
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.common.GameEngine#getProfiler()
@@ -47,20 +35,6 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 	public Profiler getProfiler()
 	{
 		return this.engine.mcProfiler;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.common.GameEngine#refreshResources(boolean)
-	 */
-	@Override
-	public void refreshResources(boolean force)
-	{
-		if (this.pendingResourceReload || force)
-		{
-			LoadingProgress.setMessage("Reloading Resources...");
-			this.pendingResourceReload = false;
-			this.engine.refreshResources();
-		}
 	}
 
 	/* (non-Javadoc)
@@ -126,6 +100,12 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 		return this.engine.getIntegratedServer();
 	}
 	
+	@Override
+	public Resources<?, ?> getResources()
+	{
+		return this.resources;
+	}
+	
 	public GameSettings getGameSettings()
 	{
 		return this.engine.gameSettings;
@@ -151,61 +131,11 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 		return this.engine.gameSettings.hideGUI;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.common.GameEngine#getResourceManager()
-	 */
-	@Override
-	public IResourceManager getResourceManager()
-	{
-		return this.engine.getResourceManager();
-	}
-
 	public SoundHandler getSoundHandler()
 	{
 		return this.engine.getSoundHandler();
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.common.GameEngine#registerResourcePack(net.minecraft.client.resources.IResourcePack)
-	 */
-	@Override
-	public boolean registerResourcePack(IResourcePack resourcePack)
-	{
-		if (!this.registeredResourcePacks.containsKey(resourcePack.getPackName()))
-		{
-			this.pendingResourceReload = true;
 
-			List<IResourcePack> defaultResourcePacks = ((IMinecraft)this.engine).getDefaultResourcePacks();
-			if (!defaultResourcePacks.contains(resourcePack))
-			{
-				defaultResourcePacks.add(resourcePack);
-				this.registeredResourcePacks.put(resourcePack.getPackName(), resourcePack);
-				return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.common.GameEngine#unRegisterResourcePack(net.minecraft.client.resources.IResourcePack)
-	 */
-	@Override
-	public boolean unRegisterResourcePack(IResourcePack resourcePack)
-	{
-		if (this.registeredResourcePacks.containsValue(resourcePack))
-		{
-			this.pendingResourceReload = true;
-
-			List<IResourcePack> defaultResourcePacks = ((IMinecraft)this.engine).getDefaultResourcePacks();
-			this.registeredResourcePacks.remove(resourcePack.getPackName());
-			defaultResourcePacks.remove(resourcePack);
-			return true;
-		}
-		
-		return false;
-	}
-	
 	/* (non-Javadoc)
 	 * @see com.mumfrey.liteloader.common.GameEngine#getKeyBindings()
 	 */

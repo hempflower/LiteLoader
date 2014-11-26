@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.client;
 
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.play.server.S01PacketJoinGame;
@@ -7,6 +9,7 @@ import net.minecraft.world.World;
 
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.common.GameEngine;
+import com.mumfrey.liteloader.common.Resources;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.launch.LoaderProperties;
@@ -45,10 +48,11 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
 		this.inhibitSoundManagerReload = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_SOUND_MANAGER_FIX, true);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void onPostInit(GameEngine<?, ?> engine)
 	{
-		this.soundHandlerReloadInhibitor = new SoundHandlerReloadInhibitor((SimpleReloadableResourceManager)engine.getResourceManager(), ((GameEngineClient)engine).getSoundHandler());
+		this.soundHandlerReloadInhibitor = new SoundHandlerReloadInhibitor((SimpleReloadableResourceManager)engine.getResources().getResourceManager(), ((GameEngineClient)engine).getSoundHandler());
 		
 		if (this.inhibitSoundManagerReload)
 		{
@@ -56,7 +60,8 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
 		}
 
 		// Add self as a resource pack for texture/lang resources
-		LiteLoader.getGameEngine().registerResourcePack(new InternalResourcePack("LiteLoader", LiteLoader.class, "liteloader"));
+		Resources<IResourceManager, IResourcePack> resources = (Resources<IResourceManager, IResourcePack>)LiteLoader.getGameEngine().getResources();
+		resources.registerResourcePack(new InternalResourcePack("LiteLoader", LiteLoader.class, "liteloader"));
 	}
 	
 	@Override

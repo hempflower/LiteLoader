@@ -18,18 +18,17 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 import joptsimple.internal.Strings;
-import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.mumfrey.liteloader.api.manager.APIProvider;
+import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.interfaces.LoadableFile;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.InjectionStrategy;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
-import com.mumfrey.liteloader.resources.ModResourcePack;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -87,11 +86,6 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	 * True if the revision number was successfully read, used as a semaphore so that we know when revision is a valid number
 	 */
 	protected boolean hasRevision = false;
-	
-	/**
-	 * Resource pack we have registered with minecraft
-	 */
-	protected Object resourcePack = null;
 	
 	/**
 	 * ALL of the parsed metadata from the file, associated with the mod later on for retrieval via the loader
@@ -241,12 +235,12 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	{
 		if (this.missingAPIs.size() > 0)
 		{
-			return I18n.format("gui.description.missingapis", "\n" + compileMissingAPIList());
+			return LiteLoader.translate("gui.description.missingapis", "\n" + compileMissingAPIList());
 		}
 		
 		if (this.missingDependencies.size() > 0)
 		{
-			return I18n.format("gui.description.missingdeps", "\n" + this.missingDependencies.toString());
+			return LiteLoader.translate("gui.description.missingdeps", "\n" + this.missingDependencies.toString());
 		}
 		
 		String descriptionKey = "description";
@@ -374,33 +368,11 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 	{
 		return this.classTransformerClassNames;
 	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <T> T getResourcePack()
-	{
-		return (T)this.resourcePack;
-	}
-	
-	/**
-	 * Initialise the mod resource pack
-	 * 
-	 * @param name
-	 */
-	@Override
-	public void initResourcePack(String name)
-	{
-		if (this.resourcePack == null)
-		{
-			LiteLoaderLogger.info("Setting up \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name);
-			this.resourcePack = new ModResourcePack(name, this);
-		}
-	}
 	
 	@Override
-	public boolean hasResourcePack()
+	public boolean hasResources()
 	{
-		return (this.resourcePack != null);
+		return true;
 	}
 	
 	@Override

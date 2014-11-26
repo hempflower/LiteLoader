@@ -11,6 +11,8 @@ import com.mumfrey.liteloader.api.CustomisationProvider;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Observer;
 import com.mumfrey.liteloader.client.LiteLoaderCoreProviderClient;
+import com.mumfrey.liteloader.client.ResourceObserver;
+import com.mumfrey.liteloader.client.Translator;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
@@ -68,7 +70,8 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 		return ImmutableList.<CustomisationProvider>of
 		(
 			new LiteLoaderBrandingProvider(),
-			new LiteLoaderModInfoDecorator()
+			new LiteLoaderModInfoDecorator(),
+			new Translator()
 		);
 	}
 
@@ -124,6 +127,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	{
 		return ImmutableList.<Observer>of
 		(
+			new ResourceObserver(),
 			this.getObjectFactory().getPanelManager()
 		);
 	}

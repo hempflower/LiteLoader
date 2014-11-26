@@ -9,6 +9,7 @@ import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
+import com.mumfrey.liteloader.util.Input;
 
 /**
  * Factory for generating loader managament objects based on the environment
@@ -23,6 +24,8 @@ public interface ObjectFactory<TClient, TServer extends MinecraftServer>
 	public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
 	
 	public abstract PacketEvents getPacketEventBroker();
+	
+	public abstract Input getInput();
 	
 	public abstract GameEngine<TClient, TServer> getGameEngine();
 	

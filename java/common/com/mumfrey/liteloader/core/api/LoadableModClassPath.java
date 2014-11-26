@@ -6,9 +6,6 @@ import java.net.MalformedURLException;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
-import com.mumfrey.liteloader.resources.ModResourcePack;
-import com.mumfrey.liteloader.resources.ModResourcePackDir;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Mod file reference for a file loaded from class path
@@ -66,24 +63,6 @@ public class LoadableModClassPath extends LoadableModFile
 	public String getDisplayName()
 	{
 		return this.getModName();
-	}
-
-	@Override
-	public void initResourcePack(String name)
-	{
-		if (this.resourcePack == null)
-		{
-			if (this.isDirectory())
-			{
-				LiteLoaderLogger.info("Setting up \"%s/%s\" as mod resource pack with identifier \"%s\"", this.getParentFile().getName(), this.getName(), name);
-				this.resourcePack = new ModResourcePackDir(name, this);
-			}
-			else
-			{
-				LiteLoaderLogger.info("Setting up \"%s\" as mod resource pack with identifier \"%s\"", this.getName(), name);
-				this.resourcePack = new ModResourcePack(name, this);
-			}
-		}
 	}
 	
 	@Override

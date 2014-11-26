@@ -101,17 +101,7 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
 	/**
 	 * Returns true if this mod can be added as a resource pack
 	 */
-	public abstract boolean hasResourcePack();
-
-	/**
-	 * Returns the resource pack for this mod, duck typed via generic to avoid ResourcePack being in the method signature
-	 */
-	public abstract <T> T getResourcePack();
-	
-	/**
-	 * Initialise the resource pack with the specified name
-	 */
-	public abstract void initResourcePack(String name);
+	public abstract boolean hasResources();
 
 	/**
 	 * Get all class names in this container
@@ -297,20 +287,9 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
 		}
 
 		@Override
-		public boolean hasResourcePack()
+		public boolean hasResources()
 		{
 			return false;
-		}
-
-		@Override
-		public <T> T getResourcePack()
-		{
-			return null;
-		}
-
-		@Override
-		public void initResourcePack(String name)
-		{
 		}
 		
 		@Override

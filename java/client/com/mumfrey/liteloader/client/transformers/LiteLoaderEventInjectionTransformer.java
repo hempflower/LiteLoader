@@ -3,11 +3,10 @@ package com.mumfrey.liteloader.client.transformers;
 import static com.mumfrey.liteloader.core.runtime.Methods.*;
 import static com.mumfrey.liteloader.transformers.event.InjectionPoint.*;
 
+import com.mumfrey.liteloader.common.transformers.LiteLoaderEventTransformer;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
-import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeNew;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;
@@ -19,11 +18,19 @@ import com.mumfrey.liteloader.transformers.event.inject.MethodHead;
  *
  * @author Adam Mummery-Smith
  */
-public class LiteLoaderEventInjectionTransformer extends EventInjectionTransformer
+public class LiteLoaderEventInjectionTransformer extends LiteLoaderEventTransformer
 {
+	@Override
+	protected Obf getProxy()
+	{
+		return Obf.CallbackProxyClient;
+	}
+	
 	@Override
 	protected void addEvents()
 	{
+		super.addEvents();
+
 		// Event declaraions
 		Event onOutboundChat                   = Event.getOrCreate("onOutboundChat",               true);
 		Event onResize                         = Event.getOrCreate("updateFramebufferSize",        false);
@@ -44,11 +51,6 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		Event onRenderChat                     = Event.getOrCreate("onRenderChat",                 false);
 		Event postRenderChat                   = Event.getOrCreate("postRenderChat",               false);
 		Event onCreateIntegratedServer         = Event.getOrCreate("onCreateIntegratedServer",     false);
-		Event onInitializePlayerConnection     = Event.getOrCreate("onInitializePlayerConnection", false);
-		Event onPlayerLogin                    = Event.getOrCreate("onPlayerLogin",                false);
-		Event onPlayerLogout                   = Event.getOrCreate("onPlayerLogout",               false);
-		Event onSpawnPlayer                    = Event.getOrCreate("onSpawnPlayer",                false);
-		Event onRespawnPlayer                  = Event.getOrCreate("onRespawnPlayer",              false);
 		Event onStartupComplete                = Event.getOrCreate("onStartupComplete",            false);
 		Event onSessionProfileBad              = Event.getOrCreate("onSessionProfileBad",          true);
 		Event onSaveScreenshot                 = Event.getOrCreate("onSaveScreenshot",             true);
@@ -96,11 +98,6 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		this.add(onRenderChat,                 renderGameOverlay,          (beforeDrawChat),          "onRenderChat");
 		this.add(postRenderChat,               renderGameOverlay,     after(beforeDrawChat),          "postRenderChat");
 		this.add(onCreateIntegratedServer,     integratedServerCtor,       (methodReturn),            "IntegratedServerCtor");
-		this.add(onInitializePlayerConnection, initPlayerConnection,       (methodReturn),            "onInitializePlayerConnection");
-		this.add(onPlayerLogin,                playerLoggedIn,             (methodReturn),            "onPlayerLogin");
-		this.add(onPlayerLogout,               playerLoggedOut,            (methodReturn),            "onPlayerLogout");
-		this.add(onSpawnPlayer,                spawnPlayer,                (methodReturn),            "onSpawnPlayer");
-		this.add(onRespawnPlayer,              respawnPlayer,              (methodReturn),            "onRespawnPlayer");
 		this.add(onStartupComplete,            startGame,                  (methodReturn),            "onStartupComplete");
 		this.add(onSaveScreenshot,             saveScreenshot,             (beforeIsFBOEnabled),      "onSaveScreenshot");
 		this.add(onRenderEntity,               doRenderEntity,             (beforeRenderEntity),      "onRenderEntity");
@@ -111,15 +108,5 @@ public class LiteLoaderEventInjectionTransformer extends EventInjectionTransform
 		
 		// Protocol handlers
 		this.add(onJoinRealm,                  realmsPlay,                 (beforeStopRealsmFetcher), "onJoinRealm", Obf.PacketEventsClient);
-	}
-
-	protected final Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback)
-	{
-		return this.add(event, targetMethod, injectionPoint, callback, Obf.CallbackProxyClient);
-	}
-
-	private Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback, Obf proxy)
-	{
-		return this.addEvent(event, targetMethod, injectionPoint).addListener(new MethodInfo(proxy, callback));
 	}
 }

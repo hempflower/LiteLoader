@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.api;
 import java.io.File;
 
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 
 /**
@@ -20,6 +21,13 @@ public interface ModLoadObserver extends Observer
 	 * order to prevent further initialisation
 	 */
 	public abstract void onModLoaded(LiteMod mod);
+
+	/**
+	 * Called after a mod is instanced and has been successfully added to the active mods list 
+	 * 
+	 * @param handle Mod handle
+	 */
+	public abstract void onPostModLoaded(ModInfo<LoadableMod<?>> handle);
 
 	/**
 	 * Called if mod loading fails

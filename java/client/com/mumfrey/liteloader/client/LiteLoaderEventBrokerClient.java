@@ -6,6 +6,8 @@ import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.play.client.C01PacketChatMessage;
@@ -19,9 +21,9 @@ import org.lwjgl.input.Mouse;
 import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
@@ -30,7 +32,7 @@ import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer>
+public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer> implements IResourceManagerReloadListener
 {	
 	private static LiteLoaderEventBrokerClient instance;
 
@@ -87,6 +89,12 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	static LiteLoaderEventBrokerClient getInstance()
 	{
 		return LiteLoaderEventBrokerClient.instance;
+	}
+	
+	@Override
+	public void onResourceManagerReload(IResourceManager resourceManager)
+	{
+		LoadingProgress.setMessage("Reloading Resources...");
 	}
 	
 	/* (non-Javadoc)
@@ -230,7 +238,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	@Override
 	protected void onStartupComplete()
 	{
-		this.engine.refreshResources(false);
+		this.engine.getResources().refreshResources(false);
 		
 		for (InitCompleteListener initMod : this.initListeners)
 		{

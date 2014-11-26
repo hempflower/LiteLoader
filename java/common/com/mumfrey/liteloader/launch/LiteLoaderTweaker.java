@@ -14,6 +14,7 @@ import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
+import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -615,6 +616,12 @@ public class LiteLoaderTweaker implements ITweaker
 	 */
 	public static void postInit()
 	{
+		LiteLoaderTweaker.instance.onPostInit();
+	}
+	
+	public static void dedicatedServerInit(EventInfo<?> e)
+	{
+		LiteLoaderTweaker.instance.onInit();
 		LiteLoaderTweaker.instance.onPostInit();
 	}
 }

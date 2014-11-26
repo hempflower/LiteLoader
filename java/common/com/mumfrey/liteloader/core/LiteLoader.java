@@ -19,11 +19,13 @@ import net.minecraft.world.World;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.api.CustomisationProvider;
+import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.ModLoadObserver;
 import com.mumfrey.liteloader.api.PostRenderObserver;
 import com.mumfrey.liteloader.api.ShutdownObserver;
 import com.mumfrey.liteloader.api.TickObserver;
+import com.mumfrey.liteloader.api.TranslationProvider;
 import com.mumfrey.liteloader.api.WorldObserver;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
@@ -178,6 +180,11 @@ public final class LiteLoader
 	private Input input;
 	
 	/**
+	 * 
+	 */
+	private final List<TranslationProvider> translators = new ArrayList<TranslationProvider>();
+	
+	/**
 	 * ctor
 	 * 
 	 * @param environment
@@ -190,7 +197,6 @@ public final class LiteLoader
 		this.enumerator = environment.getEnumerator();
 		
 		this.configManager = new ConfigManager();
-		this.input = new Input(environment, properties);
 
 		this.mods = new LiteLoaderMods(this, environment, properties, this.configManager);
 		
@@ -205,11 +211,36 @@ public final class LiteLoader
 		
 		this.objectFactory = this.api.getObjectFactory();
 
+		this.input = this.objectFactory.getInput();
+		
 		this.clientPluginChannels = this.objectFactory.getClientPluginChannels();
 		this.serverPluginChannels = this.objectFactory.getServerPluginChannels();
 		
 		this.permissionsManagerClient = this.objectFactory.getClientPermissionManager();
 		this.permissionsManagerServer = this.objectFactory.getServerPermissionManager();
+		
+		this.initTranslators();
+	}
+
+	/**
+	 * 
+	 */
+	protected void initTranslators()
+	{
+		for (LiteAPI api : this.apiProvider.getAPIs())
+		{
+			List<CustomisationProvider> customisationProviders = api.getCustomisationProviders();
+			if (customisationProviders != null)
+			{
+				for (CustomisationProvider provider : customisationProviders)
+				{
+					if (provider instanceof TranslationProvider)
+					{
+						this.translators.add((TranslationProvider)provider);
+					}
+				}
+			}
+		}
 	}
 	
 	/**
@@ -772,6 +803,14 @@ public final class LiteLoader
 		this.coreProviders.all().onPostInit(this.engine);
 
 		this.interfaceManager.registerInterfaces();
+		
+		for (CoreProvider provider : this.coreProviders)
+		{
+			if (provider instanceof Listener)
+			{
+				this.interfaceManager.registerListener((Listener)provider);
+			}
+		}
 	}
 
 	private void loadAndInitMods()
@@ -905,6 +944,20 @@ public final class LiteLoader
 		this.shutdownObservers.all().onShutDown();
 
 		this.configManager.syncConfig();
+	}
+	
+	public static String translate(String key, Object... args)
+	{
+		for (TranslationProvider translator : LiteLoader.instance.translators)
+		{
+			String translated = translator.translate(key, args);
+			if (translated != null)
+			{
+				return translated;
+			}
+		}
+		
+		return key;
 	}
 
 	/**

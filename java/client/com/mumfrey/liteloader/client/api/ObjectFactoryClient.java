@@ -22,6 +22,8 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
+import com.mumfrey.liteloader.util.Input;
+import com.mumfrey.liteloader.util.InputManager;
 
 /**
  * Factory for lifetime loader objects for the client side
@@ -33,6 +35,8 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	private LoaderEnvironment environment;
 	
 	private LoaderProperties properties;
+	
+	private Input input;
 	
 	private LiteLoaderEventBrokerClient clientEvents;
 	
@@ -50,6 +54,17 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	{
 		this.environment = environment;
 		this.properties = properties;
+	}
+	
+	@Override
+	public Input getInput()
+	{
+		if (this.input == null)
+		{
+			this.input = new InputManager(this.environment, this.properties);
+		}
+		
+		return this.input;
 	}
 	
 	@Override

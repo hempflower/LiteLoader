@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.client.resources.IResourcePack;
-
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModLoadObserver;
 import com.mumfrey.liteloader.common.LoadingProgress;
@@ -455,6 +453,8 @@ public class LiteLoaderMods
 				this.onModLoadFailed(container, mod.getModClassName(), "an error occurred", th);
 				this.registerModStartupError(mod, th);
 			}
+
+			this.observers.all().onPostModLoaded(mod);
 		}
 	}
 
@@ -486,22 +486,6 @@ public class LiteLoaderMods
 		
 		String modName = mod.getDisplayName();
 		LiteLoaderLogger.info("Successfully added mod %s version %s", modName, newMod.getVersion());
-		
-		// Register the mod as a resource pack if the container exists
-		if (mod.hasContainer())
-		{
-			LoadableMod<?> container = mod.getContainer();
-			LiteLoaderLogger.info("Adding \"%s\" to active resource pack set", container.getLocation());
-			if (modName != null)
-			{
-				container.initResourcePack(modName);
-				
-				if (container.hasResourcePack() && LiteLoader.getGameEngine().registerResourcePack((IResourcePack)container.getResourcePack()))
-				{
-					LiteLoaderLogger.info("Successfully added \"%s\" to active resource pack set", container.getLocation());
-				}
-			}
-		}
 	}
 
 	/**

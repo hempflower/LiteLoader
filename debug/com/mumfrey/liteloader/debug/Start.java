@@ -14,6 +14,7 @@ import net.minecraft.launchwrapper.Launch;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
+import com.mumfrey.liteloader.launch.LiteLoaderTweakerServer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -56,10 +57,30 @@ public abstract class Start
 		Map<String, Set<String>> qualifiedArgs = new HashMap<String, Set<String>>();
 		
 		Start.parseArgs(args, unqualifiedArgs, qualifiedArgs);
-		Start.addRequiredArgs(args, unqualifiedArgs, qualifiedArgs);
+		
+		if (Start.hasArg(unqualifiedArgs, "server"))
+		{
+			Start.addRequiredArgsServer(args, unqualifiedArgs, qualifiedArgs);
+		}
+		else
+		{
+			Start.addRequiredArgsClient(args, unqualifiedArgs, qualifiedArgs);
+		}
+		
 		args = Start.combineArgs(args, unqualifiedArgs, qualifiedArgs);
 		
 		return args; 
+	}
+
+	private static boolean hasArg(List<String> args, String target)
+	{
+		for (String arg : args)
+		{
+			if (target.equalsIgnoreCase(arg))
+				return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -91,7 +112,7 @@ public abstract class Start
 		if (qualifier != null) unqualifiedArgs.add(qualifier);
 	}
 
-	private static void addRequiredArgs(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
+	private static void addRequiredArgsClient(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
 	{
 		LoginManager loginManager = Start.doLogin(qualifiedArgs);
 		
@@ -108,6 +129,15 @@ public abstract class Start
 		Start.addArg(qualifiedArgs, "--gameDir",        gameDir.getAbsolutePath());
 		Start.addArg(qualifiedArgs, "--assetIndex",     LiteLoaderTweaker.VERSION);
 		Start.addArg(qualifiedArgs, "--assetsDir",      assetsDir.getAbsolutePath());
+	}
+	
+	private static void addRequiredArgsServer(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
+	{
+		File gameDir = new File(System.getProperty("user.dir"));
+
+		Start.addArg(qualifiedArgs, "--tweakClass", LiteLoaderTweakerServer.class.getName());
+		Start.addArg(qualifiedArgs, "--version",    "mcp");
+		Start.addArg(qualifiedArgs, "--gameDir",    gameDir.getAbsolutePath());
 	}
 
 	private static LoginManager doLogin(Map<String, Set<String>> qualifiedArgs)

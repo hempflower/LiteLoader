@@ -47,7 +47,7 @@ public interface EnumerationObserver extends Observer
 	/**
 	 * Called when a mod container is added to the pending mods list. This does not mean that the specific mod will actually be instanced since
 	 * the mod can still be disabled via the exclusion list (this is to allow entire containers to be disabled or just individual mods) and so
-	 * if you wish to observe actual mod instantiation you should still provide a {@link ModLoadObserver}. However this event expresses a
+	 * if you wish to observe actual mod instantiation you should still provide a {@link ResourceObserver}. However this event expresses a
 	 * declaration by the enumerator of an intention to load the specified mod. 
 	 * 
 	 * @param enumerator

@@ -13,6 +13,7 @@ import com.mumfrey.liteloader.transformers.event.MethodInfo;
  */
 public abstract class Methods
 {
+	// Client & General
 	public static final MethodInfo startGame              = new MethodInfo(Obf.Minecraft,                  Obf.startGame,                    Void.TYPE);
 	public static final MethodInfo runGameLoop            = new MethodInfo(Obf.Minecraft,                  Obf.runGameLoop,                  Void.TYPE);
 	public static final MethodInfo runTick                = new MethodInfo(Obf.Minecraft,                  Obf.runTick,                      Void.TYPE);
@@ -42,9 +43,14 @@ public abstract class Methods
 	public static final MethodInfo realmsPlay             = new MethodInfo(Obf.RealmsMainScreen,           "play",                           Void.TYPE, Long.TYPE);
 	public static final MethodInfo realmsStopFetcher      = new MethodInfo(Obf.RealmsMainScreen,           "stopRealmsFetcherAndPinger",     Void.TYPE);
 	
+	// Profiler
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);
 	public static final MethodInfo endSection             = new MethodInfo(Obf.Profiler,                   Obf.endSection,                   Void.TYPE);
 	public static final MethodInfo endStartSection        = new MethodInfo(Obf.Profiler,                   Obf.endStartSection,              Void.TYPE, String.class);
+
+	// Dedicated Server
+	public static final MethodInfo startServer            = new MethodInfo(Obf.DedicatedServer,            Obf.startServer,                  Boolean.TYPE);
+	public static final MethodInfo startServerThread      = new MethodInfo(Obf.MinecraftServer,            Obf.startServerThread,            Void.TYPE);
 	
 	private Methods() {}
 	

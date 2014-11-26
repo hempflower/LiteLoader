@@ -1,7 +1,5 @@
 package com.mumfrey.liteloader.core;
 
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -33,7 +31,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
  * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
  */
-public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider, IResourceManagerReloadListener
+public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider
 {
 	/**
 	 * @author Adam Mummery-Smith
@@ -181,12 +179,6 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void addServerPlayerListener(ServerPlayerListener serverPlayerListener)
 	{
 		this.serverPlayerListeners.add(serverPlayerListener);
-	}
-	
-	@Override
-	public void onResourceManagerReload(IResourceManager resourceManager)
-	{
-		LoadingProgress.setMessage("Reloading Resources...");
 	}
 
 	/**

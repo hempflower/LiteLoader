@@ -2,8 +2,6 @@ package com.mumfrey.liteloader.common;
 
 import java.util.List;
 
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
@@ -50,33 +48,16 @@ public interface GameEngine<TClient, TServer extends MinecraftServer>
 	 * Get the underlying server instance
 	 */
 	public abstract TServer getServer();
+	
+	/**
+	 * @return
+	 */
+	public abstract Resources<?, ?> getResources();
 
 	/**
 	 * Get the profiler instance
 	 */
 	public abstract Profiler getProfiler();
-
-	/**
-	 * Get the resource manager for the current environment, returns the SimpleReloadableResourceManager on client and ModResourceManager on the server
-	 */
-	public abstract IResourceManager getResourceManager();
-
-	/**
-	 * @param resourcePack
-	 */
-	public abstract boolean registerResourcePack(IResourcePack resourcePack);
-
-	/**
-	 * @param resourcePack
-	 */
-	public abstract boolean unRegisterResourcePack(IResourcePack resourcePack);
-
-	/**
-	 * Refresh resource pack list
-	 * 
-	 * @param force
-	 */
-	public abstract void refreshResources(boolean force);
 
 	/**
 	 * Get the keybinding list, only supported on client will throw an exception on the server
