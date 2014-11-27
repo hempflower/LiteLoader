@@ -108,10 +108,10 @@ public class EventInfo<S> implements Cancellable
 		
 		if (returnType.getSort() == Type.OBJECT)
 		{
-			return String.format("(%s%s%sZ)V", EventInfo.STRING, EventInfo.OBJECT, EventInfo.OBJECT);
+			return String.format("(%s%sZ%s)V", EventInfo.STRING, EventInfo.OBJECT, EventInfo.OBJECT);
 		}
 		
-		return String.format("(%s%s%sZ)V", EventInfo.STRING, EventInfo.OBJECT, returnType.getDescriptor());
+		return String.format("(%s%sZ%s)V", EventInfo.STRING, EventInfo.OBJECT, returnType.getDescriptor());
 	}
 
 	public static String getConstructorDescriptor()

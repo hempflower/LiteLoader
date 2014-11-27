@@ -223,9 +223,12 @@ public class BeforeInvoke extends InjectionPoint
 			if (this.methodOwners[i] != null) this.methodOwners[i] = this.methodOwners[i].replace('.', '/');
 		}
 		
-		for (int i = 0; i < this.methodSignatures.length; i++)
+		if (this.methodSignatures != null)
 		{
-			if (this.methodSignatures[i] != null) this.methodSignatures[i] = this.methodSignatures[i].replace('.', '/');
+			for (int i = 0; i < this.methodSignatures.length; i++)
+			{
+				if (this.methodSignatures[i] != null) this.methodSignatures[i] = this.methodSignatures[i].replace('.', '/');
+			}
 		}
 	}
 	

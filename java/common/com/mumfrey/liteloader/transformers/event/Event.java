@@ -345,18 +345,30 @@ public class Event implements Comparable<Event>
 		LiteLoaderLogger.debug("Event %s is spawning handler %s in class %s", this.name, handler.name, Event.getActiveProxyRef());
 
 		int ctorMAXS = 0, invokeMAXS = arguments.length + (doCaptureLocals ? locals.length - initialFrameSize : 0);
-		int eventInfoVar = this.method.maxLocals++;
+		int marshallVar = this.method.maxLocals++;
 		
 		InsnList insns = new InsnList();
+		
+		boolean pushReturnValue = false;
+		
+		// If this is a ReturnEventInfo AND we are right before a RETURN opcode (so we can expect the *original* return
+		// value to be on the stack, then we dup the return value into a local var so we can push it later when we invoke 
+		// the ReturnEventInfo ctor
+		if (injectionPoint instanceof InsnNode && injectionPoint.getOpcode() >= Opcodes.IRETURN && injectionPoint.getOpcode() < Opcodes.RETURN)
+		{
+			pushReturnValue = true;
+			insns.add(new InsnNode(Opcodes.DUP));
+			insns.add(new VarInsnNode(this.methodReturnType.getOpcode(Opcodes.ISTORE), marshallVar));
+		}
 		
 		// Instance the EventInfo for this event
 		insns.add(new TypeInsnNode(Opcodes.NEW, this.eventInfoClass)); ctorMAXS++;
 		insns.add(new InsnNode(Opcodes.DUP)); ctorMAXS++; invokeMAXS++;
-		ctorMAXS += this.invokeEventInfoConstructor(insns, cancellable);
-		insns.add(new VarInsnNode(Opcodes.ASTORE, eventInfoVar));
+		ctorMAXS += this.invokeEventInfoConstructor(insns, cancellable, pushReturnValue, marshallVar);
+		insns.add(new VarInsnNode(Opcodes.ASTORE, marshallVar));
 		
 		// Call the event handler method in the proxy
-		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
+		insns.add(new VarInsnNode(Opcodes.ALOAD, marshallVar));
 		ByteCodeUtilities.loadArgs(arguments, insns, this.methodIsStatic ? 0 : 1);
 		if (doCaptureLocals)
 		{
@@ -367,7 +379,7 @@ public class Event implements Comparable<Event>
 		if (cancellable)
 		{
 			// Inject the if (e.isCancelled()) return e.getReturnValue();
-			this.injectCancellationCode(insns, injectionPoint, eventInfoVar);
+			this.injectCancellationCode(insns, injectionPoint, marshallVar);
 		}
 		
 		// Inject our generated code into the method
@@ -390,14 +402,23 @@ public class Event implements Comparable<Event>
 		return eventDescriptor + ")V";
 	}
 
-	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable)
+	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable, boolean pushReturnValue, int marshallVar)
 	{
 		int ctorMAXS = 0;
 		
 		insns.add(new LdcInsnNode(this.name)); ctorMAXS++;
 		insns.add(this.methodIsStatic ? new InsnNode(Opcodes.ACONST_NULL) : new VarInsnNode(Opcodes.ALOAD, 0)); ctorMAXS++;
 		insns.add(new InsnNode(cancellable ? Opcodes.ICONST_1 : Opcodes.ICONST_0)); ctorMAXS++;
-		insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
+		
+		if (pushReturnValue)
+		{
+			insns.add(new VarInsnNode(this.methodReturnType.getOpcode(Opcodes.ILOAD), marshallVar));
+			insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(this.methodReturnType), false));
+		}
+		else
+		{
+			insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
+		}
 		
 		return ctorMAXS;
 	}
@@ -412,18 +433,18 @@ public class Event implements Comparable<Event>
 	 * 
 	 * @param insns
 	 * @param injectionPoint
-	 * @param eventInfoVar
+	 * @param marshallVar
 	 */
-	protected void injectCancellationCode(final InsnList insns, final AbstractInsnNode injectionPoint, int eventInfoVar)
+	protected void injectCancellationCode(final InsnList insns, final AbstractInsnNode injectionPoint, int marshallVar)
 	{
-		insns.add(new VarInsnNode(Opcodes.ALOAD, eventInfoVar));
+		insns.add(new VarInsnNode(Opcodes.ALOAD, marshallVar));
 		insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, EventInfo.getIsCancelledMethodName(), EventInfo.getIsCancelledMethodSig(), false));
 
 		LabelNode notCancelled = new LabelNode();
 		insns.add(new JumpInsnNode(Opcodes.IFEQ, notCancelled));
 		
 		// If this is a void method, just injects a RETURN opcode, otherwise we need to get the return value from the EventInfo
-		this.injectReturnCode(insns, injectionPoint, eventInfoVar);
+		this.injectReturnCode(insns, injectionPoint, marshallVar);
 		
 		insns.add(notCancelled);
 	}
