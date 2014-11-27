@@ -6,13 +6,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
@@ -21,16 +16,18 @@ import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
 import net.minecraft.util.ResourceLocation;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
-import com.mumfrey.liteloader.client.util.PrivateFields;
+import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -42,41 +39,11 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 public abstract class ModUtilities
 {
 	/**
-	 * True if FML is being used, in which case we use searge names instead of raw field/method names
-	 */
-	private static boolean fmlDetected = false;
-	
-	private static boolean seargeNames = false;
-	
-	static
-	{
-		// Check for FML
-		ModUtilities.fmlDetected = ModUtilities.fmlIsPresent();
-
-		try
-		{
-			Minecraft.class.getDeclaredField("running");
-		}
-		catch (SecurityException ex)
-		{
-		}
-		catch (NoSuchFieldException ex)
-		{
-			ModUtilities.seargeNames = true;
-		}
-	}
-
-	/**
 	 * @return true if FML is present in the current environment
 	 */
 	public static boolean fmlIsPresent()
 	{
-//		if (ClientBrandRetriever.getClientModName().contains("fml")) return true;
-
-		for (IClassTransformer transformer : Launch.classLoader.getTransformers())
-			if (transformer.getClass().getName().contains("fml")) return true;
-
-		return false;
+		return Obf.fmlIsPresent();
 	}
 	
     public static void setWindowSize(int width, int height)
@@ -105,7 +72,7 @@ public abstract class ModUtilities
 	{
 		RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
 		
-		Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFields.entityRenderMap.get(renderManager);
+		Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFieldsClient.entityRenderMap.get(renderManager);
 		if (entityRenderMap != null)
 		{
 			entityRenderMap.put(entityClass, renderer);
@@ -123,7 +90,7 @@ public abstract class ModUtilities
         
         try
         {
-        	Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap = PrivateFields.specialRendererMap.get(tileEntityRenderer);
+        	Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap = PrivateFieldsClient.specialRendererMap.get(tileEntityRenderer);
 			specialRendererMap.put(tileEntityClass, renderer);
 			renderer.setRendererDispatcher(tileEntityRenderer);
 		}
@@ -228,8 +195,8 @@ public abstract class ModUtilities
 	{
         try
 		{
-			Map<String, Class<? extends TileEntity>> nameToClassMap = PrivateFields.tileEntityNameToClassMap.get(null);
-			Map<Class<? extends TileEntity>, String> classToNameMap = PrivateFields.tileEntityClassToNameMap.get(null);
+			Map<String, Class<? extends TileEntity>> nameToClassMap = PrivateFieldsClient.tileEntityNameToClassMap.get(null);
+			Map<Class<? extends TileEntity>, String> classToNameMap = PrivateFieldsClient.tileEntityClassToNameMap.get(null);
 			
 			nameToClassMap.put(entityName, tileEntityClass);
 			classToNameMap.put(tileEntityClass, entityName);
@@ -248,8 +215,7 @@ public abstract class ModUtilities
 	 */
 	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
 	{
-		boolean deobfuscated = Tessellator.class.getSimpleName().equals("Tessellator");
-		return deobfuscated ? (ModUtilities.seargeNames ? seargeFieldName : fieldName) : (ModUtilities.fmlDetected ? seargeFieldName : obfuscatedFieldName);
+		return Obf.getObfuscatedFieldName(fieldName, obfuscatedFieldName, seargeFieldName);
 	}
 	
 	/**
@@ -260,8 +226,7 @@ public abstract class ModUtilities
 	 */
 	public static String getObfuscatedFieldName(Obf obf)
 	{
-		boolean deobfuscated = Tessellator.class.getSimpleName().equals("Tessellator");
-		return deobfuscated ? (ModUtilities.seargeNames ? obf.srg : obf.name) : (ModUtilities.fmlDetected ? obf.srg : obf.obf);
+		return Obf.getObfuscatedFieldName(obf);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -274,10 +239,10 @@ public abstract class ModUtilities
 		if (registry instanceof RegistryNamespaced)
 		{
 			RegistryNamespaced rns = (RegistryNamespaced)registry;
-			underlyingIntegerMap = PrivateFields.underlyingIntegerMap.get(rns); 
+			underlyingIntegerMap = PrivateFieldsClient.underlyingIntegerMap.get(rns); 
 		}
 		
-		Map<K, V> registryObjects = PrivateFields.registryObjects.get(registry);
+		Map<K, V> registryObjects = PrivateFieldsClient.registryObjects.get(registry);
 		if (registryObjects != null)
 		{
 			V existingValue = registryObjects.get(key);
@@ -287,8 +252,8 @@ public abstract class ModUtilities
 				
 				if (underlyingIntegerMap != null)
 				{
-					IdentityHashMap<V, Integer> identityMap = PrivateFields.identityMap.get(underlyingIntegerMap);
-					List<V> objectList = PrivateFields.objectList.get(underlyingIntegerMap);
+					IdentityHashMap<V, Integer> identityMap = PrivateFieldsClient.identityMap.get(underlyingIntegerMap);
+					List<V> objectList = PrivateFieldsClient.objectList.get(underlyingIntegerMap);
 					if (identityMap != null) identityMap.remove(existingValue);
 					if (objectList != null) objectList.remove(existingValue);
 				}

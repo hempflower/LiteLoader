@@ -7,6 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.server.MinecraftServer;
+
 /**
  * Centralised obfuscation table for LiteLoader
  *
@@ -70,6 +74,14 @@ public class Obf
 	public static final Obf                       Render = new Obf("net.minecraft.client.renderer.entity.Render",                "cpu" );
 	public static final Obf                 GuiTextField = new Obf("net.minecraft.client.gui.GuiTextField",                      "bul" );
 	public static final Obf                 SoundHandler = new Obf("net.minecraft.client.audio.SoundHandler",                    "czh" );
+	public static final Obf                     BlockPos = new Obf("net.minecraft.util.BlockPos",                                "dt"  );
+	public static final Obf                   EnumFacing = new Obf("net.minecraft.util.EnumFacing",                              "ej"  );
+	public static final Obf           ItemInWorldManager = new Obf("net.minecraft.server.management.ItemInWorldManager",         "qx"  );
+	public static final Obf         NetHandlerPlayServer = new Obf("net.minecraft.network.NetHandlerPlayServer",                 "rj"  );
+	public static final Obf                 EntityPlayer = new Obf("net.minecraft.entity.player.EntityPlayer",                   "ahd" );
+	public static final Obf                        World = new Obf("net.minecraft.world.World",                                  "aqu" );
+	public static final Obf                    ItemStack = new Obf("net.minecraft.item.ItemStack",                               "amj" );
+	public static final Obf             PacketThreadUtil = new Obf("net.minecraft.network.PacketThreadUtil",                     "ig"  );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -93,6 +105,7 @@ public class Obf
 	public static final Obf      shaderResourceLocations = new Obf("field_147712_ad",                                            "ab"  );
 	public static final Obf                  shaderIndex = new Obf("field_147713_ae",                                            "ac"  );
 	public static final Obf                    useShader = new Obf("field_175083_ad",                                            "ad"  );
+	public static final Obf                 viewDistance = new Obf("field_149528_b",                                             "b"   );
 
 	// Methods
 	// -----------------------------------------------------------------------------------------
@@ -132,6 +145,13 @@ public class Obf
 	public static final Obf               getFOVModifier = new Obf("func_78481_a",                                               "a"   );
 	public static final Obf         setupCameraTransform = new Obf("func_78479_a",                                               "a"   );
 	public static final Obf            loadSoundResource = new Obf("func_147693_a",                                              "a"   );
+	public static final Obf               onBlockClicked = new Obf("func_180784_a",                                              "a"   );
+	public static final Obf       activateBlockOrUseItem = new Obf("func_180236_a",                                              "a"   );
+	public static final Obf  processPlayerBlockPlacement = new Obf("func_147346_a",                                              "a"   );
+	public static final Obf              handleAnimation = new Obf("func_175087_a",                                              "a"   );
+	public static final Obf         processPlayerDigging = new Obf("func_147345_a",                                              "a"   );
+	public static final Obf   updateTimeLightAndEntities = new Obf("func_71190_q",                                               "z"   );
+	public static final Obf        checkThreadAndEnqueue = new Obf("func_180031_a",                                              "a"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;
@@ -382,5 +402,62 @@ public class Obf
 		{
 			return this.ordinal;
 		}
+	}
+
+	/**
+	 * True if FML is being used, in which case we use searge names instead of raw field/method names
+	 */
+	private static boolean fmlDetected = false;
+	
+	private static boolean seargeNames = false;
+	
+	static
+	{
+		// Check for FML
+		Obf.fmlDetected = Obf.fmlIsPresent();
+
+		try
+		{
+			MinecraftServer.class.getDeclaredField("serverRunning");
+		}
+		catch (SecurityException ex)
+		{
+		}
+		catch (NoSuchFieldException ex)
+		{
+			Obf.seargeNames = true;
+		}
+	}
+
+	public static boolean fmlIsPresent()
+	{
+		for (IClassTransformer transformer : Launch.classLoader.getTransformers())
+			if (transformer.getClass().getName().contains("fml")) return true;
+
+		return false;
+	}
+
+	/**
+	 * Abstraction helper function
+	 * 
+	 * @param fieldName Name of field to get, returned unmodified if in debug mode
+	 * @return Obfuscated field name if present
+	 */
+	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
+	{
+		boolean deobfuscated = MinecraftServer.class.getSimpleName().equals("MinecraftServer");
+		return deobfuscated ? (Obf.seargeNames ? seargeFieldName : fieldName) : (Obf.fmlDetected ? seargeFieldName : obfuscatedFieldName);
+	}
+	
+	/**
+	 * Abstraction helper function
+	 * 
+	 * @param obf Field to get, returned unmodified if in debug mode
+	 * @return Obfuscated field name if present
+	 */
+	public static String getObfuscatedFieldName(Obf obf)
+	{
+		boolean deobfuscated = MinecraftServer.class.getSimpleName().equals("MinecraftServer");
+		return deobfuscated ? (Obf.seargeNames ? obf.srg : obf.name) : (Obf.fmlDetected ? obf.srg : obf.obf);
 	}
 }

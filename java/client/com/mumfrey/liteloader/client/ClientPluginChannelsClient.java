@@ -12,7 +12,7 @@ import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
-import com.mumfrey.liteloader.client.util.PrivateFields;
+import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.exceptions.UnregisteredChannelException;
 
@@ -67,7 +67,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
 	{
 		if (netHandler instanceof INetHandlerLoginClient)
 		{
-			NetworkManager networkManager = PrivateFields.netManager.get(((NetHandlerLoginClient)netHandler));
+			NetworkManager networkManager = PrivateFieldsClient.netManager.get(((NetHandlerLoginClient)netHandler));
 			networkManager.sendPacket(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
 		}
 		else if (netHandler instanceof INetHandlerPlayClient)
