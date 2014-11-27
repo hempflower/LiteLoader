@@ -14,15 +14,27 @@ import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.client.C07PacketPlayerDigging;
+import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
+import net.minecraft.network.play.client.C0APacketAnimation;
+import net.minecraft.network.play.server.S23PacketBlockChange;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ScreenShotHelper;
 import net.minecraft.util.Session;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 
 import com.mojang.authlib.GameProfile;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.InteractType;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 
@@ -205,6 +217,80 @@ public class CallbackProxyClient
 	public static void onPostRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, boolean hideBoundingBox, Render render)
 	{
 		CallbackProxyClient.eventBroker.onPostRenderEntity(e.getSource(), entity, xPos, yPos, zPos, yaw, partialTicks, render);
+	}
+	
+	public static void onServerTick(EventInfo<MinecraftServer> e)
+	{
+		CallbackProxyClient.eventBroker.onServerTick(e.getSource());
+	}
+	
+	public static void onPlaceBlock(EventInfo<NetHandlerPlayServer> e, C08PacketPlayerBlockPlacement packet)
+	{
+		NetHandlerPlayServer netHandler = e.getSource();
+		
+		EntityPlayerMP playerMP = netHandler.playerEntity;
+		BlockPos pos = packet.getPosition();
+		EnumFacing facing = EnumFacing.getFront(packet.getPlacedBlockDirection());
+		if (!CallbackProxyClient.eventBroker.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, facing))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos.offset(facing));
+			netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+			playerMP.sendContainerToPlayer(playerMP.inventoryContainer);
+			e.cancel();
+		}
+	}
+	
+	public static void onClickedAir(EventInfo<NetHandlerPlayServer> e, C0APacketAnimation packet)
+	{
+		NetHandlerPlayServer netHandler = e.getSource();
+		if (!CallbackProxyClient.eventBroker.onPlayerInteract(InteractType.LEFT_CLICK, netHandler.playerEntity, null, EnumFacing.SOUTH))
+		{
+			e.cancel();
+		}
+	}
+
+	public static void onPlayerDigging(EventInfo<NetHandlerPlayServer> e, C07PacketPlayerDigging packet)
+	{
+		if (packet.getStatus() == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK)
+		{
+			NetHandlerPlayServer netHandler = e.getSource();
+			BlockPos pos = packet.func_179715_a();
+			EntityPlayerMP playerMP = netHandler.playerEntity;
+			if (!CallbackProxyClient.eventBroker.onPlayerInteract(InteractType.DIG_BLOCK_MAYBE, playerMP, pos, EnumFacing.SOUTH))
+			{
+				S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
+				netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+				e.cancel();
+			}
+		}
+	}
+	
+	public static void onUseItem(ReturnEventInfo<ItemInWorldManager, Boolean> e, EntityPlayer player, World world, ItemStack itemStack, BlockPos pos, EnumFacing side, float par8, float par9, float par10)
+	{
+		if (player instanceof EntityPlayerMP)
+		{
+			EntityPlayerMP playerMP = (EntityPlayerMP)player;
+			
+			if (!CallbackProxyClient.eventBroker.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, side))
+			{
+				System.err.println(pos);
+				S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
+				playerMP.playerNetServerHandler.sendPacket(cancellation);
+				e.setReturnValue(false);
+			}
+		}
+	}
+	
+	public static void onBlockClicked(EventInfo<ItemInWorldManager> e, BlockPos pos, EnumFacing side)
+	{
+		ItemInWorldManager manager = e.getSource();
+		
+		if (!CallbackProxyClient.eventBroker.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, manager.thisPlayerMP, pos, side))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(manager.theWorld, pos);
+			manager.thisPlayerMP.playerNetServerHandler.sendPacket(cancellation);
+			e.cancel();
+		}
 	}
 	
 	/**

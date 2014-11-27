@@ -1,17 +1,27 @@
 package com.mumfrey.liteloader.core;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.client.C15PacketClientSettings;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.ServerConfigurationManager;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
 
 import com.mojang.authlib.GameProfile;
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.PlayerInteractionListener;
+import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.ServerPlayerListener;
@@ -21,8 +31,11 @@ import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterable;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.util.PrivateFields;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -69,6 +82,20 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		}
 	}
 	
+	public static enum InteractType
+	{
+		RIGHT_CLICK,
+		LEFT_CLICK,
+		LEFT_CLICK_BLOCK,
+		PLACE_BLOCK_MAYBE,
+		DIG_BLOCK_MAYBE
+	}
+	
+	/**
+	 * Singleton
+	 */
+	static LiteLoaderEventBroker<?, ?> broker; 
+	
 	/**
 	 * Reference to the loader instance
 	 */
@@ -86,6 +113,9 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 
 	protected LiteLoaderMods mods;
 	
+	private Map<UUID, PlayerEventState> playerStates = new HashMap<UUID, PlayerEventState>();
+	private FastIterableDeque<IEventState> playerStateList = new HandlerList<IEventState>(IEventState.class);
+	
 	/**
 	 * List of mods which provide server commands
 	 */
@@ -95,6 +125,11 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	 * List of mods which monitor server player events
 	 */
 	private FastIterable<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
+	
+	/**
+	 * List of mods which handle player interaction events 
+	 */
+	private FastIterable<PlayerInteractionListener> playerInteractionListeners = new HandlerList<PlayerInteractionListener>(PlayerInteractionListener.class, ReturnLogicOp.AND);
 	
 	/**
 	 * ctor
@@ -108,6 +143,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		this.loader   = loader;
 		this.engine   = engine;
 		this.profiler = engine.getProfiler();
+		
+		LiteLoaderEventBroker.broker = this;
 	}
 	
 	/**
@@ -149,6 +186,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	{
 		delegate.registerInterface(ServerCommandProvider.class);
 		delegate.registerInterface(ServerPlayerListener.class);
+		delegate.registerInterface(PlayerInteractionListener.class);
 		delegate.registerInterface(CommonPluginChannelListener.class);
 	}
 	
@@ -180,6 +218,14 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	{
 		this.serverPlayerListeners.add(serverPlayerListener);
 	}
+	
+	/**
+	 * @param playerInteractionListener
+	 */
+	public void addPlayerInteractionListener(PlayerInteractionListener playerInteractionListener)
+	{
+		this.playerInteractionListeners.add(playerInteractionListener);
+	}
 
 	/**
 	 * @param instance
@@ -198,6 +244,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		}
 
 		LiteLoader.getServerPluginChannels().onServerStartup();
+		
+		this.playerStates.clear();
 	}
 
 	/**
@@ -208,6 +256,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void onSpawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, GameProfile profile)
 	{
 		this.serverPlayerListeners.all().onPlayerConnect(player, profile);
+		PlayerEventState playerState = this.getPlayerState(player);
+		playerState.onSpawned();
 	}
 	
 	/**
@@ -248,6 +298,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void onPlayerLogout(ServerConfigurationManager scm, EntityPlayerMP player)
 	{
 		this.serverPlayerListeners.all().onPlayerLogout(player);
+		this.removePlayer(player);
 	}
 
 	/**
@@ -273,5 +324,52 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	protected void onWorldChanged(World world)
 	{
 		this.loader.onWorldChanged(world);
+	}
+	
+	public void onServerTick(MinecraftServer minecraftServer)
+	{
+		this.playerStateList.all().onTick();
+	}
+	
+	public boolean onPlayerInteract(InteractType action, EntityPlayerMP player, BlockPos position, EnumFacing side)
+	{
+		PlayerEventState eventState = this.getPlayerState(player);
+		return eventState.onPlayerInteract(action, player, position, side);
+	}
+	
+	void onPlayerClickedAir(EntityPlayerMP player, MouseButton button, BlockPos tracePos, EnumFacing traceSideHit, MovingObjectType traceHitType)
+	{
+		this.playerInteractionListeners.all().onPlayerClickedAir(player, button, tracePos, traceSideHit, traceHitType);
+	}
+	
+	boolean onPlayerClickedBlock(EntityPlayerMP player, MouseButton button, BlockPos hitPos, EnumFacing sideHit)
+	{
+		return this.playerInteractionListeners.all().onPlayerClickedBlock(player, button, hitPos, sideHit);
+	}
+	
+	void onPlayerSettingsReceived(EntityPlayerMP player, C15PacketClientSettings packet)
+	{
+		this.getPlayerState(player).setTraceDistance(PrivateFields.viewDistance.get(packet));
+	}
+
+	protected PlayerEventState getPlayerState(EntityPlayerMP player)
+	{
+		PlayerEventState playerState = this.playerStates.get(player.getUniqueID());
+		if (playerState == null)
+		{
+			playerState = new PlayerEventState(player, this);
+			this.playerStates.put(player.getUniqueID(), playerState);
+			this.playerStateList.add(playerState);
+		}
+		return playerState;
+	}
+
+	protected void removePlayer(EntityPlayerMP player)
+	{
+		PlayerEventState playerState = this.playerStates.remove(player.getUniqueID());
+		if (playerState != null)
+		{
+			this.playerStateList.remove(playerState);
+		}
 	}
 }

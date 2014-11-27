@@ -8,6 +8,7 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.Packet;
 import net.minecraft.network.login.server.S02PacketLoginSuccess;
 import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.client.C15PacketClientSettings;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S02PacketChat;
@@ -49,12 +50,13 @@ public abstract class PacketEvents implements InterfaceProvider
 	
 	private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	
-	private final int loginSuccessPacketId  = Packets.S02PacketLoginSuccess.getIndex();
-	private final int serverChatPacketId    = Packets.S02PacketChat.getIndex();
-	private final int clientChatPacketId    = Packets.C01PacketChatMessage.getIndex();
-	private final int joinGamePacketId      = Packets.S01PacketJoinGame.getIndex();
-	private final int serverPayloadPacketId = Packets.S3FPacketCustomPayload.getIndex();
-	private final int clientPayloadPacketId = Packets.C17PacketCustomPayload.getIndex();
+	private final int loginSuccessPacketId   = Packets.S02PacketLoginSuccess.getIndex();
+	private final int serverChatPacketId     = Packets.S02PacketChat.getIndex();
+	private final int clientChatPacketId     = Packets.C01PacketChatMessage.getIndex();
+	private final int joinGamePacketId       = Packets.S01PacketJoinGame.getIndex();
+	private final int serverPayloadPacketId  = Packets.S3FPacketCustomPayload.getIndex();
+	private final int clientPayloadPacketId  = Packets.C17PacketCustomPayload.getIndex();
+	private final int clientSettingsPacketId = Packets.C15PacketClientSettings.getIndex();
 	
 	public PacketEvents()
 	{
@@ -192,6 +194,12 @@ public abstract class PacketEvents implements InterfaceProvider
 			return true;
 		}
 		
+		if (packetId == this.clientSettingsPacketId)
+		{
+			this.handlePacket(e, netHandler, (C15PacketClientSettings)packet);
+			return true;
+		}
+		
 		return false;
 	}
 	
@@ -257,5 +265,24 @@ public abstract class PacketEvents implements InterfaceProvider
 	protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, C17PacketCustomPayload packet)
 	{
 		LiteLoader.getServerPluginChannels().onPluginChannelMessage(netHandler, packet);
+	}
+	
+	/**
+	 * C15PacketClientSettings::processPacket()
+	 * 
+	 * @param e
+	 * @param netHandler
+	 * @param packet
+	 */
+	private void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, C15PacketClientSettings packet)
+	{
+		if (netHandler instanceof NetHandlerPlayServer)
+		{
+			LiteLoaderEventBroker.broker.onPlayerSettingsReceived(((NetHandlerPlayServer)netHandler).playerEntity, packet);
+		}
+		else
+		{
+			System.err.println("ACTUALLY: handler is " + netHandler);
+		}
 	}
 }

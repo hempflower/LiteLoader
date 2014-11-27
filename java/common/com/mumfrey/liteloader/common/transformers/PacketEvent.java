@@ -45,7 +45,7 @@ public class PacketEvent extends Event
 	 * @see com.mumfrey.liteloader.transformers.event.Event#invokeEventInfoConstructor(org.objectweb.asm.tree.InsnList, boolean)
 	 */
 	@Override
-	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable)
+	protected int invokeEventInfoConstructor(InsnList insns, boolean cancellable, boolean pushReturnValue, int marshallVar)
 	{
 		int ctorMAXS = 0;
 		

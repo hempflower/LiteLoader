@@ -42,6 +42,13 @@ public abstract class Methods
 	public static final MethodInfo doRenderShadowAndFire  = new MethodInfo(Obf.Render,                     Obf.doRenderShadowAndFire,        Void.TYPE, Obf.Entity, Double.TYPE, Double.TYPE, Double.TYPE, Float.TYPE, Float.TYPE);
 	public static final MethodInfo realmsPlay             = new MethodInfo(Obf.RealmsMainScreen,           "play",                           Void.TYPE, Long.TYPE);
 	public static final MethodInfo realmsStopFetcher      = new MethodInfo(Obf.RealmsMainScreen,           "stopRealmsFetcherAndPinger",     Void.TYPE);
+	public static final MethodInfo onBlockClicked         = new MethodInfo(Obf.ItemInWorldManager,         Obf.onBlockClicked,               Void.TYPE, Obf.BlockPos, Obf.EnumFacing);
+	public static final MethodInfo activateBlockOrUseItem = new MethodInfo(Obf.ItemInWorldManager,         Obf.activateBlockOrUseItem,       Boolean.TYPE, Obf.EntityPlayer, Obf.World, Obf.ItemStack, Obf.BlockPos, Obf.EnumFacing, Float.TYPE, Float.TYPE, Float.TYPE);
+	public static final MethodInfo processBlockPlacement  = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.processPlayerBlockPlacement,  Void.TYPE, Packets.C08PacketPlayerBlockPlacement);
+	public static final MethodInfo handleAnimation        = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.handleAnimation,              Void.TYPE, Packets.C0APacketAnimation);
+	public static final MethodInfo processPlayerDigging   = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.processPlayerDigging,         Void.TYPE, Packets.C07PacketPlayerDigging);
+	public static final MethodInfo serverJobs             = new MethodInfo(Obf.MinecraftServer,            Obf.updateTimeLightAndEntities,   Void.TYPE);
+	public static final MethodInfo checkThreadAndEnqueue  = new MethodInfo(Obf.PacketThreadUtil,           Obf.checkThreadAndEnqueue);
 	
 	// Profiler
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);
