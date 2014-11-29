@@ -701,7 +701,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			try
 			{
 				// Read the basic class template
-				byte[] bytes = Launch.classLoader.getClassBytes(this.getTemplate().name);
+				byte[] bytes = ByteCodeUtilities.applyTransformers(this.getTemplate().name, Launch.classLoader.getClassBytes(this.getTemplate().name));
 				ClassReader classReader = new ClassReader(bytes);
 				ClassNode classNode = new ClassNode();
 				classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
