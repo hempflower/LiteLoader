@@ -49,6 +49,7 @@ public abstract class Methods
 	public static final MethodInfo processPlayerDigging   = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.processPlayerDigging,         Void.TYPE, Packets.C07PacketPlayerDigging);
 	public static final MethodInfo serverJobs             = new MethodInfo(Obf.MinecraftServer,            Obf.updateTimeLightAndEntities,   Void.TYPE);
 	public static final MethodInfo checkThreadAndEnqueue  = new MethodInfo(Obf.PacketThreadUtil,           Obf.checkThreadAndEnqueue);
+	public static final MethodInfo processPlayer          = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.processPlayer,                Void.TYPE, Packets.C03PacketPlayer);
 	
 	// Profiler
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);

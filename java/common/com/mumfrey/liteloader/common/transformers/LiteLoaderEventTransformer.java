@@ -3,11 +3,14 @@ package com.mumfrey.liteloader.common.transformers;
 import static com.mumfrey.liteloader.core.runtime.Methods.*;
 import static com.mumfrey.liteloader.transformers.event.InjectionPoint.*;
 
+import org.objectweb.asm.Opcodes;
+
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
+import com.mumfrey.liteloader.transformers.event.inject.BeforeFieldAccess;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeNew;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;
@@ -25,7 +28,7 @@ public abstract class LiteLoaderEventTransformer extends EventInjectionTransform
 	@Override
 	protected void addEvents()
 	{
-		// Event declaraions
+		// Event declarations
 		Event onInitializePlayerConnection     = Event.getOrCreate("onInitializePlayerConnection", false);
 		Event onPlayerLogin                    = Event.getOrCreate("onPlayerLogin",                false);
 		Event onPlayerLogout                   = Event.getOrCreate("onPlayerLogout",               false);
@@ -38,12 +41,14 @@ public abstract class LiteLoaderEventTransformer extends EventInjectionTransform
 		Event onPlaceBlock                     = Event.getOrCreate("onPlaceBlock",                 true);
 		Event onClickedAir                     = Event.getOrCreate("onClickedAir",                 true);
 		Event onSessionProfileBad              = Event.getOrCreate("onSessionProfileBad",          true);
+		Event onPlayerMoved                    = Event.getOrCreate("onPlayerMoved",                true);
 		
 		// Injection Points
 		InjectionPoint methodHead              = new MethodHead();
 		InjectionPoint methodReturn            = new BeforeReturn();
 		InjectionPoint beforeNewGameProfile    = new BeforeNew(1, Obf.GameProfile);
 		InjectionPoint beforeThreadMarshall    = new BeforeInvoke(checkThreadAndEnqueue);
+		InjectionPoint beforeGetPosY           = new BeforeFieldAccess(Opcodes.GETFIELD, Obf.entityPosY, Obf.EntityPlayerMP, 4).setCaptureLocals(true);
 		
 		// Hooks
 		this.add(onInitializePlayerConnection, initPlayerConnection,        (methodReturn),          "onInitializePlayerConnection");
@@ -57,9 +62,10 @@ public abstract class LiteLoaderEventTransformer extends EventInjectionTransform
 		this.add(onPlaceBlock,                 processBlockPlacement,  after(beforeThreadMarshall) , "onPlaceBlock");
 		this.add(onClickedAir,                 handleAnimation,        after(beforeThreadMarshall),  "onClickedAir");
 		this.add(onPlayerDigging,              processPlayerDigging,   after(beforeThreadMarshall),  "onPlayerDigging");
+		this.add(onPlayerMoved,                processPlayer,               (beforeGetPosY),         "onPlayerMoved");
 
 		// Compatibility handlers
-		this.add(onSessionProfileBad,          getProfile,           (beforeNewGameProfile), "generateOfflineUUID");
+		this.add(onSessionProfileBad,          getProfile,                  (beforeNewGameProfile),  "generateOfflineUUID");
 	}
 
 	protected final Event add(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint, String callback)

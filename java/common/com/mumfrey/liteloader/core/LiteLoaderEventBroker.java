@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.core;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -7,21 +8,28 @@ import java.util.UUID;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.network.play.client.C15PacketClientSettings;
+import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.server.management.ServerConfigurationManager;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
 
 import com.mojang.authlib.GameProfile;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.PlayerInteractionListener;
 import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
+import com.mumfrey.liteloader.PlayerMoveListener;
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.ServerPlayerListener;
@@ -35,6 +43,7 @@ import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.util.Position;
 import com.mumfrey.liteloader.util.PrivateFields;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -132,6 +141,11 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	private FastIterable<PlayerInteractionListener> playerInteractionListeners = new HandlerList<PlayerInteractionListener>(PlayerInteractionListener.class, ReturnLogicOp.AND);
 	
 	/**
+	 * List of mods which handle player movement events
+	 */
+	private FastIterable<PlayerMoveListener> playerMoveListeners = new HandlerList<PlayerMoveListener>(PlayerMoveListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+	
+	/**
 	 * ctor
 	 * 
 	 * @param loader
@@ -187,6 +201,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		delegate.registerInterface(ServerCommandProvider.class);
 		delegate.registerInterface(ServerPlayerListener.class);
 		delegate.registerInterface(PlayerInteractionListener.class);
+		delegate.registerInterface(PlayerMoveListener.class);
 		delegate.registerInterface(CommonPluginChannelListener.class);
 	}
 	
@@ -225,6 +240,14 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void addPlayerInteractionListener(PlayerInteractionListener playerInteractionListener)
 	{
 		this.playerInteractionListeners.add(playerInteractionListener);
+	}
+	
+	/**
+	 * @param playerMoveListener
+	 */
+	public void addPlayerMoveListener(PlayerMoveListener playerMoveListener)
+	{
+		this.playerMoveListeners.add(playerMoveListener);
 	}
 
 	/**
@@ -331,6 +354,60 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		this.playerStateList.all().onTick();
 	}
 	
+	public boolean onPlaceBlock(NetHandlerPlayServer netHandler, EntityPlayerMP playerMP, BlockPos pos, EnumFacing facing)
+	{
+		if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, facing))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos.offset(facing));
+			netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+			playerMP.sendContainerToPlayer(playerMP.inventoryContainer);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public boolean onClickedAir(NetHandlerPlayServer netHandler)
+	{
+		return this.onPlayerInteract(InteractType.LEFT_CLICK, netHandler.playerEntity, null, EnumFacing.SOUTH);
+	}
+
+	public boolean onPlayerDigging(NetHandlerPlayServer netHandler, BlockPos pos, EntityPlayerMP playerMP)
+	{
+		if (!this.onPlayerInteract(InteractType.DIG_BLOCK_MAYBE, playerMP, pos, EnumFacing.SOUTH))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
+			netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public boolean onUseItem(BlockPos pos, EnumFacing side, EntityPlayerMP playerMP)
+	{
+		if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, side))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
+			playerMP.playerNetServerHandler.sendPacket(cancellation);
+			return false;
+		}
+		
+		return true;
+	}
+
+	public boolean onBlockClicked(BlockPos pos, EnumFacing side, ItemInWorldManager manager)
+	{
+		if (!this.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, manager.thisPlayerMP, pos, side))
+		{
+			S23PacketBlockChange cancellation = new S23PacketBlockChange(manager.theWorld, pos);
+			manager.thisPlayerMP.playerNetServerHandler.sendPacket(cancellation);
+			return false;
+		}
+		
+		return true;
+	}
+
 	public boolean onPlayerInteract(InteractType action, EntityPlayerMP player, BlockPos position, EnumFacing side)
 	{
 		PlayerEventState eventState = this.getPlayerState(player);
@@ -346,7 +423,50 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	{
 		return this.playerInteractionListeners.all().onPlayerClickedBlock(player, button, hitPos, sideHit);
 	}
-	
+
+	public boolean onPlayerMove(NetHandlerPlayServer netHandler, C03PacketPlayer packet, EntityPlayerMP playerMP, WorldServer world)
+	{
+		Position from = new Position(playerMP, true);
+		
+		double toX = playerMP.posX;
+		double toY = playerMP.posY;
+		double toZ = playerMP.posZ;
+		float toYaw = playerMP.rotationYaw;
+		float toPitch = playerMP.rotationPitch;
+		
+		if (packet.isMoving())
+		{
+			toX = packet.getPositionX();
+			toY = packet.getPositionY();
+			toZ = packet.getPositionZ();
+		}
+		
+		if (packet.getRotating())
+		{
+			toYaw = packet.getYaw();
+			toPitch = packet.getPitch();
+		}
+
+		Position to = new Position(toX, toY, toZ, toYaw, toPitch);
+		ReturnValue<Position> pos = new ReturnValue<Position>(to);
+		
+		if (!this.playerMoveListeners.all().onPlayerMove(playerMP, from, to, pos))
+		{
+			playerMP.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch);
+			playerMP.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.emptySet()));
+			return false;
+		}
+		
+		if (pos.isSet())
+		{
+			Position newPos = pos.get();
+			netHandler.setPlayerLocation(newPos.xCoord, newPos.yCoord, newPos.zCoord, newPos.yaw, newPos.pitch);
+			return false;
+		}
+		
+		return true;
+	}
+
 	void onPlayerSettingsReceived(EntityPlayerMP player, C15PacketClientSettings packet)
 	{
 		this.getPlayerState(player).setTraceDistance(PrivateFields.viewDistance.get(packet));

@@ -37,7 +37,7 @@ public class PrivateFields<P, T>
 	protected PrivateFields(Class<P> owner, Obf obf)
 	{
 		this.parentClass = owner;
-		this.fieldName = Obf.getObfuscatedFieldName(obf);
+		this.fieldName = ObfuscationUtilities.getObfuscatedFieldName(obf);
 	}
 	
 	/**

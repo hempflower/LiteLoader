@@ -50,7 +50,7 @@ public interface GameEngine<TClient, TServer extends MinecraftServer>
 	public abstract TServer getServer();
 	
 	/**
-	 * @return
+	 * Get the resources manager
 	 */
 	public abstract Resources<?, ?> getResources();
 

@@ -44,7 +44,7 @@ public interface PlayerInteractionListener extends LiteMod
 	 * @param button Mouse button that was pressed (left = dig, right = interact/place)
 	 * @param hitPos Block which was *hit*. Note that block placement will normally be at hitPos.offset(sideHit) 
 	 * @param sideHit Side of the block which was hit
-	 * @return
+	 * @return true to allow the action to be processed (another listener may still inhibit the action), return false to cancel the action (other listeners will still be notified)
 	 */
 	public abstract boolean onPlayerClickedBlock(EntityPlayerMP player, MouseButton button, BlockPos hitPos, EnumFacing sideHit);
 }

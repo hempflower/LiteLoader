@@ -1,5 +1,7 @@
 package com.mumfrey.liteloader.transformers.event;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -9,6 +11,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.core.helpers.Booleans;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -17,6 +21,7 @@ import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
+import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
@@ -52,17 +57,16 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public final class EventTransformer extends ClassTransformer
 {
+	public static final boolean DUMP = Booleans.parseBoolean(System.getProperty("liteloader.debug.dump"), false);
+
+	public static final boolean VALIDATE = Booleans.parseBoolean(System.getProperty("liteloader.debug.validate"), false);
+
 	/**
 	 * Multidimensional map of class names -> target method signatures -> events to inject 
 	 */
 	private static Map<String, Map<String, Map<Event, InjectionPoint>>> eventMappings = new HashMap<String, Map<String, Map<Event, InjectionPoint>>>();
 	
 	private static AccessorTransformer accessorTransformer;
-	
-	/**
-	 * Runs the validator on the generated classes, only for debugging purposes 
-	 */
-	private final boolean runValidator = false;
 	
 	private int globalEventID = 0;
 	
@@ -246,13 +250,24 @@ public final class EventTransformer extends ClassTransformer
 			EventTransformer.accessorTransformer.apply(name, transformedName, basicClass, classNode);
 		}
 		
-		if (this.runValidator)
+		if (EventTransformer.VALIDATE)
 		{
 			ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 			classNode.accept(new CheckClassAdapter(writer));
 		}
 		
-		return this.writeClass(classNode);
+		byte[] bytes = this.writeClass(classNode);
+
+		if (EventTransformer.DUMP)
+		{
+			try
+			{
+				FileUtils.writeByteArrayToFile(new File(".classes" + Obf.lookupMCPName(transformedName).replace('.', '/') + ".class"), bytes);
+			}
+			catch (IOException ex) {}
+		}
+		
+		return bytes;
 	}
 
 	/**
