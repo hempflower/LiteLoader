@@ -19,6 +19,7 @@ import net.minecraft.util.Timer;
 import org.lwjgl.input.Mouse;
 
 import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
@@ -26,6 +27,7 @@ import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
+import com.mumfrey.liteloader.core.event.ProfilingHandlerList;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
@@ -62,7 +64,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	 */
 	private int worldHashCode = 0;
 
-	private FastIterableDeque<Tickable>             tickListeners         = new HandlerList<Tickable>(Tickable.class);
+	private FastIterableDeque<Tickable>             tickListeners;
 	private FastIterableDeque<GameLoopListener>     loopListeners         = new HandlerList<GameLoopListener>(GameLoopListener.class);
 	private FastIterableDeque<RenderListener>       renderListeners       = new HandlerList<RenderListener>(RenderListener.class);
 	private FastIterableDeque<PostRenderListener>   postRenderListeners   = new HandlerList<PostRenderListener>(PostRenderListener.class);
@@ -84,6 +86,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 		LiteLoaderEventBrokerClient.instance = this;
 		
 		this.engineClient = (GameEngineClient)engine;
+		this.tickListeners = new ProfilingHandlerList<Tickable>(Tickable.class, this.engineClient.getProfiler());
 	}
 	
 	static LiteLoaderEventBrokerClient getInstance()
@@ -302,6 +305,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	 */
 	void postRender(float partialTicks, long timeSlice)
 	{
+		((IEntityRenderer)this.engineClient.getClient().entityRenderer).setupCamera(partialTicks, 0);
 		this.postRenderListeners.all().onPostRender(partialTicks);
 	}
 	
@@ -377,7 +381,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	 */
 	void onTick()
 	{
-		this.profiler.startSection("litemods");
+		this.profiler.endStartSection("litemods");
 		
 		Timer minecraftTimer = ((IMinecraft)this.engine.getClient()).getTimer();
 		float partialTicks = minecraftTimer.renderPartialTicks;
@@ -408,8 +412,6 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 			this.worldHashCode = worldHashCode;
 			super.onWorldChanged(minecraft.theWorld);
 		}
-		
-		this.profiler.endSection();
 	}
 
 	/**

@@ -7,10 +7,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.server.MinecraftServer;
-
 /**
  * Centralised obfuscation table for LiteLoader
  *
@@ -26,6 +22,7 @@ public class Obf
 	public static final Obf                   EventProxy = new Obf("com.mumfrey.liteloader.core.event.EventProxy"                      );
 	public static final Obf                  HandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList"                     );
 	public static final Obf             BakedHandlerList = new Obf("com.mumfrey.liteloader.core.event.HandlerList$BakedHandlerList"    );
+	public static final Obf    BakedProfilingHandlerList = new Obf("com.mumfrey.liteloader.core.event.ProfilingHandlerList$BakedList"  );
 	public static final Obf                 PacketEvents = new Obf("com.mumfrey.liteloader.core.PacketEvents"                          );
 	public static final Obf           PacketEventsClient = new Obf("com.mumfrey.liteloader.client.PacketEventsClient"                  );
 	public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
@@ -106,6 +103,7 @@ public class Obf
 	public static final Obf                  shaderIndex = new Obf("field_147713_ae",                                            "ac"  );
 	public static final Obf                    useShader = new Obf("field_175083_ad",                                            "ad"  );
 	public static final Obf                 viewDistance = new Obf("field_149528_b",                                             "b"   );
+	public static final Obf                   entityPosY = new Obf("field_70163_u",                                              "t"   );
 
 	// Methods
 	// -----------------------------------------------------------------------------------------
@@ -152,6 +150,7 @@ public class Obf
 	public static final Obf         processPlayerDigging = new Obf("func_147345_a",                                              "a"   );
 	public static final Obf   updateTimeLightAndEntities = new Obf("func_71190_q",                                               "z"   );
 	public static final Obf        checkThreadAndEnqueue = new Obf("func_180031_a",                                              "a"   );
+	public static final Obf                processPlayer = new Obf("func_147347_a",                                              "a"   );
 
 	public static final int MCP = 0;
 	public static final int SRG = 1;
@@ -353,6 +352,17 @@ public class Obf
 		return Obf.getByName(name);
 	}
 	
+	public static String lookupMCPName(String obfName)
+	{
+		for (Obf obf : Obf.obfs.values())
+		{
+			if (obfName.equals(obf.obf))
+				return obf.name;
+		}
+		
+		return obfName;
+	}
+	
 	/**
 	 * Ordinal reference, can be passed to some methods which accept an {@link Obf} to indicate an offset into a
 	 * class rather than a named reference.
@@ -402,62 +412,5 @@ public class Obf
 		{
 			return this.ordinal;
 		}
-	}
-
-	/**
-	 * True if FML is being used, in which case we use searge names instead of raw field/method names
-	 */
-	private static boolean fmlDetected = false;
-	
-	private static boolean seargeNames = false;
-	
-	static
-	{
-		// Check for FML
-		Obf.fmlDetected = Obf.fmlIsPresent();
-
-		try
-		{
-			MinecraftServer.class.getDeclaredField("serverRunning");
-		}
-		catch (SecurityException ex)
-		{
-		}
-		catch (NoSuchFieldException ex)
-		{
-			Obf.seargeNames = true;
-		}
-	}
-
-	public static boolean fmlIsPresent()
-	{
-		for (IClassTransformer transformer : Launch.classLoader.getTransformers())
-			if (transformer.getClass().getName().contains("fml")) return true;
-
-		return false;
-	}
-
-	/**
-	 * Abstraction helper function
-	 * 
-	 * @param fieldName Name of field to get, returned unmodified if in debug mode
-	 * @return Obfuscated field name if present
-	 */
-	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
-	{
-		boolean deobfuscated = MinecraftServer.class.getSimpleName().equals("MinecraftServer");
-		return deobfuscated ? (Obf.seargeNames ? seargeFieldName : fieldName) : (Obf.fmlDetected ? seargeFieldName : obfuscatedFieldName);
-	}
-	
-	/**
-	 * Abstraction helper function
-	 * 
-	 * @param obf Field to get, returned unmodified if in debug mode
-	 * @return Obfuscated field name if present
-	 */
-	public static String getObfuscatedFieldName(Obf obf)
-	{
-		boolean deobfuscated = MinecraftServer.class.getSimpleName().equals("MinecraftServer");
-		return deobfuscated ? (Obf.seargeNames ? obf.srg : obf.name) : (Obf.fmlDetected ? obf.srg : obf.obf);
 	}
 }

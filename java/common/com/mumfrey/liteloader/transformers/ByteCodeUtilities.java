@@ -344,8 +344,24 @@ public abstract class ByteCodeUtilities
 	 */
 	public static List<LocalVariableNode> generateLocalVariableTable(ClassNode classNode, MethodNode method)
 	{
+		List<Type> interfaces = null;
+		if (classNode.interfaces != null)
+		{
+			interfaces = new ArrayList<Type>();
+			for (String iface : classNode.interfaces)
+			{
+				interfaces.add(Type.getObjectType(iface));
+			}
+		}
+		
+		Type objectType = null;
+		if (classNode.superName != null)
+		{
+			objectType = Type.getObjectType(classNode.superName);
+		}
+		
 		// Use Analyzer to generate the bytecode frames
-		Analyzer<BasicValue> analyzer = new Analyzer<BasicValue>(new SimpleVerifier(Type.getObjectType(classNode.name), null, null, false));
+		Analyzer<BasicValue> analyzer = new Analyzer<BasicValue>(new SimpleVerifier(Type.getObjectType(classNode.name), objectType, interfaces, false));
 		try
 		{
 			analyzer.analyze(classNode.name, method);

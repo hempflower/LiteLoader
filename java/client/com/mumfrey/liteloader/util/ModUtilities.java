@@ -43,7 +43,7 @@ public abstract class ModUtilities
 	 */
 	public static boolean fmlIsPresent()
 	{
-		return Obf.fmlIsPresent();
+		return ObfuscationUtilities.fmlIsPresent();
 	}
 	
     public static void setWindowSize(int width, int height)
@@ -212,10 +212,12 @@ public abstract class ModUtilities
 	 * 
 	 * @param fieldName Name of field to get, returned unmodified if in debug mode
 	 * @return Obfuscated field name if present
+	 * @deprecated use ObfuscationUtilities.getObfuscatedFieldName instead
 	 */
+	@Deprecated
 	public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
 	{
-		return Obf.getObfuscatedFieldName(fieldName, obfuscatedFieldName, seargeFieldName);
+		return ObfuscationUtilities.getObfuscatedFieldName(fieldName, obfuscatedFieldName, seargeFieldName);
 	}
 	
 	/**
@@ -223,10 +225,12 @@ public abstract class ModUtilities
 	 * 
 	 * @param obf Field to get, returned unmodified if in debug mode
 	 * @return Obfuscated field name if present
+	 * @deprecated use ObfuscationUtilities.getObfuscatedFieldName instead
 	 */
+	@Deprecated
 	public static String getObfuscatedFieldName(Obf obf)
 	{
-		return Obf.getObfuscatedFieldName(obf);
+		return ObfuscationUtilities.getObfuscatedFieldName(obf);
 	}
 	
 	@SuppressWarnings("unchecked")

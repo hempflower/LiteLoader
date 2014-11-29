@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.core.event;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.net.URL;
@@ -17,12 +18,15 @@ import java.util.Set;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.core.helpers.Booleans;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
+import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.mumfrey.liteloader.Priority;
 import com.mumfrey.liteloader.core.runtime.Obf;
@@ -236,7 +240,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 	 */
 	protected void bake()
 	{
-		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.logicOp);
+		HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.logicOp, this.getDecorator());
 		this.bakedHandler = classLoader.newHandler(this);
 		if (classLoader instanceof Closeable)
 		{
@@ -246,6 +250,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			}
 			catch (IOException ex) {}
 		}
+	}
+
+	protected IHandlerListDecorator<T> getDecorator()
+	{
+		return null;
 	}
 
 	/**
@@ -569,6 +578,10 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 	{
 		private static final String HANDLER_VAR_PREFIX = "handler$";
 
+		public static final boolean DUMP = Booleans.parseBoolean(System.getProperty("liteloader.debug.dump"), false);
+
+		public static final boolean VALIDATE = Booleans.parseBoolean(System.getProperty("liteloader.debug.validate"), false);
+
 		/**
 		 * Unique index number, just to ensure no name clashes
 		 */
@@ -590,6 +603,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		private final ReturnLogicOp logicOp;
 		
 		/**
+		 * Bytecode decorator
+		 */
+		private final IHandlerListDecorator<T> decorator;
+		
+		/**
 		 * Size of the handler list
 		 */
 		private int size;
@@ -598,12 +616,13 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		 * @param type
 		 * @param logicOp
 		 */
-		HandlerListClassLoader(Class<T> type, ReturnLogicOp logicOp)
+		HandlerListClassLoader(Class<T> type, ReturnLogicOp logicOp, IHandlerListDecorator<T> decorator)
 		{
 			super(new URL[0], Launch.classLoader);
 			this.type = type;
 			this.typeRef = type.getName().replace('.', '/');
 			this.logicOp = logicOp;
+			this.decorator = decorator;
 		}
 		
 		/**
@@ -613,6 +632,12 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		public BakedHandlerList<T> newHandler(HandlerList<T> list)
 		{
 			this.size = list.size();
+			List<T> sortedList = list.getSortedList();
+			
+			if (this.decorator != null)
+			{
+				this.decorator.prepare(sortedList);
+			}
 			
 			Class<BakedHandlerList<T>> handlerClass = null;
 
@@ -631,7 +656,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			{
 				// Create an instance of the class, populate the entries from the supplied list and return it
 				BakedHandlerList<T> handlerList = this.createInstance(handlerClass);
-				return handlerList.populate(list.getSortedList());
+				return handlerList.populate(sortedList);
 			}
 			catch (InstantiationException ex)
 			{
@@ -650,6 +675,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		{
 			try
 			{
+				if (this.decorator != null)
+				{
+					return this.decorator.createInstance(handlerClass);
+				}
+				
 				Constructor<BakedHandlerList<T>> ctor = handlerClass.getDeclaredConstructor();
 				ctor.setAccessible(true);
 				return ctor.newInstance();
@@ -671,7 +701,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			try
 			{
 				// Read the basic class template
-				byte[] bytes = Launch.classLoader.getClassBytes(Obf.BakedHandlerList.name);
+				byte[] bytes = Launch.classLoader.getClassBytes(this.getTemplate().name);
 				ClassReader classReader = new ClassReader(bytes);
 				ClassNode classNode = new ClassNode();
 				classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
@@ -683,8 +713,16 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 				ClassWriter classWriter = new ClassWriter(classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 				classNode.accept(classWriter);
 				bytes = classWriter.toByteArray();
+
+				if (HandlerListClassLoader.VALIDATE)
+				{
+					classNode.accept(new CheckClassAdapter(new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES)));
+				}
 				
-//				classNode.accept(new org.objectweb.asm.util.CheckClassAdapter(new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES)));
+				if (HandlerListClassLoader.DUMP)
+				{
+					FileUtils.writeByteArrayToFile(new File(".classes/" + name.replace('.', '/') + ".class"), bytes);
+				}
 				
 				// Delegate to ClassLoader's usual behaviour to load the class we just generated
 				return this.defineClass(name, bytes, 0, bytes.length);
@@ -694,6 +732,16 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 				th.printStackTrace();
 				return null;
 			}
+		}
+
+		private Obf getTemplate()
+		{
+			if (this.decorator != null)
+			{
+				return this.decorator.getTemplate();
+			}
+			
+			return Obf.BakedHandlerList;
 		}
 
 		/**
@@ -725,13 +773,18 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		{
 			classNode.access = classNode.access & ~Opcodes.ACC_ABSTRACT;
 			classNode.name = name.replace('.', '/');
-			classNode.superName = Obf.BakedHandlerList.ref;
+			classNode.superName = this.getTemplate().ref;
 			classNode.interfaces.add(this.typeRef);
 			classNode.sourceFile = name.substring(name.lastIndexOf('.') + 1) + ".java";
 
 			for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
 			{
 				classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";", null, null));
+			}
+			
+			if (this.decorator != null)
+			{
+				this.decorator.populateClass(name, classNode);
 			}
 		}
 
@@ -775,11 +828,16 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 				if (insn instanceof MethodInsnNode)
 				{
 					MethodInsnNode methodInsn = (MethodInsnNode)insn;
-					if (methodInsn.owner.equals("java/lang/Object"))
+					if (methodInsn.getOpcode() == Opcodes.INVOKESPECIAL && methodInsn.name.equals(Obf.constructor.name))
 					{
-						methodInsn.owner = Obf.BakedHandlerList.ref;
+						methodInsn.owner = this.getTemplate().ref;
 					}
 				}
+			}
+			
+			if (this.decorator != null)
+			{
+				this.decorator.processCtor(classNode, method);
 			}
 		}
 
@@ -879,6 +937,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 				method.access = Opcodes.ACC_PUBLIC;
 				this.populateVoidInvokationChain(classNode, method, args, returnType);
 			}
+			
+			if (this.decorator != null)
+			{
+				this.decorator.populateInterfaceMethod(classNode, method);
+			}
 		}
 
 		/**
@@ -963,14 +1026,25 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		 * @param method
 		 * @param args
 		 */
-		private int invokeHandler(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args)
+		private void invokeHandler(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args)
 		{
 			LabelNode lineNumberLabel = new LabelNode(new Label());
 			method.instructions.add(lineNumberLabel);
 			method.instructions.add(new LineNumberNode(100 + handlerIndex, lineNumberLabel));
 			method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
 			method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
-			return this.invokeInterfaceMethod(method, args);
+			
+			if (this.decorator != null)
+			{
+				this.decorator.preInvokeInterfaceMethod(handlerIndex, classNode, method, args);
+			}
+
+			this.invokeInterfaceMethod(method, args);
+
+			if (this.decorator != null)
+			{
+				this.decorator.postInvokeInterfaceMethod(handlerIndex, classNode, method, args);
+			}
 		}
 
 		/**
@@ -979,7 +1053,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 		 * @param method
 		 * @param args
 		 */
-		private int invokeInterfaceMethod(MethodNode method, Type[] args)
+		private void invokeInterfaceMethod(MethodNode method, Type[] args)
 		{
 			int argNumber = 1;
 			for (Type type : args)
@@ -989,7 +1063,6 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 			}
 			
 			method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, this.typeRef, method.name, method.desc, true));
-			return argNumber;
 		}
 		
 		/**
