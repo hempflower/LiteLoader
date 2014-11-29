@@ -3,6 +3,9 @@ package com.mumfrey.liteloader.transformers.event.inject;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 
+import com.mumfrey.liteloader.core.runtime.Obf;
+import com.mumfrey.liteloader.transformers.event.MethodInfo;
+
 /**
  * An injection point which searches for GETFIELD and SETFIELD opcodes matching its arguments and returns a list of insns
  * immediately prior to matching instructions. Only the field name is required, owners and signatures are optional and can
@@ -44,9 +47,9 @@ public class BeforeFieldAccess extends BeforeInvoke
 		this.opcode = opcode;
 	}
 	
-	public BeforeFieldAccess(int opcode, String[] fieldNames, String[] fieldOwners, String[] methodSignatures)
+	public BeforeFieldAccess(int opcode, String[] fieldNames, String[] fieldOwners, String[] fieldSignatures)
 	{
-		super(fieldNames, fieldOwners, methodSignatures);
+		super(fieldNames, fieldOwners, fieldSignatures);
 		this.opcode = opcode;
 	}
 	
@@ -56,15 +59,35 @@ public class BeforeFieldAccess extends BeforeInvoke
 		this.opcode = opcode;
 	}
 	
-//	public BeforeFieldAccess(MethodInfo fieldInfo)
-//	{
-//		super(fieldInfo);
-//	}
-//	
-//	public BeforeFieldAccess(MethodInfo fieldInfo, int ordinal)
-//	{
-//		super(fieldInfo, ordinal);
-//	}
+	public BeforeFieldAccess(int opcode, Obf fieldNames, int ordinal)
+	{
+		super(fieldNames.names, ordinal);
+		this.opcode = opcode;
+	}
+	
+	public BeforeFieldAccess(int opcode, Obf fieldNames, Obf fieldOwners)
+	{
+		super(fieldNames.names, fieldOwners.names);
+		this.opcode = opcode;
+	}
+	
+	public BeforeFieldAccess(int opcode, Obf fieldNames, Obf fieldOwners, int ordinal)
+	{
+		super(fieldNames.names, fieldOwners.names, ordinal);
+		this.opcode = opcode;
+	}
+	
+	public BeforeFieldAccess(int opcode, MethodInfo fieldInfo)
+	{
+		super(fieldInfo);
+		this.opcode = opcode;
+	}
+	
+	public BeforeFieldAccess(int opcode, MethodInfo fieldInfo, int ordinal)
+	{
+		super(fieldInfo, ordinal);
+		this.opcode = opcode;
+	}
 	
 	@Override
 	protected boolean matchesInsn(AbstractInsnNode insn)
