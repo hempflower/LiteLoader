@@ -262,7 +262,7 @@ public final class EventTransformer extends ClassTransformer
 		{
 			try
 			{
-				FileUtils.writeByteArrayToFile(new File(".classes" + Obf.lookupMCPName(transformedName).replace('.', '/') + ".class"), bytes);
+				FileUtils.writeByteArrayToFile(new File(".classes/" + Obf.lookupMCPName(transformedName).replace('.', '/') + ".class"), bytes);
 			}
 			catch (IOException ex) {}
 		}
