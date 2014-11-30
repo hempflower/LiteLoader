@@ -33,11 +33,22 @@
 	<property name="python_linux" location="/usr/bin/python" />
 
 	<property environment="env" />
+	
+	<target name="setup_client">
+		<property name="client" value="true" />
+		<property name="suffix" value="" />
+		<property name="javadocpath" value="docs" />
+	</target>
+
+	<target name="setup_core">
+		<property name="suffix" value="-core" />
+		<property name="javadocpath" value="coredocs" />
+	</target>
 
 	<target name="setup_development">
 		<property name="skipremoval" value="DEV" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}.md5" />
-		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="artefact.name" value="${ant.project.name}${suffix}-${mcversion}" />
 		<property name="stage.dir" location="${build.dir}/stage/${ant.project.name}/${version}" />
 		<property name="meta.version" value="${version}" />
 	</target>
@@ -45,7 +56,7 @@
 	<target name="setup_production">
 		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
-		<property name="artefact.name" value="${ant.project.name}-${mcversion}" />
+		<property name="artefact.name" value="${ant.project.name}${suffix}-${mcversion}" />
 		<property name="stage.dir" location="${build.dir}/stage/${ant.project.name}/${version}" />
 		<property name="meta.version" value="${version}" />
 	</target>
@@ -53,7 +64,7 @@
 	<target name="setup_jenkins">
 		<property name="skipremoval" value="" />
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
-		<property name="artefact.name" value="${ant.project.name}-${mcversion}-SNAPSHOT" />
+		<property name="artefact.name" value="${ant.project.name}${suffix}-${mcversion}-SNAPSHOT" />
 		<property name="stage.dir" location="${build.dir}/stage" />
 		<property name="brand" value="${mcversion}-SNAPSHOT-r${env.SVN_REVISION}-b${env.BUILD_NUMBER}-${env.BUILD_ID}" />
 		<property name="meta.version" value="${version} [${brand}]" />
@@ -61,15 +72,17 @@
 	</target>
 
 	<!-- Main target -->
-	<target name="development" depends="setup_development, build" description="Entry point for MCP and upstream builds" />
+	<target name="development" depends="setup_client, setup_development, build" description="Entry point for MCP and upstream builds" />
 
-	<target name="production" depends="setup_production, build, javadoc, mcpjar" description="Entry point for production builds" />
+	<target name="production" depends="setup_client, setup_production, build, javadoc, mcpjar" description="Entry point for production builds" />
 
-	<target name="jenkins" depends="setup_jenkins, build, javadoc, mcpjar" description="Entry point for CI builds" />
+	<target name="jenkins" depends="setup_client, setup_jenkins, build, javadoc, mcpjar" description="Entry point for CI builds" />
 
-	<target name="build" description="Perform all tasks for a build" depends="init, recompile, reobfuscate, savemd5, stage, zip" >
+	<target name="core" depends="setup_core, setup_jenkins, build, javadoc, mcpjar" description="Entry point for CI builds" />
+
+	<target name="build" description="Perform all tasks for a client build" depends="init, recompile, reobfuscate, savemd5, stage, jar" >
 	</target>
-
+	
 	<target name="clean">
 		<echo level="info" message="Cleaning output directories" />
 		
@@ -80,17 +93,24 @@
 	<target name="contributesource" description="Contribute an upstream project source code to the source path">
 		<echo level="info" message="Contributing project ${lib}" />
 		<copy todir="${src.dir}" verbose="false" overwrite="true" failonerror="false">
-			<fileset dir="${eclipse.dir}/${lib}/java">
+			<fileset dir="${eclipse.dir}/${lib}/java${sub}">
 				<exclude name="**/debug" />
 				<exclude name="**/debug/*.java" />
 			</fileset>
-			<fileset dir="${eclipse.dir}/${lib}/src" />
+			<fileset dir="${eclipse.dir}/${lib}/src${sub}" />
 			<filterchain>
 				<linecontains negate="true">
 					<contains value="@MCPONLY${skipremoval}" />
 				</linecontains>
 			</filterchain>
 		</copy>
+	</target>
+	
+	<target name="contributeclientsource" description="Contribute client source if building a client jar" if="clientjar">
+		<antcall target="contributesource">
+			<param name="lib" value="${project}" />
+			<param name="sub" value="/client" />
+		</antcall>
 	</target>
 
 	<target name="contributeresources" description="Contribute resources to the staging path">
@@ -153,7 +173,10 @@
 
 		<antcall target="contributesource">
 			<param name="lib" value="${project}" />
+			<param name="sub" value="/common" />
 		</antcall>
+		
+		<antcall target="contributeclientsource" />
 	</target>
 
 	<target name="init" description="Initialize build environment" depends="prepare">
@@ -240,7 +263,7 @@
 		<replaceregexp file="${stage.dir}/liteloader.properties" byline="true" match="^brand=.*$" replace="brand=${brand}" />
 	</target>
 
-	<target name="zip" description="Build the output zip file">
+	<target name="jar" description="Build the client jar">
 		<echo level="info" message="Building final output" />
 
 		<mkdir dir="${dist.dir}" />
@@ -260,7 +283,7 @@
 		</jar>
 	</target>
 
-	<target name="mcpjar" description="Build the MCP-names">
+	<target name="mcpjar" description="Build the MCP-names jar">
 		<echo level="info" message="Building mcpnamesjars" />
 
 		<mkdir dir="${dist.dir}" />
@@ -295,7 +318,7 @@
 	<target name="javadoc" description="Create the javadoc jar">
 		<echo level="info" message="Generating javadoc" />
 
-		<javadoc destdir="${stage.dir}/docs" useexternalfile="true">
+		<javadoc destdir="${stage.dir}/${javadocpath}" useexternalfile="true">
 			<fileset dir="${eclipse.dir}/${project}/java">
 				<exclude name="**/debug" />
 				<exclude name="**/debug/*.java" />
@@ -318,7 +341,7 @@
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Version" value="${version}" />
 			</manifest>
-			<fileset dir="${stage.dir}/docs" />
+			<fileset dir="${stage.dir}/${javadocpath}" />
 		</jar>
 	</target>
 	
