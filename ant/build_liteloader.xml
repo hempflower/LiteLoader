@@ -35,7 +35,7 @@
 	<property environment="env" />
 	
 	<target name="setup_client">
-		<property name="client" value="true" />
+		<property name="clientjar" value="true" />
 		<property name="suffix" value="" />
 		<property name="javadocpath" value="docs" />
 	</target>
