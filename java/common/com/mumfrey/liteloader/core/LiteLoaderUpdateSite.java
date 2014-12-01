@@ -4,9 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import net.minecraft.util.Util;
-import net.minecraft.util.Util.EnumOS;
-
 import com.google.common.io.ByteSink;
 import com.google.common.io.Files;
 import com.mumfrey.liteloader.launch.ClassPathUtilities;
@@ -166,7 +163,7 @@ public class LiteLoaderUpdateSite extends UpdateSite
 	{
 		File javaBin = new File(new File(System.getProperty("java.home")), "bin");
 		File javaWin = new File(javaBin, "javaw.exe");
-		
-		return Util.getOSType() == EnumOS.WINDOWS && javaWin.isFile() ? javaWin : new File(javaBin, "java");
+		String osName = System.getProperty("os.name").toLowerCase();
+		return osName.contains("win") && javaWin.isFile() ? javaWin : new File(javaBin, "java");
 	}
 }
