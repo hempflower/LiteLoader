@@ -8,6 +8,7 @@ import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.json.ModEvents.ModEventDefinition;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Event transformer which manages injections of mod events specified via events.json in the mod container
@@ -62,7 +63,7 @@ public class ModEventInjectionTransformer extends EventInjectionTransformer
 					def.injectIntoClassPath();
 				}
 				
-				LiteLoaderLogger.info("Registering events for mod with id %s", def.getIdentifier());
+				LiteLoaderLogger.info(Verbosity.REDUCED, "Registering events for mod with id %s", def.getIdentifier());
 				events.register(this);
 				def.onEventsInjected();
 			}

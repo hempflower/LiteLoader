@@ -35,6 +35,31 @@ public class LiteLoaderLogger extends AbstractAppender
 	
 	private static Throwable lastThrowable;
 	
+	/**
+	 * Provides some wiggle-room within log4j's Level so we can have different levels of logging on the same, um.. Level
+	 */
+	public static enum Verbosity
+	{
+		VERBOSE(3),
+		NORMAL(2),
+		REDUCED(1),
+		SILENT(0);
+		
+		protected final int level;
+
+		private Verbosity(int level)
+		{
+			this.level = level;
+		}
+		
+		public int getLevel()
+		{
+			return this.level;
+		}
+	}
+	
+	public static Verbosity verbosity = LiteLoaderLogger.DEBUG ? Verbosity.VERBOSE : Verbosity.NORMAL;
+	
 	static
 	{
 		LiteLoaderLogger.logger.addAppender(new LiteLoaderLogger());
@@ -132,8 +157,13 @@ public class LiteLoaderLogger extends AbstractAppender
 		return lastThrowableWrapped;
 	}
 	
-	private static void log(Level level, String format, Object... data)
+	private static void log(Level level, Verbosity verbosity, String format, Object... data)
 	{
+		if (verbosity.level > LiteLoaderLogger.verbosity.level)
+		{
+			return;
+		}
+		
 		try
 		{
 			LiteLoaderLogger.logger.log(level, String.format(format, data));
@@ -144,8 +174,13 @@ public class LiteLoaderLogger extends AbstractAppender
 		}
 	}
 	
-	private static void log(Level level, Throwable th, String format, Object... data)
+	private static void log(Level level, Verbosity verbosity, Throwable th, String format, Object... data)
 	{
+		if (verbosity.level > LiteLoaderLogger.verbosity.level)
+		{
+			return;
+		}
+		
 		LiteLoaderLogger.lastThrowable = th;
 		
 		try
@@ -165,16 +200,26 @@ public class LiteLoaderLogger extends AbstractAppender
 	
 	public static void severe(String format, Object... data)
 	{
-		LiteLoaderLogger.log(Level.ERROR, format, data);
+		LiteLoaderLogger.severe(Verbosity.REDUCED, format, data);
+	}
+	
+	public static void severe(Verbosity verbosity, String format, Object... data)
+	{
+		LiteLoaderLogger.log(Level.ERROR, verbosity, format, data);
 	}
 	
 	public static void severe(Throwable th, String format, Object... data)
+	{
+		LiteLoaderLogger.severe(Verbosity.REDUCED, th, format, data);
+	}
+
+	public static void severe(Verbosity verbosity, Throwable th, String format, Object... data)
 	{
 		LiteLoaderLogger.lastThrowable = th;
 		
 		try
 		{
-			LiteLoaderLogger.log(Level.ERROR, th, format, data);
+			LiteLoaderLogger.log(Level.ERROR, verbosity, th, format, data);
 		}
 		catch (LinkageError ex) // This happens because of ClassLoader scope derpiness during the PREINIT and INIT phases
 		{
@@ -189,16 +234,26 @@ public class LiteLoaderLogger extends AbstractAppender
 	
 	public static void warning(String format, Object... data)
 	{
-		LiteLoaderLogger.log(Level.WARN, format, data);
+		LiteLoaderLogger.warning(Verbosity.REDUCED, format, data);
+	}
+	
+	public static void warning(Verbosity verbosity, String format, Object... data)
+	{
+		LiteLoaderLogger.log(Level.WARN, verbosity, format, data);
 	}
 	
 	public static void warning(Throwable th, String format, Object... data)
+	{
+		LiteLoaderLogger.warning(Verbosity.REDUCED, th, format, data);
+	}
+	
+	public static void warning(Verbosity verbosity, Throwable th, String format, Object... data)
 	{
 		LiteLoaderLogger.lastThrowable = th;
 		
 		try
 		{
-			LiteLoaderLogger.log(Level.WARN, th, format, data);
+			LiteLoaderLogger.log(Level.WARN, verbosity, th, format, data);
 		}
 		catch (LinkageError ex) // This happens because of ClassLoader scope derpiness during the PREINIT and INIT phases
 		{
@@ -213,7 +268,12 @@ public class LiteLoaderLogger extends AbstractAppender
 	
 	public static void info(String format, Object... data)
 	{
-		LiteLoaderLogger.log(Level.INFO, format, data);
+		LiteLoaderLogger.info(Verbosity.NORMAL, format, data);
+	}
+	
+	public static void info(Verbosity verbosity, String format, Object... data)
+	{
+		LiteLoaderLogger.log(Level.INFO, verbosity, format, data);
 	}
 	
 	public static void debug(String format, Object... data)

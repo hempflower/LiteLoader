@@ -24,6 +24,7 @@ import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Enumerator module which searches for mods and tweaks in a folder
@@ -296,7 +297,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 			}
 			else
 			{
-				LiteLoaderLogger.info("Not adding invalid or version-mismatched mod file: %s", modFile);
+				LiteLoaderLogger.info(Verbosity.REDUCED, "Not adding invalid or version-mismatched mod file: %s", modFile);
 				enumerator.registerBadContainer(modFile, "Version not supported");
 			}
 		}
@@ -335,12 +336,12 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	{
 		if (enumerator.registerModContainer(modFile))
 		{
-			LiteLoaderLogger.info("Adding newest valid mod file '%s' at revision %.4f", modFile, modFile.getRevision());
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Adding newest valid mod file '%s' at revision %.4f", modFile, modFile.getRevision());
 			this.loadableMods.add(modFile);
 		}
 		else
 		{
-			LiteLoaderLogger.info("Not adding valid mod file '%s', the specified mod is disabled or missing a required dependency", modFile);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Not adding valid mod file '%s', the specified mod is disabled or missing a required dependency", modFile);
 		}
 		
 		if (this.loadTweaks)
@@ -383,7 +384,7 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 	@Override
 	public void registerMods(ModularEnumerator enumerator, LaunchClassLoader classLoader)
 	{
-		LiteLoaderLogger.info("Discovering mods in valid mod files...");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Discovering mods in valid mod files...");
 		LoadingProgress.incTotalLiteLoaderProgress(this.loadableMods.size());
 
 		for (LoadableMod<?> modFile : this.loadableMods)

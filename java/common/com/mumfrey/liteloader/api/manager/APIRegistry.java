@@ -14,6 +14,7 @@ import com.mumfrey.liteloader.api.exceptions.InvalidAPIStateException;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * This is where we register API classes during early startup before baking the registered list into an
@@ -56,7 +57,7 @@ public final class APIRegistry
 		
 		if (!this.registeredAPIClasses.contains(apiClass))
 		{
-			LiteLoaderLogger.info("Registering API provider class %s", apiClass);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Registering API provider class %s", apiClass);
 			this.registeredAPIClasses.add(apiClass);
 		}
 	}
@@ -86,7 +87,7 @@ public final class APIRegistry
 			
 			if (!this.instances.containsKey(identifier))
 			{
-				LiteLoaderLogger.info("API provider class '%s' provides API '%s'", apiClassName, identifier);
+				LiteLoaderLogger.info(Verbosity.REDUCED, "API provider class '%s' provides API '%s'", apiClassName, identifier);
 				this.instances.put(identifier, api);
 				return api;
 			}
@@ -124,7 +125,7 @@ public final class APIRegistry
 		
 		for (LiteAPI api : allAPIs)
 		{
-			LiteLoaderLogger.info("Initialising API '%s' ...", api.getIdentifier());
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Initialising API '%s' ...", api.getIdentifier());
 			api.init(this.environment, this.properties);
 		}
 		

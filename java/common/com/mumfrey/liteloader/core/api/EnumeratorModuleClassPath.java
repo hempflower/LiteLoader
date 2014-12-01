@@ -13,6 +13,7 @@ import com.mumfrey.liteloader.interfaces.ModularEnumerator;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Enumerator module which searches for mods on the classpath
@@ -97,7 +98,7 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
 						}
 						else
 						{
-							LiteLoaderLogger.info("Mod %s is disabled or missing a required dependency, not injecting tranformers", classPathMod.getIdentifier());
+							LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled or missing a required dependency, not injecting tranformers", classPathMod.getIdentifier());
 						}
 					}
 				}
@@ -120,7 +121,7 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
 	@Override
 	public void registerMods(ModularEnumerator enumerator, LaunchClassLoader classLoader)
 	{
-		LiteLoaderLogger.info("Discovering mods on class path...");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Discovering mods on class path...");
 		LoadingProgress.incTotalLiteLoaderProgress(this.loadableMods.size());
 
 		for (LoadableMod<File> classPathMod : this.loadableMods)

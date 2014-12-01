@@ -17,6 +17,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * LiteLoader tweak class
@@ -283,7 +284,7 @@ public class LiteLoaderTweaker implements ITweaker
 	 */
 	private void onPrepare(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{
-		LiteLoaderLogger.info("Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Bootstrapping LiteLoader " + LiteLoaderTweaker.VERSION);
 		
 		try
 		{
@@ -422,7 +423,7 @@ public class LiteLoaderTweaker implements ITweaker
 				for (SortableValue<String> tweak : this.sortedCascadingTweaks)
 				{
 					String tweakClass = tweak.getValue();
-					LiteLoaderLogger.info("Injecting tweak class %s with priority %d", tweakClass, tweak.getPriority());
+					LiteLoaderLogger.info(Verbosity.REDUCED, "Injecting tweak class %s with priority %d", tweakClass, tweak.getPriority());
 					this.injectTweakClass(tweakClass, tweakClasses, tweakers);
 				}
 			}

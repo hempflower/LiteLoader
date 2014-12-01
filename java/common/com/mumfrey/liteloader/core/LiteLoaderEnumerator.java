@@ -34,6 +34,7 @@ import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * The enumerator performs all mod discovery functions for LiteLoader, this includes locating mod files to load
@@ -521,7 +522,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.DISCOVER, "registerDisabledContainer");
 
-		LiteLoaderLogger.info(reason.getMessage(container));
+		LiteLoaderLogger.info(Verbosity.REDUCED, reason.getMessage(container));
 		
 		this.enabledContainers.remove(container.getIdentifier());
 		this.disabledContainers.put(container.getIdentifier(), new NonMod(container, false));
@@ -539,7 +540,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		
 		if (!container.isEnabled(this.environment))
 		{
-			LiteLoaderLogger.info("Mod %s is disabled for profile %s, not injecting tranformers", container.getIdentifier(), this.environment.getProfile());
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled for profile %s, not injecting tranformers", container.getIdentifier(), this.environment.getProfile());
 			return false;
 		}
 
@@ -575,10 +576,10 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		{
 			String tweakClass = container.getTweakClassName();
 			int tweakPriority = container.getTweakPriority();
-			LiteLoaderLogger.info("Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d", container.getName(), tweakClass, tweakPriority);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d", container.getName(), tweakClass, tweakPriority);
 			if (this.tweaker.addCascadedTweaker(tweakClass, tweakPriority))
 			{
-				LiteLoaderLogger.info("tweakClass '%s' was successfully added", tweakClass);
+				LiteLoaderLogger.info(Verbosity.REDUCED, "tweakClass '%s' was successfully added", tweakClass);
 				container.injectIntoClassPath(this.classLoader, true);
 				
 				if (container.isExternalJar())
@@ -616,10 +617,10 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		{
 			for (String classTransformerClass : classTransformerClasses)
 			{
-				LiteLoaderLogger.info("Mod file '%s' provides classTransformer '%s', adding to class loader", container.getName(), classTransformerClass);
+				LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides classTransformer '%s', adding to class loader", container.getName(), classTransformerClass);
 				if (this.tweaker.getTransformerManager().injectTransformer(classTransformerClass))
 				{
-					LiteLoaderLogger.info("classTransformer '%s' was successfully added", classTransformerClass);
+					LiteLoaderLogger.info(Verbosity.REDUCED, "classTransformer '%s' was successfully added", classTransformerClass);
 					container.injectIntoClassPath(this.classLoader, true);
 				}
 			}
@@ -711,7 +712,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 			catch (OutdatedLoaderException ex)
 			{
 				classes.clear();
-				LiteLoaderLogger.info("Error searching in '%s', missing API component '%s', your loader is probably out of date", container, ex.getMessage());
+				LiteLoaderLogger.info(Verbosity.REDUCED, "Error searching in '%s', missing API component '%s', your loader is probably out of date", container, ex.getMessage());
 			}
 			catch (Throwable th)
 			{
@@ -868,7 +869,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		circularDependencySet.add(base.getIdentifier());
 		
 		boolean result = this.checkDependencies(base, base, circularDependencySet);
-		LiteLoaderLogger.info("Dependency check for %s %s", base.getIdentifier(), result ? "passed" : "failed");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Dependency check for %s %s", base.getIdentifier(), result ? "passed" : "failed");
 		
 		return result;
 	}

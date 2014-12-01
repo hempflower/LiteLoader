@@ -53,6 +53,7 @@ import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
 import com.mumfrey.liteloader.transformers.event.EventTransformer;
 import com.mumfrey.liteloader.util.Input;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * LiteLoader is a simple loader which loads and provides useful callbacks to
@@ -817,7 +818,7 @@ public final class LiteLoader
 	{
 		int totalMods = this.enumerator.modsToLoadCount();
 		int totalTweaks = this.enumerator.getInjectedTweaks().size();
-		LiteLoaderLogger.info("Discovered %d total mod(s), injected %d tweak(s)", totalMods, totalTweaks);
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Discovered %d total mod(s), injected %d tweak(s)", totalMods, totalTweaks);
 		
 		if (totalMods > 0)
 		{
@@ -826,7 +827,7 @@ public final class LiteLoader
 		}
 		else
 		{
-			LiteLoaderLogger.info("No mod classes were found. Not loading any mods.");
+			LiteLoaderLogger.info(Verbosity.REDUCED, "No mod classes were found. Not loading any mods.");
 		}
 		
 		// Initialises the required hooks for loaded mods
@@ -939,7 +940,7 @@ public final class LiteLoader
 
 	private void onShutDown()
 	{
-		LiteLoaderLogger.info("LiteLoader is shutting down, shutting down core providers and syncing configuration");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader is shutting down, shutting down core providers and syncing configuration");
 		
 		this.shutdownObservers.all().onShutDown();
 
@@ -991,14 +992,14 @@ public final class LiteLoader
 	
 	static final void invokeInit()
 	{
-		LiteLoaderLogger.info("LiteLoader begin INIT...");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader begin INIT...");
 		
 		LiteLoader.instance.onInit();
 	}
 
 	static final void invokePostInit()
 	{
-		LiteLoaderLogger.info("LiteLoader begin POSTINIT...");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader begin POSTINIT...");
 
 		LiteLoader.instance.onPostInit();
 	}

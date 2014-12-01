@@ -3,8 +3,16 @@ package com.mumfrey.liteloader.launch;
 import java.io.File;
 import java.util.List;
 
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
 public class LiteLoaderTweakerServer extends LiteLoaderTweaker
 {
+	public LiteLoaderTweakerServer()
+	{
+		LiteLoaderLogger.verbosity = Verbosity.REDUCED;
+	}
+	
 	@Override
 	protected StartupEnvironment spawnStartupEnvironment(List<String> args, File gameDirectory, File assetsDirectory, String profile)
 	{

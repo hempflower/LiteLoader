@@ -32,6 +32,7 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.launch.StartupEnvironment;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * LiteLoaderBootstrap is responsible for managing the early part of the LiteLoader startup process, this is
@@ -272,20 +273,20 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		this.classLoader = classLoader;
 		this.loadTweaks = loadTweaks;
 		
-		LiteLoaderLogger.info("LiteLoader begin PREINIT...");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader begin PREINIT...");
 
 		// Set up the bootstrap
 		if (!this.prepare()) return;
 		
-		LiteLoaderLogger.info("LiteLoader %s starting up...", LiteLoaderVersion.CURRENT.getLoaderVersion());
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader %s starting up...", LiteLoaderVersion.CURRENT.getLoaderVersion());
 		
 		// Print the branding version if any was provided
 		if (this.branding != null)
 		{
-			LiteLoaderLogger.info("Active Pack: %s", this.branding);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Active Pack: %s", this.branding);
 		}
 		
-		LiteLoaderLogger.info("Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase());
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Java reports OS=\"%s\"", System.getProperty("os.name").toLowerCase());
 		
 		this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
 		this.enabledModsList.processModsList(this.profile, modsToLoad);
@@ -293,7 +294,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 		this.enumerator = this.spawnEnumerator(classLoader);
 		this.enumerator.onPreInit();
 		
-		LiteLoaderLogger.info("LiteLoader PREINIT complete");
+		LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader PREINIT complete");
 	}
 
 	/**

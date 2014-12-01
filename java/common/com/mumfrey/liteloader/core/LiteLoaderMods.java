@@ -25,6 +25,7 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigStrategy;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Separated from the core loader class for encapsulation purposes
@@ -478,7 +479,7 @@ public class LiteLoaderMods
 	 */
 	void loadMod(Mod mod) throws InstantiationException, IllegalAccessException
 	{
-		LiteLoaderLogger.info("Loading mod from %s", mod.getModClassName());
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Loading mod from %s", mod.getModClassName());
 		
 		LiteMod newMod = mod.newInstance();
 		
@@ -559,7 +560,7 @@ public class LiteLoaderMods
 	{
 		LiteMod instance = mod.getMod();
 		
-		LiteLoaderLogger.info("Initialising mod %s version %s", instance.getName(), instance.getVersion());
+		LiteLoaderLogger.info(Verbosity.REDUCED, "Initialising mod %s version %s", instance.getName(), instance.getVersion());
 		LoadingProgress.incLiteLoaderProgress("Initialising mod %s version %s...", instance.getName(), instance.getVersion());
 		
 		this.onPreInitMod(instance);

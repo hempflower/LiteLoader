@@ -18,6 +18,7 @@ import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * The interface manager handles the allocation of interface consumers (implementors) to interface providers. During
@@ -247,7 +248,7 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 		{
 			for (InterfaceProvider provider : apiInterfaceProviders)
 			{
-				LiteLoaderLogger.info("Registering interface provider %s for API %s", provider.getClass().getName(), api.getName());
+				LiteLoaderLogger.info(Verbosity.REDUCED, "Registering interface provider %s for API %s", provider.getClass().getName(), api.getName());
 				if (this.registerProvider(provider))
 				{
 					this.providerToAPIMap.put(provider, api);

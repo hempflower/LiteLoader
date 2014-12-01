@@ -12,6 +12,7 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.launchwrapper.LogWrapper;
 
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Manages injection of required and optional transformers
@@ -141,7 +142,7 @@ public class ClassTransformerManager
 	{
 		for (String requiredTransformerClassName : this.requiredTransformers)
 		{
-			LiteLoaderLogger.info("Injecting required class transformer '%s'", requiredTransformerClassName);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Injecting required class transformer '%s'", requiredTransformerClassName);
 			this.injectTransformer(classLoader, requiredTransformerClassName);
 		}
 	}
@@ -158,7 +159,7 @@ public class ClassTransformerManager
 
 		for (String transformerClassName : this.downstreamTransformers)
 		{
-			LiteLoaderLogger.info("Injecting additional class transformer class '%s'", transformerClassName);
+			LiteLoaderLogger.info(Verbosity.REDUCED, "Injecting additional class transformer class '%s'", transformerClassName);
 			this.injectTransformer(classLoader, transformerClassName);
 		}
 		
