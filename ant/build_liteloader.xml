@@ -11,6 +11,7 @@
 	<!-- Project definitions and dependencies -->
 	<property name="upstream" value="" />
 	<property name="project" value="LiteLoader" />
+	<property name="displayname" value="LiteLoader" />
 	<property name="md5set" value="mcp" />
 	<property name="outmd5set" value="liteloader" />
 	<property name="tweakclass" value="com.mumfrey.liteloader.launch.LiteLoaderTweaker" />
@@ -24,6 +25,7 @@
 	<property name="src.dir" location="${build.dir}/src"/>
 	<property name="mc.src.dir" location="${mcp.dir}/src/minecraft" />
 	<property name="mc.bin.dir" location="${mcp.dir}/bin/minecraft" />
+	<property name="reobf.dir" location="${mcp.dir}/reobf/minecraft" />
 	<property name="mc.libs.dir" location="${mcp.dir}/jars/libraries" />
 
 	<property name="dist.dir" location="${build.dir}/dist" />
@@ -157,7 +159,7 @@
 
 		<echo level="info" message="Contributing libs" />
 		<copy todir="${libs.dir}" verbose="true" overwrite="true">
-			<fileset dir="${eclipse.dir}/LiteLoader/lib">
+			<fileset dir="${eclipse.dir}/${project}/lib">
 				<exclude name="**/authlib*.jar" />
 				<exclude name="**/log4j*.jar" />
 			</fileset>
@@ -238,7 +240,7 @@
 		<echo level="info" message="Staging resources" />
 
 		<copy todir="${stage.dir}" overwrite="true">
-			<fileset dir="${mcp.dir}/reobf/minecraft" excludes=".svn/**, *.txt">
+			<fileset dir="${reobf.dir}" excludes=".svn/**, *.txt">
 				<exclude name="?.class" />
 				<exclude name="??.class" />
 				<exclude name="???.class" />
@@ -275,15 +277,23 @@
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Version" value="${meta.version}" />
 				<attribute name="TweakClass" value="${tweakclass}" />
-				<attribute name="TweakName" value="LiteLoader" />
+				<attribute name="TweakName" value="${displayname}" />
 				<attribute name="TweakVersion" value="${version}" />
 				<attribute name="TweakAuthor" value="${author}" />
 			</manifest>
 			<fileset dir="${stage.dir}" />
 		</jar>
 	</target>
+	
+	<target name="compiledebug" description="Recompile with debug classes">
+		<copy todir="${src.dir}" verbose="false" overwrite="true" failonerror="false">
+			<fileset dir="${eclipse.dir}/${project}/debug" />
+		</copy>
+		
+		<antcall target="recompile" />
+	</target>
 
-	<target name="mcpjar" description="Build the MCP-names jar">
+	<target name="mcpjar" description="Build the MCP-names jar" depends="compiledebug">
 		<echo level="info" message="Building mcpnamesjars" />
 
 		<mkdir dir="${dist.dir}" />
@@ -298,20 +308,24 @@
 				<attribute name="Implementation-Title" value="${ant.project.name}" />
 				<attribute name="Implementation-Version" value="${meta.version}" />
 				<attribute name="TweakClass" value="${tweakclass}" />
-				<attribute name="TweakName" value="LiteLoader" />
+				<attribute name="TweakName" value="${displayname}" />
 				<attribute name="TweakVersion" value="${version}" />
 				<attribute name="TweakAuthor" value="${author}" />
 			</manifest>
-			<fileset dir="${mcp.dir}/bin/minecraft">
+			<fileset dir="${mc.bin.dir}">
 				<include name="com/mumfrey/**" />
 				<include name="net/eq2online/**" />
 			</fileset>
+			<fileset dir="${eclipse.dir}/${project}/resources" excludes=".svn/**" />
+			<fileset dir="${eclipse.dir}/${project}/debug" excludes=".svn/**">
+				<exclude name="**/*.java" />
+			</fileset>
 		</jar>
 		<jar destfile="${dist.dir}/${artefact.name}-mcpnames-sources.${filetype}" duplicate="preserve" index="false" filesetmanifest="skip">
-			<fileset dir="${eclipse.dir}/LiteLoader/java/common" />
-			<fileset dir="${eclipse.dir}/LiteLoader/java/client" />
-			<fileset dir="${eclipse.dir}/LiteLoader/debug" />
-			<fileset dir="${eclipse.dir}/LiteLoader/resources" />
+			<fileset dir="${eclipse.dir}/${project}/java/common" />
+			<fileset dir="${eclipse.dir}/${project}/java/client" />
+			<fileset dir="${eclipse.dir}/${project}/debug" />
+			<fileset dir="${eclipse.dir}/${project}/resources" />
 		</jar>
 	</target>
 
@@ -343,6 +357,7 @@
 			</manifest>
 			<fileset dir="${stage.dir}/${javadocpath}" />
 		</jar>
+		<copy file="${dist.dir}/${artefact.name}-javadoc.${filetype}" tofile="${dist.dir}/${artefact.name}-mcpnames-javadoc.${filetype}" />
 	</target>
 	
 	<target name="deploy" depends="production" description="Deploy artifact to local minecraft installation in APPDATA">
