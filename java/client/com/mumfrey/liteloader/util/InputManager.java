@@ -37,7 +37,7 @@ import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
  *
  * @author Adam Mummery-Smith
  */
-public final class InputManager implements Input
+public final class InputManager extends Input
 {
 	private GameEngine<?, ?> engine;
 	

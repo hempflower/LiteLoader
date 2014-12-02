@@ -469,10 +469,12 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 
 	void onPlayerSettingsReceived(EntityPlayerMP player, C15PacketClientSettings packet)
 	{
-		this.getPlayerState(player).setTraceDistance(PrivateFields.viewDistance.get(packet));
+		PlayerEventState playerState = this.getPlayerState(player);
+		playerState.setTraceDistance(PrivateFields.viewDistance.get(packet));
+		playerState.setLocale(packet.getLang());
 	}
 
-	protected PlayerEventState getPlayerState(EntityPlayerMP player)
+	public PlayerEventState getPlayerState(EntityPlayerMP player)
 	{
 		PlayerEventState playerState = this.playerStates.get(player.getUniqueID());
 		if (playerState == null)

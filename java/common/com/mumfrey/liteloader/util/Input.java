@@ -5,7 +5,7 @@ import net.minecraft.client.settings.KeyBinding;
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
-public interface Input extends CoreProvider
+public abstract class Input implements CoreProvider
 {
 	/**
 	 * Register a key for a mod

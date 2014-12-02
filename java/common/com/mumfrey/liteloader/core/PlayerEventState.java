@@ -28,6 +28,8 @@ public class PlayerEventState implements IEventState
 	private boolean rightClick;
 	
 	private MovingObjectPosition hit;
+	
+	private String locale = "en_US";
 
 	public PlayerEventState(EntityPlayerMP player, LiteLoaderEventBroker<?, ?> broker)
 	{
@@ -38,6 +40,24 @@ public class PlayerEventState implements IEventState
 	public void setTraceDistance(int renderDistance)
 	{
 		this.traceDistance = renderDistance * 16.0;
+	}
+	
+	public double getTraceDistance()
+	{
+		return this.traceDistance;
+	}
+
+	public void setLocale(String lang)
+	{
+		if (lang.matches("^[a-z]{2}_[A-Z]{2}$"))
+		{
+			this.locale = lang;
+		}
+	}
+
+	public String getLocale()
+	{
+		return this.locale;
 	}
 
 	public EntityPlayerMP getPlayer()
