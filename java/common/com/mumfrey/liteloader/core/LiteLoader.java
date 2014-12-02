@@ -840,7 +840,10 @@ public final class LiteLoader
 	void onPostInitMod(LiteMod mod)
 	{
 		// add mod to permissions manager if permissible
-		this.permissionsManagerClient.registerMod(mod);
+		if (this.permissionsManagerClient != null)
+		{
+			this.permissionsManagerClient.registerMod(mod);
+		}
 	}
 
 	/**
@@ -872,7 +875,10 @@ public final class LiteLoader
 	 */
 	void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
 	{
-		this.permissionsManagerClient.onJoinGame(netHandler, loginPacket);
+		if (this.permissionsManagerClient != null)
+		{
+			this.permissionsManagerClient.onJoinGame(netHandler, loginPacket);
+		}
 
 		this.coreProviders.all().onJoinGame(netHandler, loginPacket);
 	}
@@ -884,7 +890,7 @@ public final class LiteLoader
 	 */
 	void onWorldChanged(World world)
 	{
-		if (world != null)
+		if (world != null && this.permissionsManagerClient != null)
 		{
 			// For bungeecord
 			this.permissionsManagerClient.scheduleRefresh();
@@ -915,13 +921,16 @@ public final class LiteLoader
 		if (clock)
 		{
 			// Tick the permissions manager
-			this.profiler.startSection("permissionsmanager");
-			this.permissionsManagerClient.onTick(this.engine, partialTicks, inGame);
+			if (this.permissionsManagerClient != null)
+			{
+				this.profiler.startSection("permissionsmanager");
+				this.permissionsManagerClient.onTick(this.engine, partialTicks, inGame);
+				this.profiler.endSection();
+			}
 			
 			// Tick the config manager
-			this.profiler.endStartSection("configmanager");
+			this.profiler.startSection("configmanager");
 			this.configManager.onTick();
-			
 			this.profiler.endSection();
 			
 			if (!this.engine.isRunning())
