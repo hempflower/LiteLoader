@@ -1,8 +1,12 @@
 package com.mumfrey.liteloader.util;
 
 import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.world.World;
 
 import com.mumfrey.liteloader.api.CoreProvider;
+import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
 public abstract class Input implements CoreProvider
@@ -57,4 +61,29 @@ public abstract class Input implements CoreProvider
 	 * @param handler
 	 */
 	public abstract InputEvent[] getEvents(String descriptor, InputHandler handler);
+
+	@Override
+	public void onPostInitComplete(LiteLoaderMods mods)
+	{
+	}
+	
+	@Override
+	public void onStartupComplete()
+	{
+	}
+	
+	@Override
+	public void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
+	{
+	}
+	
+	@Override
+	public void onWorldChanged(World world)
+	{
+	}
+	
+	@Override
+	public void onPostRender(int mouseX, int mouseY, float partialTicks)
+	{
+	}
 }

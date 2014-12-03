@@ -17,19 +17,12 @@ import net.java.games.input.Controller;
 import net.java.games.input.Event;
 import net.java.games.input.EventQueue;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.profiler.Profiler;
-import net.minecraft.world.World;
 
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
-import com.mumfrey.liteloader.util.Input;
-import com.mumfrey.liteloader.util.InputEvent;
-import com.mumfrey.liteloader.util.InputHandler;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
 /**
@@ -119,31 +112,6 @@ public final class InputManager extends Input
 	{
 		this.engine = engine;
 		this.profiler = engine.getProfiler();
-	}
-
-	@Override
-	public void onPostInitComplete(LiteLoaderMods mods)
-	{
-	}
-	
-	@Override
-	public void onStartupComplete()
-	{
-	}
-	
-	@Override
-	public void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
-	{
-	}
-	
-	@Override
-	public void onWorldChanged(World world)
-	{
-	}
-	
-	@Override
-	public void onPostRender(int mouseX, int mouseY, float partialTicks)
-	{
 	}
 	
 	/**
