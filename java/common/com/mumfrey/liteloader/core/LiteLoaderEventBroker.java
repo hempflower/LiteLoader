@@ -34,6 +34,7 @@ import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.ServerPlayerListener;
 import com.mumfrey.liteloader.ServerPluginChannelListener;
+import com.mumfrey.liteloader.ServerTickable;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.common.GameEngine;
@@ -146,6 +147,11 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	private FastIterable<PlayerMoveListener> playerMoveListeners = new HandlerList<PlayerMoveListener>(PlayerMoveListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 	
 	/**
+	 * List of mods which monitor server ticks
+	 */
+	private FastIterable<ServerTickable> serverTickListeners = new HandlerList<ServerTickable>(ServerTickable.class);
+	
+	/**
 	 * ctor
 	 * 
 	 * @param loader
@@ -203,6 +209,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		delegate.registerInterface(PlayerInteractionListener.class);
 		delegate.registerInterface(PlayerMoveListener.class);
 		delegate.registerInterface(CommonPluginChannelListener.class);
+		delegate.registerInterface(ServerTickable.class);
 	}
 	
 	/**
@@ -248,6 +255,14 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void addPlayerMoveListener(PlayerMoveListener playerMoveListener)
 	{
 		this.playerMoveListeners.add(playerMoveListener);
+	}
+	
+	/**
+	 * @param serverTickable
+	 */
+	public void addServerTickable(ServerTickable serverTickable)
+	{
+		this.serverTickListeners.add(serverTickable);
 	}
 
 	/**
@@ -349,9 +364,10 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		this.loader.onWorldChanged(world);
 	}
 	
-	public void onServerTick(MinecraftServer minecraftServer)
+	public void onServerTick(MinecraftServer server)
 	{
-		this.playerStateList.all().onTick();
+		this.playerStateList.all().onTick(server);
+		this.serverTickListeners.all().onTick(server);
 	}
 	
 	public boolean onPlaceBlock(NetHandlerPlayServer netHandler, EntityPlayerMP playerMP, BlockPos pos, EnumFacing facing)

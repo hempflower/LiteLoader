@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.core;
 import java.lang.ref.WeakReference;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.MovingObjectPosition;
@@ -70,7 +71,7 @@ public class PlayerEventState implements IEventState
 	}
 	
 	@Override
-	public void onTick()
+	public void onTick(MinecraftServer server)
 	{
 		if (this.leftClick && this.suppressLeftTicks == 0)
 		{
