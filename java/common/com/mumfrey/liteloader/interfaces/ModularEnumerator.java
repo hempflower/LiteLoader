@@ -3,6 +3,7 @@ package com.mumfrey.liteloader.interfaces;
 import java.io.File;
 
 import com.mumfrey.liteloader.api.EnumeratorModule;
+import com.mumfrey.liteloader.api.EnumeratorPlugin;
 import com.mumfrey.liteloader.core.ModInfo;
 
 /**
@@ -18,6 +19,13 @@ public interface ModularEnumerator
 	 * @param module
 	 */
 	public abstract void registerModule(EnumeratorModule module);
+	
+	/**
+	 * Register a plugin into the enumerator
+	 * 
+	 * @param plugin
+	 */
+	public abstract void registerPlugin(EnumeratorPlugin plugin);
 	
 	/**
 	 * @param container

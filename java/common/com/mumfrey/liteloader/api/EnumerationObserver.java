@@ -2,10 +2,10 @@ package com.mumfrey.liteloader.api;
 
 import java.io.File;
 
+import com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
-import com.mumfrey.liteloader.interfaces.LoaderEnumerator.DisabledReason;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 
 /**

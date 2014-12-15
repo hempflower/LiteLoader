@@ -1,6 +1,7 @@
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.ClassTransformerManager;
-import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
@@ -55,11 +55,6 @@ public class LiteLoaderMods
 	 * Mod enumerator instance
 	 */
 	protected final LoaderEnumerator enumerator;
-
-	/**
-	 * Tweaker
-	 */
-	private final LiteLoaderTweaker tweaker;
 
 	/**
 	 * Configuration manager 
@@ -113,7 +108,6 @@ public class LiteLoaderMods
 		this.loader           = loader;
 		this.environment      = environment;
 		this.enumerator       = environment.getEnumerator();
-		this.tweaker          = (LiteLoaderTweaker)environment.getTweaker();
 		this.properties       = properties;
 		this.configManager    = configManager;
 	}
@@ -179,7 +173,7 @@ public class LiteLoaderMods
 	/**
 	 * Get the list of injected tweak containers
 	 */
-	public List<? extends ModInfo<Loadable<?>>> getInjectedTweaks()
+	public Collection<? extends ModInfo<Loadable<?>>> getInjectedTweaks()
 	{
 		return this.enumerator.getInjectedTweaks();
 	}
@@ -672,7 +666,7 @@ public class LiteLoaderMods
 	 */
 	private void validateModTransformers()
 	{
-		ClassTransformerManager transformerManager = this.tweaker.getTransformerManager();
+		ClassTransformerManager transformerManager = this.environment.getTransformerManager();
 		Set<String> injectedTransformers = transformerManager.getInjectedTransformers();
 		
 		for (Mod mod : this.loadedMods)
@@ -728,7 +722,7 @@ public class LiteLoaderMods
 	{
 		if (!mod.hasClassTransformers()) return false;
 		
-		Set<String> injectedTransformers = this.tweaker.getTransformerManager().getInjectedTransformers();
+		Set<String> injectedTransformers = this.environment.getTransformerManager().getInjectedTransformers();
 		List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
 		
 		for (String modTransformer : modTransformers)

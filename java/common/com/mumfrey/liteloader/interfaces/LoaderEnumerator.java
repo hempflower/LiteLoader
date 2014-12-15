@@ -1,7 +1,6 @@
 package com.mumfrey.liteloader.interfaces;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import com.mumfrey.liteloader.LiteMod;
@@ -14,26 +13,6 @@ import com.mumfrey.liteloader.core.ModInfo;
  */
 public interface LoaderEnumerator extends ModularEnumerator
 {
-	public enum DisabledReason
-	{
-		UNKNOWN("Container %s is could not be loaded for UNKNOWN reason"),
-		USER_DISABLED("Container %s is disabled"),
-		MISSING_DEPENDENCY("Container %s is missing one or more dependencies"),
-		MISSING_API("Container %s is missing one or more required APIs");
-		
-		private final String message;
-		
-		private DisabledReason(String message)
-		{
-			this.message = message;
-		}
-
-		public String getMessage(LoadableMod<?> container)
-		{
-			return String.format(this.message, container);
-		}
-	}
-	
 	/**
 	 * Perform pre-init tasks (container discovery)
 	 */
@@ -109,7 +88,7 @@ public interface LoaderEnumerator extends ModularEnumerator
 	/**
 	 * Get all tweakers which were injected
 	 */
-	public abstract List<? extends ModInfo<Loadable<?>>> getInjectedTweaks();
+	public abstract Collection<? extends ModInfo<Loadable<?>>> getInjectedTweaks();
 	
 	/**
 	 * Get the shared modlist data

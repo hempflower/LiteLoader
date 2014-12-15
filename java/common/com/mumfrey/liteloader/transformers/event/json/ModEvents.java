@@ -8,13 +8,13 @@ import java.util.Map;
 import net.minecraft.launchwrapper.Launch;
 
 import com.google.common.base.Charsets;
+import com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason;
 import com.mumfrey.liteloader.api.EnumerationObserver;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.core.api.LoadableModFile;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
-import com.mumfrey.liteloader.interfaces.LoaderEnumerator.DisabledReason;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 public class ModEvents implements EnumerationObserver

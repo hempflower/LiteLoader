@@ -27,6 +27,8 @@ import com.mumfrey.liteloader.api.manager.APIRegistry;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.launch.ClassTransformerManager;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 import com.mumfrey.liteloader.launch.LoaderBootstrap;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
@@ -259,9 +261,25 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 	}
 	
 	@Override
-	public ITweaker getTweaker()
+	public boolean addCascadedTweaker(String tweakClass, int priority)
 	{
-		return this.tweaker;
+		if (this.tweaker instanceof LiteLoaderTweaker)
+		{
+			return ((LiteLoaderTweaker)this.tweaker).addCascadedTweaker(tweakClass, priority);
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public ClassTransformerManager getTransformerManager()
+	{
+		if (this.tweaker instanceof LiteLoaderTweaker)
+		{
+			return ((LiteLoaderTweaker)this.tweaker).getTransformerManager();
+		}
+		
+		return null;
 	}
 	
 	/* (non-Javadoc)

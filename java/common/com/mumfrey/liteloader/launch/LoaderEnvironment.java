@@ -2,8 +2,6 @@ package com.mumfrey.liteloader.launch;
 
 import java.io.File;
 
-import net.minecraft.launchwrapper.ITweaker;
-
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
 import com.mumfrey.liteloader.core.EnabledModsList;
@@ -75,8 +73,7 @@ public interface LoaderEnvironment extends GameEnvironment
 	 */
 	public abstract File inflectVersionedConfigPath(LiteLoaderVersion version);
 	
-	/**
-	 * Get the tweaker 
-	 */
-	public abstract ITweaker getTweaker();
+	public abstract boolean addCascadedTweaker(String tweakClass, int priority);
+
+	public abstract ClassTransformerManager getTransformerManager();
 }
