@@ -104,6 +104,7 @@ public class Obf
 	public static final Obf                    useShader = new Obf("field_175083_ad",                                            "ad"  );
 	public static final Obf                 viewDistance = new Obf("field_149528_b",                                             "b"   );
 	public static final Obf                   entityPosY = new Obf("field_70163_u",                                              "t"   );
+	public static final Obf                chatComponent = new Obf("field_148919_a",                                             "a"   );
 
 	// Methods
 	// -----------------------------------------------------------------------------------------

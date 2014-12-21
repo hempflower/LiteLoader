@@ -280,9 +280,5 @@ public abstract class PacketEvents implements InterfaceProvider
 		{
 			LiteLoaderEventBroker.broker.onPlayerSettingsReceived(((NetHandlerPlayServer)netHandler).playerEntity, packet);
 		}
-		else
-		{
-			System.err.println("ACTUALLY: handler is " + netHandler);
-		}
 	}
 }

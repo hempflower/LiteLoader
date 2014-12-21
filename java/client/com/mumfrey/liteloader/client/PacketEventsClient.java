@@ -20,6 +20,7 @@ import com.mumfrey.liteloader.ChatListener;
 import com.mumfrey.liteloader.JoinGameListener;
 import com.mumfrey.liteloader.PostLoginListener;
 import com.mumfrey.liteloader.PreJoinGameListener;
+import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
@@ -32,6 +33,7 @@ import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.core.runtime.Packets;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
+import com.mumfrey.liteloader.util.ChatUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -205,7 +207,8 @@ public class PacketEventsClient extends PacketEvents
 		if (packet.func_148915_c() == null)
 			return;
 		
-		IChatComponent chat = packet.func_148915_c();
+		IChatComponent originalChat = packet.func_148915_c();
+		IChatComponent chat = originalChat;
 		String message = chat.getFormattedText();
 		
 		// Chat filters get a stab at the chat first, if any filter returns false the chat is discarded
@@ -229,6 +232,19 @@ public class PacketEventsClient extends PacketEvents
 			{
 				e.cancel();
 				return;
+			}
+		}
+		
+		if (chat != originalChat)
+		{
+			try
+			{
+				chat = ChatUtilities.convertLegacyCodes(chat);
+				PrivateFieldsClient.chatMessage.set(packet, chat);
+			}
+			catch (Exception ex)
+			{
+				ex.printStackTrace();
 			}
 		}
 		

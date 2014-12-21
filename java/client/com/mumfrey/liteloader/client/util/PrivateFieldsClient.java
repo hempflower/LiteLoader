@@ -10,7 +10,9 @@ import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
 import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.util.ObjectIntIdentityMap;
 import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
@@ -35,6 +37,7 @@ public class PrivateFieldsClient<P, T> extends PrivateFields<P, T>
 	public static final PrivateFieldsClient<TileEntityRendererDispatcher, Map>          specialRendererMap = new PrivateFieldsClient<TileEntityRendererDispatcher, Map>       (TileEntityRendererDispatcher.class, Obf.mapSpecialRenderers);
 	public static final PrivateFieldsClient<TileEntity, Map>                      tileEntityNameToClassMap = new PrivateFieldsClient<TileEntity, Map>                         (TileEntity.class,                   Obf.tileEntityNameToClassMap);
 	public static final PrivateFieldsClient<TileEntity, Map>                      tileEntityClassToNameMap = new PrivateFieldsClient<TileEntity, Map>                         (TileEntity.class,                   Obf.tileEntityClassToNameMap);
+	public static final PrivateFieldsClient<S02PacketChat, IChatComponent>                     chatMessage = new PrivateFieldsClient<S02PacketChat, IChatComponent>           (S02PacketChat.class,                Obf.chatComponent);
 	
 	public static final PrivateFieldsClient<SimpleReloadableResourceManager, List<IResourceManagerReloadListener>> reloadListeners =
 			new PrivateFieldsClient<SimpleReloadableResourceManager, List<IResourceManagerReloadListener>>(SimpleReloadableResourceManager.class, Obf.reloadListeners);

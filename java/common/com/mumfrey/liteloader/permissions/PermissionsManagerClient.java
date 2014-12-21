@@ -239,7 +239,7 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 				{
 					byte[] data = query.getBytes();
 					PacketBuffer buffer = new PacketBuffer(Unpooled.buffer());
-					buffer.writeByteArray(data);
+					buffer.writeBytes(data);
 					ClientPluginChannels.sendMessage(ReplicatedPermissionsContainer.CHANNEL, buffer, ChannelPolicy.DISPATCH_ALWAYS);
 				}
 			}

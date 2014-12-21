@@ -98,7 +98,13 @@ public class ReplicatedPermissionsContainer implements Serializable
 	{
 		try
 		{
-			ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(data.readByteArray()));
+			int readableBytes = data.readableBytes();
+			if (readableBytes == 0) return null;
+			
+			byte[] payload = new byte[readableBytes];
+			data.readBytes(payload);
+			
+			ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(payload));
 			ReplicatedPermissionsContainer object = (ReplicatedPermissionsContainer)inputStream.readObject();
 			return object;
 		}
