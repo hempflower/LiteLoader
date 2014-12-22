@@ -15,7 +15,7 @@ To get the updated mappings, perform these steps **before** decompiling minecraf
 time. If you have already decompiled minecraft, run the MPC **cleanup** task first to remove the
 invalid sources, or simply delete the *temp* and *src* directories from your MCP installation.
 
--   Using a text editor, open **/mcp910/conf/mcp.conf**
+-   Using a text editor, open **/mcp910/conf/mcp.cfg**
 -   Locate the setting **UpdateUrl** and change the domain to *dl.liteloader.com* as shown
 
     UpdateUrl         = http://dl.liteloader.com/files/mcprolling_{version}/
