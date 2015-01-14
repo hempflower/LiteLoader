@@ -44,6 +44,7 @@ import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.messaging.MessageBus;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
@@ -483,6 +484,14 @@ public final class LiteLoader
 	public static String getProfile()
 	{
 		return LiteLoader.instance.environment.getProfile();
+	}
+	
+	/**
+	 * Get the type of environment (client or dedicated server)
+	 */
+	public static EnvironmentType getEnvironmentType()
+	{
+		return LiteLoader.instance.environment.getType();
 	}
 	
 	/**

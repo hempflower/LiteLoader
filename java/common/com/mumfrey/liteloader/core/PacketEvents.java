@@ -126,6 +126,7 @@ public abstract class PacketEvents implements InterfaceProvider
 		IThreadListener threadListener = this.getPacketContextListener(packetInfo.getContext());
 		if (threadListener != null && !threadListener.isCallingFromMinecraftThread())
 		{
+			this.handleAsyncPacketEvent(e, netHandler, packetId);
 			return;
 		}
 		
@@ -146,6 +147,21 @@ public abstract class PacketEvents implements InterfaceProvider
 	 * @param context
 	 */
 	protected abstract IThreadListener getPacketContextListener(Packets.Context context);
+	
+	/**
+	 * @param e
+	 * @param netHandler
+	 * @param packetId
+	 */
+	protected void handleAsyncPacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
+	{
+		Packet packet = e.getSource();
+
+		if (packetId == this.loginSuccessPacketId)
+		{
+			this.handlePacket(e, netHandler, (S02PacketLoginSuccess)packet);
+		}
+	}
 
 	/**
 	 * @param e
@@ -158,12 +174,6 @@ public abstract class PacketEvents implements InterfaceProvider
 	{
 		Packet packet = e.getSource();
 
-		if (packetId == this.loginSuccessPacketId)
-		{
-			this.handlePacket(e, netHandler, (S02PacketLoginSuccess)packet);
-			return true;
-		}
-		
 		if (packetId == this.serverChatPacketId)
 		{
 			this.handlePacket(e, netHandler, (S02PacketChat)packet);
