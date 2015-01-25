@@ -7,7 +7,7 @@ package com.mumfrey.liteloader.interfaces;
  *
  * @param <T>
  */
-public interface FastIterable<T>
+public interface FastIterable<T> extends Iterable<T>
 {
 	/**
 	 * Add an entry to the iterable

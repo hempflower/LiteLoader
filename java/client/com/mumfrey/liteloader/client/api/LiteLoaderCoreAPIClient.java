@@ -125,10 +125,13 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 	@Override
 	public List<Observer> getObservers()
 	{
+		ObjectFactory<?, ?> objectFactory = this.getObjectFactory();
+		
 		return ImmutableList.<Observer>of
 		(
 			new ResourceObserver(),
-			this.getObjectFactory().getPanelManager()
+			objectFactory.getPanelManager(),
+			objectFactory.getEventBroker()
 		);
 	}
 	

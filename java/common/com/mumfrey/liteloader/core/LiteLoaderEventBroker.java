@@ -35,8 +35,10 @@ import com.mumfrey.liteloader.ServerCommandProvider;
 import com.mumfrey.liteloader.ServerPlayerListener;
 import com.mumfrey.liteloader.ServerPluginChannelListener;
 import com.mumfrey.liteloader.ServerTickable;
+import com.mumfrey.liteloader.ShutdownListener;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Listener;
+import com.mumfrey.liteloader.api.ShutdownObserver;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.event.HandlerList;
@@ -54,7 +56,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
  * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
  */
-public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider
+public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider, ShutdownObserver
 {
 	/**
 	 * @author Adam Mummery-Smith
@@ -152,6 +154,11 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	private FastIterable<ServerTickable> serverTickListeners = new HandlerList<ServerTickable>(ServerTickable.class);
 	
 	/**
+	 * List of mods which want to be notified when the game is shutting down
+	 */
+	private FastIterable<ShutdownListener> shutdownListeners = new HandlerList<ShutdownListener>(ShutdownListener.class);
+	
+	/**
 	 * ctor
 	 * 
 	 * @param loader
@@ -210,6 +217,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		delegate.registerInterface(PlayerMoveListener.class);
 		delegate.registerInterface(CommonPluginChannelListener.class);
 		delegate.registerInterface(ServerTickable.class);
+		delegate.registerInterface(ShutdownListener.class);
 	}
 	
 	/**
@@ -263,6 +271,14 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 	public void addServerTickable(ServerTickable serverTickable)
 	{
 		this.serverTickListeners.add(serverTickable);
+	}
+	
+	/**
+	 * @param shutdownListener
+	 */
+	public void addShutdownListener(ShutdownListener shutdownListener)
+	{
+		this.shutdownListeners.add(shutdownListener);
 	}
 
 	/**
@@ -508,6 +524,22 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 		if (playerState != null)
 		{
 			this.playerStateList.remove(playerState);
+		}
+	}
+	
+	@Override
+	public void onShutDown()
+	{
+		for (ShutdownListener listener : this.shutdownListeners)
+		{
+			try
+			{
+				listener.onShutDown();
+			}
+			catch (Throwable th)
+			{
+				th.printStackTrace();
+			}
 		}
 	}
 }
