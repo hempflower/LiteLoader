@@ -177,7 +177,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 		}
 		catch (Exception ex)
 		{
-			LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getName());
+			LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getDisplayName());
 		}
 	}
 
