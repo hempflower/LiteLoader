@@ -89,7 +89,7 @@ public abstract class CallbackProxyCommon
 		if (packet.getStatus() == C07PacketPlayerDigging.Action.START_DESTROY_BLOCK)
 		{
 			NetHandlerPlayServer netHandler = e.getSource();
-			if (!CallbackProxyCommon.eventBroker.onPlayerDigging(netHandler, packet.func_179715_a(), netHandler.playerEntity))
+			if (!CallbackProxyCommon.eventBroker.onPlayerDigging(netHandler, packet.getPosition(), netHandler.playerEntity))
 			{
 				e.cancel();
 			}
