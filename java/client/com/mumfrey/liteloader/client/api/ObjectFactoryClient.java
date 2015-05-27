@@ -2,6 +2,7 @@ package com.mumfrey.liteloader.client.api;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.integrated.IntegratedServer;
 
 import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
@@ -149,6 +150,15 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 	@Override
 	public void preBeginGame()
 	{
+		try
+		{
+			Class<?> progressManagerClass = Class.forName("net.minecraftforge.fml.common.ProgressManager", false, Launch.classLoader);
+			return; // Disable my loading bar if Forge's is present
+		}
+		catch (ClassNotFoundException ex)
+		{
+		}
+		
 		new LoadingBar();
 	}
 }

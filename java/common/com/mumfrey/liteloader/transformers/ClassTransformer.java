@@ -40,7 +40,7 @@ public abstract class ClassTransformer implements IClassTransformer
 		if (this.classReader != null && this.classNode == classNode)
 		{
 			this.classNode = null;
-			ClassWriter writer = new ClassWriter(this.classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+			IsolatedClassWriter writer = new IsolatedClassWriter(this.classReader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 			this.classReader = null;
 			classNode.accept(writer);
 			return writer.toByteArray();
@@ -48,7 +48,7 @@ public abstract class ClassTransformer implements IClassTransformer
 		
 		this.classNode = null;
 
-		ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		IsolatedClassWriter writer = new IsolatedClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		classNode.accept(writer);
 		return writer.toByteArray();
 	}
