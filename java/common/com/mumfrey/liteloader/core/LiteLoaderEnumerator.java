@@ -6,9 +6,11 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +31,7 @@ import com.mumfrey.liteloader.core.api.DefaultClassValidator;
 import com.mumfrey.liteloader.core.api.DefaultEnumeratorPlugin;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.interfaces.Injectable;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
@@ -386,6 +389,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 				LiteLoaderLogger.warning(th, "Enumerator Module %s encountered an error whilst enumerating", module.getClass().getName());
 			}
 		}
+		
+		this.checkDependencies();
 	}
 	
 	private void injectDiscoveredTweaks()
@@ -469,29 +474,24 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 	{
 		this.checkState(EnumeratorState.DISCOVER, "registerModContainer");
 		
-		if (container != null)
+		if (container == null)
 		{
-			if (!this.checkEnabled(container))
-			{
-				this.registerDisabledContainer(container, DisabledReason.USER_DISABLED);
-				return false;
-			}
-			
-			if (!this.checkDependencies(container))
-			{
-				this.registerDisabledContainer(container, DisabledReason.MISSING_DEPENDENCY);
-				return false;
-			}
-				
-			if (!this.checkAPIRequirements(container))
-			{
-				this.registerDisabledContainer(container, DisabledReason.MISSING_API);
-				return false;
-			}
-
-			this.registerEnabledContainer(container);
+			return true;
 		}
 
+		if (!this.checkEnabled(container))
+		{
+			this.registerDisabledContainer(container, DisabledReason.USER_DISABLED);
+			return false;
+		}
+		
+		if (!this.checkAPIRequirements(container))
+		{
+			this.registerDisabledContainer(container, DisabledReason.MISSING_API);
+			return false;
+		}
+		
+		this.registerEnabledContainer(container);
 		return true;
 	}
 
@@ -616,12 +616,31 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 				if (transformerManager != null && transformerManager.injectTransformer(classTransformerClass))
 				{
 					LiteLoaderLogger.info(Verbosity.REDUCED, "classTransformer '%s' was successfully added", classTransformerClass);
-					container.injectIntoClassPath(this.classLoader, true);
+					this.injectContainerRecursive(container);
 				}
 			}
 		}
 		catch (MalformedURLException ex)
 		{
+		}
+	}
+
+	/**
+	 * @param container
+	 */
+	private void injectContainerRecursive(Injectable container) throws MalformedURLException
+	{
+		if (container.injectIntoClassPath(this.classLoader, true) && container instanceof LoadableMod)
+		{
+			LoadableMod<?> file = (LoadableMod<?>)container;
+			for (String dependency : file.getDependencies())
+			{
+				LoadableMod<?> dependencyContainer = this.containers.getEnabledContainer(dependency);
+				if (dependencyContainer != null)
+				{
+					this.injectContainerRecursive(dependencyContainer);
+				}
+			}
 		}
 	}
 
@@ -705,6 +724,29 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 		}
 		
 		return true;
+	}
+
+	/**
+	 * Check dependencies of enabled containers
+	 */
+	private void checkDependencies()
+	{
+		Collection<? extends LoadableMod<?>> enabledContainers = this.containers.getEnabledContainers();
+		Deque<LoadableMod<?>> containers = new LinkedList<LoadableMod<?>>(enabledContainers);
+
+		while (containers.size() > 0)
+		{
+			LoadableMod<?> container = containers.pop();
+			if (!this.checkDependencies(container))
+			{
+				this.registerDisabledContainer(container, DisabledReason.MISSING_DEPENDENCY);
+				
+				// Iterate so that a container disabled by a failed dependency check will also
+				// disable any containers which depend upon it
+				containers.clear();
+				containers.addAll(enabledContainers);
+			}
+		}
 	}
 
 	@Override

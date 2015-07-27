@@ -204,10 +204,10 @@ public class PacketEventsClient extends PacketEvents
 	@Override
 	protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketChat packet)
 	{
-		if (packet.func_148915_c() == null)
+		if (packet.getChatComponent() == null)
 			return;
 		
-		IChatComponent originalChat = packet.func_148915_c();
+		IChatComponent originalChat = packet.getChatComponent();
 		IChatComponent chat = originalChat;
 		String message = chat.getFormattedText();
 		
