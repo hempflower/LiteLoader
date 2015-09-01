@@ -8,6 +8,7 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.shader.Framebuffer;
@@ -81,7 +82,7 @@ public abstract class CallbackProxyClient extends CallbackProxyCommon
 	
 	public static void onSetupCameraTransform(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
 	{
-		CallbackProxyClient.clientEventBroker.onSetupCameraTransform(partialTicks, timeSlice);
+		CallbackProxyClient.clientEventBroker.onSetupCameraTransform(pass, partialTicks, timeSlice);
 	}
 	
 	public static void postRenderEntities(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
@@ -167,6 +168,21 @@ public abstract class CallbackProxyClient extends CallbackProxyCommon
 	public static void onRenderWorld(EventInfo<EntityRenderer> e, float partialTicks, long timeSlice)
 	{
 		CallbackProxyClient.clientEventBroker.onRenderWorld(partialTicks, timeSlice);
+	}
+	
+	public static void onRenderSky(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
+	{
+		CallbackProxyClient.clientEventBroker.onRenderSky(partialTicks, pass, timeSlice);
+	}
+	
+	public static void onRenderClouds(EventInfo<EntityRenderer> e, RenderGlobal renderGlobalIn, float partialTicks, int pass)
+	{
+		CallbackProxyClient.clientEventBroker.onRenderClouds(partialTicks, pass, renderGlobalIn);
+	}
+	
+	public static void onRenderTerrain(EventInfo<EntityRenderer> e, int pass, float partialTicks, long timeSlice)
+	{
+		CallbackProxyClient.clientEventBroker.onRenderTerrain(partialTicks, pass, timeSlice);
 	}
 	
 	public static void onSaveScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, File gameDir, String name, int width, int height, Framebuffer fbo)

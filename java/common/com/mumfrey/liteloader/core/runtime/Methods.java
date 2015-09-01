@@ -50,6 +50,9 @@ public abstract class Methods
 	public static final MethodInfo serverJobs             = new MethodInfo(Obf.MinecraftServer,            Obf.updateTimeLightAndEntities,   Void.TYPE);
 	public static final MethodInfo checkThreadAndEnqueue  = new MethodInfo(Obf.PacketThreadUtil,           Obf.checkThreadAndEnqueue);
 	public static final MethodInfo processPlayer          = new MethodInfo(Obf.NetHandlerPlayServer,       Obf.processPlayer,                Void.TYPE, Packets.C03PacketPlayer);
+	public static final MethodInfo renderSky              = new MethodInfo(Obf.RenderGlobal,               Obf.renderSky,                    Void.TYPE, Float.TYPE, Integer.TYPE);
+	public static final MethodInfo renderCloudsCheck      = new MethodInfo(Obf.EntityRenderer,             Obf.renderCloudsCheck,            Void.TYPE, Obf.RenderGlobal, Float.TYPE, Integer.TYPE);
+	public static final MethodInfo setupFog               = new MethodInfo(Obf.EntityRenderer,             Obf.setupFog,                     Void.TYPE, Integer.TYPE, Float.TYPE);
 	
 	// Profiler
 	public static final MethodInfo startSection           = new MethodInfo(Obf.Profiler,                   Obf.startSection,                 Void.TYPE, String.class);

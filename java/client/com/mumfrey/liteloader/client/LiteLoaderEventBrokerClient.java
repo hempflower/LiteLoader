@@ -4,6 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.resources.IResourceManager;
@@ -67,6 +68,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	private FastIterableDeque<Tickable>             tickListeners;
 	private FastIterableDeque<GameLoopListener>     loopListeners         = new HandlerList<GameLoopListener>(GameLoopListener.class);
 	private FastIterableDeque<RenderListener>       renderListeners       = new HandlerList<RenderListener>(RenderListener.class);
+	private FastIterableDeque<PreRenderListener>    preRenderListeners    = new HandlerList<PreRenderListener>(PreRenderListener.class);
 	private FastIterableDeque<PostRenderListener>   postRenderListeners   = new HandlerList<PostRenderListener>(PostRenderListener.class);
 	private FastIterableDeque<HUDRenderListener>    hudRenderListeners    = new HandlerList<HUDRenderListener>(HUDRenderListener.class);
 	private FastIterableDeque<ChatRenderListener>   chatRenderListeners   = new HandlerList<ChatRenderListener>(ChatRenderListener.class);
@@ -111,6 +113,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 		delegate.registerInterface(Tickable.class);
 		delegate.registerInterface(GameLoopListener.class);
 		delegate.registerInterface(RenderListener.class);
+		delegate.registerInterface(PreRenderListener.class);
 		delegate.registerInterface(PostRenderListener.class);
 		delegate.registerInterface(HUDRenderListener.class);
 		delegate.registerInterface(ChatRenderListener.class);
@@ -161,6 +164,14 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	public void addRenderListener(RenderListener renderListener)
 	{
 		this.renderListeners.add(renderListener);
+	}
+	
+	/**
+	 * @param preRenderListener
+	 */
+	public void addPreRenderListener(PreRenderListener preRenderListener)
+	{
+		this.preRenderListeners.add(preRenderListener);
 	}
 	
 	/**
@@ -320,12 +331,14 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	/**
 	 * Called immediately after the world/camera transform is initialised
 	 * 
+	 * @param pass
 	 * @param timeSlice 
 	 * @param partialTicks 
 	 */
-	void onSetupCameraTransform(float partialTicks, long timeSlice)
+	void onSetupCameraTransform(int pass, float partialTicks, long timeSlice)
 	{
 		this.renderListeners.all().onSetupCameraTransform();
+		this.preRenderListeners.all().onSetupCameraTransform(partialTicks, pass, timeSlice);
 	}
 	
 	/**
@@ -466,9 +479,40 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 	 */
 	void onRenderWorld(float partialTicks, long timeSlice)
 	{
+		this.preRenderListeners.all().onRenderWorld(partialTicks);
 		this.renderListeners.all().onRenderWorld();
 	}
 	
+	/**
+	 * @param partialTicks
+	 * @param pass
+	 * @param timeSlice
+	 */
+	void onRenderSky(float partialTicks, int pass, long timeSlice)
+	{
+		this.preRenderListeners.all().onRenderSky(partialTicks, pass);
+	}
+	
+	/**
+	 * @param partialTicks
+	 * @param pass
+	 * @param renderGlobal
+	 */
+	void onRenderClouds(float partialTicks, int pass, RenderGlobal renderGlobal)
+	{
+		this.preRenderListeners.all().onRenderClouds(partialTicks, pass, renderGlobal);
+	}
+	
+	/**
+	 * @param partialTicks
+	 * @param pass
+	 * @param timeSlice
+	 */
+	void onRenderTerrain(float partialTicks, int pass, long timeSlice)
+	{
+		this.preRenderListeners.all().onRenderTerrain(partialTicks, pass);
+	}
+
 	/**
 	 * @param e
 	 * @param name

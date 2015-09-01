@@ -23,7 +23,10 @@ public interface RenderListener extends LiteMod
 	
 	/**
 	 * Called when the world is rendered
+	 * 
+	 * @deprecated Use PreRenderListener::onRenderWorld(F)V instead
 	 */
+	@Deprecated
 	public abstract void onRenderWorld();
 
 	/**

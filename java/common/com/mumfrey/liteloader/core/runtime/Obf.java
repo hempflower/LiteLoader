@@ -79,6 +79,7 @@ public class Obf
 	public static final Obf                        World = new Obf("net.minecraft.world.World",                                  "aqu" );
 	public static final Obf                    ItemStack = new Obf("net.minecraft.item.ItemStack",                               "amj" );
 	public static final Obf             PacketThreadUtil = new Obf("net.minecraft.network.PacketThreadUtil",                     "ig"  );
+	public static final Obf                 RenderGlobal = new Obf("net.minecraft.client.renderer.RenderGlobal",                 "ckn" );
 
 	// Fields
 	// -----------------------------------------------------------------------------------------
@@ -152,7 +153,10 @@ public class Obf
 	public static final Obf   updateTimeLightAndEntities = new Obf("func_71190_q",                                               "z"   );
 	public static final Obf        checkThreadAndEnqueue = new Obf("func_180031_a",                                              "a"   );
 	public static final Obf                processPlayer = new Obf("func_147347_a",                                              "a"   );
-
+	public static final Obf                    renderSky = new Obf("func_174976_a",                                              "a"   );
+	public static final Obf            renderCloudsCheck = new Obf("func_180437_a",                                              "a"   );
+	public static final Obf                     setupFog = new Obf("func_78468_a",                                               "a"   );
+ 
 	public static final int MCP = 0;
 	public static final int SRG = 1;
 	public static final int OBF = 2;

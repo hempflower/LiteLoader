@@ -38,6 +38,9 @@ public class LiteLoaderEventInjectionTransformer extends LiteLoaderEventTransfor
 		Event renderFBO                        = Event.getOrCreate("renderFBO",                    false);
 		Event postRenderFBO                    = Event.getOrCreate("postRenderFBO",                false);
 		Event onRenderWorld                    = Event.getOrCreate("onRenderWorld",                false);
+		Event onRenderSky                      = Event.getOrCreate("onRenderSky",                  false);
+		Event onRenderClouds                   = Event.getOrCreate("onRenderClouds",               false);
+		Event onRenderTerrain                  = Event.getOrCreate("onRenderTerrain",              false);
 		Event onTimerUpdate                    = Event.getOrCreate("onTimerUpdate",                false);
 		Event onRender                         = Event.getOrCreate("onRender",                     false);
 		Event newTick                          = Event.getOrCreate("newTick",                      false);
@@ -73,6 +76,9 @@ public class LiteLoaderEventInjectionTransformer extends LiteLoaderEventTransfor
 		InjectionPoint beforeStopRealsmFetcher = new BeforeInvoke(realmsStopFetcher).setCaptureLocals(true);
 		InjectionPoint beforeTickProfiler      = new BeforeStringInvoke("tick",         startSection);
 		InjectionPoint beforeCenterProfiler    = new BeforeStringInvoke("center",       startSection);
+		InjectionPoint beforeSkyProfiler       = new BeforeStringInvoke("sky",          endStartSection);
+		InjectionPoint beforeCloudsProfiler    = new BeforeStringInvoke("clouds",       endStartSection);
+		InjectionPoint beforeTerrainProfiler   = new BeforeStringInvoke("terrain",      endStartSection);
 		InjectionPoint beforeRenderProfiler    = new BeforeStringInvoke("gameRenderer", endStartSection);
 		InjectionPoint beforeFrustumProfiler   = new BeforeStringInvoke("frustum",      endStartSection);
 		InjectionPoint beforeParticlesProfiler = new BeforeStringInvoke("litParticles", endStartSection);
@@ -85,6 +91,9 @@ public class LiteLoaderEventInjectionTransformer extends LiteLoaderEventTransfor
 		this.add(renderFBO,                    framebufferRenderExt,       (beforeBindFBOTex),        "renderFBO");
 		this.add(postRenderFBO,                runGameLoop,           after(beforeFBORender),         "postRenderFBO");
 		this.add(onRenderWorld,                renderWorld,                (beforeCenterProfiler),    "onRenderWorld");
+		this.add(onRenderSky,                  renderWorldPass,            (beforeSkyProfiler),       "onRenderSky");
+		this.add(onRenderClouds,               renderCloudsCheck,          (beforeCloudsProfiler),    "onRenderClouds");
+		this.add(onRenderTerrain,              renderWorldPass,            (beforeTerrainProfiler),   "onRenderTerrain");
 		this.add(onTimerUpdate,                runGameLoop,                (beforeTickProfiler),      "onTimerUpdate");
 		this.add(onRender,                     runGameLoop,                (beforeRenderProfiler),    "onRender");
 		this.add(newTick,                      runTick,                    (methodHead),              "newTick");
