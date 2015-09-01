@@ -92,10 +92,10 @@ public abstract class AccessorTransformer extends ClassTransformer
 				throw new RuntimeException("Accessor interface must not extend other interfaces. Found " + interfaceList + " in " + iface);
 			}
 			
-			this.table = this.setupTable(ifaceNode);
-			this.target = this.setupTarget(ifaceNode);
 			this.iface = iface;
 			this.obfProvider = obfProvider;
+			this.table = this.setupTable(ifaceNode);
+			this.target = this.setupTarget(ifaceNode);
 		}
 
 		/**
