@@ -52,7 +52,8 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
     protected boolean forceInjection;
 
     /**
-     * True if this is a versioned folder and the enumerator should also try to load tweak jars which would normally be ignored
+     * True if this is a versioned folder and the enumerator should also try to
+     * load tweak jars which would normally be ignored.
      */
     protected final boolean loadTweakJars;
 
@@ -120,7 +121,8 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
 
         if (fileName.endsWith(".litemod.zip"))
         {
-            LiteLoaderLogger.warning("Found %s with unsupported extension .litemod.zip. Please change file extension to .litemod to allow this file to be loaded!", fileName);
+            LiteLoaderLogger.warning("Found %s with unsupported extension .litemod.zip."
+                    + " Please change file extension to .litemod to allow this file to be loaded!", fileName);
             return true;
         }
 
@@ -128,7 +130,9 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.Enumerator#enumerate(com.mumfrey.liteloader.core.EnabledModsList, java.lang.String)
+     * @see com.mumfrey.liteloader.core.Enumerator
+     *      #enumerate(com.mumfrey.liteloader.core.EnabledModsList,
+     *      java.lang.String)
      */
     @Override
     public void enumerate(ModularEnumerator enumerator, String profile)
@@ -163,7 +167,8 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
     }
 
     /**
-     * Check whether a particular file is valid, and add it to the candiates list if it appears to be acceptable
+     * Check whether a particular file is valid, and add it to the candiates
+     * list if it appears to be acceptable.
      * 
      * @param enumerator
      * @param candidateFile
@@ -188,13 +193,13 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
             else
             {
                 LiteLoaderLogger.info("Ignoring %s", candidateFile);
-                //				enumerator.registerBadContainer(candidateFile, "No metadata");
+//                enumerator.registerBadContainer(candidateFile, "No metadata");
             }
         }
-        //		else
-        //		{
-        //			enumerator.registerBadContainer(candidateFile, "Not a valid file");
-        //		}
+//        else
+//        {
+//            enumerator.registerBadContainer(candidateFile, "Not a valid file");
+//        }
     }
 
     /**
@@ -232,8 +237,9 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
     }
 
     /**
-     * Called only if the file is not a valid mod container (has no mod metadata) to check whether it
-     * could instead be a potential tweak container
+     * Called only if the file is not a valid mod container (has no mod
+     * metadata) to check whether it could instead be a potential tweak
+     * container.
      * 
      * @param candidateFile
      */
@@ -341,7 +347,8 @@ public class EnumeratorModuleFolder implements FilenameFilter, EnumeratorModule
         }
         else
         {
-            LiteLoaderLogger.info(Verbosity.REDUCED, "Not adding valid mod file '%s', the specified mod is disabled or missing a required dependency", modFile);
+            LiteLoaderLogger.info(Verbosity.REDUCED, "Not adding valid mod file '%s', the specified mod is disabled or missing a required dependency",
+                    modFile);
         }
 
         if (this.loadTweaks)

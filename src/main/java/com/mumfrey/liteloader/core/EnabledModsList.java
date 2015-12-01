@@ -12,11 +12,12 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 /**
- * Serialisable (via GSON) object which stores list of enabled/disabled mods for each profile
+ * Serialisable (via GSON) object which stores list of enabled/disabled mods for
+ * each profile.
  *
  * @author Adam Mummery-Smith
  */
-public class EnabledModsList
+public final class EnabledModsList
 {
     @SuppressWarnings("unused")
     private static final transient long serialVersionUID = -6449451105617763769L;
@@ -32,10 +33,12 @@ public class EnabledModsList
     private TreeMap<String, TreeMap<String, Boolean>> mods;
 
     /**
-     * By default, when we discover a mod which is NOT in the list for the current profile, we will ENABLE the
-     * mod and add it to the list. However, when we receive a list of mods on the command line, we instead want
-     * to DISABLE any additional unlisted mods, we also don't want to save the mods list because the command line
-     * is supposed to be an override rather than a new mask. These two values provide this behaviour. 
+     * By default, when we discover a mod which is NOT in the list for the
+     * current profile, we will ENABLE the mod and add it to the list. However,
+     * when we receive a list of mods on the command line, we instead want to
+     * <b>disable</b> any additional unlisted mods, we also don't want to save
+     * the mods list because the command line is supposed to be an override
+     * rather than a new mask. These two values provide this behaviour. 
      */
     private transient Boolean defaultEnabledValue = Boolean.TRUE;
     private transient boolean allowSave = true;
@@ -138,8 +141,8 @@ public class EnabledModsList
     }
 
     /**
-     * Factory method which tries to deserialise the enablement list from the file or if failing creates
-     * and returns a new instance.
+     * Factory method which tries to deserialise the enablement list from the
+     * file or if failing creates and returns a new instance.
      * 
      * @param file JSON file to create the EnabledModsList from
      * @return a new EnabledModsList instance
@@ -166,7 +169,9 @@ public class EnabledModsList
                 try
                 {
                     if (reader != null)
+                    {
                         reader.close();
+                    }
                 }
                 catch (IOException ex)
                 {
@@ -205,7 +210,9 @@ public class EnabledModsList
             try
             {
                 if (writer != null)
+                {
                     writer.close();
+                }
             }
             catch (IOException ex)
             {

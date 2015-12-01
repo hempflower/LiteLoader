@@ -44,8 +44,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * The enumerator performs all mod discovery functions for LiteLoader, this includes locating mod files to load
- * as well as searching for mod classes within the class path and discovered mod files.
+ * The enumerator performs all mod discovery functions for LiteLoader, this
+ * includes locating mod files to load as well as searching for mod classes
+ * within the class path and discovered mod files.
  *
  * @author Adam Mummery-Smith
  */
@@ -70,7 +71,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         {
             if (fromState != this && fromState != this.previousState)
             {
-                throw new IllegalStateException("Attempted to move to an invalid enumerator state " + this + ", expected to be in state " + this.previousState + " but current state is " + fromState);
+                throw new IllegalStateException("Attempted to move to an invalid enumerator state " + this + ", expected to be in state "
+                        + this.previousState + " but current state is " + fromState);
             }
 
             return true;
@@ -167,7 +169,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
                 for (EnumeratorModule module : apiModules)
                 {
                     this.registerModule(module);
-                }			
+                }
             }
         }
     }
@@ -176,7 +178,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     {
         if (this.state != state)
         {
-            throw new IllegalStateException("Illegal enumerator state whilst performing " + action + ", expecting " + state + " but current state is " + this.state);
+            throw new IllegalStateException("Illegal enumerator state whilst performing " + action + ", expecting " + state + " but current state is "
+                    + this.state);
         }
     }
 
@@ -223,7 +226,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PluggableEnumerator#registerModule(com.mumfrey.liteloader.core.EnumeratorModule)
+     * @see com.mumfrey.liteloader.core.PluggableEnumerator
+     *      #registerModule(com.mumfrey.liteloader.core.EnumeratorModule)
      */
     @Override
     public void registerModule(EnumeratorModule module)
@@ -339,14 +343,17 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         for (ModInfo<LoadableMod<?>> mod : this.modsToLoad)
         {
             if (modClass.equals(mod.getModClass()))
+            {
                 return mod.getContainer();
+            }
         }
 
         return LoadableMod.NONE;
     }
 
     /**
-     * Get the mod identifier (metadata key), this is used for versioning, exclusivity, and enablement checks
+     * Get the mod identifier (metadata key), this is used for versioning,
+     * exclusivity, and enablement checks.
      * 
      * @param modClass
      */
@@ -358,7 +365,9 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         for (ModInfo<LoadableMod<?>> mod : this.modsToLoad)
         {
             if (modClassName.equals(mod.getModClassSimpleName()))
+            {
                 return mod.getIdentifier();
+            }
         }
 
         return LiteLoaderEnumerator.getModClassName(modClass);
@@ -467,7 +476,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.interfaces.ModularEnumerator#registerModContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
+     * @see com.mumfrey.liteloader.interfaces.ModularEnumerator
+     *      #registerModContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
      */
     @Override
     public final boolean registerModContainer(LoadableMod<?> container)
@@ -525,7 +535,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PluggableEnumerator#addTweaksFrom(com.mumfrey.liteloader.core.TweakContainer)
+     * @see com.mumfrey.liteloader.core.PluggableEnumerator#addTweaksFrom(
+     *      com.mumfrey.liteloader.core.TweakContainer)
      */
     @Override
     public boolean registerTweakContainer(TweakContainer<File> container)
@@ -534,7 +545,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
         if (!container.isEnabled(this.environment))
         {
-            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled for profile %s, not injecting tranformers", container.getIdentifier(), this.environment.getProfile());
+            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled for profile %s, not injecting tranformers",
+                    container.getIdentifier(), this.environment.getProfile());
             return false;
         }
 
@@ -570,7 +582,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         {
             String tweakClass = container.getTweakClassName();
             int tweakPriority = container.getTweakPriority();
-            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d", container.getName(), tweakClass, tweakPriority);
+            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides tweakClass '%s', adding to Launch queue with priority %d",
+                    container.getName(), tweakClass, tweakPriority);
             if (this.environment.addCascadedTweaker(tweakClass, tweakPriority))
             {
                 LiteLoaderLogger.info(Verbosity.REDUCED, "tweakClass '%s' was successfully added", tweakClass);
@@ -611,7 +624,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         {
             for (String classTransformerClass : classTransformerClasses)
             {
-                LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides classTransformer '%s', adding to class loader", container.getName(), classTransformerClass);
+                LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides classTransformer '%s', adding to class loader",
+                        container.getName(), classTransformerClass);
                 ClassTransformerManager transformerManager = this.environment.getTransformerManager();
                 if (transformerManager != null && transformerManager.injectTransformer(classTransformerClass))
                 {
@@ -645,7 +659,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PluggableEnumerator#registerMods(com.mumfrey.liteloader.core.LoadableMod, boolean)
+     * @see com.mumfrey.liteloader.core.PluggableEnumerator#registerMods(
+     *      com.mumfrey.liteloader.core.LoadableMod, boolean)
      */
     @Override
     public void registerModsFrom(LoadableMod<?> container, boolean registerContainer)
@@ -688,7 +703,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.interfaces.ModularEnumerator#registerMod(com.mumfrey.liteloader.interfaces.ModInfo)
+     * @see com.mumfrey.liteloader.interfaces.ModularEnumerator#registerMod(
+     *      com.mumfrey.liteloader.interfaces.ModInfo)
      */
     @Override
     public void registerMod(ModInfo<LoadableMod<?>> mod)

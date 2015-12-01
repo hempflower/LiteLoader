@@ -16,7 +16,8 @@ public class Message
     /**
      * Regex for matching valid channels
      */
-    private static final Pattern channelPattern = Pattern.compile("^[a-z0-9]([a-z0-9_\\-]*[a-z0-9])?:[a-z0-9]([a-z0-9_\\-]*[a-z0-9])?$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern channelPattern = Pattern.compile("^[a-z0-9]([a-z0-9_\\-]*[a-z0-9])?:[a-z0-9]([a-z0-9_\\-]*[a-z0-9])?$",
+                                                                    Pattern.CASE_INSENSITIVE);
 
     private final String channel, replyChannel;
     private final Messenger sender;
@@ -69,7 +70,8 @@ public class Message
     }
 
     /**
-     * Get the specified reply channel (if any) for this message - may return null
+     * Get the specified reply channel (if any) for this message - may return
+     * null
      */
     public String getReplyChannel()
     {
@@ -135,7 +137,8 @@ public class Message
     }
 
     /**
-     * Gets the payload with the key "value", which is used with messages constructed using a string-only payload 
+     * Gets the payload with the key "value", which is used with messages
+     * constructed using a string-only payload.
      */
     public <T> T getValue()
     {

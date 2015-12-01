@@ -20,7 +20,8 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 /**
- * JPanel displayed in a JDialog to prompt the user for login credentials for minecraft
+ * JPanel displayed in a JDialog to prompt the user for login credentials for
+ * minecraft.
  * 
  * @author Adam Mummery-Smith
  */
@@ -77,7 +78,8 @@ public class LoginPanel extends JPanel
 
         this.panelCentre = new JPanel();
         this.panelCentre.setOpaque(false);
-        this.panelCentre.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Yggdrasil Login", TitledBorder.LEADING, TitledBorder.TOP, null, Color.WHITE));
+        this.panelCentre.setBorder(new TitledBorder(UIManager.getBorder("TitledBorder.border"), "Yggdrasil Login", 
+                TitledBorder.LEADING, TitledBorder.TOP, null, Color.WHITE));
         this.panelLoginLayout = new GridBagLayout();
         this.panelLoginLayout.columnWidths = new int[] {30, 80, 120, 120, 30};
         this.panelLoginLayout.rowHeights = new int[] {24, 32, 32, 32};
@@ -115,7 +117,8 @@ public class LoginPanel extends JPanel
         this.txtPassword.setText(password);
 
         this.btnLogin = new JButton("Log in");
-        this.btnLogin.addActionListener(new ActionListener() {
+        this.btnLogin.addActionListener(new ActionListener()
+        {
             @Override public void actionPerformed(ActionEvent e)
             {
                 LoginPanel.this.onLoginClick();
@@ -123,7 +126,8 @@ public class LoginPanel extends JPanel
         });
 
         this.btnCancel = new JButton("Cancel");
-        this.btnCancel.addActionListener(new ActionListener() {
+        this.btnCancel.addActionListener(new ActionListener()
+        {
             @Override public void actionPerformed(ActionEvent e)
             {
                 LoginPanel.this.onCancelClick();
@@ -225,9 +229,13 @@ public class LoginPanel extends JPanel
         if (this.txtUsername.getText().length() > 0)
         {
             if (this.txtPassword.getText().length() > 0)
+            {
                 this.txtUsername.select(0, this.txtUsername.getText().length());
+            }
             else
+            {
                 this.txtPassword.requestFocusInWindow();
+            }
         }
     }
 

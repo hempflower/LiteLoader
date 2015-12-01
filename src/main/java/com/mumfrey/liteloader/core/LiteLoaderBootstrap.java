@@ -37,15 +37,18 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * LiteLoaderBootstrap is responsible for managing the early part of the LiteLoader startup process, this is
- * to ensure that NONE of the Minecraft classes which by necessity the Loader references get loaded before the
- * PREINIT stage has completed. This allows us to load transforming tweakers in the PREINIT stage without all
- * hell breaking loose because class names have changed between initialisation stages!
+ * LiteLoaderBootstrap is responsible for managing the early part of the
+ * LiteLoader startup process, this is to ensure that NONE of the Minecraft
+ * classes which by necessity the Loader references get loaded before the
+ * PREINIT stage has completed. This allows us to load transforming tweakers in
+ * the PREINIT stage without all hell breaking loose because class names have
+ * changed between initialisation stages!
  * 
- * This class handles setting up requisite resources like the logger, enumerator and plug-in API modules and
- * passes init calls through to the LiteLoader instance at the appropriate points during startup. Because this
- * class is the first part of the loader to get loaded, we also keep central references like the paths, version
- * and loader properties in here.
+ * <p>This class handles setting up requisite resources like the logger,
+ * enumerator and plug-in API modules and passes init calls through to the
+ * LiteLoader instance at the appropriate points during startup. Because this
+ * class is the first part of the loader to get loaded, we also keep central
+ * references like the paths, version and loader properties in here.</p>
  *
  * @author Adam Mummery-Smith
  */
@@ -77,7 +80,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     private final File versionedModsFolder;
 
     /**
-     * Base "liteconfig" folder under which all other lite mod configs and liteloader configs are placed 
+     * Base "liteconfig" folder under which all other lite mod configs and
+     * liteloader configs are placed. 
      */
     private final File configBaseFolder;
 
@@ -283,7 +287,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
+     * @see com.mumfrey.liteloader.launch.ILoaderBootstrap
+     *      #preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
      */
     @Override
     public void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad)
@@ -339,7 +344,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.launch.ILoaderBootstrap#init(java.util.List, net.minecraft.launchwrapper.LaunchClassLoader)
+     * @see com.mumfrey.liteloader.launch.ILoaderBootstrap
+     *      #init(java.util.List, net.minecraft.launchwrapper.LaunchClassLoader)
      */
     @Override
     public void init()
@@ -396,8 +402,10 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         LiteLoaderLogger.info("Setting up logger...");
 
         Logger logger = LiteLoaderLogger.getLogger();
-        Layout<? extends Serializable> layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level]: %msg%n", logger.getContext().getConfiguration(), null, "UTF-8", "True");
-        FileAppender fileAppender = FileAppender.createAppender(this.logFile.getAbsolutePath(), "False", "False", "LiteLoader", "True", "True", "True", layout, null, "False", "", logger.getContext().getConfiguration());
+        Layout<? extends Serializable> layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level]: %msg%n",
+                logger.getContext().getConfiguration(), null, "UTF-8", "True");
+        FileAppender fileAppender = FileAppender.createAppender(this.logFile.getAbsolutePath(), "False", "False",
+                "LiteLoader", "True", "True", "True", layout, null, "False", "", logger.getContext().getConfiguration());
         fileAppender.start();
         logger.addAppender(fileAppender);
     }
@@ -481,13 +489,19 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     {
         this.branding = this.internalProperties.getProperty(LoaderProperties.OPTION_BRAND, null);
         if (this.branding != null && this.branding.length() < 1)
+        {
             this.branding = null;
+        }
 
         // Save appropriate branding in the local properties file
         if (this.branding != null)
+        {
             this.localProperties.setProperty(LoaderProperties.OPTION_BRAND, this.branding);
+        }
         else
+        {
             this.localProperties.remove(LoaderProperties.OPTION_BRAND);
+        }
     }
 
     /**
@@ -563,7 +577,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /**
-     * Get a boolean propery from the properties file and also write the new value back to the properties file
+     * Get a boolean propery from the properties file and also write the new
+     * value back to the properties file.
      * 
      * @param propertyName
      * @param defaultValue
@@ -577,7 +592,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /**
-     * Get a boolean propery from the properties file and also write the new value back to the properties file
+     * Get a boolean propery from the properties file and also write the new
+     * value back to the properties file.
      * 
      * @param propertyName
      */
@@ -694,7 +710,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 
             String oldBrand = (String)mGetClientModName.invoke(null);
 
-            if (oldBrand.equals("vanilla"))
+            if ("vanilla".equals(oldBrand))
             {
                 char[] newValue = brand.toCharArray();
 
@@ -718,7 +734,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.launch.LoaderBootstrap#getRequiredTransformers()
+     * @see com.mumfrey.liteloader.launch.LoaderBootstrap
+     *      #getRequiredTransformers()
      */
     @Override
     public List<String> getRequiredTransformers()
@@ -727,7 +744,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.launch.LoaderBootstrap#getRequiredDownstreamTransformers()
+     * @see com.mumfrey.liteloader.launch.LoaderBootstrap
+     *      #getRequiredDownstreamTransformers()
      */
     @Override
     public List<String> getRequiredDownstreamTransformers()

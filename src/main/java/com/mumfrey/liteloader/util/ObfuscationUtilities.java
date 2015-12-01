@@ -10,7 +10,8 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 public class ObfuscationUtilities
 {
     /**
-     * True if FML is being used, in which case we use searge names instead of raw field/method names
+     * True if FML is being used, in which case we use searge names instead of
+     * raw field/method names.
      */
     private static boolean fmlDetected = false;
 
@@ -37,7 +38,12 @@ public class ObfuscationUtilities
     public static boolean fmlIsPresent()
     {
         for (IClassTransformer transformer : Launch.classLoader.getTransformers())
-            if (transformer.getClass().getName().contains("fml")) return true;
+        {
+            if (transformer.getClass().getName().contains("fml"))
+            {
+                return true;
+            }
+        }
 
         return false;
     }
@@ -45,13 +51,15 @@ public class ObfuscationUtilities
     /**
      * Abstraction helper function
      * 
-     * @param fieldName Name of field to get, returned unmodified if in debug mode
+     * @param fieldName Name of field to get, returned unmodified if in debug
+     *      mode
      * @return Obfuscated field name if present
      */
     public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
     {
         boolean deobfuscated = BlockPos.class.getSimpleName().equals("BlockPos");
-        return deobfuscated ? (ObfuscationUtilities.seargeNames ? seargeFieldName : fieldName) : (ObfuscationUtilities.fmlDetected ? seargeFieldName : obfuscatedFieldName);
+        return deobfuscated ? (ObfuscationUtilities.seargeNames ? seargeFieldName : fieldName)
+                : (ObfuscationUtilities.fmlDetected ? seargeFieldName : obfuscatedFieldName);
     }
 
     /**

@@ -8,7 +8,8 @@ import net.minecraft.network.play.client.C15PacketClientSettings;
 import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
- * Wrapper for obf/mcp reflection-accessed private fields, mainly added to centralise the locations I have to update the obfuscated field names
+ * Wrapper for obf/mcp reflection-accessed private fields, mainly added to
+ * centralise the locations I have to update the obfuscated field names.
  * 
  * @author Adam Mummery-Smith
  *
@@ -123,6 +124,8 @@ public class PrivateFields<P, T>
 
         return value;
     }
+    
+    // CHECKSTYLE:OFF
 
     public static final PrivateFields<C15PacketClientSettings, Integer> viewDistance = new PrivateFields<C15PacketClientSettings, Integer>(C15PacketClientSettings.class, Obf.viewDistance);
 

@@ -20,9 +20,13 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
     public static final int BRANDING_COLOUR = 0xFF4785D1;
 
     public static final ResourceLocation ABOUT_TEXTURE = new ResourceLocation("liteloader", "textures/gui/about.png");
-    public static final IconAbsolute LOGO_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "logo", 128, 40, 0, 0, 256, 80);
-    public static final IconAbsolute ICON_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "chicken", 32, 45, 0, 80, 64, 170);
-    public static final IconAbsolute TWITTER_AVATAR_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "twitter_avatar", 32, 32, 192, 80, 256, 144);
+    
+    public static final IconAbsolute LOGO_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                                                                        "logo", 128, 40, 0, 0, 256, 80);
+    public static final IconAbsolute ICON_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                                                                        "chicken", 32, 45, 0, 80, 64, 170);
+    public static final IconAbsolute TWITTER_AVATAR_COORDS = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                                                                        "twitter_avatar",32, 32, 192, 80, 256, 144);
 
     public static final URI LITELOADER_URI = URI.create("http://www.liteloader.com/");
 
@@ -117,7 +121,8 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.BrandingProvider#getTwitterAvatarResource()
+     * @see com.mumfrey.liteloader.api.BrandingProvider
+     *      #getTwitterAvatarResource()
      */
     @Override
     public ResourceLocation getTwitterAvatarResource()

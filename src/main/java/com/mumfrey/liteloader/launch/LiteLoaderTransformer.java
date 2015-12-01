@@ -24,7 +24,10 @@ public class LiteLoaderTransformer extends ClassTransformer
         {
             return this.transformMain(basicClass);
         }
-        else if (Obf.Blocks.obf.equals(transformedName) || Obf.Blocks.name.equals(transformedName) || Obf.Items.obf.equals(transformedName) || Obf.Items.name.equals(transformedName))
+        else if (Obf.Blocks.obf.equals(transformedName)
+                || Obf.Blocks.name.equals(transformedName)
+                || Obf.Items.obf.equals(transformedName)
+                || Obf.Items.name.equals(transformedName))
         {
             return this.stripFinalModifiers(basicClass);
         }
@@ -40,7 +43,8 @@ public class LiteLoaderTransformer extends ClassTransformer
         {
             if ("main".equals(method.name))
             {
-                method.instructions.insert(new MethodInsnNode(Opcodes.INVOKESTATIC, LiteLoaderTransformer.LITELOADER_TWEAKER_CLASS, LiteLoaderTransformer.METHOD_PRE_BEGIN_GAME, "()V", false));
+                method.instructions.insert(new MethodInsnNode(Opcodes.INVOKESTATIC, LiteLoaderTransformer.LITELOADER_TWEAKER_CLASS,
+                        LiteLoaderTransformer.METHOD_PRE_BEGIN_GAME, "()V", false));
             }
         }
 

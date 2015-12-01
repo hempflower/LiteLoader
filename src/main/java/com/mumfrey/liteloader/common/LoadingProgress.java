@@ -29,7 +29,7 @@ public abstract class LoadingProgress
 
     public static void setMessage(String format, String... args)
     {
-        if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(String.format(format, args));
+        if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(String.format(format, (Object[])args));
     }
 
     public static void setMessage(String message)
@@ -39,7 +39,7 @@ public abstract class LoadingProgress
 
     public static void incLiteLoaderProgress(String format, String... args)
     {
-        if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(String.format(format, args));
+        if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(String.format(format, (Object[])args));
     }
 
     public static void incLiteLoaderProgress(String message)

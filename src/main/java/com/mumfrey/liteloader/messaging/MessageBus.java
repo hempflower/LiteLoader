@@ -14,12 +14,12 @@ import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Intra-mod messaging bus, allows mods to send arbitrary notifications to each other without having to
- * create an explicit dependency or resort to reflection
+ * Intra-mod messaging bus, allows mods to send arbitrary notifications to each
+ * other without having to create an explicit dependency or resort to reflection
  * 
  * @author Adam Mummery-Smith
  */
-public class MessageBus implements InterfaceProvider
+public final class MessageBus implements InterfaceProvider
 {
     /**
      * Singleton
@@ -65,7 +65,9 @@ public class MessageBus implements InterfaceProvider
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider
+     *      #registerInterfaces(
+     *      com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
      */
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -100,7 +102,8 @@ public class MessageBus implements InterfaceProvider
         List<String> messageChannels = messenger.getMessageChannels();
         if (messageChannels == null)
         {
-            LiteLoaderLogger.warning("Listener %s returned a null channel list for getMessageChannels(), this could indicate a problem with the listener", messenger.getName());
+            LiteLoaderLogger.warning("Listener %s returned a null channel list for getMessageChannels(), "
+                    + "this could indicate a problem with the listener", messenger.getName());
             return;
         }
 
@@ -115,7 +118,7 @@ public class MessageBus implements InterfaceProvider
             {
                 LiteLoaderLogger.warning("Listener %s tried to register invalid MessageBus channel %s", messenger.getName(), channel);
             }
-        }	
+        }
     }
 
     /**
@@ -148,7 +151,8 @@ public class MessageBus implements InterfaceProvider
         catch (StackOverflowError err)
         {
             // A listener tried to reply on the same channel and ended up calling itself
-            throw new RuntimeException("Stack overflow encountered dispatching message on channel '" + message.getChannel() + "'. Did you reply to yourself?");
+            throw new RuntimeException("Stack overflow encountered dispatching message on channel '"
+                    + message.getChannel() + "'. Did you reply to yourself?");
         }
     }
 
@@ -170,7 +174,8 @@ public class MessageBus implements InterfaceProvider
     }
 
     /**
-     * Send an empty message on the specified channel, this is useful for messages which are basically just notifications
+     * Send an empty message on the specified channel, this is useful for
+     * messages which are basically just notifications.
      * 
      * @param channel
      */
@@ -193,7 +198,8 @@ public class MessageBus implements InterfaceProvider
     }
 
     /**
-     * Send a message with a value on the specified channel from the specified sender
+     * Send a message with a value on the specified channel from the specified
+     * sender.
      * 
      * @param channel
      * @param value
@@ -206,7 +212,8 @@ public class MessageBus implements InterfaceProvider
     }
 
     /**
-     * Send a message with a value on the specified channel from the specified sender
+     * Send a message with a value on the specified channel from the specified
+     * sender.
      * 
      * @param channel
      * @param value
@@ -232,7 +239,8 @@ public class MessageBus implements InterfaceProvider
     }
 
     /**
-     * Send a message with a supplied payload on the specified channel from the specified sender
+     * Send a message with a supplied payload on the specified channel from the
+     * specified sender.
      * 
      * @param channel
      * @param payload
@@ -245,7 +253,8 @@ public class MessageBus implements InterfaceProvider
     }
 
     /**
-     * Send a message with a supplied payload on the specified channel from the specified sender
+     * Send a message with a supplied payload on the specified channel from the
+     * specified sender.
      * 
      * @param channel
      * @param payload

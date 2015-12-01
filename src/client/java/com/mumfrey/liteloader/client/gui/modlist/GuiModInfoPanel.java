@@ -59,7 +59,8 @@ public class GuiModInfoPanel extends Gui
 
         drawRect(xPosition + 5, yPos, xPosition + width, yPos + 1, GuiModInfoPanel.DIVIDER_COLOUR); yPos += 4; // divider
 
-        this.fontRenderer.drawString(I18n.format("gui.about.authors") + ": \2477" + this.modInfo.getAuthor(), xPosition + 5, yPos, GuiModInfoPanel.AUTHORS_COLOUR); yPos += 10;
+        this.fontRenderer.drawString(I18n.format("gui.about.authors") + ": \2477" + this.modInfo.getAuthor(), xPosition + 5, yPos,
+                GuiModInfoPanel.AUTHORS_COLOUR); yPos += 10;
         if (!Strings.isNullOrEmpty(this.modInfo.getURL()))
         {
             this.fontRenderer.drawString(this.modInfo.getURL(), xPosition + 5, yPos, GuiModListPanel.BLEND_2THRDS & this.brandColour); yPos += 10;

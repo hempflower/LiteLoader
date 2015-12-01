@@ -6,12 +6,13 @@ import com.mumfrey.liteloader.core.event.Cancellable;
 import com.mumfrey.liteloader.core.event.EventCancellationException;
 
 /**
- * Contains information about an injected event, including the source object and whether the event
- * is cancellable and/or cancelled.
+ * Contains information about an injected event, including the source object and
+ * whether the event is cancellable and/or cancelled.
  * 
  * @author Adam Mummery-Smith
  *
- * @param <S> Source object type. For non-static methods this will be the containing object instance.
+ * @param <S> Source object type. For non-static methods this will be the
+ *      containing object instance.
  */
 public class EventInfo<S> implements Cancellable
 {
@@ -51,7 +52,8 @@ public class EventInfo<S> implements Cancellable
     @Override
     public String toString()
     {
-        return String.format("EventInfo(TYPE=%s,NAME=%s,SOURCE=%s,CANCELLABLE=%s)", this.getClass().getSimpleName(), this.name, this.getSourceClass(), this.cancellable);
+        return String.format("EventInfo(TYPE=%s,NAME=%s,SOURCE=%s,CANCELLABLE=%s)", this.getClass().getSimpleName(),
+                this.name, this.getSourceClass(), this.cancellable);
     }
 
     /* (non-Javadoc)

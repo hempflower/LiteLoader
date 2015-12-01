@@ -31,12 +31,14 @@ class Mod extends ModInfo<LoadableMod<?>>
     private LiteMod instance;
 
     /**
-     * Mod display name, initially read from metadata then replaced with real name once instanced
+     * Mod display name, initially read from metadata then replaced with real
+     * name once instanced.
      */
     private String name;
 
     /**
-     * Mod display name, initially read from version then replaced with real version once instanced
+     * Mod display name, initially read from version then replaced with real
+     * version once instanced.
      */
     private String version;
 

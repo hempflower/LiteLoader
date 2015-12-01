@@ -7,7 +7,8 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 
 /**
- * LiteLoader Extensible API - Interface for objects which can interact with the enumeration process, not yet available to APIs
+ * LiteLoader Extensible API - Interface for objects which can interact with the
+ * enumeration process, not yet available to APIs.
  * 
  * @author Adam Mummery-Smith
  */
@@ -24,7 +25,7 @@ public interface EnumeratorPlugin
      * @param container Container to inspect
      * @param classloader ClassLoader for this container
      * @param validator Mod class validator
-     * @return
+     * @return list of classes in the container
      */
     public abstract <T> List<Class<? extends T>> getClasses(LoadableMod<?> container, ClassLoader classloader, ModClassValidator validator);
 

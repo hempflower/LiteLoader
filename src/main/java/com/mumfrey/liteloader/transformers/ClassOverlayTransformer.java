@@ -28,46 +28,60 @@ import org.objectweb.asm.tree.MethodNode;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * This transformer applies one class to another as an "overlay". This works by merging down and replacing all
- * methods and fields from the "overlay" class into the "target" class being transformed. Fields and methods
- * marked with the {@link Obfuscated} annotation will search through the list of provided names to find a
- * matching member in the target class, this allows methods and fields in the target class to be referenced
- * even if they have different names after obfuscation.
+ * This transformer applies one class to another as an "overlay". This works by
+ * merging down and replacing all methods and fields from the "overlay" class
+ * into the "target" class being transformed. Fields and methods marked with the
+ * {@link Obfuscated} annotation will search through the list of provided names
+ * to find a matching member in the target class, this allows methods and fields
+ * in the target class to be referenced even if they have different names after
+ * obfuscation.
  * 
- * The "target" class is identified by a special field which must be named __TARGET in the overlay class which
- * must be a private static field of the appropriate target type.
+ * <p>The "target" class is identified by a special field which must be named
+ * <tt>__TARGET</tt> in the overlay class which must be a private static field
+ * of the appropriate target type.</p>
  * 
- * Notes:
+ * <h3>Notes:</h3>
  * 
- * - Constructors WILL NOT BE overlaid, see below for instruction merging. Constructors in the overlay class
- *   should throw an InstantiationError.
+ * <ul>
+ *     <li>Constructors WILL NOT BE overlaid, see below for instruction merging.
+ *     Constructors in the overlay class should throw an InstantiationError.
+ *     </li>
  * 
- * - Static method invokations will not be processed by "transformMethod", this means that any static methods
- *   invoked must be accessible from the context of the transformed class (eg. public or package-private in the
- *   same package).
+ *     <li>Static method invocations will not be processed by "transformMethod",
+ *     this means that any static methods invoked must be accessible from the
+ *     context of the transformed class (eg. public or package-private in the
+ *     same package).</li>
  *   
- * - The overlay class MUST be a sibling of the target class to ensure that calls to super.xxx are properly
- *   transformed. In other words the overlay and the transformed class should have the same parent class
- *   although they need not be in the same package unless any package-private members are accessed.
+ *     <li>The overlay class MUST be a sibling of the target class to ensure
+ *     that calls to super.xxx are properly transformed. In other words the
+ *     overlay and the transformed class should have the same parent class
+ *     although they need not be in the same package unless any package-private
+ *     members are accessed.</li>
  *   
- * - It is also possible to merge instructions from a "source" method into a specific method in the transformed
- *   class by annotating the method with a {@link AppendInsns} annotation, specifying the name of the target method
- *   as the annotation value. The target method signature must match the source method's signature and both
- *   methods must return VOID. The instructions from the source method will be inserted immediately before the
- *   RETURN opcode in the target method.
+ *     <li>It is also possible to merge instructions from a "source" method into
+ *     a specific method in the transformed class by annotating the method with
+ *     a {@link AppendInsns} annotation, specifying the name of the target
+ *     method as the annotation value. The target method signature must match
+ *     the source method's signature and both methods must return VOID. The
+ *     instructions from the source method will be inserted immediately before
+ *     the RETURN opcode in the target method.</li>
  *   
- * - To create a method stub for private methods you wish to invoke in the target class, decorate the stub
- *   method with an {@link Stub} annotation, this will cause the overlay transformer to NOT merge the method
- *   into the target, but merely verify that it exists in the target class.
+ *     <li>To create a method stub for private methods you wish to invoke in the
+ *     target class, decorate the stub method with an {@link Stub} annotation,
+ *     this will cause the overlay transformer to NOT merge the method into the
+ *     target, but merely verify that it exists in the target class.</li>
  *   
- * - Merge instructions into the constructor by specifying "<init>" as the target method name.
+ *     <li>Merge instructions into the constructor by specifying "<init>" as the
+ *     target method name.</li>
+ * </ul>
  * 
  * @author Adam Mummery-Smith
  */
 public abstract class ClassOverlayTransformer extends ClassTransformer
 {
     /**
-     * Global list of overlaid classes, used to transform references in other classes
+     * Global list of overlaid classes, used to transform references in other
+     * classes.
      */
     private static final Map<String, String> overlayMap = new HashMap<String, String>();
 
@@ -77,9 +91,10 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     private static SimpleRemapper referenceRemapper;
 
     /**
-     * The first ClassOverlayTransformer to be instantiated accepts responsibility for performing
-     * remapping operations and becomes the "remapping agent" transformer. This flag is set to 
-     * true to indicate that this instance is the remapping agent.
+     * The first ClassOverlayTransformer to be instantiated accepts
+     * responsibility for performing remapping operations and becomes the
+     * "remapping agent" transformer. This flag is set to true to indicate that
+     * this instance is the remapping agent.
      */
     private boolean remappingAgent = false;
 
@@ -121,12 +136,15 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
         for (FieldNode field : overlayClass.fields)
         {
             if ("__TARGET".equals(field.name) && ((field.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC))
+            {
                 targetClassName = Type.getType(field.desc).getClassName();
+            }
         }
 
         if (targetClassName == null)
         {
-            throw new RuntimeException(String.format("Overlay class %s is missing a __TARGET field, unable to identify target class", this.overlayClassName));
+            throw new RuntimeException(String.format("Overlay class %s is missing a __TARGET field, unable to identify target class",
+                    this.overlayClassName));
         }
 
         this.targetClassName = targetClassName;
@@ -142,7 +160,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.launchwrapper.IClassTransformer#transform(java.lang.String, java.lang.String, byte[])
+     * @see net.minecraft.launchwrapper.IClassTransformer
+     *      #transform(java.lang.String, java.lang.String, byte[])
      */
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass)
@@ -250,7 +269,9 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
         for (String interfaceName : overlayClass.interfaces)
         {
             if (!targetClass.interfaces.contains(interfaceName))
+            {
                 targetClass.interfaces.add(interfaceName);
+            }
         }
     }
 
@@ -266,9 +287,10 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     }
 
     /**
-     * Overlay fields from overlay class into the target class. It is vital that this is done before
-     * overlayMethods because we need to compute renamed fields so that transformMethod can rename field
-     * references in the method body
+     * Overlay fields from overlay class into the target class. It is vital that
+     * this is done before overlayMethods because we need to compute renamed
+     * fields so that transformMethod can rename field references in the
+     * method body.
      * 
      * @param targetClass
      * @param overlayClass
@@ -279,7 +301,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
         {
             if ((field.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && (field.access & Opcodes.ACC_PRIVATE) != Opcodes.ACC_PRIVATE)
             {
-                throw new InvalidOverlayException(String.format("Overlay classes cannot contain non-private static methods or fields, found %s", field.name));
+                throw new InvalidOverlayException(String.format("Overlay classes cannot contain non-private static methods or fields, found %s",
+                        field.name));
             }
 
             FieldNode target = ByteCodeUtilities.findTargetField(targetClass, field);
@@ -303,8 +326,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     }
 
     /**
-     * Called before merging methods to build the map of original method names -> new method names,
-     * this is then used by transformMethod to remap  
+     * Called before merging methods to build the map of original method names
+     * -> new method names, this is then used by transformMethod to remap.  
      * 
      * @param targetClass
      * @param overlayClass
@@ -313,7 +336,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     {
         for (MethodNode overlayMethod : overlayClass.methods)
         {
-            if (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, Stub.class) != null || (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
+            if (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, Stub.class) != null
+                    || (ByteCodeUtilities.getVisibleAnnotation(overlayMethod, AppendInsns.class) == null && !overlayMethod.name.startsWith("<")))
             {
                 this.checkRenameMethod(targetClass, overlayMethod);
             }
@@ -350,7 +374,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
             }
             else if (!overlayMethod.name.startsWith("<"))
             {
-                if ((overlayMethod.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC && (overlayMethod.access & Opcodes.ACC_PRIVATE) != Opcodes.ACC_PRIVATE)
+                if ((overlayMethod.access & Opcodes.ACC_STATIC) == Opcodes.ACC_STATIC
+                        && (overlayMethod.access & Opcodes.ACC_PRIVATE) != Opcodes.ACC_PRIVATE)
                 {
                     continue;
                 }
@@ -367,9 +392,10 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     }
 
     /**
-     * Handles "re-parenting" the method supplied, changes all references to the overlay class to
-     * refer to the target class (for field accesses and method invokations) and also renames fields
-     * accesses to their obfuscated versions
+     * Handles "re-parenting" the method supplied, changes all references to the
+     * overlay class to refer to the target class (for field accesses and method
+     * invocations) and also renames fields accesses to their obfuscated
+     * versions.
      * 
      * @param method
      * @param fromClass
@@ -411,7 +437,8 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
     }
 
     /**
-     * Handles appending instructions from the source method to the target method
+     * Handles appending instructions from the source method to the target
+     * method.
      * 
      * @param targetClass
      * @param targetMethodName
@@ -457,7 +484,7 @@ public abstract class ClassOverlayTransformer extends ClassTransformer
                     {
                         method.instructions.insertBefore(returnNode, insn);
                     }
-                }				
+                }
             }
         }
     }

@@ -36,8 +36,8 @@ import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * HandlerList is a generic class which supports baking a list of event handlers into a dynamic inner
- * class for invokation at runtime.
+ * HandlerList is a generic class which supports baking a list of event handlers
+ * into a dynamic inner class for invocation at runtime.
  * 
  * @author Adam Mummery-Smith
  *
@@ -57,27 +57,32 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
     public enum ReturnLogicOp
     {
         /**
-         * Logical OR applied between handlers, return FALSE unless one or more handlers returns TRUE 
+         * Logical OR applied between handlers, return FALSE unless one or more
+         * handlers returns TRUE 
          */
         OR(true, false),
 
         /**
-         * Logical OR, returns TRUE at the first handler to return TRUE and doesn't process any further handlers
+         * Logical OR, returns TRUE at the first handler to return TRUE and
+         * doesn't process any further handlers.
          */
         OR_BREAK_ON_TRUE(true, true),
 
         /**
-         * Logical OR, but with the difference than an EMPTY handler list will return TRUE 
+         * Logical OR, but with the difference than an EMPTY handler list will
+         * return TRUE.
          */
         OR_ASSUME_TRUE(true, false, true),
 
         /**
-         * Logical AND, returns TRUE if the list is empty or if all handlers return TRUE 
+         * Logical AND, returns TRUE if the list is empty or if all handlers
+         * return TRUE.
          */
         AND(false, false),
 
         /**
-         * Logical AND, returns FALSE at the first handler to return FALSE and doesn't process any further handlers 
+         * Logical AND, returns FALSE at the first handler to return FALSE and
+         * doesn't process any further handlers.
          */
         AND_BREAK_ON_FALSE(false, true);
 
@@ -126,8 +131,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
     private final ReturnLogicOp logicOp;
 
     /**
-     * Current baked handler list, we cook them at gas mark 5 for 30 minutes in a disposable classloader whic
-     * also handles the transformation for us
+     * Current baked handler list, we cook them at gas mark 5 for 30 minutes in
+     * a disposable classloader whic also handles the transformation for us.
      */
     private BakedHandlerList<T> bakedHandler;
 
@@ -146,7 +151,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
     /**
      * @param type
-     * @param logicOp Logical operation to apply to interface methods which return boolean
+     * @param logicOp Logical operation to apply to interface methods which
+     *      return boolean
      */
     public HandlerList(Class<T> type, ReturnLogicOp logicOp)
     {
@@ -155,15 +161,17 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
     /**
      * @param type
-     * @param logicOp Logical operation to apply to interface methods which return boolean
-     * @param sorted True to sort the list when baking (doesn't sort the underlying list)
+     * @param logicOp Logical operation to apply to interface methods which
+     *      return boolean
+     * @param sorted True to sort the list when baking (doesn't sort the
+     *      underlying list)
      */
     public HandlerList(Class<T> type, ReturnLogicOp logicOp, boolean sorted)
     {
         if (!type.isInterface())
         {
             throw new IllegalArgumentException("HandlerList type argument must be an interface");
-        }	
+        }
 
         this.type = type;
         this.logicOp = logicOp;
@@ -593,7 +601,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
         private final Class<T> type;
 
         /**
-         * Calculated class ref for the class type so that we don't have to keep calling getName().replace('.', '/')
+         * Calculated class ref for the class type so that we don't have to keep
+         * calling getName().replace('.', '/')
          */
         private final String typeRef;
 
@@ -669,7 +678,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
          * 
          * @param handlerClass Baked HandlerList class
          * @return new instance of the Baked HandlerList class 
-         * @throws InstantiationException if the handler can't be created for some reason
+         * @throws InstantiationException if the handler can't be created for
+         *      some reason
          */
         private BakedHandlerList<T> createInstance(Class<BakedHandlerList<T>> handlerClass) throws InstantiationException
         {
@@ -701,7 +711,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
             try
             {
                 // Read the basic class template
-                byte[] bytes = ByteCodeUtilities.applyTransformers(this.getTemplate().name, Launch.classLoader.getClassBytes(this.getTemplate().name));
+                byte[] bytes = ByteCodeUtilities.applyTransformers(this.getTemplate().name,
+                        Launch.classLoader.getClassBytes(this.getTemplate().name));
                 ClassReader classReader = new ClassReader(bytes);
                 ClassNode classNode = new ClassNode();
                 classReader.accept(classNode, ClassReader.EXPAND_FRAMES);
@@ -779,7 +790,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
             for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
             {
-                classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";", null, null));
+                classNode.fields.add(new FieldNode(Opcodes.ACC_PRIVATE, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex,
+                        "L" + this.typeRef + ";", null, null));
             }
 
             if (this.decorator != null)
@@ -874,11 +886,13 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
             {
                 method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
                 method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-                method.instructions.add(handlerIndex > Short.MAX_VALUE ? new LdcInsnNode(new Integer(handlerIndex)) : new IntInsnNode(Opcodes.SIPUSH, handlerIndex));
+                method.instructions.add(handlerIndex > Short.MAX_VALUE ? new LdcInsnNode(new Integer(handlerIndex))
+                        : new IntInsnNode(Opcodes.SIPUSH, handlerIndex));
                 method.instructions.add(new MethodInsnNode(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true));
                 method.instructions.add(new TypeInsnNode(Opcodes.CHECKCAST, this.typeRef));
-                method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
-            }		
+                method.instructions.add(new FieldInsnNode(Opcodes.PUTFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex,
+                        "L" + this.typeRef + ";"));
+            }
 
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             method.instructions.add(new InsnNode(Opcodes.ARETURN));
@@ -888,7 +902,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
         }
 
         /**
-         * Recurse down the interface inheritance hierarchy and inject methods to handle each interface
+         * Recurse down the interface inheritance hierarchy and inject methods
+         * to handle each interface.
          * 
          * @param classNode
          * @param interfaceName
@@ -917,7 +932,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
         }
 
         /**
-         * Inject the supplied interface method into the target class an populate it with method calls to the list members 
+         * Inject the supplied interface method into the target class and
+         * populate it with method calls to the list members 
          * 
          * @param classNode
          * @param method
@@ -930,12 +946,12 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
             if (returnType.equals(Type.BOOLEAN_TYPE))
             {
                 method.access = Opcodes.ACC_PUBLIC;
-                this.populateBooleanInvokationChain(classNode, method, args);
+                this.populateBooleaninvocationChain(classNode, method, args);
             }
             else
             {
                 method.access = Opcodes.ACC_PUBLIC;
-                this.populateVoidInvokationChain(classNode, method, args, returnType);
+                this.populateVoidinvocationChain(classNode, method, args, returnType);
             }
 
             if (this.decorator != null)
@@ -949,7 +965,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
          * @param method
          * @param args
          */
-        private void populateVoidInvokationChain(ClassNode classNode, MethodNode method, Type[] args, Type returnType)
+        private void populateVoidinvocationChain(ClassNode classNode, MethodNode method, Type[] args, Type returnType)
         {
             int returnSize = returnType.getSize();
             for (int handlerIndex = 0; handlerIndex < this.size; handlerIndex++)
@@ -989,7 +1005,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
          * @param method
          * @param args
          */
-        private void populateBooleanInvokationChain(ClassNode classNode, MethodNode method, Type[] args)
+        private void populateBooleaninvocationChain(ClassNode classNode, MethodNode method, Type[] args)
         {
             boolean isOrOperation = this.logicOp.isOr();
             boolean breakOnMatch = this.logicOp.breakOnMatch();
@@ -1009,9 +1025,10 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
                 LabelNode lbl = new LabelNode();
                 method.instructions.add(new JumpInsnNode(jumpCondition, lbl)); // jump over the set/return based on the condition
                 method.instructions.add(new InsnNode(semaphore)); // push TRUE or FALSE onto the stack
-                method.instructions.add(breakOnMatch ? new InsnNode(Opcodes.IRETURN) : new VarInsnNode(Opcodes.ISTORE, localIndex)); // set local or return
+                // set local or return
+                method.instructions.add(breakOnMatch ? new InsnNode(Opcodes.IRETURN) : new VarInsnNode(Opcodes.ISTORE, localIndex));
                 method.instructions.add(lbl); // jump here
-            }		
+            }
 
             method.instructions.add(new VarInsnNode(Opcodes.ILOAD, localIndex));
             method.instructions.add(new InsnNode(Opcodes.IRETURN));
@@ -1032,7 +1049,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
             method.instructions.add(lineNumberLabel);
             method.instructions.add(new LineNumberNode(100 + handlerIndex, lineNumberLabel));
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-            method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex, "L" + this.typeRef + ";"));
+            method.instructions.add(new FieldInsnNode(Opcodes.GETFIELD, classNode.name, HandlerListClassLoader.HANDLER_VAR_PREFIX + handlerIndex,
+                    "L" + this.typeRef + ";"));
 
             if (this.decorator != null)
             {
@@ -1048,7 +1066,8 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
         }
 
         /**
-         * Inject instructions into the supplied method to invoke the same method on the supplied interface 
+         * Inject instructions into the supplied method to invoke the same
+         * method on the supplied interface. 
          * 
          * @param method
          * @param args

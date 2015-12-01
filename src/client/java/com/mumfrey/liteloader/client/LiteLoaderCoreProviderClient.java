@@ -1,5 +1,6 @@
 package com.mumfrey.liteloader.client;
 
+import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
@@ -28,12 +29,15 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
     private final LoaderProperties properties;
 
     /**
-     * Read from the properties file, if true we will inhibit the sound manager reload during startup to avoid getting in trouble with OpenAL
+     * Read from the properties file, if true we will inhibit the sound manager
+     * reload during startup to avoid getting in trouble with OpenAL.
      */
     private boolean inhibitSoundManagerReload = true;
 
     /**
-     * If inhibit is enabled, this object is used to reflectively inhibit the sound manager's reload process during startup by removing it from the reloadables list
+     * If inhibit is enabled, this object is used to reflectively inhibit the
+     * sound manager's reload process during startup by removing it from the
+     * reloadables list.
      */
     private SoundHandlerReloadInhibitor soundHandlerReloadInhibitor;
 
@@ -52,7 +56,9 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
     @Override
     public void onPostInit(GameEngine<?, ?> engine)
     {
-        this.soundHandlerReloadInhibitor = new SoundHandlerReloadInhibitor((SimpleReloadableResourceManager)engine.getResources().getResourceManager(), ((GameEngineClient)engine).getSoundHandler());
+        SimpleReloadableResourceManager resourceManager = (SimpleReloadableResourceManager)engine.getResources().getResourceManager();
+        SoundHandler soundHandler = ((GameEngineClient)engine).getSoundHandler();
+        this.soundHandlerReloadInhibitor = new SoundHandlerReloadInhibitor(resourceManager, soundHandler);
 
         if (this.inhibitSoundManagerReload)
         {

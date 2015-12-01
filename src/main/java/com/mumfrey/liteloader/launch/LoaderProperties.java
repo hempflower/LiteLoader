@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader.launch;
 
 /**
- * Interface for the object which will manage loader properties (internal and volatile)
+ * Interface for the object which will manage loader properties (internal and
+ * volatile).
  * 
  * @author Adam Mummery-Smith
  */
@@ -33,7 +34,8 @@ public interface LoaderProperties
     public abstract boolean getBooleanProperty(String propertyName);
 
     /**
-     * Get a boolean property but write and return the supplied default value if the property doesn't exist
+     * Get a boolean property but write and return the supplied default value if
+     * the property doesn't exist
      * 
      * @param propertyName
      * @param defaultValue
@@ -56,7 +58,8 @@ public interface LoaderProperties
     public abstract int getIntegerProperty(String propertyName);
 
     /**
-     * Get an integer property but write and return the supplied default value if the property doesn't exist
+     * Get an integer property but write and return the supplied default value
+     * if the property doesn't exist
      * 
      * @param propertyName
      * @param defaultValue

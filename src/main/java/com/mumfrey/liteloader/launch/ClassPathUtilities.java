@@ -23,7 +23,6 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
-import sun.misc.URLClassPath;
 
 /**
  * Nasty horrible reflection hacks to do nasty things with the classpath
@@ -32,6 +31,11 @@ import sun.misc.URLClassPath;
  */
 public abstract class ClassPathUtilities
 {
+    /**
+     * URLClassPath
+     */
+    private static Class<?> clURLClassPath;
+    
     /**
      * URLClassLoader::ucp -> instance of URLClassPath
      */
@@ -65,16 +69,18 @@ public abstract class ClassPathUtilities
     {
         try
         {
+            ClassPathUtilities.clURLClassPath = Class.forName("sun.misc.URLClassPath");
+            
             ClassPathUtilities.ucp = URLClassLoader.class.getDeclaredField("ucp");
             ClassPathUtilities.ucp.setAccessible(true);
 
-            ClassPathUtilities.classPathURLs = URLClassPath.class.getDeclaredField("urls");
+            ClassPathUtilities.classPathURLs = ClassPathUtilities.clURLClassPath.getDeclaredField("urls");
             ClassPathUtilities.classPathURLs.setAccessible(true);
-            ClassPathUtilities.classPathPath = URLClassPath.class.getDeclaredField("path");
+            ClassPathUtilities.classPathPath = ClassPathUtilities.clURLClassPath.getDeclaredField("path");
             ClassPathUtilities.classPathPath.setAccessible(true);
-            ClassPathUtilities.classPathLoaderMap = URLClassPath.class.getDeclaredField("lmap");
+            ClassPathUtilities.classPathLoaderMap = ClassPathUtilities.clURLClassPath.getDeclaredField("lmap");
             ClassPathUtilities.classPathLoaderMap.setAccessible(true);
-            ClassPathUtilities.classPathLoaderList = URLClassPath.class.getDeclaredField("loaders");
+            ClassPathUtilities.classPathLoaderList = ClassPathUtilities.clURLClassPath.getDeclaredField("loaders");
             ClassPathUtilities.classPathLoaderList.setAccessible(true);
             ClassPathUtilities.canInject = true;
         }
@@ -86,7 +92,8 @@ public abstract class ClassPathUtilities
     }
 
     /**
-     * Injects a URL into the classpath based on the specified injection strategy
+     * Injects a URL into the classpath based on the specified injection
+     * strategy.
      * 
      * @param classLoader
      * @param url
@@ -148,7 +155,7 @@ public abstract class ClassPathUtilities
 
             try
             {
-                URLClassPath classPath = (URLClassPath)ClassPathUtilities.ucp.get(classLoader);
+                Object classPath = ClassPathUtilities.ucp.get(classLoader);
 
                 Stack<URL> urls = (Stack<URL>)ClassPathUtilities.classPathURLs.get(classPath);
                 ArrayList<URL> path = (ArrayList<URL>)ClassPathUtilities.classPathPath.get(classPath);
@@ -168,7 +175,9 @@ public abstract class ClassPathUtilities
                             for (int pos = path.size() - 1; pos > 0; pos--)
                             {
                                 if (above.equals(path.get(pos)))
+                                {
                                     path.add(pos, url);
+                                }
                             }
                         }
                     }
@@ -250,7 +259,9 @@ public abstract class ClassPathUtilities
             for (URL classPathEntry : classPath)
             {
                 if (classPathEntry.toString().equals(jarURL))
+                {
                     return true;
+                }
             }
         }
         catch (Exception ex)
@@ -327,7 +338,8 @@ public abstract class ClassPathUtilities
                 final JarDeletionHandler jarDeletionHandler = new JarDeletionHandler();
 
                 JarFile jarInClassLoader = ClassPathUtilities.getJarFromClassLoader(Launch.classLoader, jarFileName, true);
-                JarFile jarInParentClassLoader = ClassPathUtilities.getJarFromClassLoader((URLClassLoader)Launch.class.getClassLoader(), jarFileName, true);
+                JarFile jarInParentClassLoader = ClassPathUtilities.getJarFromClassLoader((URLClassLoader)Launch.class.getClassLoader(),
+                        jarFileName, true);
 
                 File jarFileInClassLoader = new File(jarInClassLoader.getName());
                 File jarFileInParentClassLoader = new File(jarInParentClassLoader.getName());
@@ -373,13 +385,14 @@ public abstract class ClassPathUtilities
      * @throws MalformedURLException
      */
     @SuppressWarnings("unchecked")
-    private static JarFile getJarFromClassLoader(URLClassLoader classLoader, String fileName, boolean removeFromClassPath) throws MalformedURLException
+    private static JarFile getJarFromClassLoader(URLClassLoader classLoader, String fileName, boolean removeFromClassPath)
+            throws MalformedURLException
     {
         JarFile jar = null;
 
         try
         {
-            URLClassPath classPath = (URLClassPath)ClassPathUtilities.ucp.get(classLoader);
+            Object classPath = ClassPathUtilities.ucp.get(classLoader);
             Map<String, ?> loaderMap = (Map<String, ?>)ClassPathUtilities.classPathLoaderMap.get(classPath);
 
             Iterator<?> iter = loaderMap.entrySet().iterator();

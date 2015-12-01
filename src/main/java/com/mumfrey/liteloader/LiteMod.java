@@ -20,15 +20,17 @@ public interface LiteMod extends Exposable, Listener
     public abstract String getVersion();
 
     /**
-     * Do startup stuff here, minecraft is not fully initialised when this function is called so mods *must not*
-     * interact with minecraft in any way here
+     * Do startup stuff here, minecraft is not fully initialised when this
+     * function is called so mods <b>must not</b> interact with minecraft in any
+     * way here.
      * 
      * @param configPath Configuration path to use
      */
     public abstract void init(File configPath);
 
     /**
-     * Called when the loader detects that a version change has happened since this mod was last loaded
+     * Called when the loader detects that a version change has happened since
+     * this mod was last loaded.
      * 
      * @param version new version
      * @param configPath Path for the new version-specific config

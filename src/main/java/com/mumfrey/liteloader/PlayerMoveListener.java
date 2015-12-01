@@ -18,9 +18,10 @@ public interface PlayerMoveListener extends LiteMod
      * @param playerMP Player moving
      * @param from Player's previous recorded position
      * @param to Position the player is attempting to move to
-     * @param newPos Set this position to teleport the player to newPos instead of processing the original move
-     * 
-     * @return false to cancel the event or true to allow the movement to be processed as normal or newPos to be applied
+     * @param newPos Set this position to teleport the player to newPos instead
+     *      of processing the original move
+     * @return false to cancel the event or true to allow the movement to be
+     *      processed as normal or newPos to be applied
      */
     public abstract boolean onPlayerMove(EntityPlayerMP playerMP, Position from, Position to, ReturnValue<Position> newPos);
 }

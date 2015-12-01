@@ -9,8 +9,10 @@ import net.minecraft.server.MinecraftServer;
 /**
  * @author Adam Mummery-Smith
  *
- * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
- * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
+ * @param <TClient> Type of the client runtime, "Minecraft" on client and null
+ *      on the server
+ * @param <TServer> Type of the server runtime, "IntegratedServer" on the
+ *      client, "MinecraftServer" on the server 
  */
 public interface GameEngine<TClient, TServer extends MinecraftServer>
 {
@@ -20,7 +22,8 @@ public interface GameEngine<TClient, TServer extends MinecraftServer>
     public abstract boolean isClient();
 
     /**
-     * True if the current environment is a server environment, always true on dedicated and true in single player
+     * True if the current environment is a server environment, always true on
+     * dedicated and true in single player.
      */
     public abstract boolean isServer();
 
@@ -60,12 +63,14 @@ public interface GameEngine<TClient, TServer extends MinecraftServer>
     public abstract Profiler getProfiler();
 
     /**
-     * Get the keybinding list, only supported on client will throw an exception on the server
+     * Get the keybinding list, only supported on client will throw an exception
+     * on the server.
      */
     public abstract List<KeyBinding> getKeyBindings();
 
     /**
-     * Set the keybinding list, only supported on client will throw an exception on the server
+     * Set the keybinding list, only supported on client will throw an exception
+     * on the server.
      * 
      * @param keyBindings
      */

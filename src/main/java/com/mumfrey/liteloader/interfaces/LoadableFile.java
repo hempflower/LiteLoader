@@ -42,9 +42,10 @@ public class LoadableFile extends File implements TweakContainer<File>
     protected boolean forceInjection;
 
     /**
-     * Position to inject the mod file at in the class path, if blank injects at the bottom as usual, alternatively
-     * the developer can specify "top" to inject at the top, "base" to inject above the game jar, or "above: name" to
-     * inject above a specified other library matching "name".
+     * Position to inject the mod file at in the class path, if blank injects at
+     * the bottom as usual, alternatively the developer can specify "top" to
+     * inject at the top, "base" to inject above the game jar, or "above: name"
+     * to inject above a specified other library matching "name".
      */
     protected InjectionStrategy injectionStrategy = null;
 
@@ -109,7 +110,9 @@ public class LoadableFile extends File implements TweakContainer<File>
     {
         Matcher versionPatternMatcher = LoadableFile.versionPattern.matcher(this.getName());
         while (versionPatternMatcher.find())
+        {
             this.version = versionPatternMatcher.group();
+        }
     }
 
     protected void assignJarMetaData(LoadableFile file)
@@ -177,24 +180,37 @@ public class LoadableFile extends File implements TweakContainer<File>
                 }
 
                 if (manifestAttributes.getValue("Implementation-Title") != null)
+                {
                     this.displayName = manifestAttributes.getValue("Implementation-Title");
+                }
 
                 if (manifestAttributes.getValue("TweakName") != null)
+                {
                     this.displayName = manifestAttributes.getValue("TweakName");
+                }
 
                 if (manifestAttributes.getValue("Implementation-Version") != null)
+                {
                     this.version = manifestAttributes.getValue("Implementation-Version");
+                }
 
                 if (manifestAttributes.getValue("TweakVersion") != null)
+                {
                     this.version = manifestAttributes.getValue("TweakVersion");
+                }
 
                 if (manifestAttributes.getValue("Implementation-Vendor") != null)
+                {
                     this.author = manifestAttributes.getValue("Implementation-Vendor");
+                }
 
                 if (manifestAttributes.getValue("TweakAuthor") != null)
+                {
                     this.author = manifestAttributes.getValue("TweakAuthor");
+                }
 
-                this.injectionStrategy = InjectionStrategy.parseStrategy(manifestAttributes.getValue("TweakInjectionStrategy"), InjectionStrategy.TOP);
+                String tweakInjectionStrategy = manifestAttributes.getValue("TweakInjectionStrategy");
+                this.injectionStrategy = InjectionStrategy.parseStrategy(tweakInjectionStrategy, InjectionStrategy.TOP);
             }
         }
         catch (Exception ex)
@@ -292,7 +308,8 @@ public class LoadableFile extends File implements TweakContainer<File>
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.ITweakContainer#getClassTransformerClassNames()
+     * @see com.mumfrey.liteloader.core.ITweakContainer
+     *      #getClassTransformerClassNames()
      */
     @Override
     public List<String> getClassTransformerClassNames()

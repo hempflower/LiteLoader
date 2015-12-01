@@ -31,7 +31,8 @@ public class CrashReportTransformer extends ClassTransformer
     }
 
     /**
-     * Inject the additional callback for populating the crash report into the CallableJVMFlags class
+     * Inject the additional callback for populating the crash report into the
+     * CallableJVMFlags class.
      * 
      * @param basicClass basic class
      * @return transformed class
@@ -58,14 +59,17 @@ public class CrashReportTransformer extends ClassTransformer
     {
         InsnList code = new InsnList();
         code.add(new VarInsnNode(Opcodes.ALOAD, 1));
-        code.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/LiteLoader", "populateCrashReport", "(Ljava/lang/Object;)V", false));
+        code.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/mumfrey/liteloader/core/LiteLoader", "populateCrashReport",
+                "(Ljava/lang/Object;)V", false));
 
         ListIterator<AbstractInsnNode> insns = ctor.instructions.iterator();
         while (insns.hasNext())
         {
             AbstractInsnNode insnNode = insns.next();
             if (insnNode.getOpcode() == Opcodes.RETURN)
+            {
                 ctor.instructions.insertBefore(insnNode, code);
+            }
         }
     }
 }

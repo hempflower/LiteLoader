@@ -11,8 +11,9 @@ import com.mumfrey.liteloader.modconfig.ConfigPanel;
 import com.mumfrey.liteloader.modconfig.ConfigPanelHost;
 
 /**
- * Config panel container, this handles drawing the configuration panel chrome and also hosts the
- * configuration panels themselves to support scrolling and stuff
+ * Config panel container, this handles drawing the configuration panel chrome
+ * and also hosts the configuration panels themselves to support scrolling and
+ * stuff.
  *
  * @author Adam Mummery-Smith
  */
@@ -186,7 +187,8 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
 
         // Update and draw scroll bar
         this.scrollBar.setMaxValue(this.totalHeight - this.innerHeight);
-        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.width - MARGIN - 5, TOP, 5, this.innerHeight, Math.max(this.innerHeight, this.totalHeight));
+        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.width - MARGIN - 5, TOP, 5, this.innerHeight,
+                Math.max(this.innerHeight, this.totalHeight));
 
         // Draw other buttons
         super.draw(mouseX, mouseY, partialTicks);
@@ -221,7 +223,9 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
         if (mouseButton == 0)
         {
             if (this.scrollBar.wasMouseOver())
+            {
                 this.scrollBar.setDragging(true);
+            }
         }
 
         super.mousePressed(mouseX, mouseY, mouseButton);

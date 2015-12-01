@@ -11,7 +11,8 @@ import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * An injection point which searches for a matching String LDC insn immediately prior to a qualifying invoke
+ * An injection point which searches for a matching String LDC insn immediately
+ * prior to a qualifying invoke.
  *  
  * @author Adam Mummery-Smith
  */
@@ -34,8 +35,12 @@ public class BeforeStringInvoke extends BeforeInvoke
         this.ldcValue = ldcValue;
 
         for (int i = 0; i < this.methodSignatures.length; i++)
+        {
             if (!STRING_VOID_SIG.equals(this.methodSignatures[i]))
+            {
                 throw new IllegalArgumentException("BeforeStringInvoke requires method with with signature " + STRING_VOID_SIG);
+            }
+        }
     }
 
     @Override

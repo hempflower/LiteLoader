@@ -24,13 +24,15 @@ import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.PluginChannels.ChannelPolicy;
 
 /**
- * This class manages permissions on the client, it is a singleton class which can manage permissions for multiple 
- * client mods. It manages the client/server communication used to replicate permissions and serves as a hub for
- * permissions objects which keep track of the permissions available on the client
+ * This class manages permissions on the client, it is a singleton class which
+ * can manage permissions for multiple client mods. It manages the client/server
+ * communication used to replicate permissions and serves as a hub for
+ * permissions objects which keep track of the permissions available on the
+ * client.
  * 
  * @author Adam Mummery-Smith
  */
-public class PermissionsManagerClient implements PermissionsManager, PluginChannelListener
+public final class PermissionsManagerClient implements PermissionsManager, PluginChannelListener
 {
     /**
      * Singleton instance of the client permissions manager 
@@ -38,7 +40,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     private static PermissionsManagerClient instance;
 
     /**
-     * Permissions permissible which is a proxy for permissions that are common to all mods
+     * Permissions permissible which is a proxy for permissions that are common
+     * to all mods.
      */
     private static Permissible allMods = new PermissibleAllMods();
 
@@ -73,7 +76,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     private Map<String, ServerPermissions> serverPermissions = new HashMap<String, ServerPermissions>();
 
     /**
-     * Last time onTick was called, used to detect tamper condition if no ticks are being received
+     * Last time onTick was called, used to detect tamper condition if no ticks
+     * are being received.
      */
     private long lastTickTime = System.currentTimeMillis();
 
@@ -85,7 +89,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     private int menuTicks = 0;
 
     /**
-     * Get a reference to the singleton instance of the client permissions manager
+     * Get a reference to the singleton instance of the client permissions
+     * manager.
      */
     public static PermissionsManagerClient getInstance()
     {
@@ -106,7 +111,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.PermissionsManager#getPermissions(java.lang.String)
+     * @see net.eq2online.permissions.PermissionsManager
+     *      #getPermissions(java.lang.String)
      */
     @Override
     public Permissions getPermissions(Permissible mod)
@@ -119,7 +125,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.PermissionsManager#getPermissionUpdateTime(java.lang.String)
+     * @see net.eq2online.permissions.PermissionsManager
+     *      #getPermissionUpdateTime(java.lang.String)
      */
     @Override
     public Long getPermissionUpdateTime(Permissible mod)
@@ -145,7 +152,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.PermissionsManager#registerListener(net.eq2online.permissions.PermissionsListener)
+     * @see net.eq2online.permissions.PermissionsManager
+     *      #registerListener(net.eq2online.permissions.PermissionsListener)
      */
     @Override
     public void registerPermissible(Permissible permissible)
@@ -169,7 +177,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     {
         if (this.registeredClientMods.containsKey(modName))
         {
-            throw new IllegalArgumentException("Cannot register mod \"" + modName + "\"! The mod was already registered with the permissions manager.");
+            throw new IllegalArgumentException("Cannot register mod \"" + modName
+                    + "\"! The mod was already registered with the permissions manager.");
         }
 
         this.registeredClientMods.put(modName, mod);
@@ -211,9 +220,10 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Send a permission query packet to the server for the specified mod. You do not need to call this method because it is
-     * issued automatically by the client permissions manager when connecting to a new server. However you can call use this
-     * method to "force" a refresh of permissions when needed.
+     * Send a permission query packet to the server for the specified mod. You
+     * do not need to call this method because it is issued automatically by the
+     * client permissions manager when connecting to a new server. However you
+     * can call use this method to "force" a refresh of permissions when needed.
      * 
      * @param mod mod to send a query packet for
      */
@@ -251,7 +261,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.permissions.PermissionsManager#onTick(net.minecraft.client.Minecraft, float, boolean)
+     * @see com.mumfrey.liteloader.permissions.PermissionsManager
+     *      #onTick(net.minecraft.client.Minecraft, float, boolean)
      */
     @Override
     public void onTick(GameEngine<?, ?> engine, float partialTicks, boolean inGame)
@@ -300,7 +311,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.PermissionsManager#onCustomPayload(java.lang.String, int, byte[])
+     * @see net.eq2online.permissions.PermissionsManager
+     *      #onCustomPayload(java.lang.String, int, byte[])
      */
     @Override
     public void onCustomPayload(String channel, PacketBuffer data)
@@ -334,8 +346,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Register a permission for all mods, the permission will be prefixed with "mod.all." to provide
-     * a common namespace for client mods when permissions are replicated to the server
+     * Register a permission for all mods, the permission will be prefixed with
+     * <tt>"mod.all."</tt> to provide a common namespace for client mods when
+     * permissions are replicated to the server.
      * 
      * @param permission
      */
@@ -345,8 +358,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Register a permission for the specified mod, the permission will be prefixed with "mod.<modname>." to provide
-     * a common namespace for client mods when permissions are replicated to the server
+     * Register a permission for the specified mod, the permission will be
+     * prefixed with <tt>"mod.<modname>."</tt> to provide a common namespace for
+     * client mods when permissions are replicated to the server.
      * 
      * @param mod
      * @param permission
@@ -358,7 +372,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
 
         if (!this.registeredClientMods.containsValue(mod))
         {
-            throw new IllegalArgumentException("Cannot register a mod permission for mod \"" + modName + "\"! The mod was not registered with the permissions manager.");
+            throw new IllegalArgumentException("Cannot register a mod permission for mod \"" + modName
+                    + "\"! The mod was not registered with the permissions manager.");
         }
 
         permission = formatModPermission(modName, permission);
@@ -381,7 +396,8 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Get the value of the specified permission for all mods and return the default value if the permission is not set
+     * Get the value of the specified permission for all mods and return the
+     * default value if the permission is not set.
      * 
      * @param permission Permission to check for
      * @param defaultValue Value to return if the permission is not set
@@ -392,8 +408,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Get the value of the specified permission for the specified mod. The permission will be prefixed with "mod.<modname>."
-     * in keeping with registerModPermission as a convenience.
+     * Get the value of the specified permission for the specified mod. The
+     * permission will be prefixed with <tt>"mod.<modname>."</tt> in keeping
+     * with registerModPermission as a convenience.
      * 
      * @param mod
      * @param permission
@@ -413,8 +430,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Get the value of the specified permission for the specified mod. The permission will be prefixed with "mod.<modname>."
-     * in keeping with registerModPermission as a convenience.
+     * Get the value of the specified permission for the specified mod. The
+     * permission will be prefixed with <tt>"mod.<modname>."</tt> in keeping
+     * with registerModPermission as a convenience.
      * 
      * @param modName
      * @param permission
@@ -426,9 +444,10 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Get the value of the specified permission for the specified mod. The permission will be prefixed with "mod.<modname>."
-     * in keeping with registerModPermission as a convenience. If the permission does not exist, the specified default value
-     * will be returned.
+     * Get the value of the specified permission for the specified mod. The
+     * permission will be prefixed with <tt>"mod.<modname>."</tt> in keeping
+     * with registerModPermission as a convenience. If the permission does not
+     * exist, the specified default value will be returned.
      * 
      * @param mod
      * @param permission
@@ -449,8 +468,9 @@ public class PermissionsManagerClient implements PermissionsManager, PluginChann
     }
 
     /**
-     * Get the value of the specified permission for the specified mod. The permission will be prefixed with "mod.<modname>."
-     * in keeping with registerModPermission as a convenience.
+     * Get the value of the specified permission for the specified mod. The
+     * permission will be prefixed with <tt>"mod.<modname>."</tt> in keeping
+     * with registerModPermission as a convenience.
      * 
      * @param modName
      * @param permission

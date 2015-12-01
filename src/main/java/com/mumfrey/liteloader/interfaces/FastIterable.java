@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader.interfaces;
 
 /**
- * Interface for objects which can return a baked list view of their list contents
+ * Interface for objects which can return a baked list view of their list
+ * contents.
  * 
  * @author Adam Mummery-Smith
  *

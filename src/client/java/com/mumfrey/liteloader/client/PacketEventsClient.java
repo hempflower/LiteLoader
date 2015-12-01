@@ -45,11 +45,13 @@ public class PacketEventsClient extends PacketEvents
 {
     private static RealmsServer joiningRealm;
 
-    private FastIterableDeque<JoinGameListener> joinGameListeners = new HandlerList<JoinGameListener>(JoinGameListener.class);
-    private FastIterableDeque<ChatListener> chatListeners = new HandlerList<ChatListener>(ChatListener.class);
-    private FastIterableDeque<ChatFilter> chatFilters = new HandlerList<ChatFilter>(ChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
-    private FastIterableDeque<PreJoinGameListener> preJoinGameListeners = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
-    private FastIterableDeque<PostLoginListener> postLoginListeners = new HandlerList<PostLoginListener>(PostLoginListener.class);
+    private FastIterableDeque<JoinGameListener>    joinGameListeners    = new HandlerList<JoinGameListener>(JoinGameListener.class);
+    private FastIterableDeque<ChatListener>        chatListeners        = new HandlerList<ChatListener>(ChatListener.class);
+    private FastIterableDeque<ChatFilter>          chatFilters          = new HandlerList<ChatFilter>(ChatFilter.class,
+                                                                                                        ReturnLogicOp.AND_BREAK_ON_FALSE);
+    private FastIterableDeque<PreJoinGameListener> preJoinGameListeners = new HandlerList<PreJoinGameListener>(PreJoinGameListener.class,
+                                                                                                        ReturnLogicOp.AND_BREAK_ON_FALSE);
+    private FastIterableDeque<PostLoginListener>   postLoginListeners   = new HandlerList<PostLoginListener>(PostLoginListener.class);
 
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -86,7 +88,8 @@ public class PacketEventsClient extends PacketEvents
     {
         if (chatListener instanceof ChatFilter)
         {
-            LiteLoaderLogger.warning("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! Remove one of these interfaces", chatListener.getName());
+            LiteLoaderLogger.warning("Interface error initialising mod '%1s'. A mod implementing ChatFilter and ChatListener is not supported! "
+                    + "Remove one of these interfaces", chatListener.getName());
         }
         else
         {
@@ -127,7 +130,10 @@ public class PacketEventsClient extends PacketEvents
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(com.mumfrey.liteloader.common.transformers.PacketEventInfo, net.minecraft.network.INetHandler, net.minecraft.network.play.server.S01PacketJoinGame)
+     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(
+     *      com.mumfrey.liteloader.common.transformers.PacketEventInfo,
+     *      net.minecraft.network.INetHandler,
+     *      net.minecraft.network.play.server.S01PacketJoinGame)
      */
     @Override
     protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
@@ -179,7 +185,10 @@ public class PacketEventsClient extends PacketEvents
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(com.mumfrey.liteloader.common.transformers.PacketEventInfo, net.minecraft.network.INetHandler, net.minecraft.network.login.server.S02PacketLoginSuccess)
+     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(
+     *      com.mumfrey.liteloader.common.transformers.PacketEventInfo,
+     *      net.minecraft.network.INetHandler,
+     *      net.minecraft.network.login.server.S02PacketLoginSuccess)
      */
     @Override
     protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketLoginSuccess packet)
@@ -199,13 +208,18 @@ public class PacketEventsClient extends PacketEvents
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(com.mumfrey.liteloader.common.transformers.PacketEventInfo, net.minecraft.network.INetHandler, net.minecraft.network.play.server.S02PacketChat)
+     * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(
+     *      com.mumfrey.liteloader.common.transformers.PacketEventInfo,
+     *      net.minecraft.network.INetHandler,
+     *      net.minecraft.network.play.server.S02PacketChat)
      */
     @Override
     protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketChat packet)
     {
         if (packet.getChatComponent() == null)
+        {
             return;
+        }
 
         IChatComponent originalChat = packet.getChatComponent();
         IChatComponent chat = originalChat;

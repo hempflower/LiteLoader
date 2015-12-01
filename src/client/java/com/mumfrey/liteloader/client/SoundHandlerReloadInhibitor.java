@@ -10,7 +10,8 @@ import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Manager object which handles inhibiting the sound handler's reload notification at startup
+ * Manager object which handles inhibiting the sound handler's reload
+ * notification at startup.
  *
  * @author Adam Mummery-Smith
  */
@@ -32,7 +33,8 @@ public class SoundHandlerReloadInhibitor
     private boolean inhibited;
 
     /**
-     * So that we can re-insert the sound manager at the same index, we store the index we remove it from
+     * So that we can re-insert the sound manager at the same index, we store
+     * the index we remove it from.
      */
     private int storedIndex;
 

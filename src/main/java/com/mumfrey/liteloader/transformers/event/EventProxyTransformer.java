@@ -9,8 +9,10 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 
 /**
- * Transformer responsible for transforming/generating the EventProxy inner classes, separated from the Event Transformer
- * itself so that we can place it higher up the tranformer chain to avoid broken mod transformers screwing things up.
+ * Transformer responsible for transforming/generating the EventProxy inner
+ * classes, separated from the Event Transformer itself so that we can place it
+ * higher up the tranformer chain to avoid broken mod transformers screwing
+ * things up.
  * 
  * @author Adam Mummery-Smith
  */
@@ -63,7 +65,7 @@ public class EventProxyTransformer extends ClassTransformer
                     method.instructions.clear();
                     method.instructions.add(new InsnNode(Opcodes.RETURN));
                 }
-            }		
+            }
 
             return classNode;
         }

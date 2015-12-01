@@ -18,36 +18,37 @@ public class Callback
     public enum CallbackType
     {
         /**
-         * Redirect callbacks are injected at the start of a method and immediately return, thus
-         * short-circuiting the method 
+         * Redirect callbacks are injected at the start of a method and
+         * immediately return, thus short-circuiting the method 
          */
         REDIRECT(true),
 
         /**
-         * Event callbacks are injected at the start of a method but do not alter the normal method
-         * behaviour.
+         * Event callbacks are injected at the start of a method but do not
+         * alter the normal method behaviour.
          */
         EVENT(false),
 
         /**
-         * Return callbacks are injected immediately prior to every RETURN opcode in a particular
-         * method. Callback handlers must have the SAME return type as the method containing the
-         * injected callback
+         * Return callbacks are injected immediately prior to every RETURN
+         * opcode in a particular method. Callback handlers must have the SAME
+         * return type as the method containing the injected callback
          */
         RETURN(false),
 
         /**
-         * A profiler callback injected at a profiler "startSection" invokation
+         * A profiler callback injected at a profiler "startSection" invocation
          */
         PROFILER_STARTSECTION(Obf.startSection, true),
 
         /**
-         * A profiler callback injected at a profiler "endSection" invokation 
+         * A profiler callback injected at a profiler "endSection" invocation 
          */
         PROFILER_ENDSECTION(Obf.endSection, false),
 
         /**
-         * A profiler callback injected at a profiler "endStartSection" invokation 
+         * A profiler callback injected at a profiler "endStartSection"
+         * invocation 
          */
         PROFILER_ENDSTARTSECTION(Obf.endStartSection, true);
 
@@ -149,9 +150,10 @@ public class Callback
     private final String callbackMethod;
 
     /**
-     * Return callbacks are injected before every RETURN opcode in the method, each RETURN is thus allocated
-     * a sequential refNumber which is passed to the callback method so that the callback handler can choose
-     * which RETURN it wishes to handle
+     * Return callbacks are injected before every RETURN opcode in the method,
+     * each RETURN is thus allocated a sequential refNumber which is passed to
+     * the callback method so that the callback handler can choose which RETURN
+     * it wishes to handle.
      */
     int refNumber;
 
@@ -168,14 +170,18 @@ public class Callback
     /**
      * A new callback method in the specified class 
      * 
-     * @param callbackMethod Method to call, must be public, static and have the appropriate signature for the type of injected callback
-     * @param callbackClass Fully qualified name of the class containing the callback method, must also be public or visible from the calling package  
+     * @param callbackMethod Method to call, must be public, static and have the
+     *      appropriate signature for the type of injected callback
+     * @param callbackClass Fully qualified name of the class containing the
+     *      callback method, must also be public or visible from the calling
+     *      package
      */
     public Callback(CallbackType callbackType, String callbackMethod, String callbackClass, String section, int obfType)
     {
         if (section == null && callbackType.isSectionRequired())
         {
-            throw new RuntimeException(String.format("Callback of type %s requires a section name but no section name was provided", callbackType.name()));
+            throw new RuntimeException(String.format("Callback of type %s requires a section name but no section name was provided",
+                    callbackType.name()));
         }
 
         this.callbackType = callbackType;
@@ -250,7 +256,7 @@ public class Callback
     public List<Callback> getChainedCallbacks()
     {
         return this.chainedCallbacks;
-    }	
+    }
 
     @Override
     public String toString()
@@ -263,7 +269,8 @@ public class Callback
     {
         if (other == null || !(other instanceof Callback)) return false;
         Callback callback = (Callback)other;
-        return callback.callbackClass.equals(this.callbackClass) && callback.callbackMethod.equals(this.callbackMethod) && callback.callbackType == this.callbackType;
+        return callback.callbackClass.equals(this.callbackClass) && callback.callbackMethod.equals(this.callbackMethod)
+                && callback.callbackType == this.callbackType;
     }
 
     @Override

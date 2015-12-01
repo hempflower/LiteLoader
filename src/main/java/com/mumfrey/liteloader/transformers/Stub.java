@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Interface which instructs the ClassOverlayTransformer to NOT merge the annotated method
+ * Interface which instructs the ClassOverlayTransformer to NOT merge the
+ * annotated method.
  *
  * @author Adam Mummery-Smith
  */

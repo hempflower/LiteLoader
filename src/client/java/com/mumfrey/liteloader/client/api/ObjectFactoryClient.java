@@ -96,7 +96,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
         if (this.engine == null)
         {
             this.engine = new GameEngineClient();
-        }	
+        }
 
         return this.engine;
     }
@@ -118,7 +118,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
         if (this.clientPluginChannels == null)
         {
             this.clientPluginChannels = new ClientPluginChannelsClient();
-        }	
+        }
 
         return this.clientPluginChannels;
     }
@@ -129,7 +129,7 @@ class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
         if (this.serverPluginChannels == null)
         {
             this.serverPluginChannels = new ServerPluginChannels();
-        }	
+        }
 
         return this.serverPluginChannels;
     }

@@ -79,7 +79,8 @@ public abstract class ModUtilities
         }
         else
         {
-            LiteLoaderLogger.warning("Attempted to set renderer %s for entity class %s but the operation failed", renderer.getClass().getSimpleName(), entityClass.getSimpleName());
+            LiteLoaderLogger.warning("Attempted to set renderer %s for entity class %s but the operation failed",
+                    renderer.getClass().getSimpleName(), entityClass.getSimpleName());
         }
     }
 
@@ -90,13 +91,15 @@ public abstract class ModUtilities
 
         try
         {
-            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap = PrivateFieldsClient.specialRendererMap.get(tileEntityRenderer);
+            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap
+                    = PrivateFieldsClient.specialRendererMap.get(tileEntityRenderer);
             specialRendererMap.put(tileEntityClass, renderer);
             renderer.setRendererDispatcher(tileEntityRenderer);
         }
         catch (Exception ex)
         {
-            LiteLoaderLogger.warning("Attempted to set renderer %s for tile entity class %s but the operation failed", renderer.getClass().getSimpleName(), tileEntityClass.getSimpleName());
+            LiteLoaderLogger.warning("Attempted to set renderer %s for tile entity class %s but the operation failed",
+                    renderer.getClass().getSimpleName(), tileEntityClass.getSimpleName());
         }
     }
 
@@ -213,7 +216,8 @@ public abstract class ModUtilities
     /**
      * Abstraction helper function
      * 
-     * @param fieldName Name of field to get, returned unmodified if in debug mode
+     * @param fieldName Name of field to get, returned unmodified if in debug
+     *      mode
      * @return Obfuscated field name if present
      * @deprecated use ObfuscationUtilities.getObfuscatedFieldName instead
      */
@@ -272,7 +276,8 @@ public abstract class ModUtilities
         return null;
     }
 
-    private static void setFinalStaticField(Field field, Object value) throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
+    private static void setFinalStaticField(Field field, Object value)
+            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
     {
         Field modifiers = Field.class.getDeclaredField("modifiers");
         modifiers.setAccessible(true);

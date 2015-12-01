@@ -118,7 +118,7 @@ public class LoadingBar extends LoadingProgress
 
     protected void _initTextures()
     {
-        this.minecraftMessage = LoadingBar.LOADING_MESSAGE_2;		
+        this.minecraftMessage = LoadingBar.LOADING_MESSAGE_2;
     }
 
     @Override
@@ -166,14 +166,15 @@ public class LoadingBar extends LoadingProgress
             {
                 if (this.fontRenderer == null)
                 {
-                    this.fontRenderer = new FontRenderer(this.minecraft.gameSettings, new ResourceLocation("textures/font/ascii.png"), this.textureManager, false);
+                    this.fontRenderer = new FontRenderer(this.minecraft.gameSettings, new ResourceLocation("textures/font/ascii.png"),
+                            this.textureManager, false);
                     this.fontRenderer.onResourceManagerReload(this.minecraft.getResourceManager());
                 }
 
                 double totalProgress = this.totalMinecraftProgress + this.totalLiteLoaderProgress;
                 double progress = (this.minecraftProgress + this.liteLoaderProgress) / totalProgress;
 
-                //				if (progress >= 1.0) LoadingBar.message = "Preparing...";
+//                if (progress >= 1.0) LoadingBar.message = "Preparing...";
 
                 this.render(progress);
             }
@@ -308,15 +309,15 @@ public class LoadingBar extends LoadingProgress
         glAlphaFunc(GL_GREATER, 0.0F);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        //		tessellator.startDrawingQuads();
-        //		tessellator.setColorRGBA(0, 0, 0, 32);
-        //		tessellator.addVertex(0.0D,               scaledHeight,                      0.0D);
-        //		tessellator.setColorRGBA(0, 0, 0, 180);
-        //		tessellator.addVertex(0.0D + scaledWidth, scaledHeight,                      0.0D);
-        //		tessellator.setColorRGBA(0, 0, 0, 0);
-        //		tessellator.addVertex(0.0D + scaledWidth, (scaledHeight / 10),               0.0D);
-        //		tessellator.addVertex(0.0D,               scaledHeight - (scaledHeight / 3), 0.0D);
-        //		tessellator.draw();
+//        tessellator.startDrawingQuads();
+//        tessellator.setColorRGBA(0, 0, 0, 32);
+//        tessellator.addVertex(0.0D,               scaledHeight,                      0.0D);
+//        tessellator.setColorRGBA(0, 0, 0, 180);
+//        tessellator.addVertex(0.0D + scaledWidth, scaledHeight,                      0.0D);
+//        tessellator.setColorRGBA(0, 0, 0, 0);
+//        tessellator.addVertex(0.0D + scaledWidth, (scaledHeight / 10),               0.0D);
+//        tessellator.addVertex(0.0D,               scaledHeight - (scaledHeight / 3), 0.0D);
+//        tessellator.draw();
 
         worldRenderer.startDrawingQuads();
         worldRenderer.setColorRGBA(this.barLuma, this.barLuma, this.barLuma, 128); // TODO OBF MCPTEST func_178961_b - setColorRGBA
@@ -346,7 +347,7 @@ public class LoadingBar extends LoadingProgress
 
         glEnableAlphaTest();
         glAlphaFunc(GL_GREATER, 0.1F);
-        //		glFlush();
+//        glFlush();
 
         this.minecraft.updateDisplay(); // TODO OBF MCPTEST updateDisplay - func_175601_h
     }
@@ -365,8 +366,9 @@ public class LoadingBar extends LoadingProgress
     }
 
     /**
-     * Find the most common (approx) colour in the image and assign it to the bar, reduces the palette to 9-bit by
-     * stripping the the 5 LSB from each byte to create a 9-bit palette index in the form RRRGGGBBB
+     * Find the most common (approx) colour in the image and assign it to the
+     * bar, reduces the palette to 9-bit by stripping the the 5 LSB from each
+     * byte to create a 9-bit palette index in the form RRRGGGBBB
      * 
      * @param textureData
      */

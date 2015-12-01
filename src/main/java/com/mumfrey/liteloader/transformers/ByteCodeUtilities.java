@@ -35,7 +35,8 @@ public abstract class ByteCodeUtilities
     private ByteCodeUtilities() {}
 
     /**
-     * Replace all constructor invokations for the target class in the supplied classNode with invokations of the replacement class
+     * Replace all constructor invocations for the target class in the supplied
+     * classNode with invocations of the replacement class.
      * 
      * @param classNode Class to search in
      * @param target Target type
@@ -50,7 +51,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Replace all constructor invokations for the target class in the supplied method with invokations of the replacement class
+     * Replace all constructor invocations for the target class in the supplied
+     * method with invocations of the replacement class.
      * 
      * @param method Method to look in
      * @param target Target type
@@ -82,7 +84,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Injects appropriate LOAD opcodes into the supplied InsnList appropriate for each entry in the args array starting at pos
+     * Injects appropriate LOAD opcodes into the supplied InsnList appropriate
+     * for each entry in the args array starting at pos.
      * 
      * @param args Argument types
      * @param insns Instruction List to inject into
@@ -94,7 +97,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Injects appropriate LOAD opcodes into the supplied InsnList appropriate for each entry in the args array starting at start and ending at end
+     * Injects appropriate LOAD opcodes into the supplied InsnList appropriate
+     * for each entry in the args array starting at start and ending at end.
      * 
      * @param args Argument types
      * @param insns Instruction List to inject into
@@ -114,9 +118,11 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Injects appropriate LOAD opcodes into the supplied InsnList for each entry in the supplied locals array starting at pos
+     * Injects appropriate LOAD opcodes into the supplied InsnList for each
+     * entry in the supplied locals array starting at pos.
      * 
-     * @param locals Local types (can contain nulls for uninitialised, TOP, or RETURN values in locals)
+     * @param locals Local types (can contain nulls for uninitialised, TOP, or
+     *      RETURN values in locals)
      * @param insns Instruction List to inject into
      * @param pos Start position
      */
@@ -132,11 +138,14 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Get the first variable index in the supplied method which is not an argument or "this" reference, this corresponds
-     * to the size of the arguments passed in to the method plus an extra spot for "this" if the method is non-static 
+     * Get the first variable index in the supplied method which is not an
+     * argument or "this" reference, this corresponds to the size of the
+     * arguments passed in to the method plus an extra spot for "this" if the
+     * method is non-static. 
      * 
      * @param method MethodNode to inspect
-     * @return first available local index which is NOT used by a method argument or "this"
+     * @return first available local index which is NOT used by a method
+     *      argument or "this"
      */
     public static int getFirstNonArgLocalIndex(MethodNode method)
     {
@@ -144,12 +153,16 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Get the first non-arg variable index based on the supplied arg array and whether to include the "this" reference,
-     * this corresponds to the size of the arguments passed in to the method plus an extra spot for "this" is specified 
-
+     * Get the first non-arg variable index based on the supplied arg array and
+     * whether to include the "this" reference, this corresponds to the size of
+     * the arguments passed in to the method plus an extra spot for "this" is
+     * specified.
+     * 
      * @param args Method arguments
-     * @param includeThis Whether to include a slot for "this" (generally true for all non-static methods)
-     * @return first available local index which is NOT used by a method argument or "this"
+     * @param includeThis Whether to include a slot for "this" (generally true
+     *      for all non-static methods)
+     * @return first available local index which is NOT used by a method
+     *      argument or "this"
      */
     public static int getFirstNonArgLocalIndex(Type[] args, boolean includeThis)
     {
@@ -157,7 +170,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Get the size of the specified args array in local variable terms (eg. doubles and longs take two spaces)
+     * Get the size of the specified args array in local variable terms (eg.
+     * doubles and longs take two spaces).
      * 
      * @param args Method argument types as array
      * @return size of the specified arguments array in terms of stack slots
@@ -175,32 +189,47 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Attempts to identify available locals at an arbitrary point in the bytecode specified by node.
+     * Attempts to identify available locals at an arbitrary point in the
+     * bytecode specified by node.
      * 
-     * This method builds an approximate view of the locals available at an arbitrary point in the bytecode by examining the following
-     * features in the bytecode:
+     * <p>This method builds an approximate view of the locals available at an
+     * arbitrary point in the bytecode by examining the following features in
+     * the bytecode:</p>
      * 
-     *  * Any available stack map frames
-     *  * STORE opcodes
-     *  * The local variable table
+     * <ul>
+     *     <li>Any available stack map frames</li>
+     *     <li>STORE opcodes</li>
+     *     <li>The local variable table</li>
+     * </ul>
      *  
-     * Inference proceeds by walking the bytecode from the start of the method looking for stack frames and STORE opcodes. When either
-     * of these is encountered, an attempt is made to cross-reference the values in the stack map or STORE opcode with the value in the
-     * local variable table which covers the code range. Stack map frames overwrite the entire simulated local variable table with their
-     * own value types, STORE opcodes overwrite only the local slot to which they pertain. Values in the simulated locals array are spaced
-     * according to their size (unlike the representation in FrameNode) and this TOP, NULL and UNINTITIALIZED_THIS opcodes will be
-     * represented as null values in the simulated frame.
+     * <p>Inference proceeds by walking the bytecode from the start of the
+     * method looking for stack frames and STORE opcodes. When either of these
+     * is encountered, an attempt is made to cross-reference the values in the
+     * stack map or STORE opcode with the value in the local variable table
+     * which covers the code range. Stack map frames overwrite the entire
+     * simulated local variable table with their own value types, STORE opcodes
+     * overwrite only the local slot to which they pertain. Values in the
+     * simulated locals array are spaced according to their size (unlike the
+     * representation in FrameNode) and this TOP, NULL and UNINTITIALIZED_THIS
+     * opcodes will be represented as null values in the simulated frame.</p>
      * 
-     * This code does not currently simulate the prescribed JVM behaviour where overwriting the second slot of a DOUBLE or LONG actually
-     * invalidates the DOUBLE or LONG stored in the previous location, so we have to hope (for now) that this behaviour isn't emitted by
-     * the compiler or any upstream transformers. I may have to re-think this strategy if this situation is encountered in the wild. 
+     * <p>This code does not currently simulate the prescribed JVM behaviour
+     * where overwriting the second slot of a DOUBLE or LONG actually
+     * invalidates the DOUBLE or LONG stored in the previous location, so we
+     * have to hope (for now) that this behaviour isn't emitted by the compiler
+     * or any upstream transformers. I may have to re-think this strategy if
+     * this situation is encountered in the wild.</p> 
      * 
-     * @param classNode ClassNode containing the method, used to initialise the implicit "this" reference in simple methods with no stack frames
+     * @param classNode ClassNode containing the method, used to initialise the
+     *      implicit "this" reference in simple methods with no stack frames
      * @param method MethodNode to explore
-     * @param node Node indicating the position at which to determine the locals state. The locals will be enumerated UP TO the specified
-     *     node, so bear in mind that if the specified node is itself a STORE opcode, then we will be looking at the state of the locals
-     *     PRIOR to its invokation
-     * @return A sparse array containing a view (hopefully) of the locals at the specified location
+     * @param node Node indicating the position at which to determine the locals
+     *      state. The locals will be enumerated UP TO the specified node, so
+     *      bear in mind that if the specified node is itself a STORE opcode,
+     *      then we will be looking at the state of the locals PRIOR to its
+     *      invocation
+     * @return A sparse array containing a view (hopefully) of the locals at the
+     *      specified location
      */
     public static LocalVariableNode[] getLocalsAt(ClassNode classNode, MethodNode method, AbstractInsnNode node)
     {
@@ -250,7 +279,8 @@ public abstract class ByteCodeUtilities
                         }
                         else
                         {
-                            throw new RuntimeException("Unrecognised locals opcode " + localType + " in locals array at position " + localPos + " in " + classNode.name + "." + method.name + method.desc);
+                            throw new RuntimeException("Unrecognised locals opcode " + localType + " in locals array at position " + localPos + " in "
+                                    + classNode.name + "." + method.name + method.desc);
                         }
                     }
                     else if (localType == null)
@@ -259,7 +289,8 @@ public abstract class ByteCodeUtilities
                     }
                     else
                     {
-                        throw new RuntimeException("Invalid value " + localType + " in locals array at position " + localPos + " in " + classNode.name + "." + method.name + method.desc);
+                        throw new RuntimeException("Invalid value " + localType + " in locals array at position " + localPos + " in " + classNode.name
+                                + "." + method.name + method.desc);
                     }
                 }
             }
@@ -278,14 +309,16 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Attempts to locate the appropriate entry in the local variable table for the specified local variable index at the location
-     * specified by node.
+     * Attempts to locate the appropriate entry in the local variable table for
+     * the specified local variable index at the location specified by node.
      * 
      * @param classNode Containing class
      * @param method Method
-     * @param node Instruction defining the location to get the local variable table at
+     * @param node Instruction defining the location to get the local variable
+     *      table at
      * @param var Local variable index
-     * @return a LocalVariableNode containing information about the local variable at the specified location in the specified local slot
+     * @return a LocalVariableNode containing information about the local
+     *      variable at the specified location in the specified local slot
      */
     public static LocalVariableNode getLocalVariableAt(ClassNode classNode, MethodNode method, AbstractInsnNode node, int var)
     {
@@ -309,9 +342,11 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Fetches or generates the local variable table for the specified method. Since Mojang strip the local variable table
-     * as part of the obfuscation process, we need to generate the local variable table when running obfuscated. We cache
-     * the generated tables so that we only need to do the relatively expensive calculation once per method we encounter.
+     * Fetches or generates the local variable table for the specified method.
+     * Since Mojang strip the local variable table as part of the obfuscation
+     * process, we need to generate the local variable table when running
+     * obfuscated. We cache the generated tables so that we only need to do the
+     * relatively expensive calculation once per method we encounter.
      * 
      * @param classNode Containing class
      * @param method Method
@@ -337,7 +372,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Use ASM Analyzer to generate the local variable table for the specified method
+     * Use ASM Analyzer to generate the local variable table for the specified
+     * method.
      * 
      * @param classNode Containing class
      * @param method Method
@@ -361,7 +397,8 @@ public abstract class ByteCodeUtilities
         }
 
         // Use Analyzer to generate the bytecode frames
-        Analyzer<BasicValue> analyzer = new Analyzer<BasicValue>(new SimpleVerifier(Type.getObjectType(classNode.name), objectType, interfaces, false));
+        Analyzer<BasicValue> analyzer = new Analyzer<BasicValue>(new SimpleVerifier(Type.getObjectType(classNode.name),
+                objectType, interfaces, false));
         try
         {
             analyzer.analyze(classNode.name, method);
@@ -456,10 +493,11 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Get the source code name for the specified type
+     * Get the source code name for the specified type.
      * 
      * @param type Type to generate a friendly name for
-     * @return String representation of the specified type, eg "int" for an integer primitive or "String" for java.lang.String
+     * @return String representation of the specified type, eg "int" for an
+     *      integer primitive or "String" for java.lang.String
      */
     public static String getTypeName(Type type)
     {
@@ -485,7 +523,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Finds a method in the target class, uses names specified in the {@link Obfuscated} annotation if present
+     * Finds a method in the target class, uses names specified in the
+     * {@link Obfuscated} annotation if present.
      * 
      * @param targetClass Class to search in
      * @param searchFor Method to search for
@@ -495,7 +534,9 @@ public abstract class ByteCodeUtilities
         for (MethodNode target : targetClass.methods)
         {
             if (target.name.equals(searchFor.name) && target.desc.equals(searchFor.desc))
+            {
                 return target;
+            }
         }
 
         AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getVisibleAnnotation(searchFor, Obfuscated.class);
@@ -506,7 +547,9 @@ public abstract class ByteCodeUtilities
                 for (MethodNode target : targetClass.methods)
                 {
                     if (target.name.equals(obfuscatedName) && target.desc.equals(searchFor.desc))
+                    {
                         return target;
+                    }
                 }
             }
         }
@@ -515,7 +558,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Finds a field in the target class, uses names specified in the {@link Obfuscated} annotation if present
+     * Finds a field in the target class, uses names specified in the
+     * {@link Obfuscated} annotation if present
      * 
      * @param targetClass Class to search in
      * @param searchFor Field to search for
@@ -525,7 +569,9 @@ public abstract class ByteCodeUtilities
         for (FieldNode target : targetClass.fields)
         {
             if (target.name.equals(searchFor.name))
+            {
                 return target;
+            }
         }
 
         AnnotationNode obfuscatedAnnotation = ByteCodeUtilities.getVisibleAnnotation(searchFor, Obfuscated.class);
@@ -536,7 +582,9 @@ public abstract class ByteCodeUtilities
                 for (FieldNode target : targetClass.fields)
                 {
                     if (target.name.equals(obfuscatedName))
+                    {
                         return target;
+                    }
                 }
             }
         }
@@ -545,7 +593,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Find a method in the target class which matches the specified method name and descriptor
+     * Find a method in the target class which matches the specified method name
+     * and descriptor
      * 
      * @param classNode
      * @param searchFor
@@ -558,7 +607,9 @@ public abstract class ByteCodeUtilities
         for (MethodNode method : classNode.methods)
         {
             if (searchFor.matches(method.name, ordinal++) && method.desc.equals(desc))
+            {
                 return method;
+            }
         }
 
         return null;
@@ -577,7 +628,9 @@ public abstract class ByteCodeUtilities
         for (FieldNode field : classNode.fields)
         {
             if (searchFor.matches(field.name, ordinal++))
+            {
                 return field;
+            }
         }
 
         return null;
@@ -687,7 +740,8 @@ public abstract class ByteCodeUtilities
     }
 
     /**
-     * Get an annotation of the specified class from the supplied list of annotations, returns null if no matching annotation was found
+     * Get an annotation of the specified class from the supplied list of
+     * annotations, returns null if no matching annotation was found
      */
     public static AnnotationNode getAnnotation(List<AnnotationNode> annotations, String annotationType)
     {
@@ -696,7 +750,9 @@ public abstract class ByteCodeUtilities
             for (AnnotationNode annotation : annotations)
             {
                 if (annotationType.equals(annotation.desc))
+                {
                     return annotation;
+                }
             }
         }
 
@@ -723,7 +779,9 @@ public abstract class ByteCodeUtilities
     public static <T> T getAnnotationValue(AnnotationNode annotation, String key)
     {
         if (annotation == null || annotation.values == null)
+        {
             return null;
+        }
 
         boolean getNextValue = false;
         for (Object value : annotation.values)
@@ -768,7 +826,7 @@ public abstract class ByteCodeUtilities
      */
     public static String generateDescriptor(int obfType, Object returnType, Object... args)
     {
-        StringBuilder sb = new StringBuilder().append('(');;
+        StringBuilder sb = new StringBuilder().append('(');
 
         for (Object arg : args)
         {

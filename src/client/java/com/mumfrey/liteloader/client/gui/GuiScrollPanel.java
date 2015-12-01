@@ -129,7 +129,8 @@ class GuiScrollPanel extends GuiPanel
         glPopMatrix();
 
         // Update and draw scroll bar
-        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.left + this.width - 5, this.top, 5, this.height, Math.max(this.height, this.contentHeight));
+        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, this.left + this.width - 5, this.top, 5, this.height,
+                Math.max(this.height, this.contentHeight));
     }
 
     @Override
@@ -153,7 +154,9 @@ class GuiScrollPanel extends GuiPanel
         if (mouseButton == 0)
         {
             if (this.scrollBar.wasMouseOver())
+            {
                 this.scrollBar.setDragging(true);
+            }
         }
     }
 

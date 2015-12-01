@@ -106,7 +106,8 @@ public class GuiModListPanel extends Gui
         int titleColour    = this.getTitleColour(selected);
         int statusColour   = this.getStatusColour(selected);
 
-        this.drawGradientRect(xPosition, yPosition, xPosition + width, yPosition + GuiModListPanel.PANEL_HEIGHT, gradientColour, GuiModListPanel.GRADIENT_COLOUR2);
+        this.drawGradientRect(xPosition, yPosition, xPosition + width, yPosition + GuiModListPanel.PANEL_HEIGHT, gradientColour,
+                GuiModListPanel.GRADIENT_COLOUR2);
 
         String titleText = this.owner.getTitleText();
         String versionText = this.owner.getVersionText();
@@ -128,7 +129,8 @@ public class GuiModListPanel extends Gui
 
         for (ModInfoDecorator decorator : this.decorators)
         {
-            decorator.onDrawListEntry(mouseX, mouseY, partialTicks, xPosition, yPosition, width, GuiModListPanel.PANEL_HEIGHT, selected, this.modInfo, gradientColour, titleColour, statusColour);
+            decorator.onDrawListEntry(mouseX, mouseY, partialTicks, xPosition, yPosition, width, GuiModListPanel.PANEL_HEIGHT, selected,
+                    this.modInfo, gradientColour, titleColour, statusColour);
         }
     }
 
@@ -172,7 +174,8 @@ public class GuiModListPanel extends Gui
             if (tooltipText != null)
             {
                 glDisableClipping();
-                GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, tooltipText, mouseX, mouseY, 4096, 4096, GuiModListPanel.WHITE, GuiModListPanel.BLEND_HALF & GuiModListPanel.BLACK);
+                GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, tooltipText, mouseX, mouseY, 4096, 4096, GuiModListPanel.WHITE,
+                        GuiModListPanel.BLEND_HALF & GuiModListPanel.BLACK);
                 glEnableClipping();
             }
 
@@ -187,7 +190,10 @@ public class GuiModListPanel extends Gui
      */
     protected int getGradientColour(boolean selected)
     {
-        return GuiModListPanel.BLEND_2THRDS & (this.owner.isErrored() ? (selected ? GuiModListPanel.ERROR_GRADIENT_COLOUR : GuiModListPanel.ERROR_GRADIENT_COLOUR2) : (selected ? (this.owner.isExternal() ? GuiModListPanel.EXTERNAL_ENTRY_COLOUR : this.brandColour) : GuiModListPanel.BLACK));
+        return GuiModListPanel.BLEND_2THRDS
+            & (this.owner.isErrored()
+                    ? (selected ? GuiModListPanel.ERROR_GRADIENT_COLOUR : GuiModListPanel.ERROR_GRADIENT_COLOUR2)
+                    : (selected ? (this.owner.isExternal() ? GuiModListPanel.EXTERNAL_ENTRY_COLOUR : this.brandColour) : GuiModListPanel.BLACK));
     }
 
     /**

@@ -20,7 +20,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
-
+import com.google.common.collect.Maps;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
@@ -30,29 +30,40 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * EventTransformer is the spiritual successor to the CallbackInjectionTransformer and is a more advanced and flexible
- * version of the same premise. Like the CallbackInjectionTransformer, it can be used to inject callbacks intelligently
- * into a target method, however it has the following additional capabilities which make it more flexible and scalable:
+ * EventTransformer is the spiritual successor to the
+ * <tt>CallbackInjectionTransformer</tt> and is a more advanced and flexible
+ * version of the same premise. Like the CallbackInjectionTransformer, it can be
+ * used to inject callbacks intelligently into a target method, however it has
+ * the following additional capabilities which make it more flexible and
+ * scalable:
  * 
- *    + Injections are not restricted to RETURN opcodes or profiler invokations, each injection is determined by
- *      supplying an InjectionPoint instance to the {@code addEvent} method which is used to find the injection 
- *      point(s) in the method
+ * <ul>
+ *     <li>Injections are not restricted to RETURN opcodes or profiler
+ *     invocations, each injection is determined by supplying an InjectionPoint
+ *     instance to the {@code addEvent} method which is used to find the
+ *     injection point(s) in the method.</li>
  *      
- *    + Injected events can optionally be specified as *cancellable* which allows method execution to be pre-emptively
- *      halted based on the cancellation status of the event. For methods with a return value, the return value may
- *      be specified by the event handler.
+ *     <li>Injected events can optionally be specified as *cancellable* which
+ *     allows method execution to be pre-emptively halted based on the
+ *     cancellation status of the event. For methods with a return value, the
+ *     return value may be specified by the event handler.</li>
  *      
- *    + Injected events call back against a dynamically-generated proxy class, this means that it is no longer necessary
- *      to provide your own implementation of a static callback proxy, events can call back directly against handler
- *      methods in your own codebase.
+ *     <li>Injected events call back against a dynamically-generated proxy
+ *     class, this means that it is no longer necessary to provide your own
+ *     implementation of a static callback proxy, events can call back directly
+ *     against handler methods in your own codebase.</li>
  *      
- *    + Event injections are more intelligent about injecting at arbitrary points in the bytecode without corrupting the
- *      local stack, and increase MAXS as required.
+ *     <li>Event injections are more intelligent about injecting at arbitrary
+ *     points in the bytecode without corrupting the local stack, and increase
+ *     MAXS as required.</li>
  *      
- *    + Event injections do not "collide" like callback injections do - this means that if multiple events are injected
- *      by multiple sources at the same point in the bytecode, then all event handlers will receive and handle the event
- *      in one go. To provide for this, each event handler is defined with an intrinsic "priority" which determines its
- *      call order when this situation occurs
+ *     <li>Event injections do not "collide" like callback injections do - this
+ *     means that if multiple events are injected by multiple sources at the
+ *     same point in the bytecode, then all event handlers will receive and
+ *     handle the event in one go. To provide for this, each event handler is
+ *     defined with an intrinsic "priority" which determines its call order when
+ *     this situation occurs</li>
+ * </ul>
  * 
  * @author Adam Mummery-Smith
  */
@@ -63,9 +74,10 @@ public final class EventTransformer extends ClassTransformer
     public static final boolean VALIDATE = Booleans.parseBoolean(System.getProperty("liteloader.debug.validate"), false);
 
     /**
-     * Multidimensional map of class names -> target method signatures -> events to inject 
+     * Multidimensional map of class names -> target method signatures -> events
+     * to inject. 
      */
-    private static Map<String, Map<String, Map<Event, InjectionPoint>>> eventMappings = new HashMap<String, Map<String, Map<Event, InjectionPoint>>>();
+    private static Map<String, Map<String, Map<Event, InjectionPoint>>> eventMappings = Maps.newHashMap();
 
     private static AccessorTransformer accessorTransformer;
 
@@ -140,7 +152,9 @@ public final class EventTransformer extends ClassTransformer
         {
             if (injectionPoint.captureLocals != this.captureLocals)
             {
-                throw new RuntimeException("Overlapping injection points defined with incompatible settings. Attempting to handle " + injectionPoint + " with capture locals [" + injectionPoint.captureLocals + "] but already defined injection point with [" + this.captureLocals + "]");
+                throw new RuntimeException("Overlapping injection points defined with incompatible settings. Attempting to handle "
+                        + injectionPoint + " with capture locals [" + injectionPoint.captureLocals + "] but already defined injection point with ["
+                        + this.captureLocals + "]");
             }
         }
 
@@ -339,7 +353,8 @@ public final class EventTransformer extends ClassTransformer
                                 LocalVariableNode local = locals[i];
                                 if (local != null)
                                 {
-                                    LiteLoaderLogger.debug("    Local[%d] %s %s", i, ByteCodeUtilities.getTypeName(Type.getType(local.desc)), local.name);
+                                    LiteLoaderLogger.debug("    Local[%d] %s %s", i, ByteCodeUtilities.getTypeName(Type.getType(local.desc)),
+                                            local.name);
                                 }
                             }
                             LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
@@ -365,9 +380,11 @@ public final class EventTransformer extends ClassTransformer
         Event head = injection.getHead();
 
         Verbosity verbosity = head.isVerbose() ? Verbosity.NORMAL : Verbosity.VERBOSE;
-        LiteLoaderLogger.info(verbosity, "Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name, ClassTransformer.getSimpleClassName(classNode));
+        LiteLoaderLogger.info(verbosity, "Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name,
+                ClassTransformer.getSimpleClassName(classNode));
 
-        MethodNode handler = head.inject(injectionPoint, injection.isCancellable(), this.globalEventID, injection.captureLocals(), injection.getLocalTypes());
+        MethodNode handler = head.inject(injectionPoint, injection.isCancellable(), this.globalEventID, injection.captureLocals(),
+                injection.getLocalTypes());
         injection.addEventsToHandler(handler);
 
         this.globalEventID++;

@@ -32,9 +32,10 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Wrapper for file which represents a mod file to load with associated version information and
- * metadata. Retrieve this from litemod.json at enumeration time. We also override comparable to 
- * provide our own custom sorting logic based on version info.
+ * Wrapper for file which represents a mod file to load with associated version
+ * information and metadata. Retrieve this from litemod.json at enumeration
+ * time. We also override comparable to provide our own custom sorting logic
+ * based on version info.
  *
  * @author Adam Mummery-Smith
  */
@@ -53,12 +54,14 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
     protected static Gson gson = new Gson();
 
     /**
-     * True if the metadata information is parsed successfully, the mod will be added
+     * True if the metadata information is parsed successfully, the mod will be
+     * added.
      */
     protected boolean valid = false;
 
     /**
-     * Name of the mod specified in the JSON file, this can be any string but should be the same between mod versions
+     * Name of the mod specified in the JSON file, this can be any string but
+     * should be the same between mod versions.
      */
     protected String modName;
 
@@ -73,7 +76,8 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
     protected List<String> classTransformerClassNames = new ArrayList<String>();
 
     /**
-     * File time stamp, used as sorting criteria when no revision information is found
+     * File time stamp, used as sorting criteria when no revision information is
+     * found.
      */
     protected long timeStamp;
 
@@ -83,12 +87,14 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
     protected float revision = 0.0F;
 
     /**
-     * True if the revision number was successfully read, used as a semaphore so that we know when revision is a valid number
+     * True if the revision number was successfully read, used as a semaphore so
+     * that we know when revision is a valid number.
      */
     protected boolean hasRevision = false;
 
     /**
-     * ALL of the parsed metadata from the file, associated with the mod later on for retrieval via the loader
+     * ALL of the parsed metadata from the file, associated with the mod later
+     * on for retrieval via the loader.
      */
     protected Map<String, Object> metaData = new HashMap<String, Object>();
 
@@ -154,7 +160,8 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
             }
             catch (JsonSyntaxException jsx)
             {
-                LiteLoaderLogger.warning("Error reading %s in %s, JSON syntax exception: %s", LoadableMod.METADATA_FILENAME, this.getAbsolutePath(), jsx.getMessage());
+                LiteLoaderLogger.warning("Error reading %s in %s, JSON syntax exception: %s",
+                        LoadableMod.METADATA_FILENAME, this.getAbsolutePath(), jsx.getMessage());
                 return;
             }
 
@@ -245,7 +252,9 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
 
         String descriptionKey = "description";
         if (key != null && key.length() > 0)
+        {
             descriptionKey += "." + key.toLowerCase();
+        }
 
         return this.getMetaValue(descriptionKey, this.getMetaValue("description", ""));
     }
@@ -347,7 +356,9 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
         for (String name : this.getMetaValues(metaKey, separator))
         {
             if (!Strings.isNullOrEmpty(name))
+            {
                 collection.add(name);
+            }
         }
     }
 
@@ -512,7 +523,9 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
     {
         // Prevent crash due to broken recursion
         if (depth > MAX_DISCOVERY_DEPTH)
+        {
             return classes;
+        }
 
         File[] classFiles = packagePath.listFiles();
 

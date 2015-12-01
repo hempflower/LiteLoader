@@ -48,7 +48,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     private final Gson gson;
 
     /**
-     * True if a config write has been requested but anti-hammer has prevented the write from occurring
+     * True if a config write has been requested but anti-hammer has prevented
+     * the write from occurring.
      */
     private volatile boolean dirty = false;
 
@@ -58,7 +59,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     private volatile long lastWrite = 0L;
 
     /**
-     * It's possible that writes may be requested from different threads, lock object to prevent cross-thread derp
+     * It's possible that writes may be requested from different threads, lock
+     * object to prevent cross-thread derp.
      */
     private Object readWriteLock = new Object();
 
@@ -112,7 +114,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     }
 
     /**
-     * Returns true if this writer has been invalidated but not yet been flushed to disk
+     * Returns true if this writer has been invalidated but not yet been flushed
+     * to disk.
      */
     boolean isDirty()
     {
@@ -120,7 +123,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     }
 
     /* (non-Javadoc)
-     * @see com.google.gson.InstanceCreator#createInstance(java.lang.reflect.Type)
+     * @see com.google.gson.InstanceCreator
+     *      #createInstance(java.lang.reflect.Type)
      */
     @Override
     public Exposable createInstance(Type type)
@@ -129,7 +133,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     }
 
     /**
-     * Initialise the config, reads from file and writes the initial config file if not present
+     * Initialise the config, reads from file and writes the initial config file
+     * if not present.
      */
     void init()
     {
@@ -172,7 +177,9 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
                     try
                     {
                         if (reader != null)
+                        {
                             reader.close();
+                        }
                     }
                     catch (IOException ex)
                     {
@@ -208,7 +215,9 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
                 try
                 {
                     if (writer != null)
+                    {
                         writer.close();
+                    }
                 }
                 catch (IOException ex)
                 {
@@ -219,8 +228,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     }
 
     /**
-     * Write the config to file, respecting anti-hammer and queuing the write if not
-     * enough time has elapsed
+     * Write the config to file, respecting anti-hammer and queuing the write if
+     * not enough time has elapsed.
      */
     void invalidate()
     {
@@ -249,7 +258,7 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
             {
                 this.write();
             }
-        }		
+        }
     }
 
     /**
@@ -264,7 +273,8 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     }
 
     /**
-     * Factory method which creates and intialises a new ExposableConfigWriter for the specified exposable object and strategy
+     * Factory method which creates and intialises a new ExposableConfigWriter
+     * for the specified exposable object and strategy.
      * 
      * @param exposable
      * @param strategy
@@ -273,7 +283,9 @@ public final class ExposableConfigWriter implements InstanceCreator<Exposable>
     static ExposableConfigWriter create(Exposable exposable, ConfigStrategy strategy, String fileName, boolean aggressive)
     {
         if (!fileName.toLowerCase().endsWith(".json"))
+        {
             fileName = fileName + ".json";
+        }
 
         File configFile = strategy.getFileForStrategy(fileName);
 

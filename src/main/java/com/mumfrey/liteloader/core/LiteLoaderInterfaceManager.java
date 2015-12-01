@@ -21,10 +21,12 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * The interface manager handles the allocation of interface consumers (implementors) to interface providers. During
- * startup, registered providers are enumerated and handler mappings are created for every consumable interface the
- * provider supports. Later on, consumers are enumerated against the available handler mappings and registered with
- * the providers by calling the appropriate registration method. 
+ * The interface manager handles the allocation of interface consumers
+ * (implementors) to interface providers. During startup, registered providers
+ * are enumerated and handler mappings are created for every consumable
+ * interface the provider supports. Later on, consumers are enumerated against
+ * the available handler mappings and registered with the providers by calling
+ * the appropriate registration method. 
  *
  * @author Adam Mummery-Smith
  */
@@ -33,8 +35,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     static int handlerAllocationOrder = 0;
 
     /**
-     * InterfaceHandler describes a mapping of a consumable interface to an InterfaceProvider instance and appropriate
-     * consumer registration method (which will be invoked via reflection). 
+     * InterfaceHandler describes a mapping of a consumable interface to an
+     * InterfaceProvider instance and appropriate consumer registration method
+     * (which will be invoked via reflection). 
      * 
      * @author Adam Mummery-Smith
      */
@@ -51,7 +54,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         public final int order;
 
         /**
-         * Indicates that this handler must be the exclusive hander for this interface
+         * Indicates that this handler must be the exclusive hander for this
+         * interface
          */
         public final boolean exclusive;
 
@@ -66,7 +70,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         public final Class<? extends Listener> interfaceType;
 
         /**
-         * List of registered listeners, so we can avoid registering the same listener multiple times
+         * List of registered listeners, so we can avoid registering the same
+         * listener multiple times
          */
         private final List<Listener> registeredListeners = new ArrayList<Listener>();
 
@@ -116,7 +121,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
             {
                 if (method.getParameterTypes().length == 1 && method.getParameterTypes()[0].equals(interfaceType))
                 {
-                    LiteLoaderLogger.debug("Found method %s for registering %s with provider %s", method.getName(), interfaceType, providerClass.getSimpleName());
+                    LiteLoaderLogger.debug("Found method %s for registering %s with provider %s",
+                            method.getName(), interfaceType, providerClass.getSimpleName());
                     return method;
                 }
             }
@@ -125,7 +131,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         }
 
         /**
-         * After instantiation, called to check that a valid registration method was located
+         * After instantiation, called to check that a valid registration method
+         * was located
          */
         public boolean isValid()
         {
@@ -133,7 +140,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         }
 
         /**
-         * Proxy method which calls the registration method in the InterfaceProvider using reflection
+         * Proxy method which calls the registration method in the
+         * InterfaceProvider using reflection
          * 
          * @param listener
          */
@@ -148,7 +156,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
 
                 try
                 {
-                    LiteLoaderLogger.debug("Calling registration method %s for %s on %s with %s", this.registrationMethod.getName(), this.interfaceType.getSimpleName(), this.provider.getClass().getSimpleName(), listener.getClass().getSimpleName());
+                    LiteLoaderLogger.debug("Calling registration method %s for %s on %s with %s", this.registrationMethod.getName(),
+                            this.interfaceType.getSimpleName(), this.provider.getClass().getSimpleName(), listener.getClass().getSimpleName());
                     this.registrationMethod.invoke(this.provider, listener);
 
                     this.registeredListeners.add(listener);
@@ -198,20 +207,23 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     protected final FastIterable<InterfaceObserver> observers = new HandlerList<InterfaceObserver>(InterfaceObserver.class);
 
     /**
-     * True once the initial init phase (in which all registered providers are initialised) is completed, we
-     * use this flag to indicate that any NEW providers should be immediately initialised.
+     * True once the initial init phase (in which all registered providers are
+     * initialised) is completed, we use this flag to indicate that any <b>new
+     * </b> providers should be immediately initialised.
      */
     private boolean initDone = false;
 
     /**
-     * The last startup phase causes all currently registered consumers to be enumerated and offered to all
-     * currently registered listeners, once this initial registration is done any NEW consumers should be 
-     * immediately offered to all registered listeners.
+     * The last startup phase causes all currently registered consumers to be
+     * enumerated and offered to all currently registered listeners, once this
+     * initial registration is done any <b>new</b> consumers should immediately
+     * offered to all registered listeners.
      */
     private boolean registrationDone = false;
 
     /**
-     * Registratiob Delegate which is active for the current registration process
+     * Registratiob Delegate which is active for the current registration
+     * process.
      */
     private InterfaceRegistrationDelegate activeRegistrationDelegate;
 
@@ -248,7 +260,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         {
             for (InterfaceProvider provider : apiInterfaceProviders)
             {
-                LiteLoaderLogger.info(Verbosity.REDUCED, "Registering interface provider %s for API %s", provider.getClass().getName(), api.getName());
+                LiteLoaderLogger.info(Verbosity.REDUCED, "Registering interface provider %s for API %s",
+                        provider.getClass().getName(), api.getName());
                 if (this.registerProvider(provider))
                 {
                     this.providerToAPIMap.put(provider, api);
@@ -304,7 +317,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
             }
             catch (Throwable th)
             {
-                LiteLoaderLogger.warning(th, "Error while registering interface provider %s: %s", provider.getClass().getSimpleName(), th.getClass().getSimpleName());
+                LiteLoaderLogger.warning(th, "Error while registering interface provider %s: %s",
+                        provider.getClass().getSimpleName(), th.getClass().getSimpleName());
             }
         }
 
@@ -321,7 +335,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry#registerInterface(com.mumfrey.liteloader.api.InterfaceProvider, java.lang.Class)
+     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry
+     *      #registerInterface(
+     *      com.mumfrey.liteloader.api.InterfaceProvider, java.lang.Class)
      */
     @Override
     public void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType)
@@ -330,7 +346,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry#registerInterface(com.mumfrey.liteloader.api.InterfaceProvider, java.lang.Class, int)
+     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry
+     *      #registerInterface(com.mumfrey.liteloader.api.InterfaceProvider,
+     *      java.lang.Class, int)
      */
     @Override
     public void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority)
@@ -339,7 +357,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry#registerInterface(com.mumfrey.liteloader.api.InterfaceProvider, java.lang.Class, int, boolean)
+     * @see com.mumfrey.liteloader.interfaces.InterfaceRegistry
+     *      #registerInterface(com.mumfrey.liteloader.api.InterfaceProvider,
+     *      java.lang.Class, int, boolean)
      */
     @Override
     public void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority, boolean exclusive)
@@ -350,7 +370,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
             // Check if a this provider is already registered
             if (this.getProvidersFor(interfaceType).contains(provider))
             {
-                throw new InvalidProviderException("Attempting to register duplicate mapping for provider " + provider.getClass() + " to " + interfaceType);
+                throw new InvalidProviderException("Attempting to register duplicate mapping for provider "
+                        + provider.getClass() + " to " + interfaceType);
             }
 
             if (exclusive)
@@ -365,7 +386,7 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
                 for (Listener consumer : this.listeners)
                 {
                     handler.registerListener(consumer);
-                }				
+                }
             }
             else if (this.activeRegistrationDelegate != null)
             {
@@ -388,7 +409,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
         for (InterfaceHandler handler : this.interfaceHandlers)
         {
             if (handler.interfaceType == interfaceType)
+            {
                 handlers.add(handler.provider);
+            }
         }
 
         if (this.activeRegistrationDelegate != null)
@@ -396,7 +419,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
             for (InterfaceHandler handler : this.activeRegistrationDelegate.getHandlers())
             {
                 if (handler.interfaceType == interfaceType)
+                {
                     handlers.add(handler.provider);
+                }
             }
         }
 
@@ -417,7 +442,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
             {
                 if (handler.exclusive)
                 {
-                    throw new RuntimeException("Attempt to register an exclusive handler when an exclusive handler already exists for " + interfaceType);
+                    throw new RuntimeException("Attempt to register an exclusive handler when an exclusive handler already exists for "
+                            + interfaceType);
                 }
 
                 iter.remove();
@@ -426,8 +452,8 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     }
 
     /**
-     * Returns the API which supplied a particular provider, if the provider was supplied by an API, otherwise
-     * returns null
+     * Returns the API which supplied a particular provider, if the provider was
+     * supplied by an API, otherwise returns null.
      * 
      * @param provider
      */
@@ -451,8 +477,9 @@ public class LiteLoaderInterfaceManager implements InterfaceRegistry
     }
 
     /**
-     * Offers an interface listener to the manager, the listener will actually be registered with the interface
-     * handlers at the end of the startup process
+     * Offers an interface listener to the manager, the listener will actually
+     * be registered with the interface handlers at the end of the startup
+     * process.
      * 
      * @param listener
      */

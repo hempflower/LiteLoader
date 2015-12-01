@@ -34,7 +34,7 @@ public abstract class ChatUtilities
      * Get a chat style from a legacy formatting code
      * 
      * @param code Code
-     * @return
+     * @return chat style
      */
     public static ChatStyle getChatStyleFromCode(char code)
     {
@@ -64,7 +64,8 @@ public abstract class ChatUtilities
     }
 
     /**
-     * Convert a component containing text formatted with legacy codes to a native ChatComponent structure
+     * Convert a component containing text formatted with legacy codes to a
+     * native ChatComponent structure.
      */
     public static IChatComponent convertLegacyCodes(IChatComponent chat)
     {

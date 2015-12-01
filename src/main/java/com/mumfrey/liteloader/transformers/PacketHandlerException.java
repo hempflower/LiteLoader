@@ -3,7 +3,8 @@ package com.mumfrey.liteloader.transformers;
 import net.minecraft.network.Packet;
 
 /**
- * Exception which a packet handler can throw in order to cancel further handling of the event 
+ * Exception which a packet handler can throw in order to cancel further
+ * handling of the event.
  *
  * @author Adam Mummery-Smith
  */

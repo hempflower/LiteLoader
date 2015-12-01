@@ -36,7 +36,8 @@ public interface ContainerRegistry
     }
 
     /**
-     * Register an enabled container, removes the container from the disabled containers list if present
+     * Register an enabled container, removes the container from the disabled
+     * containers list if present.
      */
     public abstract void registerEnabledContainer(LoadableMod<?> container);
 

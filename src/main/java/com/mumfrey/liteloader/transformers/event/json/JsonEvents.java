@@ -13,12 +13,13 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 
 /**
- * Serialisable class which represents a set of event injection definitions. Instances of this class are
- * created by deserialising with JSON. The JSON string should be passed to the static {@link #parse} method
- * which returns an instance of the class.
+ * Serialisable class which represents a set of event injection definitions.
+ * Instances of this class are created by deserialising with JSON. The JSON
+ * string should be passed to the static {@link #parse} method which returns an
+ * instance of the class.
  * 
- * After parsing, the events defined here can be injected into an event transformer instance by calling the
- * {@link #register} method
+ * <p>After parsing, the events defined here can be injected into an event
+ * transformer instance by calling the {@link #register} method.</p>
  * 
  * @author Adam Mummery-Smith
  */
@@ -29,7 +30,8 @@ public class JsonEvents implements Serializable, ObfProvider
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
-     * Tokens are an instruction to the parser to look up a value rather than using a literal
+     * Tokens are an instruction to the parser to look up a value rather than
+     * using a literal.
      */
     private static final Pattern tokenPattern = Pattern.compile("^\\$\\{([a-zA-Z0-9_\\-\\.\\$]+)\\}$");
 
@@ -112,7 +114,8 @@ public class JsonEvents implements Serializable, ObfProvider
         }
         catch (Exception ex)
         {
-            throw new InvalidEventJsonException("An error occurred whilst parsing the event definition: " + ex.getClass().getSimpleName() + ": " + ex.getMessage(), ex);
+            throw new InvalidEventJsonException("An error occurred whilst parsing the event definition: " + ex.getClass().getSimpleName()
+                    + ": " + ex.getMessage(), ex);
         }
     }
 
@@ -122,7 +125,8 @@ public class JsonEvents implements Serializable, ObfProvider
     }
 
     /**
-     * Parse a token name, returns the token name as a string if the token is valid, or null if the token is not valid
+     * Parse a token name, returns the token name as a string if the token is
+     * valid, or null if the token is not valid
      * 
      * @param token
      */
@@ -140,7 +144,8 @@ public class JsonEvents implements Serializable, ObfProvider
     }
 
     /**
-     * Called to register all events defined in this object into the specified transformer
+     * Called to register all events defined in this object into the specified
+     * transformer.
      * 
      * @param transformer
      */
@@ -158,7 +163,8 @@ public class JsonEvents implements Serializable, ObfProvider
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.transformers.ObfProvider#getByName(java.lang.String)
+     * @see com.mumfrey.liteloader.transformers.ObfProvider
+     *      #getByName(java.lang.String)
      */
     @Override
     public Obf getByName(String name)
@@ -166,10 +172,10 @@ public class JsonEvents implements Serializable, ObfProvider
         return this.obfuscation.getByName(name);
     }
 
-    //	public String toJson()
-    //	{
-    //		return JsonEvents.gson.toJson(this);
-    //	}
+//    public String toJson()
+//    {
+//        return JsonEvents.gson.toJson(this);
+//    }
 
     /**
      * Parse a new JsonEvents object from the supplied JSON string
@@ -192,7 +198,8 @@ public class JsonEvents implements Serializable, ObfProvider
         }
         catch (Throwable th)
         {
-            throw new InvalidEventJsonException("An error occurred whilst parsing the event definition: " + th.getClass().getSimpleName() + ": " + th.getMessage(), th);
+            throw new InvalidEventJsonException("An error occurred whilst parsing the event definition: " + th.getClass().getSimpleName()
+                    + ": " + th.getMessage(), th);
         }
     }
 }

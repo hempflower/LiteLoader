@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mumfrey.liteloader.Configurable;
 import com.mumfrey.liteloader.LiteMod;
@@ -22,8 +23,8 @@ public class ConfigManager
     /**
      * Mod config panel classes
      */
-    private Map<Class<? extends LiteMod>, Class<? extends ConfigPanel>> configPanels = new HashMap<Class<? extends LiteMod>, Class<? extends ConfigPanel>>();
-
+    private Map<Class<? extends LiteMod>, Class<? extends ConfigPanel>> configPanels = Maps.newHashMap();
+    
     /**
      * Mod config writers
      */
@@ -35,7 +36,8 @@ public class ConfigManager
     private List<ExposableConfigWriter> configWriterList = new LinkedList<ExposableConfigWriter>();
 
     /**
-     * Register a mod, adds the config panel class to the map if the mod implements Configurable
+     * Register a mod, adds the config panel class to the map if the mod
+     * implements Configurable
      */
     public void registerMod(LiteMod mod)
     {
@@ -86,7 +88,9 @@ public class ConfigManager
             fileName = exposable.getClass().getSimpleName().toLowerCase();
 
             if (fileName.startsWith("litemod"))
+            {
                 fileName = fileName.substring(7);
+            }
         }
 
         ExposableConfigWriter configWriter = ExposableConfigWriter.create(exposable, strategy, fileName, aggressive);
@@ -98,7 +102,8 @@ public class ConfigManager
     }
 
     /**
-     * If the specified mod has a versioned config strategy, attempt to copy the config
+     * If the specified mod has a versioned config strategy, attempt to copy the
+     * config.
      * 
      * @param mod
      * @param newConfigPath
@@ -140,7 +145,8 @@ public class ConfigManager
     }
 
     /**
-     * Instance a new config panel for the specified mod class if one is available
+     * Instance a new config panel for the specified mod class if one is
+     * available.
      * 
      * @param modClass
      */
@@ -176,8 +182,8 @@ public class ConfigManager
     }
 
     /**
-     * Invalidate the specified mod config, cause it to be written to disk or scheduled for writing
-     * if it has been written recent
+     * Invalidate the specified mod config, cause it to be written to disk or
+     * scheduled for writing if it has been written recently.
      * 
      * @param exposable
      */
@@ -190,7 +196,8 @@ public class ConfigManager
     }
 
     /**
-     * Tick all of the configuration writers, handles latent writes for anti-hammer strategy
+     * Tick all of the configuration writers, handles latent writes for
+     * anti-hammer strategy.
      */
     public void onTick()
     {

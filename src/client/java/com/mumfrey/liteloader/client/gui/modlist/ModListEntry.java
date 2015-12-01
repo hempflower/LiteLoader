@@ -15,8 +15,9 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 
 /**
- * Represents a mod in the mod info screen, keeps track of mod information and provides methods
- * for displaying the mod in the mod list and drawing the selected mod info
+ * Represents a mod in the mod info screen, keeps track of mod information and
+ * provides methods for displaying the mod in the mod list and drawing the
+ * selected mod info.
  *
  * @author Adam Mummery-Smith
  */
@@ -56,13 +57,15 @@ public class ModListEntry
     private Set<String> missingAPIs;
 
     /**
-     * Whether the mod can be toggled, not all mods support this, eg. internal mods
+     * Whether the mod can be toggled, not all mods support this, eg. internal
+     * mods
      */
     private boolean canBeToggled;
 
     /**
-     * Whether the mod WILL be enabled on the next startup, if the mod is active and has been disabled this
-     * will be false, and if it's currently disabled by has been toggled then it will be true 
+     * Whether the mod WILL be enabled on the next startup, if the mod is active
+     * and has been disabled this will be false, and if it's currently disabled
+     * by has been toggled then it will be true. 
      */
     private boolean willBeEnabled;
 
@@ -85,7 +88,8 @@ public class ModListEntry
      * @param decorators
      * @param modInfo
      */
-    ModListEntry(ModList modList, LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour, List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
+    ModListEntry(ModList modList, LiteLoaderMods mods, LoaderEnvironment environment, FontRenderer fontRenderer, int brandColour,
+            List<ModInfoDecorator> decorators, ModInfo<?> modInfo)
     {
         this.modList       = modList;
         this.mods          = mods;
@@ -94,7 +98,7 @@ public class ModListEntry
         this.isActive      = modInfo.isActive();
         this.isValid       = modInfo.isValid();
         this.canBeToggled  = modInfo.isToggleable() && mods.getEnabledModsList().saveAllowed();
-        this.willBeEnabled = mods.isModEnabled(this.modInfo.getIdentifier());;
+        this.willBeEnabled = mods.isModEnabled(this.modInfo.getIdentifier());
         this.isExternal    = modInfo.getContainer().isExternalJar();
         this.isErrored     = modInfo.getStartupErrors() != null && modInfo.getStartupErrors().size() > 0;
 
@@ -140,7 +144,9 @@ public class ModListEntry
     public void onTick()
     {
         if (this.doubleClickTime > 0)
+        {
             this.doubleClickTime--;
+        }
     }
 
     public void mousePressed(int mouseX, int mouseY, int mouseButton)

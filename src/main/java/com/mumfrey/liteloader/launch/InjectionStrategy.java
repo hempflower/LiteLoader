@@ -5,7 +5,7 @@ package com.mumfrey.liteloader.launch;
  *
  * @author Adam Mummery-Smith
  */
-public class InjectionStrategy
+public final class InjectionStrategy
 {
     /**
      * Defines a position for a classpath injection strategy
@@ -15,17 +15,20 @@ public class InjectionStrategy
     public enum InjectionPosition
     {
         /**
-         * Inject the URL at the bottom (end) of the classpath, lowest priority - this is the default
+         * Inject the URL at the bottom (end) of the classpath, lowest priority
+         * - this is the default.
          */
         Bottom,
 
         /**
-         * Inject the URL at the base of the classpath (directly above the minecraft jar but below all other libs)
+         * Inject the URL at the base of the classpath (directly above the
+         * minecraft jar but below all other libs).
          */
         Base,
 
         /**
-         * Inject the URL at the top (start) of the classpath, highest priority above all other libs
+         * Inject the URL at the top (start) of the classpath, highest priority
+         * above all other libs.
          */
         Top,
 
@@ -80,7 +83,8 @@ public class InjectionStrategy
     private final String[] params;
 
     /**
-     * Private constructor because strategy should be created from a string using parseStrategy()
+     * Private constructor because strategy should be created from a string
+     * using parseStrategy()
      * 
      * @param injectAt
      */

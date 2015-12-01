@@ -61,28 +61,33 @@ public class LoginManager
     private File jsonFile;
 
     /**
-     * Username read from the auth JSON file, we use this as the default in the login dialog in
-     * case login fails. This is stored in the JSON even if authentication is not successful so that
-     * we can display the same username next time
+     * Username read from the auth JSON file, we use this as the default in the
+     * login dialog in case login fails. This is stored in the JSON even if
+     * authentication is not successful so that we can display the same username
+     * next time.
      */
     private String defaultUsername;
 
     /**
-     * Minecraft screen name read from the auth JSON file. Use this as default in case the login fails
-     * or is skipped (when offline) so that at least the Minecraft client has a sensible display name.
-     * Defaults to user.name when not specified
+     * Minecraft screen name read from the auth JSON file. Use this as default
+     * in case the login fails or is skipped (when offline) so that at least the
+     * Minecraft client has a sensible display name.
+     * 
+     * <p>Defaults to user.name when not specified</p>
      */
     private String defaultDisplayName = System.getProperty("user.name");
 
     /**
-     * True if login should not be attempted, skips the authentication attempt and the login dialog
+     * True if login should not be attempted, skips the authentication attempt
+     * and the login dialog.
      */
     private boolean offline = false;
 
     /**
-     * If authentication fails with token then the first attempt will be to use the user/pass specified
-     * on the command line (if any). This flag is set AFTER that first attempt so that we know to display
-     * the login dialog anyway (eg. the login on the command line was bad)
+     * If authentication fails with token then the first attempt will be to use
+     * the user/pass specified on the command line (if any). This flag is set
+     * <b>after</b> that first attempt so that we know to display the login
+     * dialog anyway (eg. the login on the command line was bad).
      */
     private boolean forceShowLoginDialog = false;
 
@@ -100,8 +105,8 @@ public class LoginManager
     }
 
     /**
-     * When authenticaion fails, we regenerate the auth service and agent because trying again with the same
-     * client data will fail.
+     * When authenticaion fails, we regenerate the auth service and agent
+     * because trying again with the same client data will fail.
      */
     public void resetAuth()
     {
@@ -181,18 +186,24 @@ public class LoginManager
     }
 
     /**
-     * Attempt to login. If authentication data are found on disk then tries first to log in with
-     * the stored token. If the token login fails then attempts to log in with the username and password
-     * specified. If no user or pass are specified or if they fail then displays a login dialog to
-     * allow the user to login. If login succeeds then the token is stored on disk and the method
-     * returns.
+     * Attempt to login. If authentication data are found on disk then tries
+     * first to log in with the stored token. If the token login fails then
+     * attempts to log in with the username and password specified. If no user
+     * or pass are specified or if they fail then displays a login dialog to
+     * allow the user to login. If login succeeds then the token is stored on
+     * disk and the method returns.
      * 
-     * If the user presses cancel in the login dialog then the method returns false.
+     * <p>If the user presses cancel in the login dialog then the method returns
+     * false.</p>
      * 
-     * @param username User name to log in with if token login fails, if null displays the login dialog immediately
-     * @param password Password to log in with if token login fails, if null displays the login dialog immediately
-     * @param remainingTries Number of loops to go through before giving up, decremented for each try, specify -1 for unlimited
-     * @return false if the user presses cancel in the login dialog, otherwise returns true
+     * @param username User name to log in with if token login fails, if null
+     *      displays the login dialog immediately
+     * @param password Password to log in with if token login fails, if null
+     *      displays the login dialog immediately
+     * @param remainingTries Number of loops to go through before giving up,
+     *      decremented for each try, specify -1 for unlimited
+     * @return false if the user presses cancel in the login dialog, otherwise
+     *      returns true
      */
     public boolean login(String username, String password, int remainingTries)
     {
@@ -246,7 +257,14 @@ public class LoginManager
 
                     if (this.offline)
                     {
-                        if (JOptionPane.showConfirmDialog(null, "<html>You have chosen to work offline. You will never be prompted to log in again.<br /><br />If you would like to re-enable login please delete the file <span style=\"color: #0000FF\">.auth.json</span> from the working dir<br />or press Cancel to return to the login dialog.</html>", "Confirm work offline", JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE) == JOptionPane.CANCEL_OPTION)
+                        if (JOptionPane.showConfirmDialog(null, "<html>You have chosen to work offline. "
+                                + "You will never be prompted to log in again.<br /><br />"
+                                + "If you would like to re-enable login please delete the file <span style=\"color: #0000FF\">.auth.json</span> "
+                                + "from the working dir<br />"
+                                + "or press Cancel to return to the login dialog.</html>",
+                                "Confirm work offline",
+                                JOptionPane.OK_CANCEL_OPTION,
+                                JOptionPane.INFORMATION_MESSAGE) == JOptionPane.CANCEL_OPTION)
                         {
                             this.offline = false;
                             remainingTries = Math.max(remainingTries, 3);
@@ -329,7 +347,8 @@ public class LoginManager
     public String getUserProperties()
     {
         PropertyMap userProperties = this.authentication.getUserProperties();
-        return userProperties != null ? (new GsonBuilder()).registerTypeAdapter(PropertyMap.class, new UserPropertiesSerializer()).create().toJson(userProperties) : "{}";
+        return userProperties != null ? (new GsonBuilder()).registerTypeAdapter(PropertyMap.class,
+                new UserPropertiesSerializer()).create().toJson(userProperties) : "{}";
     }
 
     class UserPropertiesSerializer implements JsonSerializer<PropertyMap>
@@ -376,21 +395,27 @@ public class LoginManager
             // default ctor for Gson
         }
 
-        public AuthData(YggdrasilAuthenticationService authService, YggdrasilUserAuthentication authentication, boolean workOffline, String defaultUserName, String defaultDisplayName)
+        public AuthData(YggdrasilAuthenticationService authService, YggdrasilUserAuthentication authentication, boolean workOffline,
+                String defaultUserName, String defaultDisplayName)
         {
             this.clientToken = authService.getClientToken();
             this.credentials = authentication.saveForStorage();
             this.workOffline = workOffline;
 
             if (defaultUserName != null && !this.credentials.containsKey("username"))
+            {
                 this.credentials.put("username", defaultUserName);
+            }
 
             if (defaultDisplayName != null && !this.credentials.containsKey("displayName"))
+            {
                 this.credentials.put("displayName", defaultDisplayName);
+            }
         }
 
         /**
-         * Called after Gson deserialisation to check that deserialisation was successful
+         * Called after Gson deserialisation to check that deserialisation was
+         * successful.
          */
         public boolean validate()
         {
@@ -426,7 +451,8 @@ public class LoginManager
 
         public String getDisplayName()
         {
-            return this.credentials != null && this.credentials.containsKey("displayName") ? this.credentials.get("displayName").toString() : System.getProperty("user.name");
+            return this.credentials != null && this.credentials.containsKey("displayName") 
+                    ? this.credentials.get("displayName").toString() : System.getProperty("user.name");
         }
     }
 }

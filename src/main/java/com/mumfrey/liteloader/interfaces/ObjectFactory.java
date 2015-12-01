@@ -16,8 +16,10 @@ import com.mumfrey.liteloader.util.Input;
  * 
  * @author Adam Mummery-Smith
  *
- * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
- * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
+ * @param <TClient> Type of the client runtime, "Minecraft" on client and null
+ *      on the server
+ * @param <TServer> Type of the server runtime, "IntegratedServer" on the client
+ *      "MinecraftServer" on the server 
  */
 public interface ObjectFactory<TClient, TServer extends MinecraftServer>
 {

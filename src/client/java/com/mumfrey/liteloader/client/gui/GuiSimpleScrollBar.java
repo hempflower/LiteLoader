@@ -51,7 +51,8 @@ public class GuiSimpleScrollBar extends Gui
     }
 
     /**
-     * Set the scroll value, the value is clamped between 0 and the current max value
+     * Set the scroll value, the value is clamped between 0 and the current max
+     * value.
      */
     public void setValue(int value)
     {
@@ -59,7 +60,8 @@ public class GuiSimpleScrollBar extends Gui
     }
 
     /**
-     * Offset the scroll value by the specified amount, the value is clamped between 0 and the current max value
+     * Offset the scroll value by the specified amount, the value is clamped
+     * between 0 and the current max value.
      */
     public void offsetValue(int offset)
     {

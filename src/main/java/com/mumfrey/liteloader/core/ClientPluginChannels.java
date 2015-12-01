@@ -22,7 +22,8 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
 
     protected ClientPluginChannels()
     {
-        if (ClientPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error", new InstantiationException("Only a single instance of ClientPluginChannels is allowed"));
+        if (ClientPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error",
+                new InstantiationException("Only a single instance of ClientPluginChannels is allowed"));
         ClientPluginChannels.instance = this;
     }
 
@@ -55,7 +56,9 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider
+     *      #registerInterfaces(
+     *      com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
      */
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -118,11 +121,14 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
             {
                 int failCount = 1;
                 if (this.faultingPluginChannelListeners.containsKey(pluginChannelListener))
+                {
                     failCount = this.faultingPluginChannelListeners.get(pluginChannelListener).intValue() + 1;
+                }
 
                 if (failCount >= PluginChannels.WARN_FAULT_THRESHOLD)
                 {
-                    LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s", pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
+                    LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s",
+                            pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
                     this.faultingPluginChannelListeners.remove(pluginChannelListener);
                 }
                 else

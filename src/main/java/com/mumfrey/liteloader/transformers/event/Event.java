@@ -19,16 +19,18 @@ import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * An injectable "event". An event is like a regular callback except that it is more intelligent about where
- * it can be injected in the bytecode and also supports conditional "cancellation", which is the ability to
- * conditionally return from the containing method with a custom return value.
+ * An injectable "event". An event is like a regular callback except that it is
+ * more intelligent about where it can be injected in the bytecode and also
+ * supports conditional "cancellation", which is the ability to conditionally
+ * return from the containing method with a custom return value.
  * 
  * @author Adam Mummery-Smith
  */
 public class Event implements Comparable<Event>
 {
     /**
-     * Natural ordering of events, for use with sorting events which have the same priority
+     * Natural ordering of events, for use with sorting events which have the
+     * same priority.
      */
     private static int eventOrder = 0;
 
@@ -47,7 +49,8 @@ public class Event implements Comparable<Event>
     protected final String name;
 
     /**
-     * Whether this event is cancellable - if it is cancellable then the isCancelled() -> RETURN code will be injected
+     * Whether this event is cancellable - if it is cancellable then the
+     * isCancelled() -> RETURN code will be injected.
      */
     protected final boolean cancellable;
 
@@ -64,9 +67,11 @@ public class Event implements Comparable<Event>
     private Set<MethodInfo> listeners = new HashSet<MethodInfo>();
 
     /**
-     * Method this event is currently "attached" to, we "attach" at the beginning of a method injection in order to save
-     * recalculating things like the return type and descriptor for each invokation, this means we need to calculate these
-     * things at most once for each method this event is injecting into.
+     * Method this event is currently "attached" to, we "attach" at the
+     * beginning of a method injection in order to save recalculating things
+     * like the return type and descriptor for each invocation, this means we
+     * need to calculate these things at most once for each method this event is
+     * injecting into.
      */
     protected MethodNode method;
 
@@ -76,19 +81,20 @@ public class Event implements Comparable<Event>
     protected String eventDescriptor;
 
     /**
-     * Method's original MAXS, used as a base to work out whether we need to increase the MAXS value
+     * Method's original MAXS, used as a base to work out whether we need to
+     * increase the MAXS value.
      */
     protected int methodMAXS = 0;
 
     /**
-     * True if the attached method is static, used so that we know whether to push "this" onto the stack when
-     * constructing the EventInfo, or "null"
+     * True if the attached method is static, used so that we know whether to
+     * push "this" onto the stack when constructing the EventInfo, or "null"
      */
     protected boolean methodIsStatic;
 
     /**
-     * Return type for the attached method, used to determine which EventInfo class to use and which method
-     * to invoke.
+     * Return type for the attached method, used to determine which EventInfo
+     * class to use and which method to invoke.
      */
     protected Type methodReturnType;
 
@@ -117,8 +123,9 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Creates a new event with the specified name, if an event with the specified name already exists then
-     * the existing event is returned instead.
+     * Creates a new event with the specified name, if an event with the
+     * specified name already exists then the existing event is returned
+     * instead.
      * 
      * @param name Event name (case insensitive)
      * @return new Event instance or existing Event instance
@@ -129,8 +136,9 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Creates a new event with the specified name, if an event with the specified name already exists then
-     * the existing event is returned instead.
+     * Creates a new event with the specified name, if an event with the
+     * specified name already exists then the existing event is returned
+     * instead.
      * 
      * @param name Event name (case insensitive)
      * @param cancellable True if the event should be created as cancellable
@@ -142,12 +150,14 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Creates a new event with the specified name, if an event with the specified name already exists then
-     * the existing event is returned instead.
+     * Creates a new event with the specified name, if an event with the
+     * specified name already exists then the existing event is returned
+     * instead.
      * 
      * @param name Event name (case insensitive)
      * @param cancellable True if the event should be created as cancellable
-     * @param priority Priority for the event, only used when multiple events are being injected at the same instruction
+     * @param priority Priority for the event, only used when multiple events
+     *      are being injected at the same instruction
      * @return new Event instance or existing Event instance
      */
     public static Event getOrCreate(String name, boolean cancellable, int priority)
@@ -162,7 +172,8 @@ public class Event implements Comparable<Event>
         {
             if (!event.cancellable && cancellable && defining)
             {
-                throw new IllegalArgumentException("Attempted to define the event " + event.name + " with cancellable '" + cancellable + "' but the event is already defined with cancellable is '" + event.cancellable + "'");
+                throw new IllegalArgumentException("Attempted to define the event " + event.name + " with cancellable '"
+                        + cancellable + "' but the event is already defined with cancellable is '" + event.cancellable + "'");
             }
 
             return event;
@@ -221,10 +232,12 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Attaches this event to a particular method, this occurs before injection in order to allow the event to
-     * configure its internal state appropriately for the method's signature. Since a single event may be injected
-     * into multiple target methods, and may also be injected at multiple points in the same method, this saves
-     * us recalculating this information for every injection, and instead just calculate once per method.
+     * Attaches this event to a particular method, this occurs before injection
+     * in order to allow the event to configure its internal state appropriately
+     * for the method's signature. Since a single event may be injected into
+     * multiple target methods, and may also be injected at multiple points in
+     * the same method, this saves us recalculating this information for every
+     * injection, and instead just calculate once per method.
      * 
      * @param method Method to attach to
      */
@@ -232,7 +245,8 @@ public class Event implements Comparable<Event>
     {
         if (this.method != null)
         {
-            throw new IllegalStateException("Attempted to attach the event " + this.name + " to " + method.name + " but the event was already attached to " + this.method.name + "!");
+            throw new IllegalStateException("Attempted to attach the event " + this.name + " to " + method.name
+                    + " but the event was already attached to " + this.method.name + "!");
         }
 
         this.method           = method;
@@ -244,7 +258,8 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Detach from the attached method, called once injection is completed for a particular method
+     * Detach from the attached method, called once injection is completed for a
+     * particular method.
      */
     void detach()
     {
@@ -288,7 +303,8 @@ public class Event implements Comparable<Event>
         int uninjectedCount = 0;
         int pendingInjectionCount = this.pendingInjections != null ? this.pendingInjections.size() : 0;
 
-        LiteLoaderLogger.debug("        Event: %-40s   Injected: %d   Pending: %d %s", this.name, this.injectionCount, pendingInjectionCount, this.injectionCount == 0 ? " <<< NOT INJECTED >>>" : "");
+        LiteLoaderLogger.debug("        Event: %-40s   Injected: %d   Pending: %d %s", this.name, this.injectionCount, pendingInjectionCount,
+                this.injectionCount == 0 ? " <<< NOT INJECTED >>>" : "");
         if (pendingInjectionCount > 0)
         {
             for (MethodInfo pending : this.pendingInjections)
@@ -317,17 +333,22 @@ public class Event implements Comparable<Event>
     }
 
     /**
-     * Inject bytecode for this event into the currently attached method. When multiple events want to be injected
-     * into the same method at the same point only the first event is injected, subsequent events are simply added to
-     * the same handler delegate in the EventProxy class. 
+     * Inject bytecode for this event into the currently attached method. When
+     * multiple events want to be injected into the same method at the same
+     * point only the first event is injected, subsequent events are simply
+     * added to the same handler delegate in the EventProxy class. 
      *  
-     * @param injectionPoint Point to inject code, new instructions will be injected directly ahead of the specifed insn
-     * @param cancellable Cancellable flag, if true then the cancellation code (conditional return) will be injected as well
-     * @param globalEventID Global event ID, used to map a callback to the relevant event handler delegate method in EventProxy
+     * @param injectionPoint Point to inject code, new instructions will be
+     *      injected directly ahead of the specifed insn
+     * @param cancellable Cancellable flag, if true then the cancellation code
+     *      (conditional return) will be injected as well
+     * @param globalEventID Global event ID, used to map a callback to the
+     *      relevant event handler delegate method in EventProxy
      * 
      * @return MethodNode for the event handler delegate
      */
-    final MethodNode inject(final AbstractInsnNode injectionPoint, boolean cancellable, final int globalEventID, final boolean captureLocals, final Type[] locals)
+    final MethodNode inject(final AbstractInsnNode injectionPoint, boolean cancellable, final int globalEventID, final boolean captureLocals,
+            final Type[] locals)
     {
         // Pre-flight checks
         this.validate(injectionPoint, cancellable, globalEventID);
@@ -339,7 +360,8 @@ public class Event implements Comparable<Event>
         String eventDescriptor = this.generateEventDescriptor(doCaptureLocals, locals, arguments, initialFrameSize);
 
         // Create the handler delegate method
-        MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID), eventDescriptor, null, null);
+        MethodNode handler = new MethodNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_SYNTHETIC, Event.getHandlerName(globalEventID),
+                eventDescriptor, null, null);
         Event.addMethodToActiveProxy(handler);
 
         LiteLoaderLogger.debug("Event %s is spawning handler %s in class %s", this.name, handler.name, Event.getActiveProxyRef());
@@ -413,11 +435,13 @@ public class Event implements Comparable<Event>
         if (pushReturnValue)
         {
             insns.add(new VarInsnNode(this.methodReturnType.getOpcode(Opcodes.ILOAD), marshallVar));
-            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(this.methodReturnType), false));
+            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name,
+                    EventInfo.getConstructorDescriptor(this.methodReturnType), false));
         }
         else
         {
-            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name, EventInfo.getConstructorDescriptor(), false));
+            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, this.eventInfoClass, Obf.constructor.name,
+                    EventInfo.getConstructorDescriptor(), false));
         }
 
         return ctorMAXS;
@@ -438,7 +462,8 @@ public class Event implements Comparable<Event>
     protected void injectCancellationCode(final InsnList insns, final AbstractInsnNode injectionPoint, int marshallVar)
     {
         insns.add(new VarInsnNode(Opcodes.ALOAD, marshallVar));
-        insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, EventInfo.getIsCancelledMethodName(), EventInfo.getIsCancelledMethodSig(), false));
+        insns.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, this.eventInfoClass, EventInfo.getIsCancelledMethodName(), 
+                EventInfo.getIsCancelledMethodSig(), false));
 
         LabelNode notCancelled = new LabelNode();
         insns.add(new JumpInsnNode(Opcodes.IFEQ, notCancelled));
@@ -506,7 +531,8 @@ public class Event implements Comparable<Event>
 
         if (this.pendingInjections != null && this.pendingInjections.size() == 0)
         {
-            throw new EventAlreadyInjectedException("The event " + this.name + " was already injected and has 0 pending injections, addListener() is not allowed at this point");
+            throw new EventAlreadyInjectedException("The event " + this.name
+                    + " was already injected and has 0 pending injections, addListener() is not allowed at this point");
         }
 
         this.listeners.add(listener);
@@ -531,13 +557,16 @@ public class Event implements Comparable<Event>
     {
         for (Event event : Event.events)
             if (event.name.equalsIgnoreCase(eventName))
+            {
                 return event;
+            }
 
         return null;
     }
 
     /**
-     * Populates the event proxy class with delegating methods for all injected events 
+     * Populates the event proxy class with delegating methods for all injected
+     * events.
      * 
      * @param classNode
      * @param proxyIndex
@@ -559,7 +588,7 @@ public class Event implements Comparable<Event>
             MethodNode handlerMethod = handler.getKey();
             List<Event> handlerEvents = handler.getValue();
 
-            // Args is used to inject appropriate LOAD opcodes to put the method arguments on the stack for each handler invokation
+            // Args is used to inject appropriate LOAD opcodes to put the method arguments on the stack for each handler invocation
             Type[] args = Type.getArgumentTypes(handlerMethod.desc);
 
             // Add our generated method to the the class
@@ -578,8 +607,10 @@ public class Event implements Comparable<Event>
                     LabelNode tryCatchHandler2 = new LabelNode();
                     LabelNode tryCatchExit = new LabelNode();
 
-                    handlerMethod.tryCatchBlocks.add(new TryCatchBlockNode(tryCatchStart, tryCatchEnd, tryCatchHandler1, "java/lang/NoSuchMethodError"));
-                    handlerMethod.tryCatchBlocks.add(new TryCatchBlockNode(tryCatchStart, tryCatchEnd, tryCatchHandler2, "java/lang/NoClassDefFoundError"));
+                    handlerMethod.tryCatchBlocks.add(new TryCatchBlockNode(tryCatchStart, tryCatchEnd,
+                            tryCatchHandler1, "java/lang/NoSuchMethodError"));
+                    handlerMethod.tryCatchBlocks.add(new TryCatchBlockNode(tryCatchStart, tryCatchEnd,
+                            tryCatchHandler2, "java/lang/NoClassDefFoundError"));
 
                     insns.add(tryCatchStart); // try {
 
@@ -592,7 +623,8 @@ public class Event implements Comparable<Event>
                         insns.add(new LineNumberNode(++lineNumber, lineNumberLabel));
 
                         ByteCodeUtilities.loadArgs(args, insns, 0);
-                        insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name), handlerMethod.desc, false));
+                        insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name),
+                                handlerMethod.desc, false));
                     }
 
                     insns.add(tryCatchEnd); // }
@@ -600,12 +632,14 @@ public class Event implements Comparable<Event>
 
                     insns.add(tryCatchHandler1); // catch (NoSuchMethodError err) {
                     insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                    insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingHandler", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
+                    insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingHandler",
+                            "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
                     insns.add(new JumpInsnNode(Opcodes.GOTO, tryCatchExit));
 
                     insns.add(tryCatchHandler2); // } catch (NoClassDefFoundError err) {
                     insns.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                    insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingClass", "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
+                    insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.EventProxy.ref, "onMissingClass",
+                            "(Ljava/lang/Error;Lcom/mumfrey/liteloader/transformers/event/EventInfo;)V", false));
                     insns.add(new JumpInsnNode(Opcodes.GOTO, tryCatchExit));
 
                     insns.add(tryCatchExit); // }
@@ -615,7 +649,8 @@ public class Event implements Comparable<Event>
             insns.add(new InsnNode(Opcodes.RETURN));
         }
 
-        LiteLoaderLogger.info("Successfully generated event handler proxy class with %d handlers(s) and %d total invokations", handlerCount, invokeCount);
+        LiteLoaderLogger.info("Successfully generated event handler proxy class with %d handlers(s) and %d total invocations",
+                handlerCount, invokeCount);
 
         return classNode;
     }
@@ -623,7 +658,9 @@ public class Event implements Comparable<Event>
     private static List<Event> addMethodToActiveProxy(MethodNode handlerMethod)
     {
         while (Event.proxyHandlerMethods.size() < Event.proxyInnerClassIndex + 1)
+        {
             Event.proxyHandlerMethods.add(new LinkedHashMap<MethodNode, List<Event>>());
+        }
 
         ArrayList<Event> events = new ArrayList<Event>();
         Event.proxyHandlerMethods.get(Event.proxyInnerClassIndex).put(handlerMethod, events);

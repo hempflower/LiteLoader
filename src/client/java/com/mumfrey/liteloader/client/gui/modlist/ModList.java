@@ -38,7 +38,8 @@ public class ModList
 
     private boolean hasConfig = false;
 
-    public ModList(ModListContainer container, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, int brandColour, List<ModInfoDecorator> decorators)
+    public ModList(ModListContainer container, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager,
+            int brandColour, List<ModInfoDecorator> decorators)
     {
         this.container = container;
         this.configManager = configManager;
@@ -53,7 +54,8 @@ public class ModList
      * @param brandColour
      * @param decorators
      */
-    protected void populate(Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, int brandColour, List<ModInfoDecorator> decorators)
+    protected void populate(Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, int brandColour,
+            List<ModInfoDecorator> decorators)
     {
         // Add mods to this treeset first, in order to sort them
         Map<String, ModListEntry> sortedMods = new TreeMap<String, ModListEntry>();
@@ -94,7 +96,9 @@ public class ModList
 
         // Select the first mod in the list
         if (this.mods.size() > 0)
+        {
             this.selectedMod = this.mods.get(0);
+        }
     }
 
     public GuiLiteLoaderPanel getParentScreen()
@@ -156,7 +160,10 @@ public class ModList
             this.scrollSelectedModIntoView();
             return true;
         }
-        else if (keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER || keyCode == Keyboard.KEY_RIGHT)
+        else if (keyCode == Keyboard.KEY_SPACE
+                || keyCode == Keyboard.KEY_RETURN
+                || keyCode == Keyboard.KEY_NUMPADENTER
+                || keyCode == Keyboard.KEY_RIGHT)
         {
             this.toggleSelectedMod();
             return true;

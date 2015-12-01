@@ -55,7 +55,7 @@ public class Permission
     public Permission(String permissionName, boolean value)
     {
         this.isRootNode     = false;
-        this.isWildcardNode = permissionName.equals("*");
+        this.isWildcardNode = "*".equals(permissionName);
         this.value          = value;
         this.nodeName       = permissionName;
     }
@@ -192,7 +192,8 @@ public class Permission
     }
 
     /**
-     * Sets a permission and also explicitly sets the permission value, this allows negated permissions to be set
+     * Sets a permission and also explicitly sets the permission value, this
+     * allows negated permissions to be set.
      * 
      * @param name
      * @param value

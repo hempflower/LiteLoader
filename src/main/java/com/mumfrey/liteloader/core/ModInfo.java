@@ -12,8 +12,9 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 
 /**
- * ModInfo is used to keep runtime information about a mod (or other injectable) together with relevant
- * environmental information (such as startup errors) and its container.
+ * ModInfo is used to keep runtime information about a mod (or other injectable)
+ * together with relevant environmental information (such as startup errors) and
+ * its container.
  * 
  * @author Adam Mummery-Smith
  *
@@ -189,7 +190,9 @@ public abstract class ModInfo<TContainer extends Loadable<?>>
             for (String requiredAPI : ((LoadableMod<?>)this.container).getRequiredAPIs())
             {
                 if (!ModInfo.BUILT_IN_APIS.contains(requiredAPI))
+                {
                     return true;
+                }
             }
         }
 

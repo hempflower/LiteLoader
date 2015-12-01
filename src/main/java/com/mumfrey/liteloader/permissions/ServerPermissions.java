@@ -39,12 +39,12 @@ public class ServerPermissions implements ReplicatedPermissions
     /**
      * Time to cache server responses by default
      */
-    protected long cacheTime = 10L * 60L * 1000L;	// 10 minutes
+    protected long cacheTime = 10L * 60L * 1000L;   // 10 minutes
 
     /**
      * Time to wait when refreshing server permissions before trying again
      */
-    protected long refreshTime = 15L * 1000L;		// 15 seconds
+    protected long refreshTime = 15L * 1000L;       // 15 seconds
 
     /**
      * @param data
@@ -87,7 +87,8 @@ public class ServerPermissions implements ReplicatedPermissions
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.Permissions#getPermissionSet(java.lang.String)
+     * @see net.eq2online.permissions.Permissions#getPermissionSet(
+     *      java.lang.String)
      */
     @Override
     public boolean getPermissionSet(String permission)
@@ -96,7 +97,8 @@ public class ServerPermissions implements ReplicatedPermissions
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.Permissions#getHasPermission(java.lang.String)
+     * @see net.eq2online.permissions.Permissions#getHasPermission(
+     *      java.lang.String)
      */
     @Override
     public boolean getHasPermission(String permission)
@@ -106,7 +108,8 @@ public class ServerPermissions implements ReplicatedPermissions
     }
 
     /* (non-Javadoc)
-     * @see net.eq2online.permissions.Permissions#getHasPermission(java.lang.String, boolean)
+     * @see net.eq2online.permissions.Permissions#getHasPermission(
+     *      java.lang.String, boolean)
      */
     @Override
     public boolean getHasPermission(String permission, boolean defaultValue)

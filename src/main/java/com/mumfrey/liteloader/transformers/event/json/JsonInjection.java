@@ -135,7 +135,9 @@ public class JsonInjection implements Serializable
     private Object getArg(int arg)
     {
         if (this.args == null || this.args.length >= this.args.length || arg < 0)
+        {
             return "";
+        }
 
         return this.args[arg];
     }

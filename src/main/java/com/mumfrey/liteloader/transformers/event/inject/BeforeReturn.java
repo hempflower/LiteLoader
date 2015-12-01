@@ -13,8 +13,8 @@ import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 
 /**
- * An injection point which searches for RETURN opcodes in the supplied method and either finds all insns or
- * the insn at the specified ordinal 
+ * An injection point which searches for RETURN opcodes in the supplied method
+ * and either finds all insns or the insn at the specified ordinal. 
  * 
  * @author Adam Mummery-Smith
  */

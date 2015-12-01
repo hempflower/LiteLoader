@@ -14,24 +14,29 @@ import org.lwjgl.util.glu.GLU;
 /**
  * Convenience class for working with Mojang's GLStateManager:
  * 
- * It would be pretty tolerable to work with GLStateManager as a static import were it not for the fact that you still need to
- * import the GL namespaces themselves from LWJGL in order to get the constants, and also have to deal with the fact that
- * GLStateManager's methods don't have "gl-style" names, making it annoying to work with. This class is designed to function as
- * an adapter to allow changeover to be more painless. Using this class means that the following code:
+ * <p>It would be pretty tolerable to work with GLStateManager as a static
+ * import were it not for the fact that you still need to import the GL
+ * namespaces themselves from LWJGL in order to get the constants, and also have
+ * to deal with the fact that GLStateManager's methods don't have "gl-style"
+ * names, making it annoying to work with. This class is designed to function as
+ * an adapter to allow changeover to be more painless. Using this class means
+ * that the following code:</p>
  * 
- *   glEnable(GL_BLEND);
- *   glAlphaFunc(GL_GREATER, 0.0F);
+ * <pre><code>glEnable(GL_BLEND);
+ * glAlphaFunc(GL_GREATER, 0.0F);</code></pre>
  *   
- * becomes:
+ * <p>becomes:</p>
  * 
- *   glEnableBlend();
- *   glAlphaFunc(GL_GREATER, 0.0F);
+ * <pre><code>glEnableBlend();
+ * glAlphaFunc(GL_GREATER, 0.0F);</code></pre>
  *   
- * Notice that the glAlphaFunc invokation remains unchanged, and the glEnable call simply gets replaced with a logical equivalent
- * which invokes the GLStateManager method behind the scenes.
+ * <p>Notice that the <tt>glAlphaFunc</tt> invocation remains unchanged, and the
+ * <tt>glEnable</tt> call simply gets replaced with a logical equivalent which
+ * invokes the GLStateManager method behind the scenes.</p>
  * 
- * To use this class, simply replace existing static imports in your classes with this single static import, then change glEnable
- * and glDisable calls accordingly.
+ * <p>To use this class, simply replace existing static imports in your classes
+ * with this single static import, then change <tt>glEnable</tt> and <tt>
+ * glDisable</tt> calls accordingly.
  * 
  * @author Adam Mummery-Smith
  */
@@ -1178,7 +1183,8 @@ public class GL
         return GL11.glGetBoolean(pname);
     }
 
-    public static void gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer winPos)
+    public static void gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport,
+            FloatBuffer winPos)
     {
         GLU.gluProject(objx, objy, objz, modelMatrix, projMatrix, viewport, winPos);
     }

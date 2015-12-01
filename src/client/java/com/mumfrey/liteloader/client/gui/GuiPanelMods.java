@@ -26,7 +26,7 @@ import com.mumfrey.liteloader.modconfig.ConfigPanel;
  * @author Adam Mummery-Smith
  */
 public class GuiPanelMods extends GuiPanel implements ModListContainer
-{	
+{
     private static final int SCROLLBAR_WIDTH = 5;
 
     private final GuiLiteLoaderPanel parentScreen;
@@ -58,7 +58,8 @@ public class GuiPanelMods extends GuiPanel implements ModListContainer
      */
     private GuiSimpleScrollBar scrollBar = new GuiSimpleScrollBar();
 
-    public GuiPanelMods(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment, ConfigManager configManager, int brandColour, List<ModInfoDecorator> decorators)
+    public GuiPanelMods(GuiLiteLoaderPanel parentScreen, Minecraft minecraft, LiteLoaderMods mods, LoaderEnvironment environment,
+            ConfigManager configManager, int brandColour, List<ModInfoDecorator> decorators)
     {
         super(minecraft);
 
@@ -106,8 +107,10 @@ public class GuiPanelMods extends GuiPanel implements ModListContainer
         int rightPanelLeftEdge = MARGIN + 4 + (this.width - MARGIN - MARGIN - 4) / 2;
 
         this.controls.clear();
-        this.controls.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 90, 20, I18n.format("gui.enablemod")));
-        this.controls.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 69, 20, I18n.format("gui.modsettings")));
+        this.controls.add(this.btnToggle = new GuiButton(0, rightPanelLeftEdge, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 90, 20,
+                I18n.format("gui.enablemod")));
+        this.controls.add(this.btnConfig = new GuiButton(1, rightPanelLeftEdge + 92, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM - 24, 69, 20,
+                I18n.format("gui.modsettings")));
 
         this.modList.setSize(width, height);
     }
@@ -252,7 +255,8 @@ public class GuiPanelMods extends GuiPanel implements ModListContainer
      */
     private void drawModsList(int mouseX, int mouseY, float partialTicks, int width, int height)
     {
-        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, MARGIN + width - SCROLLBAR_WIDTH, GuiLiteLoaderPanel.PANEL_TOP, SCROLLBAR_WIDTH, height, this.listHeight);
+        this.scrollBar.drawScrollBar(mouseX, mouseY, partialTicks, MARGIN + width - SCROLLBAR_WIDTH, GuiLiteLoaderPanel.PANEL_TOP, SCROLLBAR_WIDTH,
+                height, this.listHeight);
 
         // clip outside of scroll area
         glEnableClipping(MARGIN, MARGIN + width - SCROLLBAR_WIDTH - 1, GuiLiteLoaderPanel.PANEL_TOP, this.height - GuiLiteLoaderPanel.PANEL_BOTTOM);

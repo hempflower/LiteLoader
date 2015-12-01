@@ -3,7 +3,8 @@ package com.mumfrey.liteloader.client.overlays;
 import com.mumfrey.liteloader.transformers.access.Accessor;
 
 /**
- * Adapter for GuiTextField to expose internal properties, mainly to allow sensible subclassing
+ * Adapter for GuiTextField to expose internal properties, mainly to allow
+ * sensible subclassing.
  * 
  * @author Adam Mummery-Smith
  */
@@ -23,13 +24,13 @@ public interface IGuiTextField
     @Accessor("#5")  public abstract void    setHeight(int height);
 
     @Accessor("#12") public abstract boolean isEnabled();
-    //	@Accessor("#12") public abstract void    setEnabled(boolean enabled); // built in
+//    @Accessor("#12") public abstract void    setEnabled(boolean enabled); // built in
 
     @Accessor("#13") public abstract int     getLineScrollOffset();
 
     @Accessor("#16") public abstract int     getTextColor();
-    //	@Accessor("#16") public abstract void    setTextColor(int color); // built in
+//    @Accessor("#16") public abstract void    setTextColor(int color); // built in
 
     @Accessor("#17") public abstract int     getDisabledTextColour();
-    //	@Accessor("#17") public abstract void    setDisabledTextColour(int color); // built in
+//    @Accessor("#17") public abstract void    setDisabledTextColour(int color); // built in
 }

@@ -8,11 +8,13 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.util.Rectangle;
 
 /**
- * OpenGL clipping plane convenience functions. We prefer to clip rectangular GUI regions in Minecraft using
- * clipping rather than scissor because scissor is a nuisance to work with, primarily because it works in
- * "window" (OpenGL window) coordinates and doesn't respect the current transformation matrix. Using clipping
- * planes we can specify clipping edges in "Minecraft screen coordinates", can optionally clip on only one or
- * two axes, and also don't need to worry about the current transform. 
+ * OpenGL clipping plane convenience functions. We prefer to clip rectangular
+ * GUI regions in Minecraft using clipping rather than scissor because scissor
+ * is a nuisance to work with, primarily because it works in "window" (OpenGL
+ * window) coordinates and doesn't respect the current transformation matrix.
+ * Using clipping planes we can specify clipping edges in "Minecraft screen
+ * coordinates", can optionally clip on only one or two axes, and also don't
+ * need to worry about the current transform. 
  * 
  * @author Adam Mummery-Smith
  */
@@ -44,7 +46,7 @@ public final class GLClippingPlanes
 
     private static int totalClippingPlanes = glGetInteger(GL_MAX_CLIP_PLANES);
 
-    //	private static int frame = 0;
+//    private static int frame = 0;
 
     static
     {

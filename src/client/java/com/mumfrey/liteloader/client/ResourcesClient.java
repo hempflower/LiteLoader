@@ -22,7 +22,8 @@ public class ResourcesClient implements Resources<IResourceManager, IResourcePac
     private final Map<String, IResourcePack> registeredResourcePacks = new HashMap<String, IResourcePack>();
 
     /**
-     * True while initialising mods if we need to do a resource manager reload once the process is completed
+     * True while initialising mods if we need to do a resource manager reload
+     * once the process is completed.
      */
     private boolean pendingResourceReload;
 
@@ -50,7 +51,8 @@ public class ResourcesClient implements Resources<IResourceManager, IResourcePac
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.common.GameEngine#registerResourcePack(net.minecraft.client.resources.IResourcePack)
+     * @see com.mumfrey.liteloader.common.GameEngine#registerResourcePack(
+     *      net.minecraft.client.resources.IResourcePack)
      */
     @Override
     public boolean registerResourcePack(IResourcePack resourcePack)
@@ -72,7 +74,8 @@ public class ResourcesClient implements Resources<IResourceManager, IResourcePac
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.common.GameEngine#unRegisterResourcePack(net.minecraft.client.resources.IResourcePack)
+     * @see com.mumfrey.liteloader.common.GameEngine#unRegisterResourcePack(
+     *      net.minecraft.client.resources.IResourcePack)
      */
     @Override
     public boolean unRegisterResourcePack(IResourcePack resourcePack)

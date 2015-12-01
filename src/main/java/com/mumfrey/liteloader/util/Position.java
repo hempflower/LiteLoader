@@ -34,7 +34,11 @@ public class Position extends Vec3
 
     public Position(Entity entity, boolean usePrevious)
     {
-        this(usePrevious ? entity.prevPosX : entity.posX, usePrevious ? entity.prevPosY : entity.posY, usePrevious ? entity.prevPosZ : entity.posZ, usePrevious ? entity.prevRotationYaw : entity.rotationYaw, usePrevious ? entity.prevRotationPitch : entity.rotationPitch);
+        this(usePrevious ? entity.prevPosX : entity.posX,
+             usePrevious ? entity.prevPosY : entity.posY,
+             usePrevious ? entity.prevPosZ : entity.posZ,
+             usePrevious ? entity.prevRotationYaw : entity.rotationYaw,
+             usePrevious ? entity.prevRotationPitch : entity.rotationPitch);
     }
 
     public void applyTo(Entity entity)

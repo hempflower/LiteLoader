@@ -9,21 +9,22 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 /**
  * LiteLoader Extensible API - Mod Load Observer
  * 
- * ModLoadObservers receive callbacks when mod loading events are occurring, prior to init and other
- * loader-managed processes
+ * ModLoadObservers receive callbacks when mod loading events are occurring,
+ * prior to init and other loader-managed processes.
  * 
  * @author Adam Mummery-Smith
  */
 public interface ModLoadObserver extends Observer
 {
     /**
-     * Called immediately after a mod instance is created, throw an exception from this method in
-     * order to prevent further initialisation
+     * Called immediately after a mod instance is created, throw an exception
+     * from this method in order to prevent further initialisation.
      */
     public abstract void onModLoaded(LiteMod mod);
 
     /**
-     * Called after a mod is instanced and has been successfully added to the active mods list 
+     * Called after a mod is instanced and has been successfully added to the
+     * active mods list. 
      * 
      * @param handle Mod handle
      */

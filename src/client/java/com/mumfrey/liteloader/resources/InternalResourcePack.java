@@ -12,7 +12,8 @@ import net.minecraft.client.resources.data.IMetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 
 /**
- * Resource pack which returns resources using Class::getResourceAsStream() on the specified class
+ * Resource pack which returns resources using Class::getResourceAsStream() on
+ * the specified class.
  * 
  * @author Adam Mummery-Smith
  */
@@ -50,7 +51,8 @@ public class InternalResourcePack implements IResourcePack
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.client.resources.IResourcePack#getInputStream(net.minecraft.util.ResourceLocation)
+     * @see net.minecraft.client.resources.IResourcePack
+     *      #getInputStream(net.minecraft.util.ResourceLocation)
      */
     @Override
     public InputStream getInputStream(ResourceLocation resourceLocation) throws IOException
@@ -63,11 +65,13 @@ public class InternalResourcePack implements IResourcePack
      */
     private InputStream getResourceStream(ResourceLocation resourceLocation)
     {
-        return this.resourceClass.getResourceAsStream(String.format("/assets/%s/%s", resourceLocation.getResourceDomain(), resourceLocation.getResourcePath()));
+        return this.resourceClass.getResourceAsStream(String.format("/assets/%s/%s",
+                resourceLocation.getResourceDomain(), resourceLocation.getResourcePath()));
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.client.resources.IResourcePack#resourceExists(net.minecraft.util.ResourceLocation)
+     * @see net.minecraft.client.resources.IResourcePack#resourceExists(
+     *      net.minecraft.util.ResourceLocation)
      */
     @Override
     public boolean resourceExists(ResourceLocation resourceLocation)
@@ -85,7 +89,9 @@ public class InternalResourcePack implements IResourcePack
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.client.resources.IResourcePack#getPackMetadata(net.minecraft.client.resources.data.IMetadataSerializer, java.lang.String)
+     * @see net.minecraft.client.resources.IResourcePack#getPackMetadata(
+     *      net.minecraft.client.resources.data.IMetadataSerializer,
+     *      java.lang.String)
      */
     @Override
     public IMetadataSection getPackMetadata(IMetadataSerializer par1MetadataSerializer, String par2Str) throws IOException

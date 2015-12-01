@@ -15,9 +15,11 @@ import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * An injection point which searches for method invokations matching its arguments and returns a list of insns immediately
- * prior to matching invokations. Only the method name is required, owners and signatures are optional and can be used to disambiguate
- * between methods of the same name but with different args, or belonging to different classes.
+ * An injection point which searches for method invocations matching its
+ * arguments and returns a list of insns immediately prior to matching
+ * invocations. Only the method name is required, owners and signatures are
+ * optional and can be used to disambiguate between methods of the same name but
+ * with different args, or belonging to different classes.
  * 
  * @author Adam Mummery-Smith
  */
@@ -53,25 +55,29 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Method name(s) to search for, usually this will contain the different names of the method for different obfuscations (mcp, srg, notch)
+     * Method name(s) to search for, usually this will contain the different
+     * names of the method for different obfuscations (mcp, srg, notch)
      */
     protected final String[] methodNames;
 
     /**
-     * Method owner(s) to search for, the values in this array MUST much the equivalent indices in methodNames, if the array is NULL then
-     * all owners are valid  
+     * Method owner(s) to search for, the values in this array MUST much the
+     * equivalent indices in methodNames, if the array is NULL then all owners
+     * are valid.  
      */
     protected final String[] methodOwners;
 
     /**
-     * Method signature(s) to search for, the values in this array MUST much the equivalent indices in methodNames, if the array is NULL
-     * then all signatures are valid  
+     * Method signature(s) to search for, the values in this array MUST much the
+     * equivalent indices in methodNames, if the array is NULL then all
+     * signatures are valid.  
      */
     protected final String[] methodSignatures;
 
     /**
-     * This strategy can be used to identify a particular invokation if the same method is invoked at multiple points, if this value is -1
-     * then the strategy returns ALL invokations of the method. 
+     * This strategy can be used to identify a particular invocation if the same
+     * method is invoked at multiple points, if this value is -1 then the
+     * strategy returns ALL invocations of the method. 
      */
     protected final int ordinal;
 
@@ -93,10 +99,11 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the specified invokation of the specified method
+     * Match the specified invocation of the specified method
      * 
      * @param methodName Method name to search for
-     * @param ordinal ID of the invokation to hook, or -1 to hook all invokations
+     * @param ordinal ID of the invocation to hook, or -1 to hook all
+     *      invocations
      */
     public BeforeInvoke(String methodName, int ordinal)
     {
@@ -104,10 +111,11 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the specified invokation of the specified method(s)
+     * Match the specified invocation of the specified method(s)
      * 
      * @param methodNames Method names to search for
-     * @param ordinal ID of the invokation to hook, or -1 to hook all invokations
+     * @param ordinal ID of the invocation to hook, or -1 to hook all
+     *      invocations
      */
     public BeforeInvoke(String[] methodNames, int ordinal)
     {
@@ -115,12 +123,16 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match all occurrences of the specified method or methods with the specified owners
+     * Match all occurrences of the specified method or methods with the
+     * specified owners.
      * 
      * @param methodNames Method names to search for
-     * @param methodOwners Owners to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodOwners should contain { "net/minecraft/pkg/ClassName", "net/minecraft/pkg/ClassName", "abc" }
-     * in order that the appropriate owner name obfuscation matches the corresponding index in the methodNames array 
+     * @param methodOwners Owners to search for, indices in this array MUST
+     *      match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodOwners should contain
+     *      { "net/minecraft/pkg/ClsName", "net/minecraft/pkg/ClsName", "abc" }
+     *      in order that the appropriate owner name obfuscation matches the
+     *      corresponding index in the methodNames array 
      */
     public BeforeInvoke(String[] methodNames, String[] methodOwners)
     {
@@ -128,13 +140,17 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the specified invokation of the specified method or methods with the specified owners
+     * Match the specified invocation of the specified method or methods with
+     * the specified owners.
      * 
      * @param methodNames Method names to search for
-     * @param methodOwners Owners to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodOwners should contain { "net/minecraft/pkg/ClassName", "net/minecraft/pkg/ClassName", "abc" }
-     * in order that the appropriate owner name obfuscation matches the corresponding index in the methodNames array 
-     * @param ordinal ID of the invokation to hook, or -1 to hook all invokations
+     * @param methodOwners Owners to search for, indices in this array MUST
+     *      match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodOwners should contain
+     *      { "net/minecraft/pkg/ClsName", "net/minecraft/pkg/ClsName", "abc" }
+     *      in order that the appropriate owner name obfuscation matches the
+     *      corresponding index in the methodNames array 
+     * @param ordinal ID of the invocation to hook or -1 to hook all invocations
      */
     public BeforeInvoke(String[] methodNames, String[] methodOwners, int ordinal)
     {
@@ -142,16 +158,26 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match all occurrences of the specified method or methods with the specified owners or signatures, pass null to the owners array if you
-     * only want to match signatures
+     * Match all occurrences of the specified method or methods with the
+     * specified owners or signatures, pass null to the owners array if you only
+     * want to match signatures.
      * 
      * @param methodNames Method names to search for
-     * @param methodOwners Owners to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodOwners should contain { "net/minecraft/pkg/ClassName", "net/minecraft/pkg/ClassName", "abc" }
-     * in order that the appropriate owner name obfuscation matches the corresponding index in the methodNames array 
-     * @param methodSignatures Signatures to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodSignatures should contain { "(Lnet/minecraft/pkg/ClassName;)V", "(Lnet/minecraft/pkg/ClassName;)V", "(Labc;)V" }
-     * in order that the appropriate signature obfuscation matches the corresponding index in the methodNames array (and ownerNames array if present)
+     * @param methodOwners Owners to search for, indices in this array MUST
+     *      match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodOwners should contain
+     *      { "net/minecraft/pkg/ClsName", "net/minecraft/pkg/ClsName", "abc" }
+     *      in order that the appropriate owner name obfuscation matches the
+     *      corresponding index in the methodNames array 
+     * @param methodSignatures Signatures to search for, indices in this array
+     *      MUST match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodSignatures should
+     *      contain
+     *      { "(Lnet/minecraft/pkg/ClsName;)V", 
+     *      "(Lnet/minecraft/pkg/ClsName;)V", "(Labc;)V" }
+     *      in order that the appropriate signature obfuscation matches the
+     *      corresponding index in the methodNames array (and ownerNames array
+     *      if present)
      */
     public BeforeInvoke(String[] methodNames, String[] methodOwners, String[] methodSignatures)
     {
@@ -159,22 +185,33 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the specified invokation of the specified method or methods with the specified owners or signatures, pass null to the owners array if you
-     * only want to match signatures
+     * Match the specified invocation of the specified method or methods with
+     * the specified owners or signatures, pass null to the owners array if you
+     * only want to match signatures.
      * 
      * @param methodNames Method names to search for
-     * @param methodOwners Owners to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodOwners should contain { "net/minecraft/pkg/ClassName", "net/minecraft/pkg/ClassName", "abc" }
-     * in order that the appropriate owner name obfuscation matches the corresponding index in the methodNames array 
-     * @param methodSignatures Signatures to search for, indices in this array MUST match the indices in methodNames, eg. if methodNames contains
-     * { "mcpName", "func_12345_a", "a" } then methodSignatures should contain { "(Lnet/minecraft/pkg/ClassName;)V", "(Lnet/minecraft/pkg/ClassName;)V", "(Labc;)V" }
-     * in order that the appropriate signature obfuscation matches the corresponding index in the methodNames array (and ownerNames array if present)
-     * @param ordinal ID of the invokation to hook, or -1 to hook all invokations
+     * @param methodOwners Owners to search for, indices in this array MUST
+     *      match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodOwners should contain
+     *      { "net/minecraft/pkg/ClsName", "net/minecraft/pkg/ClsName", "abc" }
+     *      in order that the appropriate owner name obfuscation matches the
+     *      corresponding index in the methodNames array 
+     * @param methodSignatures Signatures to search for, indices in this array
+     *      MUST match the indices in methodNames, eg. if methodNames contains
+     *      { "mcpName", "func_12345_a", "a" } then methodSignatures should
+     *      contain { "(Lnet/minecraft/pkg/ClassName;)V",
+     *      "(Lnet/minecraft/pkg/ClassName;)V", "(Labc;)V" }
+     *      in order that the appropriate signature obfuscation matches the
+     *      corresponding index in the methodNames array (and ownerNames array
+     *      if present)
+     * @param ordinal ID of the invocation to hook or -1 to hook all invocations
      */
     public BeforeInvoke(String[] methodNames, String[] methodOwners, String[] methodSignatures, int ordinal)
     {
         if (methodNames == null || methodNames.length == 0)
-            throw new IllegalArgumentException("Method name selector must not be null"); 
+        {
+            throw new IllegalArgumentException("Method name selector must not be null");
+        }
 
         if (methodSignatures != null && methodSignatures.length == 0) methodSignatures = null;
         if (methodOwners != null && methodOwners.length == 0) methodOwners = null;
@@ -190,7 +227,7 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the invokation described by the supplied MethodInfo
+     * Match the invocation described by the supplied MethodInfo
      * 
      * @param method
      */
@@ -200,7 +237,8 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /**
-     * Match the invokation described by the supplied MethodInfo at the specified ordinal
+     * Match the invocation described by the supplied MethodInfo at the
+     * specified ordinal.
      * 
      * @param method
      * @param ordinal
@@ -239,7 +277,11 @@ public class BeforeInvoke extends InjectionPoint
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.transformers.event.InjectionStrategy#findInjectionPoint(java.lang.String, org.objectweb.asm.tree.InsnList, com.mumfrey.liteloader.transformers.event.Event, java.util.Collection)
+     * @see com.mumfrey.liteloader.transformers.event.InjectionStrategy
+     *      #findInjectionPoint(java.lang.String,
+     *      org.objectweb.asm.tree.InsnList,
+     *      com.mumfrey.liteloader.transformers.event.Event,
+     *      java.util.Collection)
      */
     @Override
     public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
@@ -262,7 +304,11 @@ public class BeforeInvoke extends InjectionPoint
             {
                 InsnInfo nodeInfo = new InsnInfo(insn);
 
-                if (this.logging) LiteLoaderLogger.debug(this.className + " is considering insn NAME=%s DESC=%s OWNER=%s", nodeInfo.name, nodeInfo.desc, nodeInfo.owner);
+                if (this.logging)
+                {
+                    LiteLoaderLogger.debug(this.className + " is considering insn NAME=%s DESC=%s OWNER=%s",
+                            nodeInfo.name, nodeInfo.desc, nodeInfo.owner);
+                }
 
                 int index = BeforeInvoke.arrayIndexOf(this.methodNames, nodeInfo.name, -1);
                 if (index > -1 && this.logging) LiteLoaderLogger.debug(this.className + "   found a matching insn, checking owner/signature...");
@@ -279,7 +325,9 @@ public class BeforeInvoke extends InjectionPoint
                         found = true;
 
                         if (this.ordinal == ordinal)
+                        {
                             break;
+                        }
                     }
 
                     ordinal++;
@@ -306,13 +354,17 @@ public class BeforeInvoke extends InjectionPoint
 
     protected boolean matchesInsn(InsnInfo nodeInfo, int ordinal)
     {
-        if (this.logging) LiteLoaderLogger.debug(this.className + "       comparing target ordinal %d with current ordinal %d", this.ordinal, ordinal);
+        if (this.logging)
+        {
+            LiteLoaderLogger.debug(this.className + "       comparing target ordinal %d with current ordinal %d", this.ordinal, ordinal);
+        }
         return this.ordinal == -1 || this.ordinal == ordinal;
     }
 
     /**
-     * Special version of contains which returns TRUE if the haystack array is null, which is an odd behaviour we actually
-     * want here because null indicates that the value is not important
+     * Special version of contains which returns TRUE if the haystack array is
+     * null, which is an odd behaviour we actually want here because null
+     * indicates that the value is not important.
      * 
      * @param haystack
      * @param needle
@@ -323,7 +375,12 @@ public class BeforeInvoke extends InjectionPoint
         if (pos > -1 && pos < haystack.length && needle.equals(haystack[pos])) return pos;
 
         for (int index = 0; index < haystack.length; index++)
-            if (needle.equals(haystack[index])) return index;
+        {
+            if (needle.equals(haystack[index]))
+            {
+                return index;
+            }
+        }
 
         return -1;
     }

@@ -9,8 +9,9 @@ import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 
 /**
- * The Loader Environment, contains accessors for getting information about the current Loader session such as the 
- * game directories, profile, and API management classes
+ * The Loader Environment, contains accessors for getting information about the
+ * current Loader session such as the game directories, profile, and API
+ * management classes.
  * 
  * Launch namespace, so loaded by the AppClassLoader
  * 
@@ -27,17 +28,20 @@ public interface LoaderEnvironment extends GameEnvironment
     public abstract EnvironmentType getType();
 
     /**
-     * Get the API Adapter, the API Adapter provides functionality for working with all loaded APIs
+     * Get the API Adapter, the API Adapter provides functionality for working
+     * with all loaded APIs.
      */
     public abstract APIAdapter getAPIAdapter();
 
     /**
-     * Get the API Provider, the API Provider contains API instances for the current session
+     * Get the API Provider, the API Provider contains API instances for the
+     * current session.
      */
     public abstract APIProvider getAPIProvider();
 
     /**
-     * The enabled mods list is a serialisable class which contains information about which mods are enabled/disabled
+     * The enabled mods list is a serialisable class which contains information
+     * about which mods are enabled/disabled.
      */
     public abstract EnabledModsList getEnabledModsList();
 

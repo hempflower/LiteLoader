@@ -55,7 +55,8 @@ public abstract class PacketEvents implements InterfaceProvider
 
     private PacketHandlerList[] packetHandlers = new PacketHandlerList[Packets.count()];
 
-    private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+    private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class,
+                                                                                                    ReturnLogicOp.AND_BREAK_ON_FALSE);
 
     private final int loginSuccessPacketId   = Packets.S02PacketLoginSuccess.getIndex();
     private final int serverChatPacketId     = Packets.S02PacketChat.getIndex();
@@ -116,7 +117,8 @@ public abstract class PacketEvents implements InterfaceProvider
                 int packetId = Packets.indexOf(packetClassName);
                 if (packetId == -1 || packetId >= this.packetHandlers.length)
                 {
-                    LiteLoaderLogger.warning("PacketHandler %s attempted to register a handler for unupported packet class %s", handler.getName(), packetClassName);
+                    LiteLoaderLogger.warning("PacketHandler %s attempted to register a handler for unupported packet class %s",
+                            handler.getName(), packetClassName);
                     continue;
                 }
 
@@ -188,8 +190,8 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param e
      * @param netHandler
      * @param packetId
-     * 
-     * @return true if the packet was handled by a local handler and shouldn't be forwarded to later handlers
+     * @return true if the packet was handled by a local handler and shouldn't
+     *      be forwarded to later handlers
      */
     protected boolean handlePacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
     {

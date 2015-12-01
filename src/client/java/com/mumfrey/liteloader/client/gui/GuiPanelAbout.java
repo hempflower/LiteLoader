@@ -23,13 +23,15 @@ import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.render.Icon;
 
 /**
- * "About LiteLoader" panel which docks in the mod info screen and lists information about the installed APIs
+ * "About LiteLoader" panel which docks in the mod info screen and lists
+ * information about the installed APIs.
  *
  * @author Adam Mummery-Smith
  */
 class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 {
-    public static final IconAbsolute apiIconCoords = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "api_icon", 32, 32, 192, 144, 256, 208);
+    public static final IconAbsolute apiIconCoords = new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, "api_icon",
+            32, 32, 192, 144, 256, 208);
 
     private static final int ROW_HEIGHT = 40;
 
@@ -51,7 +53,8 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 
         this.sortBrandingProviders();
 
-        this.scrollPane.addControl(new GuiHoverLabel(-2, 38, 22 + this.brandings.size() * GuiPanelAbout.ROW_HEIGHT, this.mc.fontRendererObj, "\247n" + MCP_URI.toString(), this.parent.getBrandColour()));
+        this.scrollPane.addControl(new GuiHoverLabel(-2, 38, 22 + this.brandings.size() * GuiPanelAbout.ROW_HEIGHT, this.mc.fontRendererObj,
+                "\247n" + MCP_URI.toString(), this.parent.getBrandColour()));
     }
 
     /**
@@ -66,9 +69,10 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
             BrandingProvider brandingProvider = LiteLoader.getCustomisationProvider(api, BrandingProvider.class);
             if (brandingProvider != null)
             {
-                sortedBrandingProviders.add(new SortableValue<BrandingProvider>(Integer.MAX_VALUE - brandingProvider.getPriority(), 0, brandingProvider));
+                sortedBrandingProviders.add(new SortableValue<BrandingProvider>(Integer.MAX_VALUE - brandingProvider.getPriority(), 0,
+                        brandingProvider));
             }
-        }	
+        }
 
         int brandingIndex = 0;
 
@@ -80,7 +84,8 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
             URI homepage = brandingProvider.getHomepage();
             if (homepage != null)
             {
-                this.scrollPane.addControl(new GuiHoverLabel(brandingIndex, 38, 22 + brandingIndex * GuiPanelAbout.ROW_HEIGHT, this.mc.fontRendererObj, "\247n" + homepage, this.parent.getBrandColour()));
+                this.scrollPane.addControl(new GuiHoverLabel(brandingIndex, 38, 22 + brandingIndex * GuiPanelAbout.ROW_HEIGHT,
+                        this.mc.fontRendererObj, "\247n" + homepage, this.parent.getBrandColour()));
             }
 
             brandingIndex++;

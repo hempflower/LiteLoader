@@ -15,6 +15,7 @@ import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -29,7 +30,8 @@ import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Transformer which can inject accessor methods defined by an annotated interface into a target class 
+ * Transformer which can inject accessor methods defined by an annotated
+ * interface into a target class. 
  * 
  * @author Adam Mummery-Smith
  */
@@ -68,7 +70,8 @@ public abstract class AccessorTransformer extends ClassTransformer
          * Create a new new accessor using the specified template interface
          * 
          * @param iface Template interface
-         * @throws IOException Thrown if an problem occurs when loading the interface bytecode
+         * @throws IOException Thrown if an problem occurs when loading the
+         *      interface bytecode
          */
         protected AccessorInjection(String iface) throws IOException
         {
@@ -80,7 +83,8 @@ public abstract class AccessorTransformer extends ClassTransformer
          * 
          * @param iface Template interface
          * @param obfProvider Obfuscation provider for this context
-         * @throws IOException Thrown if an problem occurs when loading the interface bytecode
+         * @throws IOException Thrown if an problem occurs when loading the
+         *      interface bytecode
          */
         protected AccessorInjection(String iface, ObfProvider obfProvider) throws IOException
         {
@@ -99,9 +103,11 @@ public abstract class AccessorTransformer extends ClassTransformer
         }
 
         /**
-         * Get an obfuscation table mapping by name, first uses any supplied context provider, then any obfuscation table
-         * class specified by an {@link ObfTableClass} annotation on the interface itself, and fails over onto the LiteLoader
-         * obfuscation table. If the entry is not matched in any of the above locations then an exception is thrown 
+         * Get an obfuscation table mapping by name, first uses any supplied
+         * context provider, then any obfuscation table class specified by an
+         * {@link ObfTableClass} annotation on the interface itself, and fails
+         * over onto the LiteLoader obfuscation table. If the entry is not
+         * matched in any of the above locations then an exception is thrown. 
          * 
          * @param name Obfuscation table entry to fetch
          */
@@ -150,8 +156,9 @@ public abstract class AccessorTransformer extends ClassTransformer
         }
 
         /**
-         * Inspects the target class for an {@link ObfTableClass} annotation and attempts to get a handle for the class
-         * specified. On failure, the LiteLoader {@link Obf} is returned.
+         * Inspects the target class for an {@link ObfTableClass} annotation and
+         * attempts to get a handle for the class specified. On failure, the
+         * LiteLoader {@link Obf} is returned.
          */
         @SuppressWarnings("unchecked")
         private Class<? extends Obf> setupTable(ClassNode ifaceNode)
@@ -174,7 +181,8 @@ public abstract class AccessorTransformer extends ClassTransformer
         }
 
         /**
-         * Locates the {@link Accessor} annotation on the interface in order to determine the target class
+         * Locates the {@link Accessor} annotation on the interface in order to
+         * determine the target class.
          */
         private Obf setupTarget(ClassNode ifaceNode)
         {
@@ -259,12 +267,14 @@ public abstract class AccessorTransformer extends ClassTransformer
             }
             else
             {
-                LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s has no @Accessor or @Invoker annotation, the method will be ABSTRACT!", method.name, this.iface);
+                LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s has no @Accessor or @Invoker annotation, the method will "
+                        + "be ABSTRACT!", method.name, this.iface);
                 this.injectException(classNode, method, "No @Accessor or @Invoker annotation on method");
                 return;
             }
 
-            LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s could not locate target member, the method will be ABSTRACT!", method.name, this.iface);
+            LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s could not locate target member, the method will be ABSTRACT!",
+                    method.name, this.iface);
             this.injectException(classNode, method, "Could not locate target class member '" + targetId + "'");
         }
 
@@ -431,14 +441,15 @@ public abstract class AccessorTransformer extends ClassTransformer
          */
         private void injectException(ClassNode classNode, MethodNode method, String message)
         {
-            method.instructions.clear();
+            InsnList insns = method.instructions;
             method.maxStack = 2;
 
-            method.instructions.add(new TypeInsnNode(Opcodes.NEW, "java/lang/RuntimeException"));
-            method.instructions.add(new InsnNode(Opcodes.DUP));
-            method.instructions.add(new LdcInsnNode(message));
-            method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false));
-            method.instructions.add(new InsnNode(Opcodes.ATHROW));
+            insns.clear();
+            insns.add(new TypeInsnNode(Opcodes.NEW, "java/lang/RuntimeException"));
+            insns.add(new InsnNode(Opcodes.DUP));
+            insns.add(new LdcInsnNode(message));
+            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false));
+            insns.add(new InsnNode(Opcodes.ATHROW));
         }
 
         /**
@@ -505,7 +516,8 @@ public abstract class AccessorTransformer extends ClassTransformer
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.launchwrapper.IClassTransformer#transform(java.lang.String, java.lang.String, byte[])
+     * @see net.minecraft.launchwrapper.IClassTransformer
+     *      #transform(java.lang.String, java.lang.String, byte[])
      */
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass)
@@ -524,8 +536,9 @@ public abstract class AccessorTransformer extends ClassTransformer
     }
 
     /**
-     * Apply this transformer, used when this transformer is acting as a delegate via another transformer
-     * (eg. an EventTransformer) and the parent transformer already has a ClassNode for the target class.
+     * Apply this transformer, used when this transformer is acting as a
+     * delegate via another transformer (eg. an EventTransformer) and the parent
+     * transformer already has a ClassNode for the target class.
      * 
      * @param name
      * @param transformedName
@@ -558,7 +571,8 @@ public abstract class AccessorTransformer extends ClassTransformer
     }
 
     /**
-     * Called after transformation is applied, allows custom transforms to be performed by subclasses
+     * Called after transformation is applied, allows custom transforms to be
+     * performed by subclasses.
      * 
      * @param name
      * @param transformedName

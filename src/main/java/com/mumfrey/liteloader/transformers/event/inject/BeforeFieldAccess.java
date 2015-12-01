@@ -7,9 +7,11 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
 /**
- * An injection point which searches for GETFIELD and SETFIELD opcodes matching its arguments and returns a list of insns
- * immediately prior to matching instructions. Only the field name is required, owners and signatures are optional and can
- * be used to disambiguate between fields of the same name but with different types, or belonging to different classes.
+ * An injection point which searches for GETFIELD and SETFIELD opcodes matching
+ * its arguments and returns a list of insns immediately prior to matching
+ * instructions. Only the field name is required, owners and signatures are
+ * optional and can be used to disambiguate between fields of the same name but
+ * with different types, or belonging to different classes.
  * 
  * @author Adam Mummery-Smith
  */

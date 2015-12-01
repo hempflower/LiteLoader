@@ -30,7 +30,9 @@ public class ModResourcePack extends FileResourcePack
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.client.resources.AbstractResourcePack#getPackMetadata(net.minecraft.client.resources.data.IMetadataSerializer, java.lang.String)
+     * @see net.minecraft.client.resources.AbstractResourcePack#getPackMetadata(
+     *      net.minecraft.client.resources.data.IMetadataSerializer,
+     *      java.lang.String)
      */
     @Override
     public IMetadataSection getPackMetadata(IMetadataSerializer metadataSerializer, String metadataSectionName) throws IOException

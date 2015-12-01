@@ -21,7 +21,8 @@ public interface APIProvider
     /**
      * Returns true if the specified API is available
      * 
-     * @param identifier API identifier (case sensitive) or API identifier-plus-minrevision in the form "identifier@minver"
+     * @param identifier API identifier (case sensitive) or API
+     * identifier-plus-minrevision in the form "identifier@minver"
      */
     public abstract boolean isAPIAvailable(String identifier);
 

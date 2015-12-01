@@ -9,13 +9,16 @@ import java.util.Map;
  * @author Adam Mummery-Smith
  * TODO Obfuscation 1.8
  */
-public class Packets extends Obf
+public final class Packets extends Obf
 {
     /**
-     * Since we need to catch and deal with the fact that a packet is first marshalled across threads via PacketThreadUtil, we 
-     * will need to know which owner object to check against the current thread in order to detect when the packet instance is being
-     * processed by the main message loop. The Context object describes in which context (client or server) that a particular packet
-     * will be processed in on the <em>receiving</em> end, and thus which object to check threading against.
+     * Since we need to catch and deal with the fact that a packet is first
+     * marshalled across threads via PacketThreadUtil, we will need to know
+     * which owner object to check against the current thread in order to detect
+     * when the packet instance is being processed by the main message loop. The
+     * Context object describes in which context (client or server) that a
+     * particular packet will be processed in on the <em>receiving</em> end, and
+     * thus which object to check threading against.
      * 
      * @author Adam Mummery-Smith
      */
@@ -24,6 +27,8 @@ public class Packets extends Obf
         CLIENT,
         SERVER
     }
+    
+    // CHECKSTYLE:OFF
 
     private static Map<String, Packets> packetMap = new HashMap<String, Packets>();
 
@@ -138,6 +143,8 @@ public class Packets extends Obf
     public static Packets S00PacketServerInfo              = new Packets("net.minecraft.network.status.server.S00PacketServerInfo",                     "no", Context.CLIENT);
     public static Packets C01PacketPing                    = new Packets("net.minecraft.network.status.client.C01PacketPing",                           "nw", Context.SERVER);
     public static Packets C00PacketServerQuery             = new Packets("net.minecraft.network.status.client.C00PacketServerQuery",                    "nx", Context.SERVER);
+
+    // CHECKSTYLE:ON
 
     public static final Packets[] packets = new Packets[] {
             S08PacketPlayerPosLook,
@@ -290,7 +297,10 @@ public class Packets extends Obf
     {
         for (Packets packet : Packets.packets)
         {
-            if (packet.name.equals(packetClassName) || packet.shortName.equals(packetClassName) || packet.obf.equals(packetClassName)) return packet.index;
+            if (packet.name.equals(packetClassName) || packet.shortName.equals(packetClassName) || packet.obf.equals(packetClassName))
+            {
+                return packet.index;
+            }
         }
 
         return -1;

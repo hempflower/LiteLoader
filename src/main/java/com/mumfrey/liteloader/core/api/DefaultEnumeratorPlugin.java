@@ -67,7 +67,9 @@ public class DefaultEnumeratorPlugin implements EnumeratorPlugin
     private boolean checkDependencies(ContainerRegistry containers, LoadableMod<?> base, LoadableMod<?> container, Set<String> circularDependencySet)
     {
         if (container.getDependencies().size() == 0)
+        {
             return true;
+        }
 
         boolean result = true;
 
@@ -87,14 +89,14 @@ public class DefaultEnumeratorPlugin implements EnumeratorPlugin
                     }
                     else
                     {
-                        //						LiteLoaderLogger.warning("Dependency %s required by %s is currently disabled", dependency, base.getIdentifier());
+//                        LiteLoaderLogger.warning("Dependency %s required by %s is currently disabled", dependency, base.getIdentifier());
                         base.registerMissingDependency(dependency);
                         result = false;
                     }
                 }
                 else
                 {
-                    //					LiteLoaderLogger.info("Dependency %s for %s is was not located, no container ", dependency, base.getIdentifier());
+//                    LiteLoaderLogger.info("Dependency %s for %s is was not located, no container ", dependency, base.getIdentifier());
                     base.registerMissingDependency(dependency);
                     result = false;
                 }
@@ -107,8 +109,6 @@ public class DefaultEnumeratorPlugin implements EnumeratorPlugin
     /**
      * Enumerate classes on the classpath which are subclasses of the specified
      * class
-     * 
-     * @param superClass
      */
     @Override
     public <T> List<Class<? extends T>> getClasses(LoadableMod<?> container, ClassLoader classloader, ModClassValidator validator)
@@ -136,7 +136,8 @@ public class DefaultEnumeratorPlugin implements EnumeratorPlugin
             catch (OutdatedLoaderException ex)
             {
                 classes.clear();
-                LiteLoaderLogger.info(Verbosity.REDUCED, "Error searching in '%s', missing API component '%s', your loader is probably out of date", container, ex.getMessage());
+                LiteLoaderLogger.info(Verbosity.REDUCED, "Error searching in '%s', missing API component '%s', your loader is probably out of date",
+                        container, ex.getMessage());
             }
             catch (Throwable th)
             {
@@ -148,10 +149,13 @@ public class DefaultEnumeratorPlugin implements EnumeratorPlugin
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> Class<? extends T> checkClass(ClassLoader classLoader, ModClassValidator validator, String className) throws OutdatedLoaderException
+    private static <T> Class<? extends T> checkClass(ClassLoader classLoader, ModClassValidator validator, String className)
+            throws OutdatedLoaderException
     {
         if (className.indexOf('$') > -1)
+        {
             return null;
+        }
 
         try
         {

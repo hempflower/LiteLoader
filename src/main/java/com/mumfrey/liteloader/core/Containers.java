@@ -92,7 +92,8 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#isDisabledContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #isDisabledContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
      */
     @Override
     public boolean isDisabledContainer(LoadableMod<?> container)
@@ -101,7 +102,8 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#getEnabledContainer(java.lang.String)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #getEnabledContainer(java.lang.String)
      */
     @Override
     public LoadableMod<?> getEnabledContainer(String identifier)
@@ -111,7 +113,9 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#registerBadContainer(com.mumfrey.liteloader.interfaces.Loadable, java.lang.String)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #registerBadContainer(com.mumfrey.liteloader.interfaces.Loadable,
+     *      java.lang.String)
      */
     @Override
     public void registerBadContainer(Loadable<?> container, String reason)
@@ -120,7 +124,9 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#registerEnabledContainer(com.mumfrey.liteloader.interfaces.LoadableMod)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #registerEnabledContainer(
+     *      com.mumfrey.liteloader.interfaces.LoadableMod)
      */
     @Override
     public void registerEnabledContainer(LoadableMod<?> container)
@@ -130,7 +136,10 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#registerDisabledContainer(com.mumfrey.liteloader.interfaces.LoadableMod, com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #registerDisabledContainer(
+     *      com.mumfrey.liteloader.interfaces.LoadableMod, 
+     *      com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason)
      */
     @Override
     public void registerDisabledContainer(LoadableMod<?> container, DisabledReason reason)
@@ -140,7 +149,9 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#registerTweakContainer(com.mumfrey.liteloader.interfaces.TweakContainer)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #registerTweakContainer(
+     *      com.mumfrey.liteloader.interfaces.TweakContainer)
      */
     @Override
     public void registerTweakContainer(TweakContainer<File> container)
@@ -149,7 +160,9 @@ class Containers implements ContainerRegistry
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ContainerRegistry#registerInjectedTweak(com.mumfrey.liteloader.interfaces.TweakContainer)
+     * @see com.mumfrey.liteloader.api.ContainerRegistry
+     *      #registerInjectedTweak(
+     *      com.mumfrey.liteloader.interfaces.TweakContainer)
      */
     @Override
     public void registerInjectedTweak(TweakContainer<File> container)

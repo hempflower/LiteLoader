@@ -6,7 +6,7 @@ public interface ScrollPanelContent
 {
     public abstract int getScrollPanelContentHeight(GuiScrollPanel source);
 
-    public abstract void drawScrollPanelContent(GuiScrollPanel source, int mouseX, int mouseY, float partialTicks, int scrollAmount, int visibleHeight);
+    public abstract void drawScrollPanelContent(GuiScrollPanel source, int mouseX, int mouseY, float partialTicks, int scrollAmt, int visibleHeight);
 
     public abstract void scrollPanelActionPerformed(GuiScrollPanel source, GuiButton control);
 

@@ -50,7 +50,8 @@ public class ResourceObserver implements ModLoadObserver
         {
             LiteLoaderLogger.info("Adding \"%s\" to active resource pack set", container.getLocation());
             IResourcePack resourcePack = this.initResourcePack(container, modName);
-            Resources<IResourceManager, IResourcePack> resources = (Resources<IResourceManager, IResourcePack>)LiteLoader.getGameEngine().getResources();
+            Resources<IResourceManager, IResourcePack> resources
+                    = (Resources<IResourceManager, IResourcePack>)LiteLoader.getGameEngine().getResources();
             if (resources.registerResourcePack(resourcePack))
             {
                 LiteLoaderLogger.info("Successfully added \"%s\" to active resource pack set", container.getLocation());
@@ -66,7 +67,8 @@ public class ResourceObserver implements ModLoadObserver
         {
             if (container.isDirectory())
             {
-                LiteLoaderLogger.info("Setting up \"%s/%s\" as mod resource pack with identifier \"%s\"", container.toFile().getParentFile().getName(), container.getName(), name);
+                LiteLoaderLogger.info("Setting up \"%s/%s\" as mod resource pack with identifier \"%s\"",
+                        container.toFile().getParentFile().getName(), container.getName(), name);
                 resourcePack = new ModResourcePackDir(name, container.toFile());
             }
             else

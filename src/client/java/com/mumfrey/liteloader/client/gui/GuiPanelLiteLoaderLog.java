@@ -89,9 +89,12 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
     {
         super.setSize(width, height);
 
-        this.controls.add(new GuiButton(0, this.width - 59 - MARGIN, this.height - BOTTOM + 9, 60, 20, I18n.format("gui.done")));
-        this.controls.add(this.btnUpload = new GuiButton(1, this.width - 145 - MARGIN, this.height - BOTTOM + 9, 80, 20, I18n.format("gui.log.postlog")));
-        this.controls.add(this.chkScale = new GuiCheckbox(2, MARGIN, this.height - BOTTOM + 15, I18n.format("gui.log.scalecheckbox")));
+        this.controls.add(new GuiButton(0, this.width - 59 - MARGIN, this.height - BOTTOM + 9, 60, 20,
+                I18n.format("gui.done")));
+        this.controls.add(this.btnUpload = new GuiButton(1, this.width - 145 - MARGIN, this.height - BOTTOM + 9, 80, 20,
+                I18n.format("gui.log.postlog")));
+        this.controls.add(this.chkScale = new GuiCheckbox(2, MARGIN, this.height - BOTTOM + 15,
+                I18n.format("gui.log.scalecheckbox")));
 
         this.chkScale.checked = GuiPanelLiteLoaderLog.useNativeRes;
 
@@ -142,7 +145,8 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
             {
                 LiteLoaderLogger.info("Log file upload succeeded, url is %s", this.logURL);
                 int urlWidth = this.mc.fontRendererObj.getStringWidth(this.logURL);
-                this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRendererObj, "\247n" + this.logURL, this.parent.getBrandColour()));
+                this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRendererObj, "\247n" + this.logURL,
+                        this.parent.getBrandColour()));
             }
             else
             {

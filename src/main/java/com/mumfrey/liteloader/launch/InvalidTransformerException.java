@@ -1,8 +1,8 @@
 package com.mumfrey.liteloader.launch;
 
 /**
- * Exception thrown from the NonDelegatingClassLoader if a transformer tries to access a class outside of
- * the classes that are allowed for that transformer
+ * Exception thrown from the NonDelegatingClassLoader if a transformer tries to
+ * access a class outside of the classes that are allowed for that transformer.
  *
  * @author Adam Mummery-Smith
  */

@@ -26,7 +26,11 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
 
     public ServerPluginChannels()
     {
-        if (ServerPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error", new InstantiationException("Only a single instance of ServerPluginChannels is allowed"));
+        if (ServerPluginChannels.instance != null)
+        {
+            InstantiationException inner = new InstantiationException("Only a single instance of ServerPluginChannels is allowed");
+            throw new RuntimeException("Plugin Channels Startup Error", inner);
+        }
         ServerPluginChannels.instance = this;
     }
 
@@ -59,7 +63,8 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(
+     *      com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
      */
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -150,11 +155,14 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
             {
                 int failCount = 1;
                 if (this.faultingPluginChannelListeners.containsKey(pluginChannelListener))
+                {
                     failCount = this.faultingPluginChannelListeners.get(pluginChannelListener).intValue() + 1;
+                }
 
                 if (failCount >= PluginChannels.WARN_FAULT_THRESHOLD)
                 {
-                    LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s", pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
+                    LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s",
+                            pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
                     this.faultingPluginChannelListeners.remove(pluginChannelListener);
                 }
                 else
@@ -219,7 +227,9 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
         if (recipient == null) return false;
 
         if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
+        {
             throw new RuntimeException("Invalid channel name specified"); 
+        }
 
         if (!policy.allows(this, channel))
         {

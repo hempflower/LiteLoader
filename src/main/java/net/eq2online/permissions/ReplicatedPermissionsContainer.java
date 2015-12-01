@@ -30,14 +30,16 @@ public class ReplicatedPermissionsContainer implements Serializable
     public Float modVersion = 0.0F;
 
     /**
-     * List of permissions to replicate, prepend "-" for a negated permission and "+" for a granted permission
+     * List of permissions to replicate, prepend "-" for a negated permission
+     * and "+" for a granted permission.
      */
     public Set<String> permissions = new TreeSet<String>();
 
     /**
-     * Amount of time in seconds that the client will trust these permissions for before requesting an update 
+     * Amount of time in seconds that the client will trust these permissions
+     * for before requesting an update. 
      */
-    public long remoteCacheTimeSeconds = 600L;	// 10 minutes
+    public long remoteCacheTimeSeconds = 600L;  // 10 minutes
 
     public static final String CHANNEL = "PERMISSIONSREPL";
 
@@ -73,7 +75,8 @@ public class ReplicatedPermissionsContainer implements Serializable
     }
 
     /**
-     * Serialise this container to a byte array for transmission to a remote host
+     * Serialise this container to a byte array for transmission to a remote
+     * host.
      */
     public byte[] getBytes()
     {

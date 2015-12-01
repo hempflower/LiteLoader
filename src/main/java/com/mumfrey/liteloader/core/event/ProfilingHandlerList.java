@@ -19,7 +19,8 @@ import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
- * A HandlerList which calls Profiler.beginSection and Profiler.endSection before every invokation
+ * A HandlerList which calls Profiler.beginSection and Profiler.endSection
+ * before every invocation.
  * 
  * @author Adam Mummery-Smith
  *
@@ -77,7 +78,7 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
     }
 
     /**
-     * Decorator which adds the profiler section calls to the invokation lists
+     * Decorator which adds the profiler section calls to the invocation lists
      */
     static class ProfilingHandlerListDecorator<T extends Listener> implements IHandlerListDecorator<T>
     {
@@ -91,7 +92,8 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#getTemplate()
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #getTemplate()
          */
         @Override
         public Obf getTemplate()
@@ -100,7 +102,8 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#prepare(java.util.List)
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #prepare(java.util.List)
          */
         @Override
         public void prepare(List<T> sortedList)
@@ -115,7 +118,8 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#createInstance(java.lang.Class)
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #createInstance(java.lang.Class)
          */
         @Override
         public BakedHandlerList<T> createInstance(Class<BakedHandlerList<T>> handlerClass) throws Exception
@@ -134,7 +138,9 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#populateClass(java.lang.String, org.objectweb.asm.tree.ClassNode)
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #populateClass(java.lang.String,
+         *      org.objectweb.asm.tree.ClassNode)
          */
         @Override
         public void populateClass(String name, ClassNode classNode)
@@ -142,7 +148,9 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#processCtor(org.objectweb.asm.tree.ClassNode, org.objectweb.asm.tree.MethodNode)
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #processCtor(org.objectweb.asm.tree.ClassNode,
+         *      org.objectweb.asm.tree.MethodNode)
          */
         @Override
         public void processCtor(ClassNode classNode, MethodNode method)
@@ -151,12 +159,15 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
             method.instructions.clear();
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
             method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 1));
-            method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, Obf.BakedProfilingHandlerList.ref, Obf.constructor.name, method.desc, false));
+            method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, Obf.BakedProfilingHandlerList.ref, Obf.constructor.name,
+                    method.desc, false));
             method.instructions.add(new InsnNode(Opcodes.RETURN));
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#preInvokeInterfaceMethod(int, org.objectweb.asm.tree.ClassNode, org.objectweb.asm.tree.MethodNode, org.objectweb.asm.Type[])
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #preInvokeInterfaceMethod(int, org.objectweb.asm.tree.ClassNode,
+         *      org.objectweb.asm.tree.MethodNode, org.objectweb.asm.Type[])
          */
         @Override
         public void preInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args)
@@ -168,7 +179,9 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#postInvokeInterfaceMethod(int, org.objectweb.asm.tree.ClassNode, org.objectweb.asm.tree.MethodNode, org.objectweb.asm.Type[])
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *     #postInvokeInterfaceMethod(int, org.objectweb.asm.tree.ClassNode,
+         *     org.objectweb.asm.tree.MethodNode, org.objectweb.asm.Type[])
          */
         @Override
         public void postInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args)
@@ -179,7 +192,9 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
         }
 
         /* (non-Javadoc)
-         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator#populateInterfaceMethod(org.objectweb.asm.tree.ClassNode, org.objectweb.asm.tree.MethodNode)
+         * @see com.mumfrey.liteloader.core.event.IHandlerListDecorator
+         *      #populateInterfaceMethod(org.objectweb.asm.tree.ClassNode,
+         *      org.objectweb.asm.tree.MethodNode)
          */
         @Override
         public void populateInterfaceMethod(ClassNode classNode, MethodNode method)

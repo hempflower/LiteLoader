@@ -36,7 +36,10 @@ public class GuiHoverLabel extends GuiButton
     {
         if (this.visible)
         {
-            this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
+            this.hovered = mouseX >= this.xPosition
+                    && mouseY >= this.yPosition
+                    && mouseX < this.xPosition + this.width
+                    && mouseY < this.yPosition + this.height;
             this.fontRenderer.drawString(this.displayString, this.xPosition, this.yPosition, this.hovered ? this.hoverColour : this.colour);
         }
         else

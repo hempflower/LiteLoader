@@ -26,7 +26,8 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
 /**
- * Mod input class, aggregates functionality from LiteLoader's mod key registration functions and JInputLib
+ * Mod input class, aggregates functionality from LiteLoader's mod key
+ * registration functions and JInputLib.
  *
  * @author Adam Mummery-Smith
  */
@@ -55,8 +56,8 @@ public final class InputManager extends Input
     private final List<KeyBinding> modKeyBindings = new ArrayList<KeyBinding>();
 
     /**
-     * Map of mod key bindings to their key codes, stored so that we don't need to cast from
-     * string in the properties file every tick
+     * Map of mod key bindings to their key codes, stored so that we don't need
+     * to cast from string in the properties file every tick.
      */
     private final Map<KeyBinding, Integer> storedModKeyBindings = new HashMap<KeyBinding, Integer>();
 
@@ -130,7 +131,8 @@ public final class InputManager extends Input
             {
                 try
                 {
-                    binding.setKeyCode(Integer.parseInt(this.keyMapSettings.getProperty(binding.getKeyDescription(), String.valueOf(binding.getKeyCode()))));
+                    int code = Integer.parseInt(this.keyMapSettings.getProperty(binding.getKeyDescription(), String.valueOf(binding.getKeyCode())));
+                    binding.setKeyCode(code);
                 }
                 catch (NumberFormatException ex) {}
             }
@@ -148,7 +150,8 @@ public final class InputManager extends Input
     }
 
     /**
-     * Unregisters a registered keybind with the game settings class, thus removing it from the "controls" screen
+     * Unregisters a registered keybind with the game settings class, thus
+     * removing it from the "controls" screen.
      * 
      * @param binding
      */
@@ -218,7 +221,8 @@ public final class InputManager extends Input
     {
         try
         {
-            this.keyMapSettings.store(new FileWriter(this.keyMapSettingsFile), "Mod key mappings for LiteLoader mods, stored here to avoid losing settings stored in options.txt");
+            this.keyMapSettings.store(new FileWriter(this.keyMapSettingsFile),
+                    "Mod key mappings for LiteLoader mods, stored here to avoid losing settings stored in options.txt");
         }
         catch (IOException ex) {}
     }
@@ -233,18 +237,21 @@ public final class InputManager extends Input
     }
 
     /**
-     * Returns a handle to the event described by descriptor (or null if no component is found matching the
-     * descriptor. Retrieving an event via this method adds the controller (if found) to the polling list and
-     * causes it to raise events against the specified handler.
+     * Returns a handle to the event described by descriptor (or null if no
+     * component is found matching the descriptor. Retrieving an event via this
+     * method adds the controller (if found) to the polling list and causes it
+     * to raise events against the specified handler.
      * 
-     * This method returns an {@link InputEvent} which is passed as an argument to the relevant callback on
-     * the supplied handler in order to identify the event. For example:
+     * <p>This method returns an {@link InputEvent} which is passed as an
+     * argument to the relevant callback on the supplied handler in order to
+     * identify the event. For example:</p>
      * 
-     *    this.joystickButton = input.getEvent(descriptor, this);
+     * <code>this.joystickButton = input.getEvent(descriptor, this);</code>
      * 
-     * then in onAxisEvent
+     * <p>then in onAxisEvent</p>
      * 
-     *   if (source == this.joystickButton) // do something with button
+     * <code>if (source == this.joystickButton) // do something with button
+     * </code>
      * 
      * @param descriptor
      * @param handler

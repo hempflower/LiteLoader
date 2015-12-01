@@ -58,7 +58,8 @@ public class HttpStringRetriever extends Thread
     private volatile boolean success = false;
 
     /**
-     * Create a new string retriever for the specified URL, with the supplied headers and line end characters
+     * Create a new string retriever for the specified URL, with the supplied
+     * headers and line end characters.
      * 
      * @param url URL to download from
      * @param headers Additional headers to add to the request
@@ -72,7 +73,8 @@ public class HttpStringRetriever extends Thread
     }
 
     /**
-     * Create a new string retriever for the specified URL, with the supplied headers
+     * Create a new string retriever for the specified URL, with the supplied
+     * headers.
      * 
      * @param url URL to download from
      * @param headers Additional headers to add to the request
@@ -128,7 +130,8 @@ public class HttpStringRetriever extends Thread
     }
 
     /**
-     * Get the response code from the HTTP request, -1 if a connection error occurred
+     * Get the response code from the HTTP request, -1 if a connection error
+     * occurred.
      */
     public int getHttpResponseCode()
     {
@@ -159,8 +162,9 @@ public class HttpStringRetriever extends Thread
     }
 
     /**
-     * Fetch a String in the current thread, normally this method is called by the run() method to fetch the resource
-     * in a new thread but can be called directly to fetch the result in the current thread
+     * Fetch a String in the current thread, normally this method is called by
+     * the run() method to fetch the resource in a new thread but can be called
+     * directly to fetch the result in the current thread.
      * 
      * @param url URL to fetch
      * @return retrieved string or empty string on failure
@@ -198,7 +202,9 @@ public class HttpStringRetriever extends Thread
 
                     String readLine;
                     while ((readLine = reader.readLine()) != null)
+                    {
                         readString.append(readLine).append(this.lineEnding);
+                    }
 
                     this.success = true;
                 }

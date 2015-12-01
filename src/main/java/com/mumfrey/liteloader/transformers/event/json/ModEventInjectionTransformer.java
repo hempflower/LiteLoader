@@ -11,7 +11,8 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * Event transformer which manages injections of mod events specified via events.json in the mod container
+ * Event transformer which manages injections of mod events specified via
+ * events.json in the mod container.
  *
  * @author Adam Mummery-Smith
  */

@@ -14,12 +14,13 @@ import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 
 /**
- * Container for startup environment state which also parses the command line options
+ * Container for startup environment state which also parses the command line
+ * options.
  * 
  * @author Adam Mummery-Smith
  */
 public abstract class StartupEnvironment implements GameEnvironment
-{	
+{
     private List<String> singularLaunchArgs = new ArrayList<String>();
     private Map<String, String> launchArgs;
 
@@ -56,7 +57,7 @@ public abstract class StartupEnvironment implements GameEnvironment
         this.launchArgs = (Map<String, String>)Launch.blackboard.get("launchArgs");
         if (this.launchArgs == null)
         {
-            this.launchArgs = new HashMap<String, String>();			
+            this.launchArgs = new HashMap<String, String>();
             Launch.blackboard.put("launchArgs", this.launchArgs);
         }
 
@@ -76,9 +77,12 @@ public abstract class StartupEnvironment implements GameEnvironment
         OptionParser optionParser = new OptionParser();
         optionParser.allowsUnrecognizedOptions();
 
-        this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load").withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
-        this.apisOption = optionParser.accepts("api", "Additional API classes to load").withRequiredArg().ofType(String.class);
-        this.modsDirOption = optionParser.accepts("modsDir", "Path to 'mods' folder to use instead of default").withRequiredArg().ofType(String.class);
+        this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load")
+                .withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
+        this.apisOption = optionParser.accepts("api", "Additional API classes to load")
+                .withRequiredArg().ofType(String.class);
+        this.modsDirOption = optionParser.accepts("modsDir", "Path to 'mods' folder to use instead of default")
+                .withRequiredArg().ofType(String.class);
 
         this.unparsedOptions = optionParser.nonOptions();
         this.parsedOptions = optionParser.parse(args);
@@ -114,7 +118,9 @@ public abstract class StartupEnvironment implements GameEnvironment
                     classifier = null;
                 }
                 else
+                {
                     this.singularLaunchArgs.add(arg);
+                }
             }
         }
 
@@ -129,13 +135,19 @@ public abstract class StartupEnvironment implements GameEnvironment
     public void provideRequiredArgs()
     {
         if (this.launchArgs.get("--version") == null)
+        {
             this.addClassifiedArg("--version", LiteLoaderTweaker.VERSION);
+        }
 
         if (this.launchArgs.get("--gameDir") == null && this.gameDirectory != null)
+        {
             this.addClassifiedArg("--gameDir", this.gameDirectory.getAbsolutePath());
+        }
 
         if (this.launchArgs.get("--assetsDir") == null && this.assetsDirectory != null)
+        {
             this.addClassifiedArg("--assetsDir", this.assetsDirectory.getAbsolutePath());
+        }
     }
 
     public String[] getLaunchArguments()
@@ -187,7 +199,9 @@ public abstract class StartupEnvironment implements GameEnvironment
             String path = option.value(this.parsedOptions);
             File dir = new File(path);
             if (dir.isAbsolute())
+            {
                 return dir;
+            }
 
             return new File(baseDirectory, path);
         }

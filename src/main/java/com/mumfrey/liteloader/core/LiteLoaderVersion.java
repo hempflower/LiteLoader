@@ -45,7 +45,8 @@ public enum LiteLoaderVersion
      */
     public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_8_0_R0;
 
-    private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(), LiteLoaderVersion.CURRENT.getReleaseTimestamp());
+    private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(),
+                                                                                    LiteLoaderVersion.CURRENT.getReleaseTimestamp());
 
     private final int revision;
 
@@ -98,7 +99,9 @@ public enum LiteLoaderVersion
         for (LiteLoaderVersion version : LiteLoaderVersion.values())
         {
             if (version.getLoaderRevision() == revision)
+            {
                 return version;
+            }
         }
 
         return LiteLoaderVersion.LEGACY;
@@ -109,7 +112,9 @@ public enum LiteLoaderVersion
         for (LiteLoaderVersion version : LiteLoaderVersion.values())
         {
             if (version.getLoaderVersion().equals(versionString))
+            {
                 return version.getLoaderRevision();
+            }
         }
 
         return LiteLoaderVersion.LEGACY.getLoaderRevision();

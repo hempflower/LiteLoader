@@ -1,9 +1,9 @@
 package com.mumfrey.liteloader.core.exceptions;
 
 /**
- * Exception thrown when a mod class references a liteloader interface which does not exist,
- * which more than likely means that it requires a more up-to-date version of the loader than
- * is currently installed.
+ * Exception thrown when a mod class references a liteloader interface which
+ * does not exist, which more than likely means that it requires a more
+ * up-to-date version of the loader than is currently installed.
  *
  * @author Adam Mummery-Smith
  */

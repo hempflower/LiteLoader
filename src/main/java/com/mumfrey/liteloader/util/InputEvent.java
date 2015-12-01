@@ -5,9 +5,10 @@ import net.java.games.input.Controller;
 import net.java.games.input.Event;
 
 /**
- * A handle to an input event, this handle will be used to call back the handler for the specified
- * component's events. This class represents a singly-linked list of delegates with each delegate's
- * next field pointing to the next delegate in the chain
+ * A handle to an input event, this handle will be used to call back the handler
+ * for the specified component's events. This class represents a singly-linked
+ * list of delegates with each delegate's next field pointing to the next
+ * delegate in the chain.
  * 
  * @author Adam Mummery-Smith
  */
@@ -46,7 +47,8 @@ public class InputEvent
     }
 
     /**
-     * Link this delegate to the specified delegate and return the start of the delegate chain
+     * Link this delegate to the specified delegate and return the start of the
+     * delegate chain.
      * 
      * @param chain delegate to link to (will be null if the chain is empty)
      */
@@ -66,7 +68,9 @@ public class InputEvent
         InputEvent tail = this; // Start here
 
         while (tail.next != null) // Find the end of the chain
+        {
             tail = tail.next;
+        }
 
         tail.next = delegate; // Append the new delegate
         return this; // Return the start of the delegate chain (eg. this node)

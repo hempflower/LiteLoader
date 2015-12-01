@@ -13,7 +13,8 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public abstract class ClassTransformer implements IClassTransformer
 {
-    public static final String HORIZONTAL_RULE = "----------------------------------------------------------------------------------------------------";
+    public static final String HORIZONTAL_RULE =
+            "----------------------------------------------------------------------------------------------------";
 
     private ClassReader classReader;
     private ClassNode classNode;

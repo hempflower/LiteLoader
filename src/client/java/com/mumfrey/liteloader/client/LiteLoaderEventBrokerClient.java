@@ -36,7 +36,7 @@ import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer> implements IResourceManagerReloadListener
-{	
+{
     private static LiteLoaderEventBrokerClient instance;
 
     /**
@@ -60,8 +60,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     private boolean wasFullScreen = false;
 
     /**
-     * Hash code of the current world. We don't store the world reference here because we don't want
-     * to mess with world GC by mistake
+     * Hash code of the current world. We don't store the world reference
+     * here because we don't want to mess with world GC by mistake.
      */
     private int worldHashCode = 0;
 
@@ -76,8 +76,10 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     private FastIterableDeque<ViewportListener>     viewportListeners     = new HandlerList<ViewportListener>(ViewportListener.class);
     private FastIterableDeque<FrameBufferListener>  frameBufferListeners  = new HandlerList<FrameBufferListener>(FrameBufferListener.class);
     private FastIterableDeque<InitCompleteListener> initListeners         = new HandlerList<InitCompleteListener>(InitCompleteListener.class);
-    private FastIterableDeque<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class, ReturnLogicOp.AND);
-    private FastIterableDeque<ScreenshotListener>   screenshotListeners   = new HandlerList<ScreenshotListener>(ScreenshotListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+    private FastIterableDeque<OutboundChatFilter>   outboundChatFilters   = new HandlerList<OutboundChatFilter>(OutboundChatFilter.class,
+                                                                                                                ReturnLogicOp.AND);
+    private FastIterableDeque<ScreenshotListener>   screenshotListeners   = new HandlerList<ScreenshotListener>(ScreenshotListener.class,
+                                                                                                                ReturnLogicOp.AND_BREAK_ON_FALSE);
     private FastIterableDeque<EntityRenderListener> entityRenderListeners = new HandlerList<EntityRenderListener>(EntityRenderListener.class);
 
     @SuppressWarnings("cast")
@@ -103,7 +105,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(
+     *      com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
      */
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -540,7 +543,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param render 
      */
-    public void onRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, Render render)
+    public void onRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks,
+            Render render)
     {
         this.entityRenderListeners.all().onRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
     }
@@ -555,7 +559,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param render 
      */
-    public void onPostRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, Render render)
+    public void onPostRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks,
+            Render render)
     {
         this.entityRenderListeners.all().onPostRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
     }

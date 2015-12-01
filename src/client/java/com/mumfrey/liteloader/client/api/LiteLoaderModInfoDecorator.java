@@ -20,14 +20,17 @@ import com.mumfrey.liteloader.util.render.IconTextured;
 public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 {
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ModInfoDecorator#addIcons(com.mumfrey.liteloader.core.ModInfo, java.util.List)
+     * @see com.mumfrey.liteloader.api.ModInfoDecorator
+     *      #addIcons(com.mumfrey.liteloader.core.ModInfo, java.util.List)
      */
     @Override
     public void addIcons(final ModInfo<?> mod, List<IconTextured> icons)
     {
         if (mod.hasTweakClass())
         {
-            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestweak"), 12, 12, 158, 80, 170, 92){
+            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.providestweak"), 12, 12, 158, 80, 170, 92)
+            {
                 @Override
                 public void onClicked(Object source, Object container)
                 {
@@ -41,7 +44,9 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 
         if (mod.hasEventTransformers())
         {
-            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providesevents"), 12, 12, 170, 92, 182, 104){
+            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.providesevents"), 12, 12, 170, 92, 182, 104)
+            {
                 @Override
                 public void onClicked(Object source, Object container)
                 {
@@ -55,7 +60,9 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 
         if (mod.hasClassTransformers())
         {
-            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.providestransformer"), 12, 12, 170, 80, 182, 92){
+            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.providestransformer"), 12, 12, 170, 80, 182, 92)
+            {
                 @Override
                 public void onClicked(Object source, Object container)
                 {
@@ -69,13 +76,16 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
 
         if (mod.usesAPI())
         {
-            icons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.usingapi"), 12, 12, 122, 92, 134, 104));
+            icons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.usingapi"), 12, 12, 122, 92, 134, 104));
         }
 
         List<Throwable> startupErrors = mod.getStartupErrors();
         if (startupErrors != null && startupErrors.size() > 0)
         {
-            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE, I18n.format("gui.mod.startuperror", startupErrors.size()), 12, 12, 134, 92, 146, 104){
+            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.startuperror", startupErrors.size()), 12, 12, 134, 92, 146, 104)
+            {
                 @Override
                 public void onClicked(Object source, Object container)
                 {
@@ -89,7 +99,9 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ModInfoDecorator#modifyStatusText(com.mumfrey.liteloader.core.ModInfo, java.lang.String)
+     * @see com.mumfrey.liteloader.api.ModInfoDecorator
+     *      #modifyStatusText(com.mumfrey.liteloader.core.ModInfo,
+     *      java.lang.String)
      */
     @Override
     public String modifyStatusText(ModInfo<?> mod, String statusText)
@@ -98,10 +110,13 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.ModInfoDecorator#onDrawListEntry(int, int, float, int, int, int, int, boolean, com.mumfrey.liteloader.core.ModInfo, int, int, int)
+     * @see com.mumfrey.liteloader.api.ModInfoDecorator
+     *      #onDrawListEntry(int, int, float, int, int, int, int, boolean,
+     *      com.mumfrey.liteloader.core.ModInfo, int, int, int)
      */
     @Override
-    public void onDrawListEntry(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, int height, boolean selected, ModInfo<?> mod, int gradientColour, int titleColour, int statusColour)
+    public void onDrawListEntry(int mouseX, int mouseY, float partialTicks, int xPosition, int yPosition, int width, int height, boolean selected,
+            ModInfo<?> mod, int gradientColour, int titleColour, int statusColour)
     {
     }
 }

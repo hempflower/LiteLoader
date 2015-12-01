@@ -4,7 +4,8 @@ import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.entity.Entity;
 
 /**
- * Interface for mods which want to receive callbacks when entities are rendered into the world
+ * Interface for mods which want to receive callbacks when entities are rendered
+ * into the world.
  *  
  * @author Adam Mummery-Smith
  */

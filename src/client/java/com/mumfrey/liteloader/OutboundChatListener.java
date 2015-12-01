@@ -10,7 +10,8 @@ import net.minecraft.network.play.client.C01PacketChatMessage;
 public interface OutboundChatListener extends LiteMod
 {
     /**
-     * Raised when a new chat packet is created (not necessarily transmitted, something could be trolling us)
+     * Raised when a new chat packet is created (not necessarily transmitted,
+     * something could be trolling us).
      * 
      * @param packet
      * @param message

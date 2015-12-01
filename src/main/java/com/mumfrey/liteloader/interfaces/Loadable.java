@@ -9,7 +9,8 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
  * 
  * @author Adam Mummery-Smith
  *
- * @param <L> base class type for Comparable<?> so that implementors can specify their Comparable type 
+ * @param <L> base class type for Comparable<?> so that implementors can specify
+ *      their Comparable type. 
  */
 public interface Loadable<L> extends Comparable<L>
 {
@@ -24,7 +25,8 @@ public interface Loadable<L> extends Comparable<L>
     public abstract String getName();
 
     /**
-     * Get the name to use when displaying this loadable, such as file name, identifier or friendly name
+     * Get the name to use when displaying this loadable, such as file name,
+     * identifier or friendly name
      */
     public abstract String getDisplayName();
 
@@ -34,7 +36,8 @@ public interface Loadable<L> extends Comparable<L>
     public abstract String getLocation();
 
     /**
-     * Get the identifier (usually "name" from metadata) of this loadable, used as the exclusivity key for mods and also the metadata key
+     * Get the identifier (usually "name" from metadata) of this loadable, used
+     * as the exclusivity key for mods and also the metadata key
      */
     public abstract String getIdentifier();
 
@@ -54,17 +57,20 @@ public interface Loadable<L> extends Comparable<L>
     public abstract String getDescription(String key);
 
     /**
-     * Returns true if this is an external jar containing a tweak rather than a mod
+     * Returns true if this is an external jar containing a tweak rather than a
+     * mod.
      */
     public abstract boolean isExternalJar();
 
     /**
-     * Returns true if this loadable supports being enabled and disabled via the GUI
+     * Returns true if this loadable supports being enabled and disabled via the
+     * GUI.
      */
     public abstract boolean isToggleable();
 
     /**
-     * Get whether this loadable is currently enabled in the context of the supplied mods list
+     * Get whether this loadable is currently enabled in the context of the
+     * supplied mods list.
      * 
      * @param environment
      */
@@ -81,7 +87,8 @@ public interface Loadable<L> extends Comparable<L>
     public abstract boolean isDirectory();
 
     /**
-     * If isFile or isDirectory return true then this method returns the inner File instance, otherwise returns null
+     * If isFile or isDirectory return true then this method returns the inner
+     * File instance, otherwise returns null.
      */
     public abstract File toFile();
 }

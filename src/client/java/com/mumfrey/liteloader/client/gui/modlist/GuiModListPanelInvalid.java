@@ -11,7 +11,8 @@ public class GuiModListPanelInvalid extends GuiModListPanel
 {
     private static final int BAD_PANEL_HEIGHT = 22;
 
-    public GuiModListPanelInvalid(ModListEntry owner, FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo, List<ModInfoDecorator> decorators)
+    public GuiModListPanelInvalid(ModListEntry owner, FontRenderer fontRenderer, int brandColour, ModInfo<?> modInfo,
+            List<ModInfoDecorator> decorators)
     {
         super(owner, fontRenderer, brandColour, modInfo, decorators);
     }

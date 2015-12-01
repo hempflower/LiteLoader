@@ -76,7 +76,9 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.LiteAPI#init(com.mumfrey.liteloader.launch.LoaderEnvironment, com.mumfrey.liteloader.launch.LoaderProperties)
+     * @see com.mumfrey.liteloader.api.LiteAPI#init(
+     *      com.mumfrey.liteloader.launch.LoaderEnvironment,
+     *      com.mumfrey.liteloader.launch.LoaderProperties)
      */
     @Override
     public void init(LoaderEnvironment environment, LoaderProperties properties)

@@ -19,7 +19,8 @@ public abstract class EventInjectionTransformer implements IClassTransformer
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.launchwrapper.IClassTransformer#transform(java.lang.String, java.lang.String, byte[])
+     * @see net.minecraft.launchwrapper.IClassTransformer
+     *      #transform(java.lang.String, java.lang.String, byte[])
      */
     @Override
     public byte[] transform(String name, String transformedName, byte[] basicClass)
@@ -33,11 +34,16 @@ public abstract class EventInjectionTransformer implements IClassTransformer
     protected abstract void addEvents();
 
     /**
-     * Register a new event to be injected, the event instance will be created if it does not already exist 
+     * Register a new event to be injected, the event instance will be created
+     * if it does not already exist.
      * 
-     * @param eventName Name of the event to use/create. Beware that IllegalArgumentException if the event was already defined with incompatible parameters
-     * @param targetMethod Method descriptor to identify the method to inject into
-     * @param injectionPoint Delegate which finds the location(s) in the target method to inject into
+     * @param eventName Name of the event to use/create. Beware that
+     *      IllegalArgumentException if the event was already defined with
+     *      incompatible parameters
+     * @param targetMethod Method descriptor to identify the method to inject
+     *      into
+     * @param injectionPoint Delegate which finds the location(s) in the target
+     *      method to inject into
      * 
      * @return the event - for fluent interface
      */
@@ -50,18 +56,24 @@ public abstract class EventInjectionTransformer implements IClassTransformer
      * Register an event to be injected
      * 
      * @param event Event to inject
-     * @param targetMethod Method descriptor to identify the method to inject into
-     * @param injectionPoint Delegate which finds the location(s) in the target method to inject into
+     * @param targetMethod Method descriptor to identify the method to inject
+     *      into
+     * @param injectionPoint Delegate which finds the location(s) in the target
+     *      method to inject into
      * 
      * @return the event - for fluent interface
      */
     protected final Event addEvent(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint)
     {
         if (event == null)
+        {
             throw new IllegalArgumentException("Event cannot be null!");
+        }
 
         if (injectionPoint == null)
+        {
             throw new IllegalArgumentException("Injection point cannot be null for event " + event.getName());
+        }
 
         if ("true".equals(System.getProperty("mcpenv")))
         {
@@ -89,7 +101,8 @@ public abstract class EventInjectionTransformer implements IClassTransformer
     }
 
     /**
-     * Register an access injection interface and provide a contextual obfuscation provider
+     * Register an access injection interface and provide a contextual
+     * obfuscation provider.
      * 
      * @param interfaceName
      * @param obfProvider

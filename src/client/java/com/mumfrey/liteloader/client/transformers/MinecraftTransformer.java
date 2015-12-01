@@ -86,6 +86,6 @@ public class MinecraftTransformer extends AccessorTransformer
 
         method.instructions = insns;
 
-        if (!found) LiteLoaderLogger.severe("MinecraftTransformer failed to find the INIT injection point, the game will probably crash pretty soon.");
+        if (!found) LiteLoaderLogger.severe("MinecraftTransformer failed to find INIT injection point, the game will probably crash pretty soon.");
     }
 }

@@ -5,16 +5,17 @@ import java.util.List;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
- * Interface for the loader bootstrap, this is loaded in the parent classloader for convenience
- * otherwise it would be necessary to call the initialisation functions using reflection which
- * just gets boring very quickly.
+ * Interface for the loader bootstrap, this is loaded in the parent classloader
+ * for convenience otherwise it would be necessary to call the initialisation
+ * functions using reflection which just gets boring very quickly.
  * 
  * @author Adam Mummery-Smith
  */
 public interface LoaderBootstrap
 {
     /**
-     * Pre-init, perform mod file discovery and initial setup (eg. logger, properties)
+     * Pre-init, perform mod file discovery and initial setup (eg. logger,
+     * properties)
      * 
      * @param classLoader
      * @param loadTweaks

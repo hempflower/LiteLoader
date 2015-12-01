@@ -22,12 +22,14 @@ public class IconAbsolute implements IconTextured
     private float vCoord;
     private float vCoord2;
 
-    public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2)
+    public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2,
+            float vCoord2)
     {
         this(textureResource, displayText, width, height, uCoord, vCoord, uCoord2, vCoord2, 256);
     }
 
-    public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2, float vCoord2, int texMapSize)
+    public IconAbsolute(ResourceLocation textureResource, String displayText, int width, int height, float uCoord, float vCoord, float uCoord2,
+            float vCoord2, int texMapSize)
     {
         this.textureResource = textureResource;
         this.displayText = displayText;

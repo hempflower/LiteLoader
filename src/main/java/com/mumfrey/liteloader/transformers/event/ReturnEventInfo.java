@@ -9,7 +9,8 @@ import com.mumfrey.liteloader.core.event.EventCancellationException;
  * 
  * @author Adam Mummery-Smith
  *
- * @param <S> Source object type. For non-static methods this will be the containing object instance.
+ * @param <S> Source object type. For non-static methods this will be the
+ *      containing object instance.
  * @param <R> Return type
  */
 public class ReturnEventInfo<S, R> extends EventInfo<S>
@@ -85,7 +86,8 @@ public class ReturnEventInfo<S, R> extends EventInfo<S>
     }
 
     /**
-     * Sets a return value for this event and cancels the event (required in order to return the new value) 
+     * Sets a return value for this event and cancels the event (required in
+     * order to return the new value).
      * 
      * @param returnValue
      */
@@ -94,7 +96,7 @@ public class ReturnEventInfo<S, R> extends EventInfo<S>
         super.cancel();
 
         this.returnValue = returnValue;
-    }		
+    }
 
     public R getReturnValue()
     {

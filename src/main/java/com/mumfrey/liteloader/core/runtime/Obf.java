@@ -256,7 +256,8 @@ public class Obf
     }
 
     /**
-     * Test whether any of this Obf's dimensions match the supplied name or ordinal
+     * Test whether any of this Obf's dimensions match the supplied name or
+     * ordinal
      * 
      * @param name
      * @param ordinal
@@ -348,7 +349,9 @@ public class Obf
                     String fieldName = fd.getName();
                     Obf entry = (Obf)fd.get(null);
                     if (name.equals(fieldName) || name.equals(entry.name))
+                    {
                         return entry;
+                    }
                 }
             }
         }
@@ -362,15 +365,18 @@ public class Obf
         for (Obf obf : Obf.obfs.values())
         {
             if (obfName.equals(obf.obf))
+            {
                 return obf.name;
+            }
         }
 
         return obfName;
     }
 
     /**
-     * Ordinal reference, can be passed to some methods which accept an {@link Obf} to indicate an offset into a
-     * class rather than a named reference.
+     * Ordinal reference, can be passed to some methods which accept an
+     * {@link Obf} to indicate an offset into a class rather than a named
+     * reference.
      * 
      * @author Adam Mummery-Smith
      */

@@ -193,7 +193,9 @@ public class LiteLoaderMods
         for (Mod mod : this.allMods)
         {
             if (instance == mod.getMod())
+            {
                 return mod;
+            }
         }
 
         return null;
@@ -232,7 +234,9 @@ public class LiteLoaderMods
         for (Mod mod : this.allMods)
         {
             if (mod.matchesName(modName))
+            {
                 return (T)mod.getMod();
+            }
         }
 
         return null;
@@ -249,7 +253,9 @@ public class LiteLoaderMods
         for (Mod mod : this.allMods)
         {
             if (mod.getModClass().equals(modClass))
+            {
                 return (T)mod.getMod();
+            }
         }
 
         return null;
@@ -267,7 +273,9 @@ public class LiteLoaderMods
         for (Mod mod : this.allMods)
         {
             if (mod.matchesIdentifier(identifier))
+            {
                 return mod.getModClass();
+            }
         }
 
         return null;
@@ -312,7 +320,8 @@ public class LiteLoaderMods
     }
 
     /**
-     * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
+     * Get the mod identifier, this is used for versioning, exclusivity, and
+     * enablement checks.
      * 
      * @param modClass
      */
@@ -322,7 +331,8 @@ public class LiteLoaderMods
     }
 
     /**
-     * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
+     * Get the mod identifier, this is used for versioning, exclusivity, and
+     * enablement checks.
      * 
      * @param mod
      */
@@ -332,7 +342,8 @@ public class LiteLoaderMods
     }
 
     /**
-     * Get the container (mod file, classpath jar or folder) for the specified mod
+     * Get the container (mod file, classpath jar or folder) for the specified
+     * mod.
      * 
      * @param modClass
      */
@@ -342,7 +353,8 @@ public class LiteLoaderMods
     }
 
     /**
-     * Get the container (mod file, classpath jar or folder) for the specified mod
+     * Get the container (mod file, classpath jar or folder) for the specified
+     * mod.
      * 
      * @param mod
      */
@@ -400,7 +412,9 @@ public class LiteLoaderMods
         for (Mod mod : this.loadedMods)
         {
             if (mod.matchesIdentifier(identifier))
+            {
                 return true;
+            }
         }
 
         return false;
@@ -509,7 +523,9 @@ public class LiteLoaderMods
         for (ModInfo<?> mod : this.disabledMods)
         {
             if (mod.getContainer().equals(container))
+            {
                 return;
+            }
         }
 
         if (container != LoadableMod.NONE)
@@ -620,7 +636,8 @@ public class LiteLoaderMods
             File newConfigPath = LiteLoader.getConfigFolder();
             File oldConfigPath = this.environment.inflectVersionedConfigPath(lastModVersion);
 
-            LiteLoaderLogger.info("Performing config upgrade for mod %s. Upgrading %s to %s...", instance.getName(), lastModVersion, LiteLoaderVersion.CURRENT);
+            LiteLoaderLogger.info("Performing config upgrade for mod %s. Upgrading %s to %s...",
+                    instance.getName(), lastModVersion, LiteLoaderVersion.CURRENT);
 
             this.observers.all().onMigrateModConfig(instance, newConfigPath, oldConfigPath);
 
@@ -635,7 +652,8 @@ public class LiteLoaderMods
         }
         else if (currentRevision < lastKnownRevision && ConfigManager.getConfigStrategy(instance) == ConfigStrategy.Unversioned)
         {
-            LiteLoaderLogger.warning("Mod %s has config from unknown loader revision %d. This may cause unexpected behaviour.", instance.getName(), lastKnownRevision);
+            LiteLoaderLogger.warning("Mod %s has config from unknown loader revision %d. This may cause unexpected behaviour.",
+                    instance.getName(), lastKnownRevision);
         }
     }
 
@@ -661,8 +679,8 @@ public class LiteLoaderMods
     }
 
     /**
-     * Check that all specified mod transformers were injected successfully, tag mods with failed transformers
-     * as critically errored
+     * Check that all specified mod transformers were injected successfully, tag
+     * mods with failed transformers as critically errored.
      */
     private void validateModTransformers()
     {
@@ -728,7 +746,9 @@ public class LiteLoaderMods
         for (String modTransformer : modTransformers)
         {
             if (injectedTransformers.contains(modTransformer))
+            {
                 return true;
+            }
         }
 
         return false;

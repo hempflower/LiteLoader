@@ -9,17 +9,20 @@ package com.mumfrey.liteloader.modconfig;
 public interface ConfigPanel
 {
     /**
-     * Panels should return the text to display at the top of the config panel window
+     * Panels should return the text to display at the top of the config panel
+     * window.
      */
     public abstract String getPanelTitle();
 
     /**
-     * Get the height of the content area for scrolling purposes, return -1 to disable scrolling
+     * Get the height of the content area for scrolling purposes, return -1 to
+     * disable scrolling.
      */
     public abstract int getContentHeight();
 
     /**
-     * Called when the panel is displayed, initialise the panel (read settings, etc)
+     * Called when the panel is displayed, initialise the panel (read settings,
+     * etc)
      * 
      * @param host panel host
      */

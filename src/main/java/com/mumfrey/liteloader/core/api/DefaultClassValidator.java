@@ -19,19 +19,29 @@ public class DefaultClassValidator<T> implements ModClassValidator
     @Override
     public boolean validateName(String className)
     {
-        return this.supportedPrefixes == null || this.supportedPrefixes.size() == 0 || DefaultClassValidator.startsWithAny(className, this.supportedPrefixes);
+        return this.supportedPrefixes == null
+                || this.supportedPrefixes.size() == 0
+                || DefaultClassValidator.startsWithAny(className, this.supportedPrefixes);
     }
 
     @Override
     public boolean validateClass(ClassLoader classLoader, Class<?> candidateClass)
     {
-        return (candidateClass != null && !this.superClass.equals(candidateClass) && this.superClass.isAssignableFrom(candidateClass) && !candidateClass.isInterface());
+        return (candidateClass != null
+                && !this.superClass.equals(candidateClass)
+                && this.superClass.isAssignableFrom(candidateClass)
+                && !candidateClass.isInterface());
     }
 
     private static boolean startsWithAny(String string, List<String> candidates)
     {
         for (String candidate : candidates)
-            if (string.startsWith(candidate)) return true;
+        {
+            if (string.startsWith(candidate))
+            {
+                return true;
+            }
+        }
 
         return false;
     }

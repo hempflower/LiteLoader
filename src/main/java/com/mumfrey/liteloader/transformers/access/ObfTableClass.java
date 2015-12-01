@@ -8,7 +8,8 @@ import java.lang.annotation.Target;
 import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
- * Defines the obfuscation table class to use for an accessor injection interface
+ * Defines the obfuscation table class to use for an accessor injection
+ * interface.
  * 
  * @author Adam Mummery-Smith
  */

@@ -148,7 +148,8 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.common.GameEngine#setKeyBindings(java.util.List)
+     * @see com.mumfrey.liteloader.common.GameEngine
+     *      #setKeyBindings(java.util.List)
      */
     @Override
     public void setKeyBindings(List<KeyBinding> keyBindings)

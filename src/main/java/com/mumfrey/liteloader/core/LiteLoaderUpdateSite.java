@@ -26,7 +26,8 @@ public class LiteLoaderUpdateSite extends UpdateSite
 
     public LiteLoaderUpdateSite(String targetVersion, long currentTimeStamp)
     {
-        super(LiteLoaderUpdateSite.UPDATE_SITE_URL, LiteLoaderUpdateSite.UPDATE_SITE_VERSIONS_JSON, targetVersion, LiteLoaderUpdateSite.UPDATE_SITE_ARTEFACT_NAME, currentTimeStamp);
+        super(LiteLoaderUpdateSite.UPDATE_SITE_URL, LiteLoaderUpdateSite.UPDATE_SITE_VERSIONS_JSON, targetVersion,
+                LiteLoaderUpdateSite.UPDATE_SITE_ARTEFACT_NAME, currentTimeStamp);
 
         this.mcVersion = targetVersion; 
     }
@@ -52,7 +53,8 @@ public class LiteLoaderUpdateSite extends UpdateSite
         if (!jarFile.isFile()) return false;
 
         // Validate that the jar is in the expected name and location
-        this.mcDir = this.walkAndValidateParents(jarFile, "liteloader-" + this.mcVersion + ".jar", this.mcVersion, "liteloader", "mumfrey", "com", "libraries");
+        this.mcDir = this.walkAndValidateParents(jarFile, "liteloader-" + this.mcVersion + ".jar", this.mcVersion,
+                "liteloader", "mumfrey", "com", "libraries");
         if (this.mcDir == null) return false;
 
         // Check that the jar we found is actually on the current classpath

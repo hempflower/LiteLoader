@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader.permissions;
 
 /**
- * Represents a set of permissions assigned by a remote authority such as a server
+ * Represents a set of permissions assigned by a remote authority such as a
+ * server.
  *
  * @author Adam Mummery-Smith
  */
@@ -18,12 +19,14 @@ public interface ReplicatedPermissions extends Permissions
     public abstract boolean isValid();
 
     /**
-     * Forcibly invalidate this permission container, forces update at the next opportunity
+     * Forcibly invalidate this permission container, forces update at the next
+     * opportunity.
      */
     public abstract void invalidate();
 
     /**
-     * Temporarily forces the permissions object to be valid to prevent repeated revalidation
+     * Temporarily forces the permissions object to be valid to prevent repeated
+     * revalidation.
      */
     public abstract void notifyRefreshPending();
 }

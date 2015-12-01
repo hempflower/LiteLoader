@@ -80,7 +80,8 @@ public class LiteLoaderTweaker implements ITweaker
         }
 
         /**
-         * Go to the next state, checks whether can move to the next state (previous state is marked completed) first
+         * Go to the next state, checks whether can move to the next state
+         * (previous state is marked completed) first
          */
         public StartupState gotoState()
         {
@@ -89,9 +90,15 @@ public class LiteLoaderTweaker implements ITweaker
                 if (otherState.isInState() && otherState != this)
                 {
                     if (otherState.canGotoState(this))
+                    {
                         otherState.leaveState();
+                    }
                     else
-                        throw new IllegalStateException(String.format("Cannot go to state <%s> as %s %s", this.name(), otherState, otherState.getNextState() == this ? "" : "and expects \""  + otherState.getNextState().name() + "\" instead"), LiteLoaderLogger.getLastThrowable());
+                    {
+                        String message = String.format("Cannot go to state <%s> as %s %s", this.name(), otherState,
+                                otherState.getNextState() == this ? "" : "and expects \""  + otherState.getNextState().name() + "\" instead");
+                        throw new IllegalStateException(message, LiteLoaderLogger.getLastThrowable());
+                    }
                 }
             }
 
@@ -110,7 +117,9 @@ public class LiteLoaderTweaker implements ITweaker
         @Override
         public String toString()
         {
-            return String.format("<%s> is %s %s", this.name(), this.inState ? "[ACTIVE]" : "[INACTIVE]", this.completed ? "and [COMPLETED]" : "but [INCOMPLETE]");
+            return String.format("<%s> is %s %s", this.name(),
+                    this.inState ? "[ACTIVE]" : "[INACTIVE]",
+                    this.completed ? "and [COMPLETED]" : "but [INCOMPLETE]");
         }
 
         /**
@@ -127,7 +136,10 @@ public class LiteLoaderTweaker implements ITweaker
         public void completed()
         {
             if (!this.inState || this.completed)
-                throw new IllegalStateException("Attempted to complete state " + this.name() + " but the state is already completed or is not active", LiteLoaderLogger.getLastThrowable());
+            {
+                String message = String.format("Attempted to complete state %s but the state is already completed or is not active", this.name());
+                throw new IllegalStateException(message, LiteLoaderLogger.getLastThrowable());
+            }
 
             this.completed = true;
         }
@@ -163,17 +175,20 @@ public class LiteLoaderTweaker implements ITweaker
     }
 
     /**
-     * Singleton instance, mainly for delegating from injected callbacks which need a static method to call
+     * Singleton instance, mainly for delegating from injected callbacks which
+     * need a static method to call.
      */
     protected static LiteLoaderTweaker instance;
 
     /**
-     * Approximate location of the minecraft jar, used for "base" injection position in ClassPathUtilities
+     * Approximate location of the minecraft jar, used for "base" injection
+     * position in ClassPathUtilities.
      */
     protected static URL jarUrl;
 
     /**
-     * "Order" value for inserted tweakers, used as disambiguating sort criteria for injected tweakers which have the same priority 
+     * "Order" value for inserted tweakers, used as disambiguating sort criteria
+     * for injected tweakers which have the same priority. 
      */
     protected int tweakOrder = 0;
 
@@ -193,7 +208,8 @@ public class LiteLoaderTweaker implements ITweaker
     protected boolean isPrimary;
 
     /**
-     * Startup environment information, used to store info about the current startup in one place, also handles parsing command line arguments
+     * Startup environment information, used to store info about the current
+     * startup in one place, also handles parsing command line arguments.
      */
     protected StartupEnvironment env;
 
@@ -208,7 +224,9 @@ public class LiteLoaderTweaker implements ITweaker
     protected ClassTransformerManager transformerManager;
 
     /* (non-Javadoc)
-     * @see net.minecraft.launchwrapper.ITweaker#acceptOptions(java.util.List, java.io.File, java.io.File, java.lang.String)
+     * @see net.minecraft.launchwrapper.ITweaker
+     *      #acceptOptions(java.util.List, java.io.File, java.io.File,
+     *      java.lang.String)
      */
     @Override
     public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
@@ -224,13 +242,15 @@ public class LiteLoaderTweaker implements ITweaker
     }
 
     /* (non-Javadoc)
-     * @see net.minecraft.launchwrapper.ITweaker#injectIntoClassLoader(net.minecraft.launchwrapper.LaunchClassLoader)
+     * @see net.minecraft.launchwrapper.ITweaker
+     *      #injectIntoClassLoader(
+     *      net.minecraft.launchwrapper.LaunchClassLoader)
      */
     @Override
     public void injectIntoClassLoader(LaunchClassLoader classLoader)
     {
-        //		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Obf");
-        //		classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Packets");
+//        classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Obf");
+//        classLoader.addClassLoaderExclusion("com.mumfrey.liteloader.core.runtime.Packets");
 
         this.transformerManager.injectUpstreamTransformers(classLoader);
 
@@ -305,7 +325,8 @@ public class LiteLoaderTweaker implements ITweaker
     }
 
     /**
-     * Do the first stage of loader startup, which enumerates mod sources and finds tweakers
+     * Do the first stage of loader startup, which enumerates mod sources and
+     * finds tweakers.
      */
     private void onPreInit()
     {
@@ -447,7 +468,9 @@ public class LiteLoaderTweaker implements ITweaker
             for (ITweaker existingTweaker : tweakers)
             {
                 if (tweakClass.equals(existingTweaker.getClass().getName()))
+                {
                     return;
+                }
             }
 
             tweakClasses.add(tweakClass);
@@ -463,10 +486,14 @@ public class LiteLoaderTweaker implements ITweaker
         if (tweakClass != null && !this.allCascadingTweaks.contains(tweakClass))
         {
             if (this.getClass().getName().equals(tweakClass))
+            {
                 return false;
+            }
 
             if (LiteLoaderTweaker.isTweakAlreadyEnqueued(tweakClass))
+            {
                 return false;
+            }
 
             this.allCascadingTweaks.add(tweakClass);
             this.sortedCascadingTweaks.add(new SortableValue<String>(priority, this.tweakOrder++, tweakClass));
@@ -477,7 +504,8 @@ public class LiteLoaderTweaker implements ITweaker
     }
 
     /**
-     * The bootstrap object has to be spawned using reflection for obvious reasons, 
+     * The bootstrap object has to be spawned using reflection for obvious
+     * reasons 
      * 
      * @param bootstrapClassName
      * @param classLoader
@@ -576,7 +604,7 @@ public class LiteLoaderTweaker implements ITweaker
             {
                 if (tweakClass.equals(clazz)) return true;
             }
-        }		
+        }
 
         if (tweakers != null)
         {
@@ -599,7 +627,8 @@ public class LiteLoaderTweaker implements ITweaker
     }
 
     /**
-     * Callback from the "Main" class, do the PREBEGINGAME steps (inject "downstream" transformers)
+     * Callback from the "Main" class, do the PREBEGINGAME steps (inject
+     * "downstream" transformers)
      */
     public static void preBeginGame()
     {

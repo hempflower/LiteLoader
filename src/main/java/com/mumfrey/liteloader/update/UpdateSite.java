@@ -12,8 +12,8 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.net.HttpStringRetriever;
 
 /**
- * An update site, used by liteloader to check for new versions but is also available to mods who may
- * want to use a similar system
+ * An update site, used by liteloader to check for new versions but is also
+ * available to mods who may want to use a similar system.
  * 
  * @author Adam Mummery-Smith
  */
@@ -30,7 +30,8 @@ public class UpdateSite implements Comparator<Long>
     private final String updateSiteUrl;
 
     /**
-     * Name of the json file containing the remote versions data, eg. versions.json
+     * Name of the json file containing the remote versions data, eg.
+     * versions.json
      */
     private final String updateSiteJsonFileName;
 
@@ -60,7 +61,8 @@ public class UpdateSite implements Comparator<Long>
     private final Object lock = new Object();
 
     /**
-     * StringRetriever which will fetch the remote json file, null when not performing a fetch operation
+     * StringRetriever which will fetch the remote json file, null when not
+     * performing a fetch operation.
      */
     private HttpStringRetriever stringRetriever;
 
@@ -97,14 +99,19 @@ public class UpdateSite implements Comparator<Long>
     /**
      * Create a new UpdateSite with the specified information
      * 
-     * @param updateSiteUrl Base URL of the update site, should include the trailing slash
-     * @param jsonFileName Name of the json file on the remote site containing the version data, eg. versions.json
+     * @param updateSiteUrl Base URL of the update site, should include the
+     *      trailing slash
+     * @param jsonFileName Name of the json file on the remote site containing
+     *      the version data, eg. versions.json
      * @param targetVersion The target minecraft version
-     * @param artefact Artefact name in the form "com.somedomain.pkg:artefactname"
+     * @param artefact Artefact name in the form
+     *      "com.somedomain.pkg:artefactname"
      * @param currentTimeStamp Timestamp of the current artefact
-     * @param timeStampComparator Comparator to use for comparing timestamps, if null uses built in comparator
+     * @param timeStampComparator Comparator to use for comparing timestamps, if
+     *      null uses built in comparator
      */
-    public UpdateSite(String updateSiteUrl, String jsonFileName, String targetVersion, String artefact, long currentTimeStamp, Comparator<Long> timeStampComparator)
+    public UpdateSite(String updateSiteUrl, String jsonFileName, String targetVersion, String artefact, long currentTimeStamp,
+            Comparator<Long> timeStampComparator)
     {
         this.updateSiteUrl = updateSiteUrl + (updateSiteUrl.endsWith("/") ? "" : "/");
         this.updateSiteJsonFileName = jsonFileName;
@@ -119,10 +126,13 @@ public class UpdateSite implements Comparator<Long>
     /**
      * Create a new UpdateSite with the specified information
      * 
-     * @param updateSiteUrl Base URL of the update site, should include the trailing slash
-     * @param jsonFileName Name of the json file on the remote site containing the version data, eg. versions.json
+     * @param updateSiteUrl Base URL of the update site, should include the
+     *      trailing slash
+     * @param jsonFileName Name of the json file on the remote site containing
+     *      the version data, eg. versions.json
      * @param targetVersion The target minecraft version
-     * @param artefact Artefact name in the form "com.somedomain.pkg:artefactname"
+     * @param artefact Artefact name in the form
+     *      "com.somedomain.pkg:artefactname"
      * @param currentTimeStamp Timestamp of the current artefact
      */
     public UpdateSite(String updateSiteUrl, String jsonFileName, String targetVersion, String artefact, long currentTimeStamp)
@@ -217,7 +227,8 @@ public class UpdateSite implements Comparator<Long>
     }
 
     /**
-     * Check whether an in-progress check has completed and if it has parse the retrieved data
+     * Check whether an in-progress check has completed and if it has parse the
+     * retrieved data.
      */
     private void update()
     {
@@ -238,7 +249,8 @@ public class UpdateSite implements Comparator<Long>
                     }
                     catch (Exception ex)
                     {
-                        LiteLoaderLogger.debug("Update site for %s failed parsing the update response: %s:%s", this.artefact, ex.getClass().getSimpleName(), ex.getMessage());
+                        LiteLoaderLogger.debug("Update site for %s failed parsing the update response: %s:%s", this.artefact,
+                                ex.getClass().getSimpleName(), ex.getMessage());
                         this.checkSuccess = false;
                         ex.printStackTrace();
                     }

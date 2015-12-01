@@ -290,7 +290,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get the singleton instance of LiteLoader, initialises the loader if necessary
+     * Get the singleton instance of LiteLoader, initialises the loader if
+     * necessary.
      * 
      * @return LiteLoader instance
      */
@@ -343,7 +344,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get an API instance by identifier (returns null if no instance matching the supplied identifier exists)
+     * Get an API instance by identifier (returns null if no instance matching
+     * the supplied identifier exists).
      * 
      * @param identifier
      */
@@ -367,7 +369,9 @@ public final class LiteLoader
         if (customisationProviders != null)
         {
             for (CustomisationProvider provider : customisationProviders)
+            {
                 if (providerType.isAssignableFrom(provider.getClass())) return (C)provider;
+            }
         }
 
         return null;
@@ -550,7 +554,7 @@ public final class LiteLoader
             loadedMods.add(loadedMod.getMod());
         }
 
-        return loadedMods;		
+        return loadedMods;
     }
 
     /**
@@ -633,7 +637,7 @@ public final class LiteLoader
      * @param modNameOrId
      * @param metaDataKey
      * @param defaultValue
-     * @throws InvalidActivityException Thrown by getMod if init is not complete 
+     * @throws InvalidActivityException Thrown by getMod if init is not complete
      * @throws IllegalArgumentException Thrown by getMod if argument is null
      */
     public String getModMetaData(String modNameOrId, String metaDataKey, String defaultValue) throws IllegalArgumentException
@@ -666,7 +670,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
+     * Get the mod identifier, this is used for versioning, exclusivity, and
+     * enablement checks.
      * 
      * @param modClass
      */
@@ -676,7 +681,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get the mod identifier, this is used for versioning, exclusivity, and enablement checks
+     * Get the mod identifier, this is used for versioning, exclusivity, and
+     * enablement checks.
      * 
      * @param mod
      */
@@ -686,7 +692,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get the container (mod file, classpath jar or folder) for the specified mod
+     * Get the container (mod file, classpath jar or folder) for the specified
+     * mod.
      * 
      * @param modClass
      */
@@ -696,7 +703,8 @@ public final class LiteLoader
     }
 
     /**
-     * Get the container (mod file, classpath jar or folder) for the specified mod
+     * Get the container (mod file, classpath jar or folder) for the specified
+     * mod.
      * 
      * @param mod
      */
@@ -768,7 +776,8 @@ public final class LiteLoader
      * Register an arbitrary Exposable
      * 
      * @param exposable Exposable object to register
-     * @param fileName Override config file name to use (leave null to use value from ExposableConfig specified value)
+     * @param fileName Override config file name to use (leave null to use value
+     *      from ExposableConfig specified value)
      */
     public void registerExposable(Exposable exposable, String fileName)
     {
@@ -777,7 +786,8 @@ public final class LiteLoader
     }
 
     /**
-     * Initialise lifetime objects like the game engine, event broker and interface manager
+     * Initialise lifetime objects like the game engine, event broker and
+     * interface manager.
      */
     private void initLifetimeObjects()
     {
@@ -980,7 +990,8 @@ public final class LiteLoader
     }
 
     /**
-     * @param objCrashReport This is an object so that we don't need to transform the obfuscated name in the transformer
+     * @param objCrashReport This is an object so that we don't need to
+     *      transform the obfuscated name in the transformer
      */
     public static void populateCrashReport(Object objCrashReport)
     {

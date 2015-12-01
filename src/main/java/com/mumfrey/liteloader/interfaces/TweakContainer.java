@@ -10,7 +10,8 @@ import java.util.List;
 public interface TweakContainer<L> extends Loadable<L>, Injectable
 {
     /**
-     * Get whether this tweak container has a defined tweak class in its metadata
+     * Get whether this tweak container has a defined tweak class in its
+     * metadata.
      */
     public abstract boolean hasTweakClass();
 

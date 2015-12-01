@@ -18,7 +18,8 @@ import com.mumfrey.liteloader.launch.LiteLoaderTweakerServer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
- * Wrapper class for LaunchWrapper Main class, which logs in using Yggdrasil first so that online shizzle can be tested
+ * Wrapper class for LaunchWrapper Main class, which logs in using Yggdrasil
+ * first so that online shizzle can be tested.
  * 
  * @author Adam Mummery-Smith
  */
@@ -48,8 +49,9 @@ public abstract class Start
     }
 
     /**
-     * Process the launch-time args, since we may be being launched by GradleStart we need to parse
-     * out any values passed in and ensure we replace them with our own
+     * Process the launch-time args, since we may be being launched by
+     * GradleStart we need to parse out any values passed in and ensure we
+     * replace them with our own.
      */
     private static String[] processArgs(String[] args)
     {
@@ -77,14 +79,17 @@ public abstract class Start
         for (String arg : args)
         {
             if (target.equalsIgnoreCase(arg))
+            {
                 return true;
+            }
         }
 
         return false;
     }
 
     /**
-     * Read the args from the command line into the qualified and unqualified collections
+     * Read the args from the command line into the qualified and unqualified
+     * collections.
      */
     private static void parseArgs(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
     {
@@ -166,7 +171,9 @@ public abstract class Start
         }
 
         if (!Start.MULTI_VALUE_ARGS.contains(qualifier))
+        {
             args.clear();
+        }
 
         args.add(arg);
     }

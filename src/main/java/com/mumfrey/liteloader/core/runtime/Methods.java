@@ -13,6 +13,8 @@ import com.mumfrey.liteloader.transformers.event.MethodInfo;
  */
 public abstract class Methods
 {
+    // CHECKSTYLE:OFF
+    
     // Client & General
     public static final MethodInfo startGame              = new MethodInfo(Obf.Minecraft,                  Obf.startGame,                    Void.TYPE);
     public static final MethodInfo runGameLoop            = new MethodInfo(Obf.Minecraft,                  Obf.runGameLoop,                  Void.TYPE);

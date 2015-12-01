@@ -26,9 +26,10 @@ import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 
 /**
- * Proxy class which handles the redirected calls from the injected callbacks and routes them to the
- * relevant liteloader handler classes. We do this rather than patching a bunch of bytecode into the packet
- * classes themselves because this is easier to maintain.
+ * Proxy class which handles the redirected calls from the injected callbacks
+ * and routes them to the relevant liteloader handler classes. We do this rather
+ * than patching a bunch of bytecode into the packet classes themselves because
+ * this is easier to maintain.
  * 
  * @author Adam Mummery-Smith
  */
@@ -50,7 +51,8 @@ public abstract class CallbackProxyClient extends CallbackProxyCommon
 
         if (CallbackProxyClient.clientEventBroker == null)
         {
-            throw new RuntimeException("LiteLoader failed to start up properly. The game is in an unstable state and must shut down now. Check the developer log for startup errors");
+            throw new RuntimeException("LiteLoader failed to start up properly."
+                    + " The game is in an unstable state and must shut down now. Check the developer log for startup errors");
         }
 
         CallbackProxyClient.clientEventBroker.onStartupComplete();
@@ -115,7 +117,8 @@ public abstract class CallbackProxyClient extends CallbackProxyCommon
         CallbackProxyClient.clientEventBroker.postRenderHUD(partialTicks);
     }
 
-    public static void IntegratedServerCtor(EventInfo<IntegratedServer> e, Minecraft minecraft, String folderName, String worldName, WorldSettings worldSettings)
+    public static void IntegratedServerCtor(EventInfo<IntegratedServer> e, Minecraft minecraft, String folderName, String worldName,
+            WorldSettings worldSettings)
     {
         CallbackProxyClient.clientEventBroker.onStartServer(e.getSource(), folderName, worldName, worldSettings);
     }
@@ -185,24 +188,27 @@ public abstract class CallbackProxyClient extends CallbackProxyCommon
         CallbackProxyClient.clientEventBroker.onRenderTerrain(partialTicks, pass, timeSlice);
     }
 
-    public static void onSaveScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, File gameDir, String name, int width, int height, Framebuffer fbo)
+    public static void onSaveScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, File gameDir, String name, int width, int height,
+            Framebuffer fbo)
     {
         CallbackProxyClient.clientEventBroker.onScreenshot(e, name, width, height, fbo);
     }
 
-    public static void onRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, boolean hideBoundingBox, Render render)
+    public static void onRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks, boolean hideBoundingBox, Render render)
     {
         CallbackProxyClient.clientEventBroker.onRenderEntity(e.getSource(), entity, xPos, yPos, zPos, yaw, partialTicks, render);
     }
 
-    public static void onPostRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks, boolean hideBoundingBox, Render render)
+    public static void onPostRenderEntity(ReturnEventInfo<RenderManager, Boolean> e, Entity entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks, boolean hideBoundingBox, Render render)
     {
         CallbackProxyClient.clientEventBroker.onPostRenderEntity(e.getSource(), entity, xPos, yPos, zPos, yaw, partialTicks, render);
     }
 
     /**
-     * Compatiblbe behaviour with FML, this method is called to generate a consistent offline UUID between client and server
-     * for a given username.
+     * Compatiblbe behaviour with FML, this method is called to generate a
+     * consistent offline UUID between client and server for a given username.
      */
     public static void generateOfflineUUID(ReturnEventInfo<Session, GameProfile> e)
     {

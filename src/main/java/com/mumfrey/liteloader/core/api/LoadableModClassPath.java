@@ -39,7 +39,8 @@ public class LoadableModClassPath extends LoadableModFile
             }
             else
             {
-                this.modName = String.format("%s.%s", this.getParentFile() != null ? this.getParentFile().getName().toLowerCase() : "", this.getName().toLowerCase());
+                String parentFileName = this.getParentFile() != null ? this.getParentFile().getName().toLowerCase() : "";
+                this.modName = String.format("%s.%s", parentFileName, this.getName().toLowerCase());
                 this.modNameRequired = true;
             }
         }

@@ -27,12 +27,14 @@ public class ClassTransformerManager
     private boolean gameStarted;
 
     /**
-     * Transformers to inject after preInit but before the game starts, necessary for anything that needs to be downstream of forge
+     * Transformers to inject after preInit but before the game starts,
+     * necessary for anything that needs to be downstream of forge.
      */
     private Set<String> downstreamTransformers = new LinkedHashSet<String>();
 
     /**
-     * Transformers passed into the constructor which are required and must be injected upstream
+     * Transformers passed into the constructor which are required and must be
+     * injected upstream.
      */
     private final List<String> requiredTransformers;
 
@@ -155,7 +157,9 @@ public class ClassTransformerManager
         this.gameStarted = true;
 
         if (this.downstreamTransformers.size() > 0)
+        {
             LiteLoaderLogger.info("Injecting downstream transformers");
+        }
 
         for (String transformerClassName : this.downstreamTransformers)
         {
@@ -210,7 +214,9 @@ public class ClassTransformerManager
         for (IClassTransformer transformer : classLoader.getTransformers())
         {
             if (transformer.getClass().getName().equals(transformerClassName))
+            {
                 return transformer;
+            }
         }
 
         return null;

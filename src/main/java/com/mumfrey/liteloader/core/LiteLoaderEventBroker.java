@@ -53,8 +53,10 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 /**
  * @author Adam Mummery-Smith
  *
- * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
- * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
+ * @param <TClient> Type of the client runtime, "Minecraft" on client and null
+ *      on the server
+ * @param <TServer> Type of the server runtime, "IntegratedServer" on the client
+ *      "MinecraftServer" on the server 
  */
 public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftServer> implements InterfaceProvider, ShutdownObserver
 {
@@ -131,32 +133,38 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
     /**
      * List of mods which provide server commands
      */
-    private FastIterable<ServerCommandProvider> serverCommandProviders = new HandlerList<ServerCommandProvider>(ServerCommandProvider.class);
+    private FastIterable<ServerCommandProvider> serverCommandProviders
+            = new HandlerList<ServerCommandProvider>(ServerCommandProvider.class);
 
     /**
      * List of mods which monitor server player events
      */
-    private FastIterable<ServerPlayerListener> serverPlayerListeners = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
+    private FastIterable<ServerPlayerListener> serverPlayerListeners
+            = new HandlerList<ServerPlayerListener>(ServerPlayerListener.class);
 
     /**
      * List of mods which handle player interaction events 
      */
-    private FastIterable<PlayerInteractionListener> playerInteractionListeners = new HandlerList<PlayerInteractionListener>(PlayerInteractionListener.class, ReturnLogicOp.AND);
+    private FastIterable<PlayerInteractionListener> playerInteractionListeners
+            = new HandlerList<PlayerInteractionListener>(PlayerInteractionListener.class, ReturnLogicOp.AND);
 
     /**
      * List of mods which handle player movement events
      */
-    private FastIterable<PlayerMoveListener> playerMoveListeners = new HandlerList<PlayerMoveListener>(PlayerMoveListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+    private FastIterable<PlayerMoveListener> playerMoveListeners
+            = new HandlerList<PlayerMoveListener>(PlayerMoveListener.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 
     /**
      * List of mods which monitor server ticks
      */
-    private FastIterable<ServerTickable> serverTickListeners = new HandlerList<ServerTickable>(ServerTickable.class);
+    private FastIterable<ServerTickable> serverTickListeners
+            = new HandlerList<ServerTickable>(ServerTickable.class);
 
     /**
      * List of mods which want to be notified when the game is shutting down
      */
-    private FastIterable<ShutdownListener> shutdownListeners = new HandlerList<ShutdownListener>(ShutdownListener.class);
+    private FastIterable<ShutdownListener> shutdownListeners
+            = new HandlerList<ShutdownListener>(ShutdownListener.class);
 
     /**
      * ctor
@@ -206,7 +214,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(
+     *      com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
      */
     @Override
     public void registerInterfaces(InterfaceRegistrationDelegate delegate)
@@ -229,7 +238,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
     {
         if (!(listener instanceof PluginChannelListener) && !(listener instanceof ServerPluginChannelListener))
         {
-            LiteLoaderLogger.warning("Interface error for mod '%1s'. Implementing CommonPluginChannelListener has no effect! Use PluginChannelListener or ServerPluginChannelListener instead", listener.getName());
+            LiteLoaderLogger.warning("Interface error for mod '%1s'. Implementing CommonPluginChannelListener has no effect! "
+                    + "Use PluginChannelListener or ServerPluginChannelListener instead", listener.getName());
         }
     }
 
@@ -372,7 +382,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      */
     protected void onPostRender(int mouseX, int mouseY, float partialTicks)
     {
-        this.loader.onPostRender(mouseX, mouseY, partialTicks);		
+        this.loader.onPostRender(mouseX, mouseY, partialTicks);
     }
 
     protected void onWorldChanged(World world)
@@ -485,7 +495,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.playerMoveListeners.all().onPlayerMove(playerMP, from, to, pos))
         {
             playerMP.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch);
-            playerMP.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.emptySet()));
+            playerMP.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
+                    playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.emptySet()));
             return false;
         }
 

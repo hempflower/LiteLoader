@@ -50,7 +50,8 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
     protected final Set<String> remotePluginChannels = new HashSet<String>();
 
     /**
-     * Keep track of faulting listeners so that we can periodically log a message if a listener is throwing LOTS of exceptions
+     * Keep track of faulting listeners so that we can periodically log a
+     * message if a listener is throwing LOTS of exceptions.
      */
     protected final Map<L, Integer> faultingPluginChannelListeners = new HashMap<L, Integer>();
 
@@ -176,7 +177,9 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
             for (String channel : channels)
             {
                 if (channel.length() > 16 || channel.toUpperCase().equals(CHANNEL_REGISTER) || channel.toUpperCase().equals(CHANNEL_UNREGISTER))
+                {
                     continue;
+                }
 
                 if (!this.pluginChannels.containsKey(channel))
                 {
@@ -196,7 +199,8 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
     public enum ChannelPolicy
     {
         /**
-         * Dispatch the message, throw an exception if the channel is not registered 
+         * Dispatch the message, throw an exception if the channel is not
+         * registered 
          */
         DISPATCH,
 
@@ -222,7 +226,8 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
         }
 
         /**
-         * True if this policy does not throw an exception for unregistered outbound channels
+         * True if this policy does not throw an exception for unregistered
+         * outbound channels
          */
         public boolean isSilent()
         {

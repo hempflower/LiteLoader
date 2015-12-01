@@ -36,7 +36,8 @@ public class LiteLoaderLogger extends AbstractAppender
     private static Throwable lastThrowable;
 
     /**
-     * Provides some wiggle-room within log4j's Level so we can have different levels of logging on the same, um.. Level
+     * Provides some wiggle-room within log4j's Level so we can have different
+     * levels of logging on the same, um.. Level
      */
     public static enum Verbosity
     {
@@ -111,7 +112,9 @@ public class LiteLoaderLogger extends AbstractAppender
         LiteLoaderLogger.logTail.add(line);
 
         if (LiteLoaderLogger.logTail.size() > LiteLoaderLogger.LOG_TAIL_SIZE)
+        {
             LiteLoaderLogger.logTail.remove();
+        }
     }
 
     public static long getLogIndex()

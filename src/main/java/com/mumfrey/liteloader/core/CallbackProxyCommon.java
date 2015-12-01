@@ -33,7 +33,8 @@ public abstract class CallbackProxyCommon
 
         if (CallbackProxyCommon.eventBroker == null)
         {
-            throw new RuntimeException("LiteLoader failed to start up properly. The game is in an unstable state and must shut down now. Check the developer log for startup errors");
+            throw new RuntimeException("LiteLoader failed to start up properly."
+                    + " The game is in an unstable state and must shut down now. Check the developer log for startup errors");
         }
     }
 
@@ -57,7 +58,8 @@ public abstract class CallbackProxyCommon
         CallbackProxyCommon.eventBroker.onSpawnPlayer(e.getSource(), e.getReturnValue(), profile);
     }
 
-    public static void onRespawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, EntityPlayerMP oldPlayer, int dimension, boolean won)
+    public static void onRespawnPlayer(ReturnEventInfo<ServerConfigurationManager, EntityPlayerMP> e, EntityPlayerMP oldPlayer, int dimension,
+            boolean won)
     {
         CallbackProxyCommon.eventBroker.onRespawnPlayer(e.getSource(), e.getReturnValue(), oldPlayer, dimension, won);
     }
@@ -70,7 +72,8 @@ public abstract class CallbackProxyCommon
     public static void onPlaceBlock(EventInfo<NetHandlerPlayServer> e, C08PacketPlayerBlockPlacement packet)
     {
         NetHandlerPlayServer netHandler = e.getSource();
-        if (!CallbackProxyCommon.eventBroker.onPlaceBlock(netHandler, netHandler.playerEntity, packet.getPosition(), EnumFacing.getFront(packet.getPlacedBlockDirection())))
+        if (!CallbackProxyCommon.eventBroker.onPlaceBlock(netHandler, netHandler.playerEntity, packet.getPosition(),
+                EnumFacing.getFront(packet.getPlacedBlockDirection())))
         {
             e.cancel();
         }
@@ -96,7 +99,8 @@ public abstract class CallbackProxyCommon
         }
     }
 
-    public static void onUseItem(ReturnEventInfo<ItemInWorldManager, Boolean> e, EntityPlayer player, World world, ItemStack itemStack, BlockPos pos, EnumFacing side, float par8, float par9, float par10)
+    public static void onUseItem(ReturnEventInfo<ItemInWorldManager, Boolean> e, EntityPlayer player, World world, ItemStack itemStack, BlockPos pos,
+            EnumFacing side, float par8, float par9, float par10)
     {
         if (!(player instanceof EntityPlayerMP))
         {
@@ -119,7 +123,8 @@ public abstract class CallbackProxyCommon
         }
     }
 
-    public static void onPlayerMoved(EventInfo<NetHandlerPlayServer> e, C03PacketPlayer packet, WorldServer world, double oldPosX, double oldPosY, double oldPosZ)
+    public static void onPlayerMoved(EventInfo<NetHandlerPlayServer> e, C03PacketPlayer packet, WorldServer world, double oldPosX, double oldPosY,
+            double oldPosZ)
     {
         NetHandlerPlayServer netHandler = e.getSource();
         if (!CallbackProxyCommon.eventBroker.onPlayerMove(netHandler, packet, netHandler.playerEntity, world))
@@ -128,7 +133,8 @@ public abstract class CallbackProxyCommon
         }
     }
 
-    public static void onPlayerMoved(EventInfo<NetHandlerPlayServer> e, C03PacketPlayer packet, WorldServer world, double oldPosX, double oldPosY, double oldPosZ, double deltaMoveSq, double deltaX, double deltaY, double deltaZ)
+    public static void onPlayerMoved(EventInfo<NetHandlerPlayServer> e, C03PacketPlayer packet, WorldServer world, double oldPosX, double oldPosY,
+            double oldPosZ, double deltaMoveSq, double deltaX, double deltaY, double deltaZ)
     {
         NetHandlerPlayServer netHandler = e.getSource();
         if (!CallbackProxyCommon.eventBroker.onPlayerMove(netHandler, packet, netHandler.playerEntity, world))

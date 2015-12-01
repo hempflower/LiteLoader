@@ -32,10 +32,11 @@ public interface ConfigPanelHost
     /**
      * Notify the panel host that the panel wishes to advance to the next panel
      */
-    //	public abstract void next();
+//    public abstract void next();
 
     /**
-     * Notify the panel host that the panel wishes to go back to the previous panel
+     * Notify the panel host that the panel wishes to go back to the previous
+     * panel.
      */
-    //	public abstract void previous();
+//    public abstract void previous();
 }

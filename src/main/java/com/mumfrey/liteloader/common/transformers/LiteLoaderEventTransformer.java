@@ -29,26 +29,26 @@ public abstract class LiteLoaderEventTransformer extends EventInjectionTransform
     protected void addEvents()
     {
         // Event declarations
-        Event onInitializePlayerConnection     = Event.getOrCreate("onInitializePlayerConnection", false);
-        Event onPlayerLogin                    = Event.getOrCreate("onPlayerLogin",                false);
-        Event onPlayerLogout                   = Event.getOrCreate("onPlayerLogout",               false);
-        Event onSpawnPlayer                    = Event.getOrCreate("onSpawnPlayer",                false);
-        Event onRespawnPlayer                  = Event.getOrCreate("onRespawnPlayer",              false);
-        Event onServerTick                     = Event.getOrCreate("onServerTick",                 false);
-        Event onBlockClickedEvent              = Event.getOrCreate("onBlockClicked",               true);
-        Event onActivateBlockOrUseItem         = Event.getOrCreate("onActivateBlockOrUseItem",     true);
-        Event onPlayerDigging                  = Event.getOrCreate("onPlayerDigging",              true);
-        Event onPlaceBlock                     = Event.getOrCreate("onPlaceBlock",                 true);
-        Event onClickedAir                     = Event.getOrCreate("onClickedAir",                 true);
-        Event onSessionProfileBad              = Event.getOrCreate("onSessionProfileBad",          true);
-        Event onPlayerMoved                    = Event.getOrCreate("onPlayerMoved",                true);
+        Event onInitializePlayerConnection  = Event.getOrCreate("onInitializePlayerConnection", false);
+        Event onPlayerLogin                 = Event.getOrCreate("onPlayerLogin",                false);
+        Event onPlayerLogout                = Event.getOrCreate("onPlayerLogout",               false);
+        Event onSpawnPlayer                 = Event.getOrCreate("onSpawnPlayer",                false);
+        Event onRespawnPlayer               = Event.getOrCreate("onRespawnPlayer",              false);
+        Event onServerTick                  = Event.getOrCreate("onServerTick",                 false);
+        Event onBlockClickedEvent           = Event.getOrCreate("onBlockClicked",               true);
+        Event onActivateBlockOrUseItem      = Event.getOrCreate("onActivateBlockOrUseItem",     true);
+        Event onPlayerDigging               = Event.getOrCreate("onPlayerDigging",              true);
+        Event onPlaceBlock                  = Event.getOrCreate("onPlaceBlock",                 true);
+        Event onClickedAir                  = Event.getOrCreate("onClickedAir",                 true);
+        Event onSessionProfileBad           = Event.getOrCreate("onSessionProfileBad",          true);
+        Event onPlayerMoved                 = Event.getOrCreate("onPlayerMoved",                true);
 
         // Injection Points
-        InjectionPoint methodHead              = new MethodHead();
-        InjectionPoint methodReturn            = new BeforeReturn();
-        InjectionPoint beforeNewGameProfile    = new BeforeNew(1, Obf.GameProfile);
-        InjectionPoint beforeThreadMarshall    = new BeforeInvoke(checkThreadAndEnqueue);
-        InjectionPoint beforeGetPosY           = new BeforeFieldAccess(Opcodes.GETFIELD, Obf.entityPosY, Obf.EntityPlayerMP, 4).setCaptureLocals(true);
+        InjectionPoint methodHead           = new MethodHead();
+        InjectionPoint methodReturn         = new BeforeReturn();
+        InjectionPoint beforeNewGameProfile = new BeforeNew(1, Obf.GameProfile);
+        InjectionPoint beforeThreadMarshall = new BeforeInvoke(checkThreadAndEnqueue);
+        InjectionPoint beforeGetPosY        = new BeforeFieldAccess(Opcodes.GETFIELD, Obf.entityPosY, Obf.EntityPlayerMP, 4).setCaptureLocals(true);
 
         // Hooks
         this.add(onInitializePlayerConnection, initPlayerConnection,        (methodReturn),          "onInitializePlayerConnection");

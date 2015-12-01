@@ -6,8 +6,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * ClassLoader which only allows whitelisted classes to be loaded, used to pre-load packet transformer
- * classes to ensure that they don't reference any external classes.
+ * ClassLoader which only allows whitelisted classes to be loaded, used to
+ * pre-load packet transformer classes to ensure that they don't reference any
+ * external classes.
  *
  * @author Adam Mummery-Smith
  */
@@ -102,12 +103,16 @@ public class NonDelegatingClassLoader extends URLClassLoader
         if (this.parent != null)
         {
             if (this.delegatedClassNames.contains(name))
+            {
                 return this.parent.loadClass(name);
+            }
 
             for (String delegatedPackage : this.delegatedPackages)
             {
                 if (name.startsWith(delegatedPackage))
+                {
                     return this.parent.loadClass(name);
+                }
             }
         }
 
@@ -120,12 +125,16 @@ public class NonDelegatingClassLoader extends URLClassLoader
         if (name == null) return null;
 
         if (this.validClassNames.contains(name))
+        {
             return super.findClass(name);
+        }
 
         for (String validPackage : this.validPackages)
         {
             if (name.startsWith(validPackage))
+            {
                 return super.findClass(name);
+            }
         }
 
         this.valid = false;

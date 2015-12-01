@@ -1,7 +1,8 @@
 package com.mumfrey.liteloader.api;
 
 /**
- * Interface for object which validates whether a supplied mod class can be loaded
+ * Interface for object which validates whether a supplied mod class can be
+ * loaded.
  *
  * @author Adam Mummery-Smith
  */

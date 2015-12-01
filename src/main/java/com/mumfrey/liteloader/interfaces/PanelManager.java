@@ -6,11 +6,13 @@ import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 
 /**
- * Interface for the liteloader panel manager, abstracted because we don't have the class GuiScreen on the server
+ * Interface for the liteloader panel manager, abstracted because we don't have
+ * the class GuiScreen on the server.
  * 
  * @author Adam Mummery-Smith
  *
- * @param <TParentScreen> GuiScreen class, must be generic because we don't have GuiScreen on the server side
+ * @param <TParentScreen> GuiScreen class, must be generic because we don't have
+ *      GuiScreen on the server side
  */
 public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObserver
 {

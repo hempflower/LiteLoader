@@ -19,7 +19,8 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
  * 
  * @author Adam Mummery-Smith
  *
- * @param <L> base class type for Comparable<?> so that implementors can specify their Comparable type
+ * @param <L> base class type for Comparable<?> so that implementors can specify
+ *      their Comparable type
  */
 public interface LoadableMod<L> extends Loadable<L>, Injectable
 {
@@ -76,7 +77,8 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
     public abstract Set<String> getRequiredAPIs();
 
     /**
-     * Callback to notify the container that it's missing a specific required API
+     * Callback to notify the container that it's missing a specific required
+     * API
      */
     public abstract void registerMissingAPI(String identifier);
 
@@ -86,7 +88,8 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
     public abstract Set<String> getMissingAPIs();
 
     /**
-     * Get the specified metadata value and return the default value if not present
+     * Get the specified metadata value and return the default value if not
+     * present
      * 
      * @param metaKey metadata key
      * @param defaultValue metadata value
@@ -109,13 +112,14 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
     public abstract List<String> getContainedClassNames();
 
     /**
-     * Callback from the enumerator, whenever a mod is registered to this container
+     * Callback from the enumerator, whenever a mod is registered to this
+     * container
      */
     public abstract void addContainedMod(String modName);
 
     /**
-     * Container returned instead of null when a mod does not actually have a container or a container is requested for
-     * a mod which doesn't exist
+     * Container returned instead of null when a mod does not actually have a
+     * container or a container is requested for a mod which doesn't exist.
      */
     public static final LoadableMod<File> NONE = new EmptyModContainer();
 

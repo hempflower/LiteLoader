@@ -11,9 +11,11 @@ import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 public interface Permissible extends LiteMod
 {
     /**
-     * Returns the node name of the mod, replicated permissions will be of the form mod.<name>.permission.node so this
-     * method must return a valid name for use in permission nodes. This method must also return the same value every
-     * time it is called since permissible names are not necessarily cached.
+     * Returns the node name of the mod, replicated permissions will be of the
+     * form mod.<name>.permission.node so this method must return a valid name
+     * for use in permission nodes. This method must also return the same value
+     * every time it is called since permissible names are not necessarily
+     * cached.
      * 
      * @return Permissible name
      */
@@ -27,9 +29,10 @@ public interface Permissible extends LiteMod
     public abstract float getPermissibleModVersion();
 
     /**
-     * Called by the permissions manager at initialisation to instruct the mod to populate the list of permissions it
-     * supports. This method should call back against the supplied permissions manager to register the permissions to
-     * be sent to the server when connecting.
+     * Called by the permissions manager at initialisation to instruct the mod
+     * to populate the list of permissions it supports. This method should call
+     * back against the supplied permissions manager to register the permissions
+     * to be sent to the server when connecting.
      * 
      * @param permissionsManager Client permissions manager
      */
@@ -43,7 +46,8 @@ public interface Permissible extends LiteMod
     public abstract void onPermissionsCleared(PermissionsManager manager);
 
     /**
-     * Called when the permissions are changed (eg. when new permissions are received from the server)
+     * Called when the permissions are changed (eg. when new permissions are
+     * received from the server)
      * 
      * @param manager
      */

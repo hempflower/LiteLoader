@@ -9,7 +9,8 @@ public interface IconClickable extends IconTextured
 {
     /**
      * @param source Source of the event, usually the outermost gui screen
-     * @param container Container of this icon, the actual component hosting the icon
+     * @param container Container of this icon, the actual component hosting the
+     *      icon
      */
     public void onClicked(Object source, Object container);
 }

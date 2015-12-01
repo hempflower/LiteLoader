@@ -8,8 +8,9 @@ import com.mumfrey.liteloader.core.runtime.Methods;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
 /**
- * A simple registry of MethodInfo objects parsed from the JSON, objects which consume the specified
- * MethodInfo objects will be passed an instance of this object at parse time.
+ * A simple registry of MethodInfo objects parsed from the JSON, objects which
+ * consume the specified MethodInfo objects will be passed an instance of this
+ * object at parse time.
  * 
  * @author Adam Mummery-Smith
  */

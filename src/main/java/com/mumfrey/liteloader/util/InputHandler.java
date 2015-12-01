@@ -17,7 +17,8 @@ public interface InputHandler
     void onAxisEvent(InputEvent source, float value, long nanos);
 
     /**
-     * Called when a POV (Point-Of-View) event is raised on the specified component
+     * Called when a POV (Point-Of-View) event is raised on the specified
+     * component.
      * 
      * @param source
      * @param value

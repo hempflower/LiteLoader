@@ -17,8 +17,8 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
- * This is where we register API classes during early startup before baking the registered list into an
- * APIProvider instance
+ * This is where we register API classes during early startup before baking the
+ * registered list into an APIProvider instance
  *
  * @author Adam Mummery-Smith
  */
@@ -44,7 +44,8 @@ public final class APIRegistry
     }
 
     /**
-     * Register an API class, throws an exception if the API list has already been baked
+     * Register an API class, throws an exception if the API list has already
+     * been baked.
      * 
      * @param apiClass
      */
@@ -52,7 +53,8 @@ public final class APIRegistry
     {
         if (this.baked != null)
         {
-            throw new InvalidAPIStateException("Unable to register API provider '" + apiClass + "' because the API state is now frozen, this probably means you are registering an API too late in the initialisation process");
+            throw new InvalidAPIStateException("Unable to register API provider '" + apiClass
+                    + "' because the API state is now frozen, this probably means you are registering an API too late in the initialisation process");
         }
 
         if (!this.registeredAPIClasses.contains(apiClass))
@@ -93,7 +95,8 @@ public final class APIRegistry
             }
 
             Class<? extends LiteAPI> conflictingAPIClass = this.instances.get(identifier).getClass();
-            LiteLoaderLogger.severe("API identifier clash while registering '%s', identifier '%s' clashes with '%s'", apiClassName, identifier, conflictingAPIClass);
+            LiteLoaderLogger.severe("API identifier clash while registering '%s', identifier '%s' clashes with '%s'", apiClassName,
+                    identifier, conflictingAPIClass);
         }
         catch (ClassNotFoundException ex)
         {
@@ -133,7 +136,9 @@ public final class APIRegistry
     }
 
     /**
-     * Bakes all currently registered API classes to a new APIProvider containing the API instances
+     * Bakes all currently registered API classes to a new APIProvider
+     * containing the API instances.
+     * 
      * @throws InvalidAPIStateException if the API list was already baked
      */
     public APIProvider bake() throws InvalidAPIStateException

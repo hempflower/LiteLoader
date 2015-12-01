@@ -53,7 +53,8 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.LiteAPI#getRequiredDownstreamTransformers()
+     * @see com.mumfrey.liteloader.api.LiteAPI
+     *      #getRequiredDownstreamTransformers()
      */
     @Override
     public String[] getRequiredDownstreamTransformers()
@@ -144,7 +145,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
         if (this.objectFactory == null)
         {
             this.objectFactory = new ObjectFactoryClient(this.environment, this.properties);
-        }	
+        }
 
         return this.objectFactory;
     }

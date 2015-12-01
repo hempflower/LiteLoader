@@ -19,7 +19,8 @@ public abstract class Input implements CoreProvider
     public abstract void registerKeyBinding(KeyBinding binding);
 
     /**
-     * Unregisters a registered keybind with the game settings class, thus removing it from the "controls" screen
+     * Unregisters a registered keybind with the game settings class, thus
+     * removing it from the "controls" screen.
      * 
      * @param binding
      */
@@ -36,18 +37,21 @@ public abstract class Input implements CoreProvider
     public abstract ComponentRegistry getComponentRegistry();
 
     /**
-     * Returns a handle to the event described by descriptor (or null if no component is found matching the
-     * descriptor. Retrieving an event via this method adds the controller (if found) to the polling list and
-     * causes it to raise events against the specified handler.
+     * Returns a handle to the event described by descriptor (or null if no
+     * component is found matching the descriptor. Retrieving an event via this
+     * method adds the controller (if found) to the polling list and causes it
+     * to raise events against the specified handler.
      * 
-     * This method returns an {@link InputEvent} which is passed as an argument to the relevant callback on
-     * the supplied handler in order to identify the event. For example:
+     * <p>This method returns an {@link InputEvent} which is passed as an
+     * argument to the relevant callback on the supplied handler in order to
+     * identify the event. For example:</p>
      * 
-     *    this.joystickButton = input.getEvent(descriptor, this);
+     * <code>this.joystickButton = input.getEvent(descriptor, this);</code>
      * 
-     * then in onAxisEvent
+     * <p>then in onAxisEvent</p>
      * 
-     *   if (source == this.joystickButton) // do something with button
+     * <code>if (source == this.joystickButton) // do something with button
+     * </code>
      * 
      * @param descriptor
      * @param handler

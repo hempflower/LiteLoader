@@ -86,7 +86,9 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
     protected boolean send(String channel, PacketBuffer data, ChannelPolicy policy)
     {
         if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
+        {
             throw new RuntimeException("Invalid channel name specified"); 
+        }
 
         if (!policy.allows(this, channel))
         {

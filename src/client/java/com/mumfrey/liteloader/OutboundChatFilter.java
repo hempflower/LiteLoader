@@ -8,7 +8,8 @@ package com.mumfrey.liteloader;
 public interface OutboundChatFilter extends LiteMod
 {
     /**
-     * Raised when a chat message is being sent, return false to filter this message or true to allow it to be sent
+     * Raised when a chat message is being sent, return false to filter this
+     * message or true to allow it to be sent.
      * 
      * @param message
      */

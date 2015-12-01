@@ -13,10 +13,11 @@ import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 
 /**
- * EventProxy is a special class used by the EventInjectionTransformer, it is a stub class into which all of 
- * the injected event callback methods are injected. Each event handler method contains a try/catch block which
- * invokes one of the error reporting methods contained below when an error occurs, in order to provide more
- * meaningful information to the user and to mod makers.
+ * EventProxy is a special class used by the EventInjectionTransformer, it is a
+ * stub class into which all of the injected event callback methods are
+ * injected. Each event handler method contains a try/catch block which invokes
+ * one of the error reporting methods contained below when an error occurs, in
+ * order to provide more meaningful information to the user and to mod makers.
  *  
  * @author Adam Mummery-Smith
  */
@@ -165,8 +166,14 @@ public final class EventProxy
                 String typeName = type.getClassName();
                 typeName = typeName.substring(typeName.lastIndexOf('.') + 1);
                 tpl.append(typeName);
-                if (typeName.endsWith("ReturnEventInfo")) tpl.append('<').append(sourceClass).append(", ReturnType>");
-                else if (typeName.endsWith("EventInfo")) tpl.append('<').append(sourceClass).append('>');
+                if (typeName.endsWith("ReturnEventInfo"))
+                {
+                    tpl.append('<').append(sourceClass).append(", ReturnType>");
+                }
+                else if (typeName.endsWith("EventInfo"))
+                {
+                    tpl.append('<').append(sourceClass).append('>');
+                }
                 return false;
             default:
                 tpl.append(ByteCodeUtilities.getTypeName(type));

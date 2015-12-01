@@ -12,7 +12,8 @@ import com.mumfrey.liteloader.core.CommonPluginChannelListener;
 public interface PluginChannelListener extends LiteMod, CommonPluginChannelListener
 {
     /**
-     * Called when a custom payload packet arrives on a channel this mod has registered
+     * Called when a custom payload packet arrives on a channel this mod has
+     * registered.
      * 
      * @param channel Channel on which the custom payload was received
      * @param data Custom payload data

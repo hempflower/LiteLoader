@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation which can be a applied to mod classes to indicate that members decorated with the Gson
- * Expose annotation should be serialised with Gson
+ * Annotation which can be a applied to mod classes to indicate that members
+ * decorated with the Gson Expose annotation should be serialised with Gson.
  *
  * @author Adam Mummery-Smith
  */

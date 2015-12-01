@@ -56,7 +56,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#getRequiredTransformers()
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #getRequiredTransformers()
      */
     @Override
     public List<String> getRequiredTransformers()
@@ -76,7 +77,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#getRequiredDownstreamTransformers()
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #getRequiredDownstreamTransformers()
      */
     @Override
     public List<String> getRequiredDownstreamTransformers()
@@ -96,7 +98,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#getObservers(com.mumfrey.liteloader.api.LiteAPI)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #getObservers(com.mumfrey.liteloader.api.LiteAPI)
      */
     @Override
     public List<? extends Observer> getObservers(LiteAPI api)
@@ -152,7 +155,9 @@ class APIProviderBasic implements APIProvider, APIAdapter
         for (CoreProvider coreProvider : this.getCoreProviders())
         {
             if (observerType.isAssignableFrom(coreProvider.getClass()) && !matchingObservers.contains(coreProvider))
+            {
                 matchingObservers.add((T)coreProvider);
+            }
         }
 
         return matchingObservers;
@@ -178,7 +183,9 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#registerInterfaceProviders(com.mumfrey.liteloader.core.InterfaceManager)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #registerInterfaceProviders(
+     *      com.mumfrey.liteloader.core.InterfaceManager)
      */
     @Override
     public void registerInterfaces(InterfaceRegistry interfaceManager)
@@ -224,7 +231,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#isAPIAvailable(java.lang.String)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #isAPIAvailable(java.lang.String)
      */
     @Override
     public boolean isAPIAvailable(String identifier)
@@ -242,7 +250,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#isAPIAvailable(java.lang.String, int)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #isAPIAvailable(java.lang.String, int)
      */
     @Override
     public boolean isAPIAvailable(String identifier, int minRevision)
@@ -254,7 +263,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#getAPI(java.lang.String)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #getAPI(java.lang.String)
      */
     @Override
     public LiteAPI getAPI(String identifier)
@@ -263,7 +273,8 @@ class APIProviderBasic implements APIProvider, APIAdapter
     }
 
     /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.api.manager.APIProvider#getAPI(java.lang.Class)
+     * @see com.mumfrey.liteloader.api.manager.APIProvider
+     *      #getAPI(java.lang.Class)
      */
     @SuppressWarnings("unchecked")
     @Override
@@ -274,7 +285,9 @@ class APIProviderBasic implements APIProvider, APIAdapter
             for (LiteAPI api : this.apis)
             {
                 if (apiClass.isAssignableFrom(api.getClass()))
+                {
                     return (T)api;
+                }
             }
         }
         catch (NullPointerException ex1) {}

@@ -11,7 +11,8 @@ import net.java.games.input.Controller;
 import net.java.games.input.ControllerEnvironment;
 
 /**
- * Registry which keeps track of mappings of JInput descriptors to the controller and component references 
+ * Registry which keeps track of mappings of JInput descriptors to the
+ * controller and component references.
  *
  * @author Adam Mummery-Smith
  */
@@ -40,7 +41,8 @@ public class ComponentRegistry
         {
             LiteLoaderLogger.info("JInput Component Registry is initialising...");
             this.enumerate(ControllerEnvironment.getDefaultEnvironment());
-            LiteLoaderLogger.info("JInput Component Registry initialised, found %d controller(s) %d component(s)", ControllerEnvironment.getDefaultEnvironment().getControllers().length, components.size());
+            LiteLoaderLogger.info("JInput Component Registry initialised, found %d controller(s) %d component(s)",
+                    ControllerEnvironment.getDefaultEnvironment().getControllers().length, components.size());
         }
         catch (Throwable th)
         {
@@ -82,7 +84,9 @@ public class ComponentRegistry
             component = this.getComponent(descriptor, offset++);
 
             if (components.contains(component))
+            {
                 component = null;
+            }
 
             if (component != null)
             {
@@ -111,7 +115,9 @@ public class ComponentRegistry
             if (matches(entry.getKey(), descriptor))
             {
                 if (--offset < 0)
+                {
                     return entry.getValue();
+                }
             }
         }
 
@@ -130,7 +136,9 @@ public class ComponentRegistry
             controller = this.getController(descriptor, offset++); 
 
             if (controllers.contains(controller))
+            {
                 controller = null;
+            }
 
             if (controller != null)
             {
@@ -159,11 +167,13 @@ public class ComponentRegistry
             if (matches(entry.getKey(), descriptor))
             {
                 if (--offset < 0)
+                {
                     return entry.getValue();
+                }
             }
         }
 
-        return null;	
+        return null;
     }
 
     public static String getDescriptor(Controller controller, Component component)
@@ -245,8 +255,12 @@ public class ComponentRegistry
 
         for (int i = 0; i < descriptorParts.length; i++)
         {
-            if (wildDescriptorParts[i].length() > 0 && descriptorParts[i].length() > 0 && !wildDescriptorParts[i].equals(descriptorParts[i]) && !wildDescriptorParts[i].equals("*"))
+            if (wildDescriptorParts[i].length() > 0 && descriptorParts[i].length() > 0
+                    && !wildDescriptorParts[i].equals(descriptorParts[i])
+                    && !wildDescriptorParts[i].equals("*"))
+            {
                 return false;
+            }
         }
 
         return true;

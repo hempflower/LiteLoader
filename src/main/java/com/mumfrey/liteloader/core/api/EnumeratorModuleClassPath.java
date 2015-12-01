@@ -58,7 +58,8 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
     }
 
     /**
-     * Reads the class path entries that were supplied to the JVM and returns them as an array
+     * Reads the class path entries that were supplied to the JVM and returns
+     * them as an array.
      */
     private String[] readClassPath()
     {
@@ -98,7 +99,8 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
                         }
                         else
                         {
-                            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled or missing a required dependency, not injecting tranformers", classPathMod.getIdentifier());
+                            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled or missing a required dependency, not injecting tranformers",
+                                    classPathMod.getIdentifier());
                         }
                     }
                 }

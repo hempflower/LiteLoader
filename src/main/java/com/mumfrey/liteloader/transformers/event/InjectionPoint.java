@@ -11,24 +11,29 @@ import org.objectweb.asm.tree.InsnList;
 import com.google.common.base.Joiner;
 
 /**
- * Base class for injection point discovery classes. Each subclass describes a strategy for locating code injection
- * points within a method, with the {@code find} method populating a collection with insn nodes from the method
+ * Base class for injection point discovery classes. Each subclass describes a
+ * strategy for locating code injection points within a method, with the
+ * {@link #find} method populating a collection with insn nodes from the method
  * which satisfy its strategy.
  * 
- * This base class also contains composite strategy factory methods such as {@code and} and {@code or} which allow
- * strategies to be combined using intersection (and) or union (or) relationships to allow multiple strategies to
- * be easily combined.
+ * <p>This base class also contains composite strategy factory methods such as
+ * {@code and} and {@code or} which allow strategies to be combined using
+ * intersection (and) or union (or) relationships to allow multiple strategies
+ * to be easily combined.</p>
  * 
- * You are free to create your own injection point subclasses, but take note that it is allowed for a single
- * InjectionPoint instance to be used for multiple injections and thus implementing classes MUST NOT cache the insn
- * list, event, or nodes instance passed to the {@code find} method, as each call to {@code find} must be considered
- * a separate functional contract and the InjectionPoint's lifespan is not linked to the discovery lifespan, therefore
- * it is important that the InjectionPoint implementation is fully STATELESS.
+ * <p>You are free to create your own injection point subclasses, but take note
+ * that it is allowed for a single InjectionPoint instance to be used for
+ * multiple injections and thus implementing classes MUST NOT cache the insn
+ * list, event, or nodes instance passed to the {@code find} method, as each
+ * call to {@code find} must be considered a separate functional contract and
+ * the InjectionPoint's lifespan is not linked to the discovery lifespan,
+ * therefore it is important that the InjectionPoint implementation is fully
+ * STATELESS.</p>
  * 
  * @author Adam Mummery-Smith
  */
 public abstract class InjectionPoint
-{	
+{
     /**
      * Capture locals as well as args
      */
@@ -39,16 +44,22 @@ public abstract class InjectionPoint
     /**
      * Find injection points in the supplied insn list
      * 
-     * @param desc Method descriptor, supplied to allow return types and arguments etc. to be determined
-     * @param insns Insn list to search in, the strategy MUST ONLY add nodes from this list to the {@code nodes} collection
-     * @param nodes Collection of nodes to populate. Injectors should NOT make any assumptions about the state of this collection and should only call add()
-     * @param event Event being injected here, supplied to allow alteration of behaviour for specific event configurations (eg. cancellable)
+     * @param desc Method descriptor, supplied to allow return types and
+     *      arguments etc. to be determined
+     * @param insns Insn list to search in, the strategy MUST ONLY add nodes
+     *      from this list to the {@code nodes} collection
+     * @param nodes Collection of nodes to populate. Injectors should NOT make
+     *      any assumptions about the state of this collection and should only
+     *      call add()
+     * @param event Event being injected here, supplied to allow alteration of
+     *      behaviour for specific event configurations (eg. cancellable)
      * @return true if one or more injection points were found
      */
     public abstract boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event);
 
     /**
-     * Set whether this injection point should capture local variables as well as method arguments
+     * Set whether this injection point should capture local variables as well
+     * as method arguments.
      * 
      * @param captureLocals
      * @return this, for fluent interface
@@ -68,7 +79,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Since it's virtually impossible to know what locals are available at a given injection point by reading the source, this method causes the
+     * Since it's virtually impossible to know what locals are available at a
+     * given injection point by reading the source, this method causes the
      * injection point to dump the locals to the debug log at injection time.
      * 
      * @param logLocals
@@ -154,8 +166,12 @@ public abstract class InjectionPoint
                 boolean in = true;
 
                 for (int b = 1; b < allNodes.length; b++)
+                {
                     if (!allNodes[b].contains(node))
+                    {
                         break;
+                    }
+                }
 
                 if (!in) continue;
 
@@ -259,8 +275,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Returns a composite injection point which returns the intersection of nodes from all component
-     * injection points 
+     * Returns a composite injection point which returns the intersection of
+     * nodes from all component injection points 
      * 
      * @param operands
      */
@@ -270,8 +286,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Returns a composite injection point which returns the union of nodes from all component
-     * injection points 
+     * Returns a composite injection point which returns the union of nodes from
+     * all component injection points. 
      * 
      * @param operands
      */
@@ -281,7 +297,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Returns an injection point which returns all insns immediately following insns from the supplied injection point
+     * Returns an injection point which returns all insns immediately following
+     * insns from the supplied injection point.
      * 
      * @param point
      */
@@ -291,7 +308,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Returns an injection point which returns all insns immediately prior to insns from the supplied injection point
+     * Returns an injection point which returns all insns immediately prior to
+     * insns from the supplied injection point.
      * 
      * @param point
      */
@@ -301,7 +319,8 @@ public abstract class InjectionPoint
     }
 
     /**
-     * Returns an injection point which returns all insns offset by the specified "count" from insns from the supplied injection point
+     * Returns an injection point which returns all insns offset by the
+     * specified "count" from insns from the supplied injection point.
      * 
      * @param point
      */

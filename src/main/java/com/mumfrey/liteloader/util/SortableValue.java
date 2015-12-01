@@ -1,8 +1,8 @@
 package com.mumfrey.liteloader.util;
 
 /**
- * Struct which contains a mapping of a priority value to another object, used for sorting items using
- * the native functionality in TreeMap and TreeSet
+ * Struct which contains a mapping of a priority value to another object, used
+ * for sorting items using the native functionality in TreeMap and TreeSet.
  * 
  * @author Adam Mummery-Smith
  */

@@ -10,8 +10,8 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.core.runtime.Packets;
 
 /**
- * JSON-defined obfuscation table entries used like a registry by the other JSON components to look up obfuscation mappings
- * for methods and fields.
+ * JSON-defined obfuscation table entries used like a registry by the other JSON
+ * components to look up obfuscation mappings for methods and fields.
  *
  * @author Adam Mummery-Smith
  */
