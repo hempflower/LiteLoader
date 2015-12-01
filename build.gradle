@@ -1,0 +1,182 @@
+buildscript {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.tweaker-client'
+apply plugin: 'maven'
+
+// Artefact details
+ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
+ext.commit = project.hasProperty("commit") ? commit : 'unknown'
+ext.classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
+ext.isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
+ext.mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
+
+// Basic project information
+group = "com.mumfrey"
+archivesBaseName = "liteloader"
+version = buildVersion + (project.isReleaseBuild ? '' : '-' + project.classifier)
+
+// Extended project information
+ext.projectName = 'LiteLoader'
+ext.inceptionYear = '2012'
+ext.packaging = 'jar'
+
+ext.startClass = 'com.mumfrey.liteloader.debug.Start'
+ext.tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
+
+// Minimum version of Java required
+sourceCompatibility = '1.6'
+targetCompatibility = '1.6'
+
+minecraft {
+    version = project.mcVersion
+    mappings = project.mcMappings
+    runDir = "run"
+    tweakClass = project.tweakClass
+}
+
+sourceSets {
+    client {
+        compileClasspath += main.compileClasspath + main.output
+    }
+    debug {
+        compileClasspath += client.compileClasspath + client.output
+    }
+}
+
+javadoc {
+    source sourceSets.client.allJava
+    source sourceSets.debug.allJava
+}
+
+// hacks for run configs
+afterEvaluate {
+    def mc = plugins.getPlugin 'net.minecraftforge.gradle.tweaker-client'
+    mc.replacer.putReplacement '{RUN_CLIENT_MAIN}', project.startClass
+    mc.replacer.putReplacement '{RUN_CLIENT_TWEAKER}', minecraft.tweakClass
+}
+
+// manifest entries for all jars
+def jarManifest = {
+    mainAttributes (
+        'Built-By': System.properties['user.name'],
+        'Created-By': System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
+        'Implementation-Title': name,
+        'Implementation-Version': version + "+" + ciSystem + "-b" + buildNumber + ".git-" + commit,
+        'Implementation-Vendor': url
+    )
+}
+
+jar {
+    from sourceSets.client.output
+    from sourceSets.debug.output
+    manifest jarManifest
+}
+
+task releaseJar(type: Jar) {
+    from sourceSets.main.output
+    from sourceSets.client.output
+    manifest jarManifest
+    classifier = 'release'
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+
+// Hey @AbrarSyed why can't we just turn this off >:(
+task runClient(type: JavaExec, overwrite: true) {
+    doFirst {
+        println "Do not use runClient, it is not compatible with Mixin"
+        System.exit(-1)
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-Xlint:all', '-Xlint:-path']
+    options.deprecation = true
+    options.encoding = 'utf8'
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        // disable the crazy super-strict doclint tool in Java 8
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+reobf {
+    jar {
+        useSrgSrg()
+    }
+    releaseJar {
+        useNotchSrg()
+        classpath = sourceSets.main.compileClasspath
+    }
+}
+
+compileJava.doFirst {
+    println '------------------------------------------------------------'
+    println 'Running ' + (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT") + ' build'
+    println '------------------------------------------------------------'
+}
+
+build.dependsOn "reobfReleaseJar"
+
+artifacts {
+    if (project.isReleaseBuild) {
+        archives jar
+    }
+    archives releaseJar
+    archives sourceJar
+    archives javadocJar
+}
+
+uploadArchives { 
+    repositories {
+        mavenDeployer {
+            if (project.hasProperty(project.mavenRepo)) {
+                repository(url: project.getProperty(project.mavenRepo)) {
+                    authentication(userName: project.mavenUsername, password: project.mavenPassword)
+                }
+            }
+            pom {
+                groupId = project.group
+                version = project.version
+                artifactId = project.archivesBaseName
+                project {
+                    name project.archivesBaseName
+                    packaging 'jar'
+                    description 'LiteLoader'
+                    url 'http://www.liteloader.com/'
+                    scm {
+                        url 'http://develop.liteloader.com/liteloader/LiteLoader'
+                        connection 'scm:git:http://develop.liteloader.com/liteloader/LiteLoader.git'
+                        developerConnection 'scm:git:http://develop.liteloader.com/liteloader/LiteLoader.git'
+                    }
+                    issueManagement {
+                        system 'GitLab Issues'
+                        url 'http://develop.liteloader.com/liteloader/LiteLoader/issues'
+                    }
+                }
+            }
+        }
+    }
+}
