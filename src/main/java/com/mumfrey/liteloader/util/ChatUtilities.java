@@ -120,7 +120,7 @@ public abstract class ChatUtilities
 			return component;
 		}
 
-		for (IChatComponent oldSibling : ChatUtilities.covertCodesInPlace(component.getSiblings()))
+		for (IChatComponent oldSibling : ChatUtilities.covertCodesInPlace((List<IChatComponent>)component.getSiblings()))
 		{
 			newComponent.appendSibling(oldSibling);
 		}

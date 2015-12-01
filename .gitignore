@@ -19,6 +19,7 @@ target
 *.exe
 *.o
 *.so
+*.launch
 
 # Databases #
 #############
