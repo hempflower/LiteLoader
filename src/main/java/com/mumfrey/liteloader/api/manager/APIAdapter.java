@@ -14,59 +14,59 @@ import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
  */
 public interface APIAdapter
 {
-	/**
-	 * Aggregate and return required transformers from all registered APIs
-	 */
-	public abstract List<String> getRequiredTransformers();
-	
-	/**
-	 * Aggregate and return required downstream transformers from all registered APIs
-	 */
-	public abstract List<String> getRequiredDownstreamTransformers();
-	
-	/**
-	 * Register interfaces from all registered APIs with the specified registry 
-	 */
-	public abstract void registerInterfaces(InterfaceRegistry interfaceManager);
+    /**
+     * Aggregate and return required transformers from all registered APIs
+     */
+    public abstract List<String> getRequiredTransformers();
 
-	/**
-	 * Get the CoreProviders for the specified API. Consuming classes should call this method instead of calling API::getCoreProviders()
-	 * directly since getCoreProviders() should only be invoked once and the resulting collection is cached by the API Adapter
-	 */
-	public abstract List<CoreProvider> getCoreProviders();
+    /**
+     * Aggregate and return required downstream transformers from all registered APIs
+     */
+    public abstract List<String> getRequiredDownstreamTransformers();
 
-	/**
-	 * Get the observers for the specified API. Consuming classes should call this method instead of calling API::getObservers() directly
-	 * since getObservers() should only be invoked once and the resulting list is cached by the API Adapter
-	 * 
-	 * @param api API to get observers for
-	 */
-	public abstract List<? extends Observer> getObservers(LiteAPI api);
+    /**
+     * Register interfaces from all registered APIs with the specified registry 
+     */
+    public abstract void registerInterfaces(InterfaceRegistry interfaceManager);
 
-	/**
-	 * Get the observers for the specified API which implement the specified Observer interface. Always returns a valid list (even if 
-	 * empty) and doesn't return null.
-	 * 
-	 * @param api API to get observers for
-	 * @param observerType type of observer to search for
-	 */
-	public abstract <T extends Observer> List<T> getObservers(LiteAPI api, Class<T> observerType);
-	
-	/**
-	 * Get the observers for all registered APIs which implement the specified Observer interface. Always returns a valid list (even if 
-	 * empty) and doesn't return null. Also includes core providers
-	 * 
-	 * @param observerType type of observer to search for
-	 */
-	public abstract <T extends Observer> List<T> getAllObservers(Class<T> observerType);
-	
-	/**
-	 * @param api
-	 */
-	public abstract List<? extends Observer> getPreInitObservers(LiteAPI api);
+    /**
+     * Get the CoreProviders for the specified API. Consuming classes should call this method instead of calling API::getCoreProviders()
+     * directly since getCoreProviders() should only be invoked once and the resulting collection is cached by the API Adapter
+     */
+    public abstract List<CoreProvider> getCoreProviders();
 
-	/**
-	 * @param observerType
-	 */
-	public abstract <T extends Observer> List<T> getPreInitObservers(Class<T> observerType);
+    /**
+     * Get the observers for the specified API. Consuming classes should call this method instead of calling API::getObservers() directly
+     * since getObservers() should only be invoked once and the resulting list is cached by the API Adapter
+     * 
+     * @param api API to get observers for
+     */
+    public abstract List<? extends Observer> getObservers(LiteAPI api);
+
+    /**
+     * Get the observers for the specified API which implement the specified Observer interface. Always returns a valid list (even if 
+     * empty) and doesn't return null.
+     * 
+     * @param api API to get observers for
+     * @param observerType type of observer to search for
+     */
+    public abstract <T extends Observer> List<T> getObservers(LiteAPI api, Class<T> observerType);
+
+    /**
+     * Get the observers for all registered APIs which implement the specified Observer interface. Always returns a valid list (even if 
+     * empty) and doesn't return null. Also includes core providers
+     * 
+     * @param observerType type of observer to search for
+     */
+    public abstract <T extends Observer> List<T> getAllObservers(Class<T> observerType);
+
+    /**
+     * @param api
+     */
+    public abstract List<? extends Observer> getPreInitObservers(LiteAPI api);
+
+    /**
+     * @param observerType
+     */
+    public abstract <T extends Observer> List<T> getPreInitObservers(Class<T> observerType);
 }

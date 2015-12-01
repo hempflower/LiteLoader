@@ -9,5 +9,5 @@ package com.mumfrey.liteloader.api;
  */
 public interface PostRenderObserver extends Observer
 {
-	public abstract void onPostRender(int mouseX, int mouseY, float partialTicks);
+    public abstract void onPostRender(int mouseX, int mouseY, float partialTicks);
 }

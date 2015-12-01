@@ -7,5 +7,5 @@ package com.mumfrey.liteloader.api;
  */
 public interface InterfaceObserver extends Observer
 {
-	public void onRegisterListener(InterfaceProvider provider, Class<? extends Listener> interfaceType, Listener listener);
+    public void onRegisterListener(InterfaceProvider provider, Class<? extends Listener> interfaceType, Listener listener);
 }

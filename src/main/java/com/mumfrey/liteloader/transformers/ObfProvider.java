@@ -10,10 +10,10 @@ import com.mumfrey.liteloader.core.runtime.Obf;
  */
 public interface ObfProvider
 {
-	/**
-	 * Try to locate an obfuscation table entry by name (id), returns null if no entry was found
-	 * 
-	 * @param name
-	 */
-	public abstract Obf getByName(String name);
+    /**
+     * Try to locate an obfuscation table entry by name (id), returns null if no entry was found
+     * 
+     * @param name
+     */
+    public abstract Obf getByName(String name);
 }

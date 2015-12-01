@@ -10,5 +10,5 @@ package com.mumfrey.liteloader.api;
  */
 public interface ShutdownObserver extends Observer
 {
-	public abstract void onShutDown();
+    public abstract void onShutDown();
 }

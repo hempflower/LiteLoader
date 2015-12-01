@@ -20,42 +20,42 @@ import com.mumfrey.liteloader.transformers.event.InjectionPoint;
  */
 public class BeforeReturn extends InjectionPoint
 {
-	private final int ordinal;
-	
-	public BeforeReturn()
-	{
-		this(-1);
-	}
-	
-	public BeforeReturn(int ordinal)
-	{
-		this.ordinal = Math.max(-1, ordinal);
-	}
+    private final int ordinal;
 
-	@Override
-	public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
-	{
-		boolean found = false;
-		int returnOpcode = Type.getReturnType(desc).getOpcode(Opcodes.IRETURN);
-		int ordinal = 0;
-		
-		ListIterator<AbstractInsnNode> iter = insns.iterator();
-		while (iter.hasNext())
-		{
-			AbstractInsnNode insn = iter.next();
-			
-			if (insn instanceof InsnNode && insn.getOpcode() == returnOpcode)
-			{
-				if (this.ordinal == -1 || this.ordinal == ordinal)
-				{
-					nodes.add(insn);
-					found = true;
-				}
-				
-				ordinal++;
-			}
-		}
-		
-		return found;
-	}
+    public BeforeReturn()
+    {
+        this(-1);
+    }
+
+    public BeforeReturn(int ordinal)
+    {
+        this.ordinal = Math.max(-1, ordinal);
+    }
+
+    @Override
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    {
+        boolean found = false;
+        int returnOpcode = Type.getReturnType(desc).getOpcode(Opcodes.IRETURN);
+        int ordinal = 0;
+
+        ListIterator<AbstractInsnNode> iter = insns.iterator();
+        while (iter.hasNext())
+        {
+            AbstractInsnNode insn = iter.next();
+
+            if (insn instanceof InsnNode && insn.getOpcode() == returnOpcode)
+            {
+                if (this.ordinal == -1 || this.ordinal == ordinal)
+                {
+                    nodes.add(insn);
+                    found = true;
+                }
+
+                ordinal++;
+            }
+        }
+
+        return found;
+    }
 }

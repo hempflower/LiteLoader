@@ -21,23 +21,23 @@ import com.mumfrey.liteloader.util.Input;
  */
 public interface ObjectFactory<TClient, TServer extends MinecraftServer>
 {
-	public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
-	
-	public abstract PacketEvents getPacketEventBroker();
-	
-	public abstract Input getInput();
-	
-	public abstract GameEngine<TClient, TServer> getGameEngine();
-	
-	public abstract PanelManager<?> getPanelManager();
-	
-	public abstract ClientPluginChannels getClientPluginChannels();
-	
-	public abstract ServerPluginChannels getServerPluginChannels();
+    public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
 
-	public abstract PermissionsManagerClient getClientPermissionManager();
+    public abstract PacketEvents getPacketEventBroker();
 
-	public abstract PermissionsManagerServer getServerPermissionManager();
+    public abstract Input getInput();
 
-	public abstract void preBeginGame();
+    public abstract GameEngine<TClient, TServer> getGameEngine();
+
+    public abstract PanelManager<?> getPanelManager();
+
+    public abstract ClientPluginChannels getClientPluginChannels();
+
+    public abstract ServerPluginChannels getServerPluginChannels();
+
+    public abstract PermissionsManagerClient getClientPermissionManager();
+
+    public abstract PermissionsManagerServer getServerPermissionManager();
+
+    public abstract void preBeginGame();
 }

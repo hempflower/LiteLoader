@@ -4,11 +4,11 @@ import net.minecraft.client.gui.GuiButton;
 
 public interface ScrollPanelContent
 {
-	public abstract int getScrollPanelContentHeight(GuiScrollPanel source);
-	
-	public abstract void drawScrollPanelContent(GuiScrollPanel source, int mouseX, int mouseY, float partialTicks, int scrollAmount, int visibleHeight);
+    public abstract int getScrollPanelContentHeight(GuiScrollPanel source);
 
-	public abstract void scrollPanelActionPerformed(GuiScrollPanel source, GuiButton control);
+    public abstract void drawScrollPanelContent(GuiScrollPanel source, int mouseX, int mouseY, float partialTicks, int scrollAmount, int visibleHeight);
 
-	public abstract void scrollPanelMousePressed(GuiScrollPanel source, int mouseX, int mouseY, int mouseButton);
+    public abstract void scrollPanelActionPerformed(GuiScrollPanel source, GuiButton control);
+
+    public abstract void scrollPanelMousePressed(GuiScrollPanel source, int mouseX, int mouseY, int mouseButton);
 }

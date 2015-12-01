@@ -8,5 +8,5 @@ package com.mumfrey.liteloader;
  */
 public interface ShutdownListener extends LiteMod
 {
-	public abstract void onShutDown();
+    public abstract void onShutDown();
 }

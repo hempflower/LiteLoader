@@ -18,43 +18,43 @@ import com.mumfrey.liteloader.core.runtime.Obf;
  */
 public interface IHandlerListDecorator<T>
 {
-	/**
-	 * Get the template class name
-	 */
-	public abstract Obf getTemplate();
-	
-	/**
-	 * Prepare the decorator to accept the specified list of invokees
-	 */
-	public abstract void prepare(List<T> sortedList);
-	
-	/**
-	 * Create an instance of the handler class
-	 */
-	public abstract BakedHandlerList<T> createInstance(Class<BakedHandlerList<T>> handlerClass) throws Exception;
+    /**
+     * Get the template class name
+     */
+    public abstract Obf getTemplate();
 
-	/**
-	 * Called when populating the classNode
-	 */
-	public abstract void populateClass(String name, ClassNode classNode);
+    /**
+     * Prepare the decorator to accept the specified list of invokees
+     */
+    public abstract void prepare(List<T> sortedList);
 
-	/**
-	 * Called when processing the ctor
-	 */
-	public abstract void processCtor(ClassNode classNode, MethodNode method);
+    /**
+     * Create an instance of the handler class
+     */
+    public abstract BakedHandlerList<T> createInstance(Class<BakedHandlerList<T>> handlerClass) throws Exception;
 
-	/**
-	 * Called immediately before the interface method invokation bytecode is injected
-	 */
-	public abstract void preInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args);
+    /**
+     * Called when populating the classNode
+     */
+    public abstract void populateClass(String name, ClassNode classNode);
 
-	/**
-	 * Called immediately after the interface method invokation bytecode is injected
-	 */
-	public abstract void postInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args);
-	
-	/**
-	 * Called at the end of populateInterfaceMethod
-	 */
-	public abstract void populateInterfaceMethod(ClassNode classNode, MethodNode method);
+    /**
+     * Called when processing the ctor
+     */
+    public abstract void processCtor(ClassNode classNode, MethodNode method);
+
+    /**
+     * Called immediately before the interface method invokation bytecode is injected
+     */
+    public abstract void preInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args);
+
+    /**
+     * Called immediately after the interface method invokation bytecode is injected
+     */
+    public abstract void postInvokeInterfaceMethod(int handlerIndex, ClassNode classNode, MethodNode method, Type[] args);
+
+    /**
+     * Called at the end of populateInterfaceMethod
+     */
+    public abstract void populateInterfaceMethod(ClassNode classNode, MethodNode method);
 }

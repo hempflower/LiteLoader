@@ -12,5 +12,5 @@ import net.minecraft.world.World;
  */
 public interface WorldObserver extends Observer
 {
-	public abstract void onWorldChanged(World world);
+    public abstract void onWorldChanged(World world);
 }

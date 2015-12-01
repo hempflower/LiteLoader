@@ -7,7 +7,7 @@ package com.mumfrey.liteloader.api;
  */
 public interface ModClassValidator
 {
-	public abstract boolean validateName(String className);
-	
-	public abstract boolean validateClass(ClassLoader classLoader, Class<?> candidateClass);
+    public abstract boolean validateName(String className);
+
+    public abstract boolean validateClass(ClassLoader classLoader, Class<?> candidateClass);
 }

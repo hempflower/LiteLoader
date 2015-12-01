@@ -8,18 +8,18 @@ package com.mumfrey.liteloader.launch;
  */
 public class InvalidTransformerException extends ClassNotFoundException
 {
-	private static final long serialVersionUID = 6723030540814568734L;
-	
-	private final String accessedClass;
+    private static final long serialVersionUID = 6723030540814568734L;
 
-	public InvalidTransformerException(String accessedClass)
-	{
-		super("Tried to access " + accessedClass);
-		this.accessedClass = accessedClass;
-	}
-	
-	public String getAccessedClass()
-	{
-		return this.accessedClass;
-	}
+    private final String accessedClass;
+
+    public InvalidTransformerException(String accessedClass)
+    {
+        super("Tried to access " + accessedClass);
+        this.accessedClass = accessedClass;
+    }
+
+    public String getAccessedClass()
+    {
+        return this.accessedClass;
+    }
 }

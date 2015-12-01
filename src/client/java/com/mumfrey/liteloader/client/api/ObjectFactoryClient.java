@@ -33,132 +33,132 @@ import com.mumfrey.liteloader.util.InputManager;
  */
 class ObjectFactoryClient implements ObjectFactory<Minecraft, IntegratedServer>
 {
-	private LoaderEnvironment environment;
-	
-	private LoaderProperties properties;
-	
-	private Input input;
-	
-	private LiteLoaderEventBrokerClient clientEvents;
-	
-	private PacketEventsClient clientPacketEvents;
+    private LoaderEnvironment environment;
 
-	private GameEngineClient engine;
-	
-	private PanelManager<GuiScreen> modPanelManager;
-	
-	private ClientPluginChannelsClient clientPluginChannels;
-	
-	private ServerPluginChannels serverPluginChannels;
+    private LoaderProperties properties;
 
-	ObjectFactoryClient(LoaderEnvironment environment, LoaderProperties properties)
-	{
-		this.environment = environment;
-		this.properties = properties;
-	}
-	
-	@Override
-	public Input getInput()
-	{
-		if (this.input == null)
-		{
-			this.input = new InputManager(this.environment, this.properties);
-		}
-		
-		return this.input;
-	}
-	
-	@Override
-	public LiteLoaderEventBroker<Minecraft, IntegratedServer> getEventBroker()
-	{
-		if (this.clientEvents == null)
-		{
-			this.clientEvents = new LiteLoaderEventBrokerClient(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
-		}
-		
-		return this.clientEvents;
-	}
-	
-	@Override
-	public PacketEvents getPacketEventBroker()
-	{
-		if (this.clientPacketEvents == null)
-		{
-			this.clientPacketEvents = new PacketEventsClient();
-		}
-		
-		return this.clientPacketEvents;
-	}
-	
-	@Override
-	public GameEngine<Minecraft, IntegratedServer> getGameEngine()
-	{
-		if (this.engine == null)
-		{
-			this.engine = new GameEngineClient();
-		}	
-		
-		return this.engine;
-	}
-	
-	@Override
-	public PanelManager<GuiScreen> getPanelManager()
-	{
-		if (this.modPanelManager == null)
-		{
-			this.modPanelManager = new LiteLoaderPanelManager(this.getGameEngine(), this.environment, this.properties);
-		}
-		
-		return this.modPanelManager;
-	}
-	
-	@Override
-	public ClientPluginChannels getClientPluginChannels()
-	{
-		if (this.clientPluginChannels == null)
-		{
-			this.clientPluginChannels = new ClientPluginChannelsClient();
-		}	
+    private Input input;
 
-		return this.clientPluginChannels;
-	}
-	
-	@Override
-	public ServerPluginChannels getServerPluginChannels()
-	{
-		if (this.serverPluginChannels == null)
-		{
-			this.serverPluginChannels = new ServerPluginChannels();
-		}	
+    private LiteLoaderEventBrokerClient clientEvents;
 
-		return this.serverPluginChannels;
-	}
-	
-	@Override
-	public PermissionsManagerClient getClientPermissionManager()
-	{
-		return PermissionsManagerClient.getInstance();
-	}
-	
-	@Override
-	public PermissionsManagerServer getServerPermissionManager()
-	{
-		return null;
-	}
+    private PacketEventsClient clientPacketEvents;
 
-	@SuppressWarnings("unused")
-	@Override
-	public void preBeginGame()
-	{
-		try
-		{
-			Class<?> progressManagerClass = Class.forName("net.minecraftforge.fml.common.ProgressManager", false, Launch.classLoader);
-			return; // Disable my loading bar if Forge's is present
-		}
-		catch (ClassNotFoundException ex)
-		{
-		}
-		
-		new LoadingBar();
-	}
+    private GameEngineClient engine;
+
+    private PanelManager<GuiScreen> modPanelManager;
+
+    private ClientPluginChannelsClient clientPluginChannels;
+
+    private ServerPluginChannels serverPluginChannels;
+
+    ObjectFactoryClient(LoaderEnvironment environment, LoaderProperties properties)
+    {
+        this.environment = environment;
+        this.properties = properties;
+    }
+
+    @Override
+    public Input getInput()
+    {
+        if (this.input == null)
+        {
+            this.input = new InputManager(this.environment, this.properties);
+        }
+
+        return this.input;
+    }
+
+    @Override
+    public LiteLoaderEventBroker<Minecraft, IntegratedServer> getEventBroker()
+    {
+        if (this.clientEvents == null)
+        {
+            this.clientEvents = new LiteLoaderEventBrokerClient(LiteLoader.getInstance(), (GameEngineClient)this.getGameEngine(), this.properties);
+        }
+
+        return this.clientEvents;
+    }
+
+    @Override
+    public PacketEvents getPacketEventBroker()
+    {
+        if (this.clientPacketEvents == null)
+        {
+            this.clientPacketEvents = new PacketEventsClient();
+        }
+
+        return this.clientPacketEvents;
+    }
+
+    @Override
+    public GameEngine<Minecraft, IntegratedServer> getGameEngine()
+    {
+        if (this.engine == null)
+        {
+            this.engine = new GameEngineClient();
+        }	
+
+        return this.engine;
+    }
+
+    @Override
+    public PanelManager<GuiScreen> getPanelManager()
+    {
+        if (this.modPanelManager == null)
+        {
+            this.modPanelManager = new LiteLoaderPanelManager(this.getGameEngine(), this.environment, this.properties);
+        }
+
+        return this.modPanelManager;
+    }
+
+    @Override
+    public ClientPluginChannels getClientPluginChannels()
+    {
+        if (this.clientPluginChannels == null)
+        {
+            this.clientPluginChannels = new ClientPluginChannelsClient();
+        }	
+
+        return this.clientPluginChannels;
+    }
+
+    @Override
+    public ServerPluginChannels getServerPluginChannels()
+    {
+        if (this.serverPluginChannels == null)
+        {
+            this.serverPluginChannels = new ServerPluginChannels();
+        }	
+
+        return this.serverPluginChannels;
+    }
+
+    @Override
+    public PermissionsManagerClient getClientPermissionManager()
+    {
+        return PermissionsManagerClient.getInstance();
+    }
+
+    @Override
+    public PermissionsManagerServer getServerPermissionManager()
+    {
+        return null;
+    }
+
+    @SuppressWarnings("unused")
+    @Override
+    public void preBeginGame()
+    {
+        try
+        {
+            Class<?> progressManagerClass = Class.forName("net.minecraftforge.fml.common.ProgressManager", false, Launch.classLoader);
+            return; // Disable my loading bar if Forge's is present
+        }
+        catch (ClassNotFoundException ex)
+        {
+        }
+
+        new LoadingBar();
+    }
 }

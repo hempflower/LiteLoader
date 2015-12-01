@@ -15,8 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Priority
 {
-	/**
-	 * Priority value, default priority is 1000
-	 */
-	public int value();
+    /**
+     * Priority value, default priority is 1000
+     */
+    public int value();
 }

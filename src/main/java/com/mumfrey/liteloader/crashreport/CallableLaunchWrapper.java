@@ -9,39 +9,39 @@ import net.minecraft.launchwrapper.Launch;
 
 public class CallableLaunchWrapper implements Callable<String>
 {
-	final CrashReport crashReport;
-	
-	public CallableLaunchWrapper(CrashReport report)
-	{
-		this.crashReport = report;
-	}
+    final CrashReport crashReport;
 
-	/* (non-Javadoc)
-	 * @see java.util.concurrent.Callable#call()
-	 */
-	@Override
-	public String call() throws Exception
-	{
-		return CallableLaunchWrapper.generateTransformerList();
-	}
+    public CallableLaunchWrapper(CrashReport report)
+    {
+        this.crashReport = report;
+    }
 
-	/**
-	 * Generates a list of active transformers to display in the crash report
-	 */
-	public static String generateTransformerList()
-	{
-		final List<IClassTransformer> transformers = Launch.classLoader.getTransformers();
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append(transformers.size());
-		sb.append(" active transformer(s)");
-		
-		for (IClassTransformer transformer : transformers)
-		{
-			sb.append("\n          - Transformer: ");
-			sb.append(transformer.getClass().getName());
-		}
-		
-		return sb.toString();
-	}
+    /* (non-Javadoc)
+     * @see java.util.concurrent.Callable#call()
+     */
+    @Override
+    public String call() throws Exception
+    {
+        return CallableLaunchWrapper.generateTransformerList();
+    }
+
+    /**
+     * Generates a list of active transformers to display in the crash report
+     */
+    public static String generateTransformerList()
+    {
+        final List<IClassTransformer> transformers = Launch.classLoader.getTransformers();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(transformers.size());
+        sb.append(" active transformer(s)");
+
+        for (IClassTransformer transformer : transformers)
+        {
+            sb.append("\n          - Transformer: ");
+            sb.append(transformer.getClass().getName());
+        }
+
+        return sb.toString();
+    }
 }

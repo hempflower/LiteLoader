@@ -16,5 +16,5 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 @Retention(RetentionPolicy.CLASS)
 public @interface ObfTableClass
 {
-	public Class<? extends Obf> value();
+    public Class<? extends Obf> value();
 }

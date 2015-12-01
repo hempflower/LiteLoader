@@ -16,51 +16,51 @@ import com.mumfrey.liteloader.common.GameEngine;
  */
 public class PermissionsManagerServer implements PermissionsManager, ServerPluginChannelListener
 {
-	public PermissionsManagerServer()
-	{
-	}
-	
-	@Override
-	public String getName()
-	{
-		return null;
-	}
-	
-	@Override
-	public void onCustomPayload(EntityPlayerMP sender, String channel, PacketBuffer data)
-	{
-	}
-	
-	@Override
-	public Permissions getPermissions(Permissible mod)
-	{
-		return null;
-	}
-	
-	@Override
-	public Long getPermissionUpdateTime(Permissible mod)
-	{
-		return null;
-	}
+    public PermissionsManagerServer()
+    {
+    }
 
-	@Override
-	public void onTick(GameEngine<?, ?> engine, float partialTicks, boolean inGame)
-	{
-	}
-	
-	@Override
-	public List<String> getChannels()
-	{
-		return null;
-	}
-	
-	@Override
-	public void registerPermissible(Permissible permissible)
-	{
-	}
-	
-	@Override
-	public void tamperCheck()
-	{
-	}
+    @Override
+    public String getName()
+    {
+        return null;
+    }
+
+    @Override
+    public void onCustomPayload(EntityPlayerMP sender, String channel, PacketBuffer data)
+    {
+    }
+
+    @Override
+    public Permissions getPermissions(Permissible mod)
+    {
+        return null;
+    }
+
+    @Override
+    public Long getPermissionUpdateTime(Permissible mod)
+    {
+        return null;
+    }
+
+    @Override
+    public void onTick(GameEngine<?, ?> engine, float partialTicks, boolean inGame)
+    {
+    }
+
+    @Override
+    public List<String> getChannels()
+    {
+        return null;
+    }
+
+    @Override
+    public void registerPermissible(Permissible permissible)
+    {
+    }
+
+    @Override
+    public void tamperCheck()
+    {
+    }
 }

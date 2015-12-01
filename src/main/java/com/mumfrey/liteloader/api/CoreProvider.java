@@ -18,39 +18,39 @@ import com.mumfrey.liteloader.core.LiteLoaderMods;
  */
 public interface CoreProvider extends TickObserver, WorldObserver, ShutdownObserver, PostRenderObserver
 {
-	public abstract void onInit();
+    public abstract void onInit();
 
-	/**
-	 * During the postInit phase, the mods which were discovered during preInit phase are initialised and the
-	 * interfaces are allocated. This callback is invoked at the very start of the postInit phase, before mods
-	 * are initialised but after the point at which it is safe to assume it's ok to access game classes. This
-	 * is the first point at which the Minecraft game instance should be referenced. Be aware that certain game
-	 * classes (such as the EntityRenderer) are NOT initialised at this point.
-	 * 
-	 * @param engine
-	 */
-	public abstract void onPostInit(GameEngine<?, ?> engine);
-	
-	/**
-	 * Once the mods are initialised and the interfaces have been allocated, this callback is invoked to allow
-	 * the CoreProvider to perform any tasks which should be performed in the postInit phase but after mods
-	 * have been initialised.
-	 *  
-	 * @param mods
-	 */
-	public abstract void onPostInitComplete(LiteLoaderMods mods);
-	
-	/**
-	 * Called once startup is complete and the game loop begins running. This callback is invoked immediately
-	 * prior to the first "tick" event and immediately AFTER the the "late init" phase for mods (InitCompleteListener)
-	 */
-	public abstract void onStartupComplete();
+    /**
+     * During the postInit phase, the mods which were discovered during preInit phase are initialised and the
+     * interfaces are allocated. This callback is invoked at the very start of the postInit phase, before mods
+     * are initialised but after the point at which it is safe to assume it's ok to access game classes. This
+     * is the first point at which the Minecraft game instance should be referenced. Be aware that certain game
+     * classes (such as the EntityRenderer) are NOT initialised at this point.
+     * 
+     * @param engine
+     */
+    public abstract void onPostInit(GameEngine<?, ?> engine);
 
-	/**
-	 * Called immediately on joining a single or multi-player world when the JoinGame packet is received. Only called on the client.
-	 * 
-	 * @param netHandler
-	 * @param loginPacket
-	 */
-	public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket);
+    /**
+     * Once the mods are initialised and the interfaces have been allocated, this callback is invoked to allow
+     * the CoreProvider to perform any tasks which should be performed in the postInit phase but after mods
+     * have been initialised.
+     *  
+     * @param mods
+     */
+    public abstract void onPostInitComplete(LiteLoaderMods mods);
+
+    /**
+     * Called once startup is complete and the game loop begins running. This callback is invoked immediately
+     * prior to the first "tick" event and immediately AFTER the the "late init" phase for mods (InitCompleteListener)
+     */
+    public abstract void onStartupComplete();
+
+    /**
+     * Called immediately on joining a single or multi-player world when the JoinGame packet is received. Only called on the client.
+     * 
+     * @param netHandler
+     * @param loginPacket
+     */
+    public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket);
 }

@@ -12,11 +12,11 @@ import com.mumfrey.liteloader.core.LiteLoader;
  */
 public interface InitCompleteListener extends Tickable
 {
-	/**
-	 * Called as soon as the game is initialised and the main game loop is running
-	 * 
-	 * @param minecraft Minecraft instance
-	 * @param loader LiteLoader instance
-	 */
-	public abstract void onInitCompleted(Minecraft minecraft, LiteLoader loader);
+    /**
+     * Called as soon as the game is initialised and the main game loop is running
+     * 
+     * @param minecraft Minecraft instance
+     * @param loader LiteLoader instance
+     */
+    public abstract void onInitCompleted(Minecraft minecraft, LiteLoader loader);
 }

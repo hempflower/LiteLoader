@@ -10,10 +10,10 @@ package com.mumfrey.liteloader.api;
  */
 public interface Listener
 {
-	/**
-	 * Get the display name
-	 * 
-	 * @return display name
-	 */
-	public abstract String getName();
+    /**
+     * Get the display name
+     * 
+     * @return display name
+     */
+    public abstract String getName();
 }

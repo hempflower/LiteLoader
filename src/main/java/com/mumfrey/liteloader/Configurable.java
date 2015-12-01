@@ -9,11 +9,11 @@ import com.mumfrey.liteloader.modconfig.ConfigPanel;
  */
 public interface Configurable
 {
-	/**
-	 * Get the class of the configuration panel to use, the returned class must have a 
-	 * default (no-arg) constructor
-	 * 
-	 * @return configuration panel class
-	 */
-	public abstract Class<? extends ConfigPanel> getConfigPanelClass();
+    /**
+     * Get the class of the configuration panel to use, the returned class must have a 
+     * default (no-arg) constructor
+     * 
+     * @return configuration panel class
+     */
+    public abstract Class<? extends ConfigPanel> getConfigPanelClass();
 }

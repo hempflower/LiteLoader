@@ -10,11 +10,11 @@ import net.minecraft.command.ServerCommandManager;
  */
 public interface ServerCommandProvider extends LiteMod
 {
-	/**
-	 * Allows the mod to provide commands to the server command manager my invoking commandManager.registerCommand() to
-	 * provide new commands for single player and lan worlds
-	 * 
-	 * @param commandManager
-	 */
-	public abstract void provideCommands(ServerCommandManager commandManager);
+    /**
+     * Allows the mod to provide commands to the server command manager my invoking commandManager.registerCommand() to
+     * provide new commands for single player and lan worlds
+     * 
+     * @param commandManager
+     */
+    public abstract void provideCommands(ServerCommandManager commandManager);
 }

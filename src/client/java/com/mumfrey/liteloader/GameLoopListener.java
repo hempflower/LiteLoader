@@ -9,10 +9,10 @@ import net.minecraft.client.Minecraft;
  */
 public interface GameLoopListener extends LiteMod
 {
-	/**
-	 * Called every frame, before the world is ticked
-	 * 
-	 * @param minecraft
-	 */
-	public abstract void onRunGameLoop(Minecraft minecraft);
+    /**
+     * Called every frame, before the world is ticked
+     * 
+     * @param minecraft
+     */
+    public abstract void onRunGameLoop(Minecraft minecraft);
 }

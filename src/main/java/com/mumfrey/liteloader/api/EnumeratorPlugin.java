@@ -13,25 +13,25 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
  */
 public interface EnumeratorPlugin
 {
-	/**
-	 * Initialise this plugin
-	 */
-	public abstract void init(LoaderEnvironment environment, LoaderProperties properties);
+    /**
+     * Initialise this plugin
+     */
+    public abstract void init(LoaderEnvironment environment, LoaderProperties properties);
 
-	/**
-	 * Get classes in the supplied container
-	 * 
-	 * @param container Container to inspect
-	 * @param classloader ClassLoader for this container
-	 * @param superClass Superclass the class must implement
-	 * @param supportedPrefixes Registered class prefixes
-	 * @return
-	 */
-	public abstract <T> List<Class<? extends T>> getClasses(LoadableMod<?> container, ClassLoader classloader, ModClassValidator validator);
+    /**
+     * Get classes in the supplied container
+     * 
+     * @param container Container to inspect
+     * @param classloader ClassLoader for this container
+     * @param superClass Superclass the class must implement
+     * @param supportedPrefixes Registered class prefixes
+     * @return
+     */
+    public abstract <T> List<Class<? extends T>> getClasses(LoadableMod<?> container, ClassLoader classloader, ModClassValidator validator);
 
-	public abstract boolean checkEnabled(ContainerRegistry containers, LoadableMod<?> container);
-	
-	public abstract boolean checkDependencies(ContainerRegistry containers, LoadableMod<?> base);
+    public abstract boolean checkEnabled(ContainerRegistry containers, LoadableMod<?> container);
 
-	public abstract boolean checkAPIRequirements(ContainerRegistry containers, LoadableMod<?> container);
+    public abstract boolean checkDependencies(ContainerRegistry containers, LoadableMod<?> base);
+
+    public abstract boolean checkAPIRequirements(ContainerRegistry containers, LoadableMod<?> container);
 }

@@ -22,231 +22,231 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public class ServerPluginChannels extends PluginChannels<ServerPluginChannelListener>
 {
-	private static ServerPluginChannels instance;
-	
-	public ServerPluginChannels()
-	{
-		if (ServerPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error", new InstantiationException("Only a single instance of ServerPluginChannels is allowed"));
-		ServerPluginChannels.instance = this;
-	}
-	
-	@Override
-	protected FastIterableDeque<ServerPluginChannelListener> createHandlerList()
-	{
-		return new HandlerList<ServerPluginChannelListener>(ServerPluginChannelListener.class);
-	}
-	
-	public static ServerPluginChannels getInstance()
-	{
-		return instance;
-	}
+    private static ServerPluginChannels instance;
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.api.InterfaceProvider#initProvider()
-	 */
-	@Override
-	public void initProvider()
-	{
-	}
+    public ServerPluginChannels()
+    {
+        if (ServerPluginChannels.instance != null) throw new RuntimeException("Plugin Channels Startup Error", new InstantiationException("Only a single instance of ServerPluginChannels is allowed"));
+        ServerPluginChannels.instance = this;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.api.InterfaceProvider#getListenerBaseType()
-	 */
-	@Override
-	public Class<? extends Listener> getListenerBaseType()
-	{
-		return Listener.class;
-	}
+    @Override
+    protected FastIterableDeque<ServerPluginChannelListener> createHandlerList()
+    {
+        return new HandlerList<ServerPluginChannelListener>(ServerPluginChannelListener.class);
+    }
 
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
-	 */
-	@Override
-	public void registerInterfaces(InterfaceRegistrationDelegate delegate)
-	{
-		delegate.registerInterface(ServerPluginChannelListener.class);
-	}
-	
-	void addServerPluginChannelListener(ServerPluginChannelListener pluginChannelListener)
-	{
-		super.addPluginChannelListener(pluginChannelListener);
-	}
+    public static ServerPluginChannels getInstance()
+    {
+        return instance;
+    }
 
-	void onServerStartup()
-	{
-		this.clearPluginChannels(null);
-		
-		// Enumerate mods for plugin channels
-		for (ServerPluginChannelListener pluginChannelListener : this.pluginChannelListeners)
-		{
-			this.addPluginChannelsFor(pluginChannelListener);
-		}
-	}
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#initProvider()
+     */
+    @Override
+    public void initProvider()
+    {
+    }
 
-	void onPlayerJoined(EntityPlayerMP player)
-	{
-		this.sendRegisteredPluginChannels(player);
-	}
-	
-	/**
-	 * Callback for the plugin channel hook
-	 * 
-	 * @param netHandler 
-	 * @param customPayload
-	 */
-	public void onPluginChannelMessage(INetHandler netHandler, C17PacketCustomPayload customPayload)
-	{
-		if (customPayload != null && customPayload.getChannelName() != null)
-		{
-			String channel = customPayload.getChannelName();
-			PacketBuffer data = customPayload.getBufferData();
-			
-			EntityPlayerMP sender = ((NetHandlerPlayServer)netHandler).playerEntity;
-			this.onPluginChannelMessage(sender, channel, data);
-		}
-	}
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#getListenerBaseType()
+     */
+    @Override
+    public Class<? extends Listener> getListenerBaseType()
+    {
+        return Listener.class;
+    }
 
-	/**
-	 * @param channel
-	 * @param data
-	 */
-	private final void onPluginChannelMessage(EntityPlayerMP sender, String channel, PacketBuffer data)
-	{
-		if (PluginChannels.CHANNEL_REGISTER.equals(channel))
-		{
-			this.onRegisterPacketReceived(data);
-		}
-		else if (this.pluginChannels.containsKey(channel))
-		{
-			try
-			{
-				PermissionsManagerServer permissionsManager = LiteLoader.getServerPermissionsManager();
-				if (permissionsManager != null)
-				{
-					permissionsManager.onCustomPayload(sender, channel, data);
-				}
-			}
-			catch (Exception ex) {}
-			
-			this.onModPacketReceived(sender, channel, data);
-		}
-	}
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.api.InterfaceProvider#registerInterfaces(com.mumfrey.liteloader.core.InterfaceRegistrationDelegate)
+     */
+    @Override
+    public void registerInterfaces(InterfaceRegistrationDelegate delegate)
+    {
+        delegate.registerInterface(ServerPluginChannelListener.class);
+    }
 
-	/**
-	 * @param sender
-	 * @param channel
-	 * @param data
-	 */
-	protected void onModPacketReceived(EntityPlayerMP sender, String channel, PacketBuffer data)
-	{
-		for (ServerPluginChannelListener pluginChannelListener : this.pluginChannels.get(channel))
-		{
-			try
-			{
-				pluginChannelListener.onCustomPayload(sender, channel, data);
-				throw new RuntimeException();
-			}
-			catch (Exception ex)
-			{
-				int failCount = 1;
-				if (this.faultingPluginChannelListeners.containsKey(pluginChannelListener))
-					failCount = this.faultingPluginChannelListeners.get(pluginChannelListener).intValue() + 1;
-				
-				if (failCount >= PluginChannels.WARN_FAULT_THRESHOLD)
-				{
-					LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s", pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
-					this.faultingPluginChannelListeners.remove(pluginChannelListener);
-				}
-				else
-				{
-					this.faultingPluginChannelListeners.put(pluginChannelListener, Integer.valueOf(failCount));
-				}
-			}
-		}
-	}
+    void addServerPluginChannelListener(ServerPluginChannelListener pluginChannelListener)
+    {
+        super.addPluginChannelListener(pluginChannelListener);
+    }
 
-	protected void sendRegisteredPluginChannels(EntityPlayerMP player)
-	{
-		try
-		{
-			PacketBuffer registrationData = this.getRegistrationData();
-			if (registrationData != null)
-			{
-				this.sendRegistrationData(player, registrationData);
-			}
-		}
-		catch (Exception ex)
-		{
-			LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getDisplayName());
-		}
-	}
+    void onServerStartup()
+    {
+        this.clearPluginChannels(null);
 
-	/**
-	 * @param recipient
-	 * @param registrationData
-	 */
-	private void sendRegistrationData(EntityPlayerMP recipient, PacketBuffer registrationData)
-	{
-		ServerPluginChannels.dispatch(recipient, new S3FPacketCustomPayload(CHANNEL_REGISTER, registrationData));
-	}
+        // Enumerate mods for plugin channels
+        for (ServerPluginChannelListener pluginChannelListener : this.pluginChannelListeners)
+        {
+            this.addPluginChannelsFor(pluginChannelListener);
+        }
+    }
 
-	/**
-	 * Send a message to the specified client on a plugin channel
-	 * 
-	 * @param recipient
-	 * @param channel Channel to send, must not be a reserved channel name
-	 * @param data
-	 */
-	public static boolean sendMessage(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
-	{
-		if (ServerPluginChannels.instance != null)
-		{
-			return ServerPluginChannels.instance.send(recipient, channel, data, policy);
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Send a message to the specified client on a plugin channel
-	 * 
-	 * @param recipient Recipient to send to
-	 * @param channel Channel to send, must not be a reserved channel name
-	 * @param data
-	 */
-	private boolean send(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
-	{
-		if (recipient == null) return false;
-		
-		if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
-			throw new RuntimeException("Invalid channel name specified"); 
-		
-		if (!policy.allows(this, channel))
-		{
-			if (policy.isSilent()) return false;
-			throw new UnregisteredChannelException(channel);
-		}
-		
-		S3FPacketCustomPayload payload = new S3FPacketCustomPayload(channel, data);
-		return ServerPluginChannels.dispatch(recipient, payload);
-	}
-	
-	/**
-	 * @param recipient
-	 * @param payload
-	 */
-	static boolean dispatch(EntityPlayerMP recipient, S3FPacketCustomPayload payload)
-	{
-		try
-		{
-			if (recipient != null && recipient.playerNetServerHandler != null)
-			{
-				recipient.playerNetServerHandler.sendPacket(payload);
-				return true;
-			}
-		}
-		catch (Exception ex) {}
-		
-		return false;
-	}
+    void onPlayerJoined(EntityPlayerMP player)
+    {
+        this.sendRegisteredPluginChannels(player);
+    }
+
+    /**
+     * Callback for the plugin channel hook
+     * 
+     * @param netHandler 
+     * @param customPayload
+     */
+    public void onPluginChannelMessage(INetHandler netHandler, C17PacketCustomPayload customPayload)
+    {
+        if (customPayload != null && customPayload.getChannelName() != null)
+        {
+            String channel = customPayload.getChannelName();
+            PacketBuffer data = customPayload.getBufferData();
+
+            EntityPlayerMP sender = ((NetHandlerPlayServer)netHandler).playerEntity;
+            this.onPluginChannelMessage(sender, channel, data);
+        }
+    }
+
+    /**
+     * @param channel
+     * @param data
+     */
+    private final void onPluginChannelMessage(EntityPlayerMP sender, String channel, PacketBuffer data)
+    {
+        if (PluginChannels.CHANNEL_REGISTER.equals(channel))
+        {
+            this.onRegisterPacketReceived(data);
+        }
+        else if (this.pluginChannels.containsKey(channel))
+        {
+            try
+            {
+                PermissionsManagerServer permissionsManager = LiteLoader.getServerPermissionsManager();
+                if (permissionsManager != null)
+                {
+                    permissionsManager.onCustomPayload(sender, channel, data);
+                }
+            }
+            catch (Exception ex) {}
+
+            this.onModPacketReceived(sender, channel, data);
+        }
+    }
+
+    /**
+     * @param sender
+     * @param channel
+     * @param data
+     */
+    protected void onModPacketReceived(EntityPlayerMP sender, String channel, PacketBuffer data)
+    {
+        for (ServerPluginChannelListener pluginChannelListener : this.pluginChannels.get(channel))
+        {
+            try
+            {
+                pluginChannelListener.onCustomPayload(sender, channel, data);
+                throw new RuntimeException();
+            }
+            catch (Exception ex)
+            {
+                int failCount = 1;
+                if (this.faultingPluginChannelListeners.containsKey(pluginChannelListener))
+                    failCount = this.faultingPluginChannelListeners.get(pluginChannelListener).intValue() + 1;
+
+                if (failCount >= PluginChannels.WARN_FAULT_THRESHOLD)
+                {
+                    LiteLoaderLogger.warning("Plugin channel listener %s exceeded fault threshold on channel %s with %s", pluginChannelListener.getName(), channel, ex.getClass().getSimpleName());
+                    this.faultingPluginChannelListeners.remove(pluginChannelListener);
+                }
+                else
+                {
+                    this.faultingPluginChannelListeners.put(pluginChannelListener, Integer.valueOf(failCount));
+                }
+            }
+        }
+    }
+
+    protected void sendRegisteredPluginChannels(EntityPlayerMP player)
+    {
+        try
+        {
+            PacketBuffer registrationData = this.getRegistrationData();
+            if (registrationData != null)
+            {
+                this.sendRegistrationData(player, registrationData);
+            }
+        }
+        catch (Exception ex)
+        {
+            LiteLoaderLogger.warning(ex, "Error dispatching REGISTER packet to client %s", player.getDisplayName());
+        }
+    }
+
+    /**
+     * @param recipient
+     * @param registrationData
+     */
+    private void sendRegistrationData(EntityPlayerMP recipient, PacketBuffer registrationData)
+    {
+        ServerPluginChannels.dispatch(recipient, new S3FPacketCustomPayload(CHANNEL_REGISTER, registrationData));
+    }
+
+    /**
+     * Send a message to the specified client on a plugin channel
+     * 
+     * @param recipient
+     * @param channel Channel to send, must not be a reserved channel name
+     * @param data
+     */
+    public static boolean sendMessage(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
+    {
+        if (ServerPluginChannels.instance != null)
+        {
+            return ServerPluginChannels.instance.send(recipient, channel, data, policy);
+        }
+
+        return false;
+    }
+
+    /**
+     * Send a message to the specified client on a plugin channel
+     * 
+     * @param recipient Recipient to send to
+     * @param channel Channel to send, must not be a reserved channel name
+     * @param data
+     */
+    private boolean send(EntityPlayerMP recipient, String channel, PacketBuffer data, ChannelPolicy policy)
+    {
+        if (recipient == null) return false;
+
+        if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
+            throw new RuntimeException("Invalid channel name specified"); 
+
+        if (!policy.allows(this, channel))
+        {
+            if (policy.isSilent()) return false;
+            throw new UnregisteredChannelException(channel);
+        }
+
+        S3FPacketCustomPayload payload = new S3FPacketCustomPayload(channel, data);
+        return ServerPluginChannels.dispatch(recipient, payload);
+    }
+
+    /**
+     * @param recipient
+     * @param payload
+     */
+    static boolean dispatch(EntityPlayerMP recipient, S3FPacketCustomPayload payload)
+    {
+        try
+        {
+            if (recipient != null && recipient.playerNetServerHandler != null)
+            {
+                recipient.playerNetServerHandler.sendPacket(payload);
+                return true;
+            }
+        }
+        catch (Exception ex) {}
+
+        return false;
+    }
 }

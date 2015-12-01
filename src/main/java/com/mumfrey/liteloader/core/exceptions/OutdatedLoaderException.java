@@ -9,13 +9,13 @@ package com.mumfrey.liteloader.core.exceptions;
  */
 public class OutdatedLoaderException extends Exception
 {
-	private static final long serialVersionUID = 8770358290208830747L;
+    private static final long serialVersionUID = 8770358290208830747L;
 
-	/**
-	 * @param missingAPI Name of the referenced class which is missing
-	 */
-	public OutdatedLoaderException(String missingAPI)
-	{
-		super(missingAPI);
-	}
+    /**
+     * @param missingAPI Name of the referenced class which is missing
+     */
+    public OutdatedLoaderException(String missingAPI)
+    {
+        super(missingAPI);
+    }
 }

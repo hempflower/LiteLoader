@@ -9,10 +9,10 @@ import net.minecraft.server.MinecraftServer;
  */
 public interface ServerTickable extends LiteMod
 {
-	/**
-	 * Called at the start of every server update tick
-	 * 
-	 * @param server
-	 */
-	public abstract void onTick(MinecraftServer server);
+    /**
+     * Called at the start of every server update tick
+     * 
+     * @param server
+     */
+    public abstract void onTick(MinecraftServer server);
 }

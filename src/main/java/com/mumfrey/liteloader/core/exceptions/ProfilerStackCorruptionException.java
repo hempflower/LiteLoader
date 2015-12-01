@@ -8,13 +8,13 @@ package com.mumfrey.liteloader.core.exceptions;
  */
 public class ProfilerStackCorruptionException extends RuntimeException
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7745831270297368169L;
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -7745831270297368169L;
 
-	public ProfilerStackCorruptionException(String message)
-	{
-		super(message);
-	}
+    public ProfilerStackCorruptionException(String message)
+    {
+        super(message);
+    }
 }

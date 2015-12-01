@@ -10,11 +10,11 @@ import net.minecraft.util.IChatComponent;
  */
 public interface ChatListener extends LiteMod
 {
-	/**
-	 * Handle an inbound message
-	 * 
-	 * @param chat IChatComponent parsed from the chat packet
-	 * @param message Chat message parsed from the chat message component
-	 */
-	public abstract void onChat(IChatComponent chat, String message);
+    /**
+     * Handle an inbound message
+     * 
+     * @param chat IChatComponent parsed from the chat packet
+     * @param message Chat message parsed from the chat message component
+     */
+    public abstract void onChat(IChatComponent chat, String message);
 }

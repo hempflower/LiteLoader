@@ -17,70 +17,70 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
  */
 public class ModEventInjectionTransformer extends EventInjectionTransformer
 {
-	@Override
-	protected void addEvents()
-	{
-		for (ModEventDefinition eventsDefinition : ModEvents.getEvents().values())
-		{
-			this.addEvents(eventsDefinition);
-		}
-	}
+    @Override
+    protected void addEvents()
+    {
+        for (ModEventDefinition eventsDefinition : ModEvents.getEvents().values())
+        {
+            this.addEvents(eventsDefinition);
+        }
+    }
 
-	/**
-	 * @param identifier
-	 * @param json
-	 */
-	private void addEvents(ModEventDefinition def)
-	{
-		JsonEvents events = null;
-		
-		try
-		{
-			LiteLoaderLogger.info("Parsing events for mod with id %s", def.getIdentifier());
-			events = JsonEvents.parse(def.getJson());
-		}
-		catch (InvalidEventJsonException ex)
-		{
-			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-			LiteLoaderLogger.debug(ex.getMessage());
-			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-			LiteLoaderLogger.debug(def.getJson());
-			LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-			LiteLoaderLogger.severe(ex, "Invalid JSON event declarations for mod with id %s", def.getIdentifier());
-		}
-		catch (Throwable ex)
-		{
-			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
-		}
-		
-		try
-		{
-			if (events != null)
-			{
-				if (events.hasAccessors())
-				{
-					LiteLoaderLogger.info("%s contains Accessor definitions, injecting into classpath...", def.getIdentifier());
-					def.injectIntoClassPath();
-				}
-				
-				LiteLoaderLogger.info(Verbosity.REDUCED, "Registering events for mod with id %s", def.getIdentifier());
-				events.register(this);
-				def.onEventsInjected();
-			}
-		}
-		catch (Throwable ex)
-		{
-			LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
-		}
-	}
-	
-	protected Event registerEvent(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint)
-	{
-		return super.addEvent(event, targetMethod, injectionPoint);
-	}
-	
-	protected void registerAccessor(String interfaceName, ObfProvider obfProvider)
-	{
-		super.addAccessor(interfaceName, obfProvider);
-	}
+    /**
+     * @param identifier
+     * @param json
+     */
+    private void addEvents(ModEventDefinition def)
+    {
+        JsonEvents events = null;
+
+        try
+        {
+            LiteLoaderLogger.info("Parsing events for mod with id %s", def.getIdentifier());
+            events = JsonEvents.parse(def.getJson());
+        }
+        catch (InvalidEventJsonException ex)
+        {
+            LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
+            LiteLoaderLogger.debug(ex.getMessage());
+            LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
+            LiteLoaderLogger.debug(def.getJson());
+            LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
+            LiteLoaderLogger.severe(ex, "Invalid JSON event declarations for mod with id %s", def.getIdentifier());
+        }
+        catch (Throwable ex)
+        {
+            LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
+        }
+
+        try
+        {
+            if (events != null)
+            {
+                if (events.hasAccessors())
+                {
+                    LiteLoaderLogger.info("%s contains Accessor definitions, injecting into classpath...", def.getIdentifier());
+                    def.injectIntoClassPath();
+                }
+
+                LiteLoaderLogger.info(Verbosity.REDUCED, "Registering events for mod with id %s", def.getIdentifier());
+                events.register(this);
+                def.onEventsInjected();
+            }
+        }
+        catch (Throwable ex)
+        {
+            LiteLoaderLogger.severe(ex, "Error whilst parsing event declarations for mod with id %s", def.getIdentifier());
+        }
+    }
+
+    protected Event registerEvent(Event event, MethodInfo targetMethod, InjectionPoint injectionPoint)
+    {
+        return super.addEvent(event, targetMethod, injectionPoint);
+    }
+
+    protected void registerAccessor(String interfaceName, ObfProvider obfProvider)
+    {
+        super.addAccessor(interfaceName, obfProvider);
+    }
 }

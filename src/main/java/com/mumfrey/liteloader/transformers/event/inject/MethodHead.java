@@ -15,14 +15,14 @@ import com.mumfrey.liteloader.transformers.event.InjectionPoint;
  */
 public class MethodHead extends InjectionPoint
 {
-	public MethodHead()
-	{
-	}
-	
-	@Override
-	public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
-	{
-		nodes.add(insns.getFirst());
-		return true;
-	}
+    public MethodHead()
+    {
+    }
+
+    @Override
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    {
+        nodes.add(insns.getFirst());
+        return true;
+    }
 }

@@ -9,23 +9,23 @@ import net.minecraft.util.ResourceLocation;
  */
 public interface IconTextured extends Icon
 {
-	/**
-	 * Get tooltip text, return null for no tooltip
-	 */
-	public abstract String getDisplayText();
-	
-	/**
-	 * Get the texture resource for this icon
-	 */
-	public abstract ResourceLocation getTextureResource();
+    /**
+     * Get tooltip text, return null for no tooltip
+     */
+    public abstract String getDisplayText();
 
-	/**
-	 * Get the U coordinate on the texture for this icon
-	 */
-	public abstract int getUPos();
+    /**
+     * Get the texture resource for this icon
+     */
+    public abstract ResourceLocation getTextureResource();
 
-	/**
-	 * Get the V coordinate on the texture for this icon
-	 */
-	public abstract int getVPos();
+    /**
+     * Get the U coordinate on the texture for this icon
+     */
+    public abstract int getUPos();
+
+    /**
+     * Get the V coordinate on the texture for this icon
+     */
+    public abstract int getVPos();
 }
