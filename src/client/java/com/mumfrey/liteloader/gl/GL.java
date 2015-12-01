@@ -1178,9 +1178,9 @@ public class GL
         return GL11.glGetBoolean(pname);
     }
 
-    public static void gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer win_pos)
+    public static void gluProject(float objx, float objy, float objz, FloatBuffer modelMatrix, FloatBuffer projMatrix, IntBuffer viewport, FloatBuffer winPos)
     {
-        GLU.gluProject(objx, objy, objz, modelMatrix, projMatrix, viewport, win_pos);
+        GLU.gluProject(objx, objy, objz, modelMatrix, projMatrix, viewport, winPos);
     }
 
     public static void gluPerspective(float fovy, float aspect, float zNear, float zFar)

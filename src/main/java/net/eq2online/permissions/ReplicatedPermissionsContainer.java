@@ -108,9 +108,18 @@ public class ReplicatedPermissionsContainer implements Serializable
             ReplicatedPermissionsContainer object = (ReplicatedPermissionsContainer)inputStream.readObject();
             return object;
         }
-        catch (IOException e) { }
-        catch (ClassNotFoundException e) { }
-        catch (ClassCastException e) { }
+        catch (IOException e)
+        {
+            // Don't care
+        }
+        catch (ClassNotFoundException e)
+        {
+            // Don't care
+        }
+        catch (ClassCastException e)
+        {
+            // Don't care
+        }
 
         return null;
     }

@@ -100,6 +100,8 @@ public class ReturnEventInfo<S, R> extends EventInfo<S>
     {
         return this.returnValue;
     }
+    
+    // CHECKSTYLE:OFF
 
     // All of the accessors below are to avoid having to generate unboxing conversions in bytecode
     public byte    getReturnValueB() { if (this.returnValue == null) return 0;     return (Byte)     this.returnValue; }
@@ -111,6 +113,9 @@ public class ReturnEventInfo<S, R> extends EventInfo<S>
     public short   getReturnValueS() { if (this.returnValue == null) return 0;     return (Short)    this.returnValue; }
     public boolean getReturnValueZ() { if (this.returnValue == null) return false; return (Boolean)  this.returnValue; }
 
+    // CHECKSTYLE:ON
+
+    
     public static String getReturnAccessor(Type returnType)
     {
         if (returnType.getSort() == Type.OBJECT)

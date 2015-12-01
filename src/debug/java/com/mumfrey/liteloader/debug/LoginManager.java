@@ -162,14 +162,20 @@ public class LoginManager
                 AuthData authData = new AuthData(this.authService, this.authentication, this.offline, this.defaultUsername, this.defaultDisplayName);
                 LoginManager.gson.toJson(authData, fileWriter);
             }
-            catch (IOException ex) { ex.printStackTrace(); }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
             finally
             {
                 try
                 {
                     if (fileWriter != null) fileWriter.close();
                 }
-                catch (IOException ex) { ex.printStackTrace(); }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                }
             }
         }
     }

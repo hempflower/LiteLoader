@@ -37,8 +37,8 @@ public class LoadingBar extends LoadingProgress
 {
     private static LoadingBar instance;
 
-    private final String LOADING_MESSAGE_1 = "Starting Game...";
-    private final String LOADING_MESSAGE_2 = "Initialising...";
+    private static final String LOADING_MESSAGE_1 = "Starting Game...";
+    private static final String LOADING_MESSAGE_2 = "Initialising...";
 
     private int minecraftProgress = 0;
     private int totalMinecraftProgress = 606;
@@ -50,7 +50,7 @@ public class LoadingBar extends LoadingProgress
 
     private ResourceLocation textureLocation = new ResourceLocation("textures/gui/title/mojang.png");
 
-    private String minecraftMessage = this.LOADING_MESSAGE_1;
+    private String minecraftMessage = LoadingBar.LOADING_MESSAGE_1;
     private String message = "";
 
     private Minecraft minecraft;
@@ -118,7 +118,7 @@ public class LoadingBar extends LoadingProgress
 
     protected void _initTextures()
     {
-        this.minecraftMessage = this.LOADING_MESSAGE_2;		
+        this.minecraftMessage = LoadingBar.LOADING_MESSAGE_2;		
     }
 
     @Override

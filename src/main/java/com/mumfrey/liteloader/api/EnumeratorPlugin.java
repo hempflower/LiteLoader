@@ -23,8 +23,7 @@ public interface EnumeratorPlugin
      * 
      * @param container Container to inspect
      * @param classloader ClassLoader for this container
-     * @param superClass Superclass the class must implement
-     * @param supportedPrefixes Registered class prefixes
+     * @param validator Mod class validator
      * @return
      */
     public abstract <T> List<Class<? extends T>> getClasses(LoadableMod<?> container, ClassLoader classloader, ModClassValidator validator);

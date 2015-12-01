@@ -546,7 +546,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
      *
      * @param <T>
      */
-    public static abstract class BakedHandlerList<T>
+    public abstract static class BakedHandlerList<T>
     {
         public abstract T get();
 

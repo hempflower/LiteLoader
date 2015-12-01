@@ -278,10 +278,6 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 
     private boolean isPanelSupportedOnScreen(GuiScreen guiScreen)
     {
-        return (
-                guiScreen instanceof GuiMainMenu ||
-                guiScreen instanceof GuiIngameMenu ||
-                guiScreen instanceof GuiOptions
-                );
+        return (guiScreen instanceof GuiMainMenu || guiScreen instanceof GuiIngameMenu || guiScreen instanceof GuiOptions);
     }
 }

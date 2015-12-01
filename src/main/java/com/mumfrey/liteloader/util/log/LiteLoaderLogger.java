@@ -95,9 +95,9 @@ public class LiteLoaderLogger extends AbstractAppender
 
         while (message.indexOf('\n') > -1)
         {
-            int LF = message.indexOf('\n');
-            this.appendLine(date + message.substring(0, LF));
-            message = message.substring(LF + 1);
+            int lineFeedPos = message.indexOf('\n');
+            this.appendLine(date + message.substring(0, lineFeedPos));
+            message = message.substring(lineFeedPos + 1);
         }
 
         this.appendLine(date + message);
@@ -151,7 +151,14 @@ public class LiteLoaderLogger extends AbstractAppender
             StringWriter sw = new StringWriter();
             LiteLoaderLogger.lastThrowable.printStackTrace(new PrintWriter(sw));
             lastThrowableWrapped = new Throwable(sw.toString());
-            try { sw.close(); } catch (IOException ex) {}
+            try
+            {
+                sw.close();
+            }
+            catch (IOException ex)
+            {
+                // oh well
+            }
         }
 
         return lastThrowableWrapped;

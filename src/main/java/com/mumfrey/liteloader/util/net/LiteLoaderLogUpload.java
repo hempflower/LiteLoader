@@ -107,7 +107,10 @@ public class LiteLoaderLogUpload extends Thread
                 reader.close();
                 this.response = readString.toString();
             }
-            catch (IOException ex) { ex.printStackTrace(); }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+            }
 
             httpStream.close();
             outputStream.close();

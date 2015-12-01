@@ -12,7 +12,7 @@ public interface ConfigPanelHost
     /**
      * Get the mod instance which owns the panel
      */
-    public abstract <ModClass extends LiteMod> ModClass getMod();
+    public abstract <TModClass extends LiteMod> TModClass getMod();
 
     /**
      * Get the width of the configuration panel area

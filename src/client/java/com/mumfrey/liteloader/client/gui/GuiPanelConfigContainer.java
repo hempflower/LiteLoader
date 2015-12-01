@@ -65,9 +65,9 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
      */
     @SuppressWarnings("unchecked")
     @Override
-    public <ModClass extends LiteMod> ModClass getMod()
+    public <TModClass extends LiteMod> TModClass getMod()
     {
-        return (ModClass)this.mod;
+        return (TModClass)this.mod;
     }
 
     /* (non-Javadoc)

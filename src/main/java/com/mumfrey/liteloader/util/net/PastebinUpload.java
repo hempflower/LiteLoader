@@ -115,7 +115,10 @@ public class PastebinUpload extends Thread
                     reader.close();
                     this.pasteUrl = readString.toString();
                 }
-                catch (IOException ex) { ex.printStackTrace(); }
+                catch (IOException ex)
+                {
+                    ex.printStackTrace();
+                }
 
                 httpStream.close();
             }

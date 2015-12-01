@@ -56,6 +56,7 @@ public abstract class ChatUtilities
                 case STRIKETHROUGH: style.setStrikethrough(true); break;
                 case UNDERLINE: style.setUnderlined(true); break;
                 case OBFUSCATED: style.setObfuscated(true); break;
+                default: return style;
             }
         }
 

@@ -194,7 +194,7 @@ public class ProfilingHandlerList<T extends Listener> extends HandlerList<T>
      *
      * @param <T>
      */
-    public static abstract class BakedList<T> extends HandlerList.BakedHandlerList<T>
+    public abstract static class BakedList<T> extends HandlerList.BakedHandlerList<T>
     {
         private final Profiler profiler;
 

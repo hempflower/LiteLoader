@@ -287,7 +287,10 @@ public abstract class ClassPathUtilities
                 File targetFile = new File(new URI(jarPath));
                 return returnParent ? targetFile.getParentFile() : targetFile;
             }
-            catch (URISyntaxException ex) { }
+            catch (URISyntaxException ex)
+            {
+                // derp
+            }
         }
 
         return null;

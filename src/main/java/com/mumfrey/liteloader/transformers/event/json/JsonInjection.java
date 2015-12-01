@@ -125,10 +125,11 @@ public class JsonInjection implements Serializable
                 catch (Exception ex)
                 {
                     throw new RuntimeException(ex);
-                } 
-        }
+                }
 
-        throw new InvalidEventJsonException("Could not parse injection type");
+            default:
+                throw new InvalidEventJsonException("Could not parse injection type");
+        }
     }
 
     private Object getArg(int arg)
@@ -174,6 +175,9 @@ public class JsonInjection implements Serializable
 
                 case BEFORE:
                     return InjectionPoint.before(injectionPoint);
+                    
+                default:
+                    return injectionPoint;
             }
         }
 

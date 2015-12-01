@@ -38,7 +38,14 @@ public abstract class PacketEvents implements InterfaceProvider
     class PacketHandlerList extends HandlerList<PacketHandler>
     {
         private static final long serialVersionUID = 1L;
-        PacketHandlerList() { super(PacketHandler.class, ReturnLogicOp.AND_BREAK_ON_FALSE); }
+        
+        /**
+         * ctor
+         */
+        PacketHandlerList()
+        {
+            super(PacketHandler.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
+        }
     }
 
     /**
@@ -46,7 +53,7 @@ public abstract class PacketEvents implements InterfaceProvider
      */
     protected final LiteLoader loader;
 
-    private PacketHandlerList packetHandlers[] = new PacketHandlerList[Packets.count()];
+    private PacketHandlerList[] packetHandlers = new PacketHandlerList[Packets.count()];
 
     private FastIterable<ServerChatFilter> serverChatFilters = new HandlerList<ServerChatFilter>(ServerChatFilter.class, ReturnLogicOp.AND_BREAK_ON_FALSE);
 
@@ -58,6 +65,9 @@ public abstract class PacketEvents implements InterfaceProvider
     private final int clientPayloadPacketId  = Packets.C17PacketCustomPayload.getIndex();
     private final int clientSettingsPacketId = Packets.C15PacketClientSettings.getIndex();
 
+    /**
+     * ctor
+     */
     public PacketEvents()
     {
         PacketEvents.instance = this;
@@ -90,6 +100,11 @@ public abstract class PacketEvents implements InterfaceProvider
         this.serverChatFilters.add(serverChatFilter);
     }
 
+    /**
+     * Register a new packet handler
+     * 
+     * @param handler
+     */
     public void registerPacketHandler(PacketHandler handler)
     {
         List<Class<? extends Packet>> handledPackets = handler.getHandledPackets();
@@ -115,6 +130,12 @@ public abstract class PacketEvents implements InterfaceProvider
         }
     }
 
+    /**
+     * Event callback
+     * 
+     * @param e
+     * @param netHandler
+     */
     public static void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler)
     {
         PacketEvents.instance.handlePacket(e, netHandler, e.getPacketId());

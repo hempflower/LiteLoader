@@ -99,7 +99,7 @@ public abstract class InjectionPoint
      * 
      * @author Adam Mummery-Smith
      */
-    static abstract class CompositeInjectionPoint extends InjectionPoint
+    abstract static class CompositeInjectionPoint extends InjectionPoint
     {
         protected final InjectionPoint[] components;
 

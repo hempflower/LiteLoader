@@ -141,7 +141,10 @@ public abstract class ModUtilities
                     }
                 }
             }
-            catch (Exception ex) { ex.printStackTrace(); }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+            }
         }
     }
 

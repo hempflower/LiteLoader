@@ -116,14 +116,16 @@ public class LoginPanel extends JPanel
 
         this.btnLogin = new JButton("Log in");
         this.btnLogin.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e)
+            {
                 LoginPanel.this.onLoginClick();
             }
         });
 
         this.btnCancel = new JButton("Cancel");
         this.btnCancel.addActionListener(new ActionListener() {
-            @Override public void actionPerformed(ActionEvent e) {
+            @Override public void actionPerformed(ActionEvent e)
+            {
                 LoginPanel.this.onCancelClick();
             }
         });

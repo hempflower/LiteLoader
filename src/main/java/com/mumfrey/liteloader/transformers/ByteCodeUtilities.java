@@ -478,9 +478,10 @@ public abstract class ByteCodeUtilities
                 String typeName = type.getClassName();
                 typeName = typeName.substring(typeName.lastIndexOf('.') + 1);
                 return typeName;
+            default:
+                return "Object";
         }
 
-        return "Object";
     }
 
     /**

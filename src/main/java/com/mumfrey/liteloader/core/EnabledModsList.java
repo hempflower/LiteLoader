@@ -19,7 +19,7 @@ import com.google.gson.GsonBuilder;
 public class EnabledModsList
 {
     @SuppressWarnings("unused")
-    private static transient final long serialVersionUID = -6449451105617763769L;
+    private static final transient long serialVersionUID = -6449451105617763769L;
 
     /**
      * Gson object for serialisation/deserialisation
