@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotation which provides the obfuscated names for a method or field to the ClassOverlayTransformer
+ * Annotation which provides the obfuscated names for a method or field to the
+ * ClassOverlayTransformer.
  *
  * @author Adam Mummery-Smith
  */
@@ -14,5 +15,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Obfuscated
 {
-	public String[] value();
+    public String[] value();
 }

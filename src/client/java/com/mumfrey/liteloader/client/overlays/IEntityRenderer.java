@@ -13,17 +13,17 @@ import com.mumfrey.liteloader.transformers.access.Invoker;
 @Accessor("EntityRenderer")
 public interface IEntityRenderer
 {
-	@Accessor("useShader") public abstract boolean getUseShader();
-	@Accessor("useShader") public abstract void setUseShader(boolean useShader);
-	
-	@Accessor("shaderResourceLocations") public abstract ResourceLocation[] getShaders();
-	
-	@Accessor("shaderIndex") public abstract int getShaderIndex();
-	@Accessor("shaderIndex") public abstract void setShaderIndex(int shaderIndex);
-	
-	@Invoker("loadShader") public abstract void selectShader(ResourceLocation shader);
-	
-	@Invoker("getFOVModifier") public abstract float getFOV(float partialTicks, boolean armFOV);
-	
-	@Invoker("setupCameraTransform") public abstract void setupCamera(float partialTicks, int pass);
+    @Accessor("useShader") public abstract boolean getUseShader();
+    @Accessor("useShader") public abstract void setUseShader(boolean useShader);
+
+    @Accessor("shaderResourceLocations") public abstract ResourceLocation[] getShaders();
+
+    @Accessor("shaderIndex") public abstract int getShaderIndex();
+    @Accessor("shaderIndex") public abstract void setShaderIndex(int shaderIndex);
+
+    @Invoker("loadShader") public abstract void selectShader(ResourceLocation shader);
+
+    @Invoker("getFOVModifier") public abstract float getFOV(float partialTicks, boolean armFOV);
+
+    @Invoker("setupCameraTransform") public abstract void setupCamera(float partialTicks, int pass);
 }

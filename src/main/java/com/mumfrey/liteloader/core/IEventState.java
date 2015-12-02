@@ -5,5 +5,5 @@ import net.minecraft.server.MinecraftServer;
 
 public interface IEventState
 {
-	public abstract void onTick(MinecraftServer server);
+    public abstract void onTick(MinecraftServer server);
 }

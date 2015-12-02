@@ -10,11 +10,11 @@ import com.mumfrey.liteloader.api.LiteAPI;
  */
 public interface InterfaceRegistry
 {
-	public abstract void registerAPI(LiteAPI api);
+    public abstract void registerAPI(LiteAPI api);
 
-	public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType);
-	
-	public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority);
-	
-	public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority, boolean exclusive);
+    public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType);
+
+    public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority);
+
+    public abstract void registerInterface(InterfaceProvider provider, Class<? extends Listener> interfaceType, int priority, boolean exclusive);
 }

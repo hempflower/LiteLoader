@@ -30,434 +30,451 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 public class LoadableFile extends File implements TweakContainer<File>
 {
-	private static final Pattern versionPattern = Pattern.compile("([0-9]+\\.)+[0-9]+([_A-Z0-9]+)?");
+    private static final Pattern versionPattern = Pattern.compile("([0-9]+\\.)+[0-9]+([_A-Z0-9]+)?");
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * True once this file has been injected into the class path 
-	 */
-	protected boolean injected;
-	
-	protected boolean forceInjection;
-	
-	/**
-	 * Position to inject the mod file at in the class path, if blank injects at the bottom as usual, alternatively
-	 * the developer can specify "top" to inject at the top, "base" to inject above the game jar, or "above: name" to
-	 * inject above a specified other library matching "name".
-	 */
-	protected InjectionStrategy injectionStrategy = null;
-	
-	protected Set<String> modSystems = new HashSet<String>();
+    /**
+     * True once this file has been injected into the class path 
+     */
+    protected boolean injected;
 
-	/**
-	 * Name of the tweak class
-	 */
-	protected String tweakClassName;
-	
-	/**
-	 * Priority for this tweaker 
-	 */
-	protected int tweakPriority = 1000;
-	
-	/**
-	 * Class path entries read from jar metadata
-	 */
-	protected String[] classPathEntries = null;
+    protected boolean forceInjection;
 
-	protected String displayName;
+    /**
+     * Position to inject the mod file at in the class path, if blank injects at
+     * the bottom as usual, alternatively the developer can specify "top" to
+     * inject at the top, "base" to inject above the game jar, or "above: name"
+     * to inject above a specified other library matching "name".
+     */
+    protected InjectionStrategy injectionStrategy = null;
 
-	protected String version = "Unknown";
+    protected Set<String> modSystems = new HashSet<String>();
 
-	protected String author = "Unknown";
+    /**
+     * Name of the tweak class
+     */
+    protected String tweakClassName;
 
-	protected boolean hasEventTransformers;
+    /**
+     * Priority for this tweaker 
+     */
+    protected int tweakPriority = 1000;
 
-	/**
-	 * Create a new tweak container wrapping the specified file
-	 */
-	public LoadableFile(File parent)
-	{
-		super(parent.getAbsolutePath());
-		this.displayName = this.getName();
-		this.guessVersionFromName();
-		this.readJarMetaData();
-	}
-	
-	/**
-	 * ctor for subclasses
-	 */
-	protected LoadableFile(LoadableFile file)
-	{
-		super(file.getAbsolutePath());
-		this.displayName = this.getName();
-		this.forceInjection = file.forceInjection;
-		this.assignJarMetaData(file);
-	}
+    /**
+     * Class path entries read from jar metadata
+     */
+    protected String[] classPathEntries = null;
 
-	/**
-	 * ctor for subclasses
-	 */
-	protected LoadableFile(String pathname)
-	{
-		super(pathname);
-		this.displayName = this.getName();
-		this.readJarMetaData();
-	}
-	
-	private void guessVersionFromName()
-	{
-		Matcher versionPatternMatcher = LoadableFile.versionPattern.matcher(this.getName());
-		while (versionPatternMatcher.find())
-			this.version = versionPatternMatcher.group();
-	}
-	
-	protected void assignJarMetaData(LoadableFile file)
-	{
-		this.modSystems        = file.modSystems;
-		this.tweakClassName    = file.tweakClassName;
-		this.classPathEntries  = file.classPathEntries;
-		this.tweakPriority     = file.tweakPriority;
-		this.displayName       = file.displayName;
-		this.version           = file.version;
-		this.author            = file.author;
-		this.injectionStrategy = file.injectionStrategy;
-	}
+    protected String displayName;
 
-	/**
-	 * Search for tweaks in this file
-	 */
-	protected void readJarMetaData()
-	{
-		JarFile jar = null;
-		
-		if (this.isDirectory())
-		{
-			return;
-		}
-		
-		try
-		{
-			jar = new JarFile(this);
-			if (jar.getManifest() != null)
-			{
-				LiteLoaderLogger.info("Inspecting jar metadata in '%s'", this.getName());
-				Attributes manifestAttributes = jar.getManifest().getMainAttributes();
-				
-				String modSystemList = manifestAttributes.getValue("ModType");
-				if (modSystemList != null)
-				{
-					for (String modSystem : modSystemList.split(","))
-					{
-						modSystem = modSystem.trim();
-						if (modSystem.length() > 0)
-						{
-							this.modSystems.add(modSystem);
-						}
-					}
-				}
-					
-				this.tweakClassName = manifestAttributes.getValue("TweakClass");
-				if (this.tweakClassName != null)
-				{
-					String classPath = manifestAttributes.getValue("Class-Path");
-					if (classPath != null)
-					{
-						this.classPathEntries = classPath.split(" ");
-					}
-				}
+    protected String version = "Unknown";
 
-				if (manifestAttributes.getValue("TweakOrder") != null)
-				{
-					Integer tweakOrder = Ints.tryParse(manifestAttributes.getValue("TweakOrder"));
-					if (tweakOrder != null)
-					{
-						this.tweakPriority = tweakOrder.intValue();
-					}
-				}
-				
-				if (manifestAttributes.getValue("Implementation-Title") != null)
-					this.displayName = manifestAttributes.getValue("Implementation-Title");
-				
-				if (manifestAttributes.getValue("TweakName") != null)
-					this.displayName = manifestAttributes.getValue("TweakName");
-				
-				if (manifestAttributes.getValue("Implementation-Version") != null)
-					this.version = manifestAttributes.getValue("Implementation-Version");
-				
-				if (manifestAttributes.getValue("TweakVersion") != null)
-					this.version = manifestAttributes.getValue("TweakVersion");
-				
-				if (manifestAttributes.getValue("Implementation-Vendor") != null)
-					this.author = manifestAttributes.getValue("Implementation-Vendor");
-				
-				if (manifestAttributes.getValue("TweakAuthor") != null)
-					this.author = manifestAttributes.getValue("TweakAuthor");
-				
-				this.injectionStrategy = InjectionStrategy.parseStrategy(manifestAttributes.getValue("TweakInjectionStrategy"), InjectionStrategy.TOP);
-			}
-		}
-		catch (Exception ex)
-		{
-			LiteLoaderLogger.warning("Could not parse jar metadata in '%s'", this);
-		}
-		finally
-		{
-			try
-			{
-				if (jar != null) jar.close();
-			}
-			catch (IOException ex) {}
-		}
-	}
-	
-	public Set<String> getModSystems()
-	{
-		return Collections.unmodifiableSet(this.modSystems);
-	}
+    protected String author = "Unknown";
 
-	@Override
-	public File getTarget()
-	{
-		return this;
-	}
-	
-	@Override
-	public File toFile()
-	{
-		return this;
-	}
-	
-	@Override
-	public String getLocation()
-	{
-		return this.getAbsolutePath();
-	}
-	
-	@Override
-	public URL getURL() throws MalformedURLException
-	{
-		return this.toURI().toURL();
-	}
-	
-	@Override
-	public String getIdentifier()
-	{
-		return this.getName().toLowerCase();
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ITweakContainer#hasTweakClass()
-	 */
-	@Override
-	public boolean hasTweakClass()
-	{
-		return this.tweakClassName != null;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ITweakContainer#getTweakClassName()
-	 */
-	@Override
-	public String getTweakClassName()
-	{
-		return this.tweakClassName;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.TweakContainer#getTweakPriority()
-	 */
-	@Override
-	public int getTweakPriority()
-	{
-		return this.tweakPriority;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ITweakContainer#getClassPathEntries()
-	 */
-	@Override
-	public String[] getClassPathEntries()
-	{
-		return this.classPathEntries;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ITweakContainer#hasClassTransformers()
-	 */
-	@Override
-	public boolean hasClassTransformers()
-	{
-		return false;
-	}
-	
-	/* (non-Javadoc)
-	 * @see com.mumfrey.liteloader.core.ITweakContainer#getClassTransformerClassNames()
-	 */
-	@Override
-	public List<String> getClassTransformerClassNames()
-	{
-		return new ArrayList<String>();
-	}
-	
-	@Override
-	public boolean hasEventTransformers()
-	{
-		return this.hasEventTransformers;
-	}
-	
-	public void onEventsInjected()
-	{
-		this.hasEventTransformers = true;
-	}
+    protected boolean hasEventTransformers;
 
-	public boolean isInjectionForced()
-	{
-		return this.forceInjection;
-	}
-	
-	public void setForceInjection(boolean forceInjection)
-	{
-		this.forceInjection = forceInjection;
-	}
-	
-	@Override
-	public boolean isInjected()
-	{
-		return this.injected;
-	}
-	
-	@Override
-	public boolean injectIntoClassPath(LaunchClassLoader classLoader, boolean injectIntoParent) throws MalformedURLException
-	{
-		if (!this.injected)
-		{
-			this.injected = true;
-			
-			boolean isOnClassPath = ClassPathUtilities.isJarOnClassPath(this, classLoader);
-			if (!this.forceInjection && isOnClassPath)
-			{
-				LiteLoaderLogger.info("%s already exists on the classpath, skipping injection", this);
-				return false;
-			}
-			
-			ClassPathUtilities.injectIntoClassPath(classLoader, this.getURL(), this.getInjectionStrategy());
-			
-			if (injectIntoParent)
-			{
-				LiteLoaderTweaker.addURLToParentClassLoader(this.getURL());
-			}
-			
-			return true;
-			
-		}
-		
-		return false;
-	}
-	
-	@Override
-	public InjectionStrategy getInjectionStrategy()
-	{
-		return this.injectionStrategy;
-	}
+    /**
+     * Create a new tweak container wrapping the specified file
+     */
+    public LoadableFile(File parent)
+    {
+        super(parent.getAbsolutePath());
+        this.displayName = this.getName();
+        this.guessVersionFromName();
+        this.readJarMetaData();
+    }
 
-	@Override
-	public String getDisplayName()
-	{
-		return this.displayName != null ? this.displayName : this.getName();
-	}
-	
-	@Override
-	public String getVersion()
-	{
-		return this.version;
-	}
-	
-	@Override
-	public String getAuthor()
-	{
-		return this.author;
-	}
-	
-	@Override
-	public String getDescription(String key)
-	{
-		return "";
-	}
-	
-	@Override
-	public boolean isExternalJar()
-	{
-		return true;
-	}
+    /**
+     * ctor for subclasses
+     */
+    protected LoadableFile(LoadableFile file)
+    {
+        super(file.getAbsolutePath());
+        this.displayName = this.getName();
+        this.forceInjection = file.forceInjection;
+        this.assignJarMetaData(file);
+    }
 
-	@Override
-	public boolean isToggleable()
-	{
-		return false;
-	}
-	
-	@Override
-	public boolean isEnabled(LoaderEnvironment environment)
-	{
-		return environment.getEnabledModsList().isEnabled(environment.getProfile(), this.getIdentifier());
-	}
-	
-	@Override
-	public String toString()
-	{
-		return this.getLocation();
-	}
-	
-	/**
-	 * @param name
-	 * @param charset
-	 */
-	public String getFileContents(String name, Charset charset)
-	{
-		return LoadableFile.getFileContents(this, name, charset);
-	}
+    /**
+     * ctor for subclasses
+     */
+    protected LoadableFile(String pathname)
+    {
+        super(pathname);
+        this.displayName = this.getName();
+        this.readJarMetaData();
+    }
 
-	/**
-	 * @param parent
-	 * @param name
-	 * @param charset
-	 */
-	public static String getFileContents(File parent, String name, Charset charset)
-	{
-		try
-		{
-			if (parent.isDirectory())
-			{
-				File file = new File(parent, name);
-				if (file.isFile())
-				{
-					return Files.toString(file, charset);
-				}
-			}
-			else
-			{
-				String content = null;
-				ZipFile zipFile = new ZipFile(parent);
-				ZipEntry zipEntry = zipFile.getEntry(name);
-				if (zipEntry != null)
-				{
-					try
-					{
-						content = LoadableModFile.zipEntryToString(zipFile, zipEntry);
-					}
-					catch (IOException ex) {}
-				}
-				
-				zipFile.close();
-				return content;
-			}
-		}
-		catch (IOException ex)
-		{
-			ex.printStackTrace();
-		}
-		
-		return null;
-	}
+    private void guessVersionFromName()
+    {
+        Matcher versionPatternMatcher = LoadableFile.versionPattern.matcher(this.getName());
+        while (versionPatternMatcher.find())
+        {
+            this.version = versionPatternMatcher.group();
+        }
+    }
+
+    protected void assignJarMetaData(LoadableFile file)
+    {
+        this.modSystems        = file.modSystems;
+        this.tweakClassName    = file.tweakClassName;
+        this.classPathEntries  = file.classPathEntries;
+        this.tweakPriority     = file.tweakPriority;
+        this.displayName       = file.displayName;
+        this.version           = file.version;
+        this.author            = file.author;
+        this.injectionStrategy = file.injectionStrategy;
+    }
+
+    /**
+     * Search for tweaks in this file
+     */
+    protected void readJarMetaData()
+    {
+        JarFile jar = null;
+
+        if (this.isDirectory())
+        {
+            return;
+        }
+
+        try
+        {
+            jar = new JarFile(this);
+            if (jar.getManifest() != null)
+            {
+                LiteLoaderLogger.info("Inspecting jar metadata in '%s'", this.getName());
+                Attributes manifestAttributes = jar.getManifest().getMainAttributes();
+
+                String modSystemList = manifestAttributes.getValue("ModType");
+                if (modSystemList != null)
+                {
+                    for (String modSystem : modSystemList.split(","))
+                    {
+                        modSystem = modSystem.trim();
+                        if (modSystem.length() > 0)
+                        {
+                            this.modSystems.add(modSystem);
+                        }
+                    }
+                }
+
+                this.tweakClassName = manifestAttributes.getValue("TweakClass");
+                if (this.tweakClassName != null)
+                {
+                    String classPath = manifestAttributes.getValue("Class-Path");
+                    if (classPath != null)
+                    {
+                        this.classPathEntries = classPath.split(" ");
+                    }
+                }
+
+                if (manifestAttributes.getValue("TweakOrder") != null)
+                {
+                    Integer tweakOrder = Ints.tryParse(manifestAttributes.getValue("TweakOrder"));
+                    if (tweakOrder != null)
+                    {
+                        this.tweakPriority = tweakOrder.intValue();
+                    }
+                }
+
+                if (manifestAttributes.getValue("Implementation-Title") != null)
+                {
+                    this.displayName = manifestAttributes.getValue("Implementation-Title");
+                }
+
+                if (manifestAttributes.getValue("TweakName") != null)
+                {
+                    this.displayName = manifestAttributes.getValue("TweakName");
+                }
+
+                if (manifestAttributes.getValue("Implementation-Version") != null)
+                {
+                    this.version = manifestAttributes.getValue("Implementation-Version");
+                }
+
+                if (manifestAttributes.getValue("TweakVersion") != null)
+                {
+                    this.version = manifestAttributes.getValue("TweakVersion");
+                }
+
+                if (manifestAttributes.getValue("Implementation-Vendor") != null)
+                {
+                    this.author = manifestAttributes.getValue("Implementation-Vendor");
+                }
+
+                if (manifestAttributes.getValue("TweakAuthor") != null)
+                {
+                    this.author = manifestAttributes.getValue("TweakAuthor");
+                }
+
+                String tweakInjectionStrategy = manifestAttributes.getValue("TweakInjectionStrategy");
+                this.injectionStrategy = InjectionStrategy.parseStrategy(tweakInjectionStrategy, InjectionStrategy.TOP);
+            }
+        }
+        catch (Exception ex)
+        {
+            LiteLoaderLogger.warning("Could not parse jar metadata in '%s'", this);
+        }
+        finally
+        {
+            try
+            {
+                if (jar != null) jar.close();
+            }
+            catch (IOException ex) {}
+        }
+    }
+
+    public Set<String> getModSystems()
+    {
+        return Collections.unmodifiableSet(this.modSystems);
+    }
+
+    @Override
+    public File getTarget()
+    {
+        return this;
+    }
+
+    @Override
+    public File toFile()
+    {
+        return this;
+    }
+
+    @Override
+    public String getLocation()
+    {
+        return this.getAbsolutePath();
+    }
+
+    @Override
+    public URL getURL() throws MalformedURLException
+    {
+        return this.toURI().toURL();
+    }
+
+    @Override
+    public String getIdentifier()
+    {
+        return this.getName().toLowerCase();
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.ITweakContainer#hasTweakClass()
+     */
+    @Override
+    public boolean hasTweakClass()
+    {
+        return this.tweakClassName != null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.ITweakContainer#getTweakClassName()
+     */
+    @Override
+    public String getTweakClassName()
+    {
+        return this.tweakClassName;
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.TweakContainer#getTweakPriority()
+     */
+    @Override
+    public int getTweakPriority()
+    {
+        return this.tweakPriority;
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.ITweakContainer#getClassPathEntries()
+     */
+    @Override
+    public String[] getClassPathEntries()
+    {
+        return this.classPathEntries;
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.ITweakContainer#hasClassTransformers()
+     */
+    @Override
+    public boolean hasClassTransformers()
+    {
+        return false;
+    }
+
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.core.ITweakContainer
+     *      #getClassTransformerClassNames()
+     */
+    @Override
+    public List<String> getClassTransformerClassNames()
+    {
+        return new ArrayList<String>();
+    }
+
+    @Override
+    public boolean hasEventTransformers()
+    {
+        return this.hasEventTransformers;
+    }
+
+    public void onEventsInjected()
+    {
+        this.hasEventTransformers = true;
+    }
+
+    public boolean isInjectionForced()
+    {
+        return this.forceInjection;
+    }
+
+    public void setForceInjection(boolean forceInjection)
+    {
+        this.forceInjection = forceInjection;
+    }
+
+    @Override
+    public boolean isInjected()
+    {
+        return this.injected;
+    }
+
+    @Override
+    public boolean injectIntoClassPath(LaunchClassLoader classLoader, boolean injectIntoParent) throws MalformedURLException
+    {
+        if (!this.injected)
+        {
+            this.injected = true;
+
+            boolean isOnClassPath = ClassPathUtilities.isJarOnClassPath(this, classLoader);
+            if (!this.forceInjection && isOnClassPath)
+            {
+                LiteLoaderLogger.info("%s already exists on the classpath, skipping injection", this);
+                return false;
+            }
+
+            ClassPathUtilities.injectIntoClassPath(classLoader, this.getURL(), this.getInjectionStrategy());
+
+            if (injectIntoParent)
+            {
+                LiteLoaderTweaker.addURLToParentClassLoader(this.getURL());
+            }
+
+            return true;
+
+        }
+
+        return false;
+    }
+
+    @Override
+    public InjectionStrategy getInjectionStrategy()
+    {
+        return this.injectionStrategy;
+    }
+
+    @Override
+    public String getDisplayName()
+    {
+        return this.displayName != null ? this.displayName : this.getName();
+    }
+
+    @Override
+    public String getVersion()
+    {
+        return this.version;
+    }
+
+    @Override
+    public String getAuthor()
+    {
+        return this.author;
+    }
+
+    @Override
+    public String getDescription(String key)
+    {
+        return "";
+    }
+
+    @Override
+    public boolean isExternalJar()
+    {
+        return true;
+    }
+
+    @Override
+    public boolean isToggleable()
+    {
+        return false;
+    }
+
+    @Override
+    public boolean isEnabled(LoaderEnvironment environment)
+    {
+        return environment.getEnabledModsList().isEnabled(environment.getProfile(), this.getIdentifier());
+    }
+
+    @Override
+    public String toString()
+    {
+        return this.getLocation();
+    }
+
+    /**
+     * @param name
+     * @param charset
+     */
+    public String getFileContents(String name, Charset charset)
+    {
+        return LoadableFile.getFileContents(this, name, charset);
+    }
+
+    /**
+     * @param parent
+     * @param name
+     * @param charset
+     */
+    public static String getFileContents(File parent, String name, Charset charset)
+    {
+        try
+        {
+            if (parent.isDirectory())
+            {
+                File file = new File(parent, name);
+                if (file.isFile())
+                {
+                    return Files.toString(file, charset);
+                }
+            }
+            else
+            {
+                String content = null;
+                ZipFile zipFile = new ZipFile(parent);
+                ZipEntry zipEntry = zipFile.getEntry(name);
+                if (zipEntry != null)
+                {
+                    try
+                    {
+                        content = LoadableModFile.zipEntryToString(zipFile, zipEntry);
+                    }
+                    catch (IOException ex) {}
+                }
+
+                zipFile.close();
+                return content;
+            }
+        }
+        catch (IOException ex)
+        {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
 }

@@ -19,42 +19,42 @@ import com.mumfrey.liteloader.transformers.access.ObfTableClass;
 @Accessor("Minecraft")
 public interface IMinecraft
 {
-	/**
-	 * Get the timer instance
-	 */
-	@Accessor("timer")
-	public abstract Timer getTimer();
+    /**
+     * Get the timer instance
+     */
+    @Accessor("timer")
+    public abstract Timer getTimer();
 
-	/**
-	 * Get the "running" flag
-	 */
-	@Accessor("running")
-	public abstract boolean isRunning();
+    /**
+     * Get the "running" flag
+     */
+    @Accessor("running")
+    public abstract boolean isRunning();
 
-	/**
-	 * Get the default resource packs set
-	 */
-	@Accessor("defaultResourcePacks")
-	public abstract List<IResourcePack> getDefaultResourcePacks();
-	
-	/**
-	 * Get the current server address (from connection)
-	 */
-	@Accessor("serverName")
-	public abstract String getServerName();
-	
-	/**
-	 * Get the current server port (from connection)
-	 */
-	@Accessor("serverPort")
-	public abstract int getServerPort();
+    /**
+     * Get the default resource packs set
+     */
+    @Accessor("defaultResourcePacks")
+    public abstract List<IResourcePack> getDefaultResourcePacks();
 
-	/**
-	 * Notify the client that the window was resized
-	 * 
-	 * @param width
-	 * @param height
-	 */
-	@Invoker("resize")
-	public abstract void onResizeWindow(int width, int height);
+    /**
+     * Get the current server address (from connection)
+     */
+    @Accessor("serverName")
+    public abstract String getServerName();
+
+    /**
+     * Get the current server port (from connection)
+     */
+    @Accessor("serverPort")
+    public abstract int getServerPort();
+
+    /**
+     * Notify the client that the window was resized
+     * 
+     * @param width
+     * @param height
+     */
+    @Invoker("resize")
+    public abstract void onResizeWindow(int width, int height);
 }

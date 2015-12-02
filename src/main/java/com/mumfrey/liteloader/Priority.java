@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Priority declaration for LiteMods, used when sorting listener lists. Default value if no Priority annotation
- * is specified is 1000.
+ * Priority declaration for LiteMods, used when sorting listener lists. Default
+ * value if no Priority annotation is specified is 1000.
  * 
  * @author Adam Mummery-Smith
  */
@@ -15,8 +15,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Priority
 {
-	/**
-	 * Priority value, default priority is 1000
-	 */
-	public int value();
+    /**
+     * Priority value, default priority is 1000
+     */
+    public int value();
 }

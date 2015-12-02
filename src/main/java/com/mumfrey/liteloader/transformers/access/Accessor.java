@@ -6,7 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines an accessor method within an accessor injection interface, or an accessor interface itself
+ * Defines an accessor method within an accessor injection interface, or an
+ * accessor interface itself.
  * 
  * @author Adam Mummery-Smith
  */
@@ -14,5 +15,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.CLASS)
 public @interface Accessor
 {
-	public String[] value();
+    public String[] value();
 }

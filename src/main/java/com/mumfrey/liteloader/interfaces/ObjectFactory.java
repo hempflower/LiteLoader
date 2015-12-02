@@ -16,28 +16,30 @@ import com.mumfrey.liteloader.util.Input;
  * 
  * @author Adam Mummery-Smith
  *
- * @param <TClient> Type of the client runtime, "Minecraft" on client and null on the server
- * @param <TServer> Type of the server runtime, "IntegratedServer" on the client, "MinecraftServer" on the server 
+ * @param <TClient> Type of the client runtime, "Minecraft" on client and null
+ *      on the server
+ * @param <TServer> Type of the server runtime, "IntegratedServer" on the client
+ *      "MinecraftServer" on the server 
  */
 public interface ObjectFactory<TClient, TServer extends MinecraftServer>
 {
-	public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
-	
-	public abstract PacketEvents getPacketEventBroker();
-	
-	public abstract Input getInput();
-	
-	public abstract GameEngine<TClient, TServer> getGameEngine();
-	
-	public abstract PanelManager<?> getPanelManager();
-	
-	public abstract ClientPluginChannels getClientPluginChannels();
-	
-	public abstract ServerPluginChannels getServerPluginChannels();
+    public abstract LiteLoaderEventBroker<TClient, TServer> getEventBroker();
 
-	public abstract PermissionsManagerClient getClientPermissionManager();
+    public abstract PacketEvents getPacketEventBroker();
 
-	public abstract PermissionsManagerServer getServerPermissionManager();
+    public abstract Input getInput();
 
-	public abstract void preBeginGame();
+    public abstract GameEngine<TClient, TServer> getGameEngine();
+
+    public abstract PanelManager<?> getPanelManager();
+
+    public abstract ClientPluginChannels getClientPluginChannels();
+
+    public abstract ServerPluginChannels getServerPluginChannels();
+
+    public abstract PermissionsManagerClient getClientPermissionManager();
+
+    public abstract PermissionsManagerServer getServerPermissionManager();
+
+    public abstract void preBeginGame();
 }

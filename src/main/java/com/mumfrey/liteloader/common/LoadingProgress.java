@@ -5,62 +5,62 @@ package com.mumfrey.liteloader.common;
  */
 public abstract class LoadingProgress
 {
-	private static LoadingProgress instance;
-	
-	protected LoadingProgress()
-	{
-		LoadingProgress.instance = this;
-	}
-	
-	public static void setEnabled(boolean enabled)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._setEnabled(enabled);
-	}
-	
-	public static void dispose()
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._dispose();
-	}
-	
-	public static void incLiteLoaderProgress()
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress();
-	}
-	
-	public static void setMessage(String format, String... args)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(String.format(format, args));
-	}
+    private static LoadingProgress instance;
 
-	public static void setMessage(String message)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(message);
-	}
-	
-	public static void incLiteLoaderProgress(String format, String... args)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(String.format(format, args));
-	}
+    protected LoadingProgress()
+    {
+        LoadingProgress.instance = this;
+    }
 
-	public static void incLiteLoaderProgress(String message)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(message);
-	}
-	
-	public static void incTotalLiteLoaderProgress(int by)
-	{
-		if (LoadingProgress.instance != null) LoadingProgress.instance._incTotalLiteLoaderProgress(by);
-	}
+    public static void setEnabled(boolean enabled)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._setEnabled(enabled);
+    }
 
-	protected abstract void _setEnabled(boolean enabled);
+    public static void dispose()
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._dispose();
+    }
 
-	protected abstract void _dispose();
+    public static void incLiteLoaderProgress()
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress();
+    }
 
-	protected abstract void _incLiteLoaderProgress();
+    public static void setMessage(String format, String... args)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(String.format(format, (Object[])args));
+    }
 
-	protected abstract void _setMessage(String message);
+    public static void setMessage(String message)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._setMessage(message);
+    }
 
-	protected abstract void _incLiteLoaderProgress(String message);
+    public static void incLiteLoaderProgress(String format, String... args)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(String.format(format, (Object[])args));
+    }
 
-	protected abstract void _incTotalLiteLoaderProgress(int by);
+    public static void incLiteLoaderProgress(String message)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._incLiteLoaderProgress(message);
+    }
+
+    public static void incTotalLiteLoaderProgress(int by)
+    {
+        if (LoadingProgress.instance != null) LoadingProgress.instance._incTotalLiteLoaderProgress(by);
+    }
+
+    protected abstract void _setEnabled(boolean enabled);
+
+    protected abstract void _dispose();
+
+    protected abstract void _incLiteLoaderProgress();
+
+    protected abstract void _setMessage(String message);
+
+    protected abstract void _incLiteLoaderProgress(String message);
+
+    protected abstract void _incTotalLiteLoaderProgress(int by);
 }

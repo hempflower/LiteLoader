@@ -9,7 +9,7 @@ import net.minecraft.client.gui.GuiNewChat;
  */
 public interface ChatRenderListener extends LiteMod
 {
-	public abstract void onPreRenderChat(int screenWidth, int screenHeight, GuiNewChat chat);
-	
-	public abstract void onPostRenderChat(int screenWidth, int screenHeight, GuiNewChat chat);
+    public abstract void onPreRenderChat(int screenWidth, int screenHeight, GuiNewChat chat);
+
+    public abstract void onPostRenderChat(int screenWidth, int screenHeight, GuiNewChat chat);
 }

@@ -10,13 +10,13 @@ import org.objectweb.asm.ClassWriter;
  */
 public class IsolatedClassWriter extends ClassWriter
 {
-	public IsolatedClassWriter(int flags)
-	{
-		super(flags);
-	}
-	
-	public IsolatedClassWriter(ClassReader classReader, int flags)
-	{
-		super(classReader, flags);
-	}
+    public IsolatedClassWriter(int flags)
+    {
+        super(flags);
+    }
+
+    public IsolatedClassWriter(ClassReader classReader, int flags)
+    {
+        super(classReader, flags);
+    }
 }

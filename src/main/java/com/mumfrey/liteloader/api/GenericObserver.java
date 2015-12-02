@@ -9,5 +9,5 @@ package com.mumfrey.liteloader.api;
  */
 public interface GenericObserver<T> extends Observer
 {
-	public abstract void onObservableEvent(String eventName, T... eventArgs) throws ClassCastException;
+    public abstract void onObservableEvent(String eventName, T... eventArgs) throws ClassCastException;
 }

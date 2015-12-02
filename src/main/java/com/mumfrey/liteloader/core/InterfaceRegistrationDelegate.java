@@ -15,79 +15,79 @@ import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
  */
 public class InterfaceRegistrationDelegate
 {
-	/**
-	 * Registry which this delegate is delegating for
-	 */
-	private final InterfaceRegistry registry;
-	
-	/**
-	 * InterfaceProvider being queried 
-	 */
-	private final InterfaceProvider provider;
-	
-	/**
-	 * The registry temporarily stores the list of handlers here
-	 */
-	private final List<InterfaceHandler> handlers = new ArrayList<InterfaceHandler>();
+    /**
+     * Registry which this delegate is delegating for
+     */
+    private final InterfaceRegistry registry;
 
-	/**
-	 * @param registry
-	 * @param provider
-	 */
-	InterfaceRegistrationDelegate(InterfaceRegistry registry, InterfaceProvider provider)
-	{
-		this.registry = registry;
-		this.provider = provider;
-	}
-	
-	/**
-	 * @param handler
-	 */
-	void addHandler(InterfaceHandler handler)
-	{
-		this.handlers.add(handler);
-	}
+    /**
+     * InterfaceProvider being queried 
+     */
+    private final InterfaceProvider provider;
 
-	/**
-	 * 
-	 */
-	List<InterfaceHandler> getHandlers()
-	{
-		return this.handlers;
-	}
+    /**
+     * The registry temporarily stores the list of handlers here
+     */
+    private final List<InterfaceHandler> handlers = new ArrayList<InterfaceHandler>();
 
-	/**
-	 * 
-	 */
-	void registerInterfaces()
-	{
-		this.provider.registerInterfaces(this);
-	}
-	
-	/**
-	 * @param interfaceType
-	 */
-	public void registerInterface(Class<? extends Listener> interfaceType)
-	{
-		this.registry.registerInterface(this.provider, interfaceType);
-	}
+    /**
+     * @param registry
+     * @param provider
+     */
+    InterfaceRegistrationDelegate(InterfaceRegistry registry, InterfaceProvider provider)
+    {
+        this.registry = registry;
+        this.provider = provider;
+    }
 
-	/**
-	 * @param interfaceType
-	 * @param priority
-	 */
-	public void registerInterface(Class<? extends Listener> interfaceType, int priority)
-	{
-		this.registry.registerInterface(this.provider, interfaceType, priority);
-	}
+    /**
+     * @param handler
+     */
+    void addHandler(InterfaceHandler handler)
+    {
+        this.handlers.add(handler);
+    }
 
-	/**
-	 * @param interfaceType
-	 * @param priority
-	 * @param exclusive
-	 */
-	public void registerInterface(Class<? extends Listener> interfaceType, int priority, boolean exclusive)
-	{
-		this.registry.registerInterface(this.provider, interfaceType, priority, exclusive);
-	}
+    /**
+     * 
+     */
+    List<InterfaceHandler> getHandlers()
+    {
+        return this.handlers;
+    }
+
+    /**
+     * 
+     */
+    void registerInterfaces()
+    {
+        this.provider.registerInterfaces(this);
+    }
+
+    /**
+     * @param interfaceType
+     */
+    public void registerInterface(Class<? extends Listener> interfaceType)
+    {
+        this.registry.registerInterface(this.provider, interfaceType);
+    }
+
+    /**
+     * @param interfaceType
+     * @param priority
+     */
+    public void registerInterface(Class<? extends Listener> interfaceType, int priority)
+    {
+        this.registry.registerInterface(this.provider, interfaceType, priority);
+    }
+
+    /**
+     * @param interfaceType
+     * @param priority
+     * @param exclusive
+     */
+    public void registerInterface(Class<? extends Listener> interfaceType, int priority, boolean exclusive)
+    {
+        this.registry.registerInterface(this.provider, interfaceType, priority, exclusive);
+    }
 }

@@ -9,5 +9,5 @@ package com.mumfrey.liteloader.api;
  */
 public interface TickObserver extends Observer
 {
-	public abstract void onTick(boolean clock, float partialTicks, boolean inGame);
+    public abstract void onTick(boolean clock, float partialTicks, boolean inGame);
 }
