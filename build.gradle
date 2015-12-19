@@ -15,6 +15,7 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'org.spongepowered:mixingradle:0.1-SNAPSHOT'
     }
 }
 
@@ -22,10 +23,15 @@ apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
 apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'org.spongepowered.mixin'
+
+// Default tasks
+defaultTasks 'build'
 
 ext {
     // Artefact details
     buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+    buildVersion = project.hasProperty("buildVersion") ? buildVersion : '0.0'
     ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
     commit = project.hasProperty("commit") ? commit : 'unknown'
     classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
@@ -39,9 +45,6 @@ ext {
     
     startClass = 'com.mumfrey.liteloader.debug.Start'
     tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
-
-    mixinSrg = new File(project.buildDir, 'tmp/mixins.liteloader/mixins.srg')
-    mixinRefMap = new File(project.buildDir, "tmp/mixins.liteloader/mixins.liteloader.refmap.json")
 }
 
 // Basic project information
@@ -61,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.4.7-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.4.10-SNAPSHOT') {
         exclude module: 'launchwrapper'
         exclude module: 'guava'
     }
@@ -75,20 +78,28 @@ minecraft {
 }
 
 sourceSets {
+    main {
+        refMap = "mixins.liteloader.core.refmap.json"
+    }
     client {
         compileClasspath += main.compileClasspath + main.output
+        refMap = "mixins.liteloader.client.refmap.json"
     }
     debug {
         compileClasspath += client.compileClasspath + client.output
     }
 }
 
+mixin {
+    defaultObfuscationEnv notch
+}
+
 checkstyle {
     configProperties = [
-            "name"        : project.name,
-            "organization": project.organization,
-            "url"         : project.url,
-            "year"        : project.inceptionYear
+        "name"        : project.name,
+        "organization": project.organization,
+        "url"         : project.url,
+        "year"        : project.inceptionYear
     ]
     configFile = file("checkstyle.xml")
     toolVersion = '6.13'
@@ -99,8 +110,19 @@ javadoc {
     source sourceSets.debug.allJava
 }
 
-// hacks for run configs
 afterEvaluate {
+    logger.lifecycle '================================================='
+    logger.lifecycle '  LiteLoader'
+    logger.lifecycle '  Copyright (C) 2011-2015 Adam Mummery-Smith'
+    logger.lifecycle '  Running in {} mode', (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT")
+    logger.lifecycle '================================================='
+    
+    makeEclipseCleanRunClient {
+        arguments = ""
+        jvmArguments = "-Dliteloader.debug=true -Dmixin.debug.verbose=true -Dmixin.debug.verify=true"
+    }
+    
+    // hacks for run configs
     def mc = plugins.getPlugin 'net.minecraftforge.gradle.tweaker-client'
     mc.replacer.putReplacement '{RUN_CLIENT_MAIN}', project.startClass
     mc.replacer.putReplacement '{RUN_CLIENT_TWEAKER}', minecraft.tweakClass
@@ -118,6 +140,14 @@ def jarManifest = {
 }
 
 jar {
+    doFirst {
+        // Seriously forge?
+        ant.replace(
+            file: sourceSets.main.refMapFile,
+            token: "func_72355_a(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;)V",
+            value: "initializeConnectionToPlayer(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;Lnet/minecraft/network/NetHandlerPlayServer;)V"
+        )
+    }
     from sourceSets.client.output
     from sourceSets.debug.output
     manifest jarManifest
@@ -126,7 +156,6 @@ jar {
 task releaseJar(type: Jar) {
     from sourceSets.main.output
     from sourceSets.client.output
-    from project.mixinRefMap
     
     manifest jarManifest
     classifier = 'staging'
@@ -138,7 +167,6 @@ shadowJar {
 
     from sourceSets.main.output
     from sourceSets.client.output
-    from project.mixinRefMap
     
     exclude 'META-INF/*.DSA'
     exclude 'META-INF/*.RSA'
@@ -170,10 +198,7 @@ tasks.withType(JavaCompile) {
         '-Xlint:all',
         '-Xlint:-path',
         '-Xlint:-rawtypes',
-        '-Xlint:-processing',
-        "-AoutSrgFile=${project.mixinSrg.canonicalPath}",
-        "-AoutRefMapFile=${project.mixinRefMap.canonicalPath}",
-        "-AreobfSrgFile=${genSrgs.mcpToNotch.canonicalPath}"
+        '-Xlint:-processing'
     ]
     options.deprecation = true
     options.encoding = 'utf8'
@@ -188,35 +213,22 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 reobf {
     jar {
-        useSrgSrg()
+        mappingType = 'SEARGE'
     }
     releaseJar {
-        useNotchSrg()
+        mappingType = 'NOTCH'
         classpath = sourceSets.main.compileClasspath
-        extraFiles([
-            project.mixinSrg
-        ])
     }
     shadowJar {
-        useNotchSrg()
+        mappingType = 'NOTCH'
         classpath = sourceSets.main.compileClasspath
-        extraFiles([
-            project.mixinSrg
-        ])
     }
-}
-
-compileJava.doFirst {
-    println '------------------------------------------------------------'
-    println 'Running ' + (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT") + ' build'
-    println '------------------------------------------------------------'
 }
 
 build.dependsOn {[
     'reobfReleaseJar',
     'reobfShadowJar'
-    ]
-}
+]}
 
 artifacts {
     if (project.isReleaseBuild) {

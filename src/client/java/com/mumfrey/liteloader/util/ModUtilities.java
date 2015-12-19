@@ -6,6 +6,15 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.lwjgl.LWJGLException;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+
+import com.mumfrey.liteloader.client.ducks.*;
+import com.mumfrey.liteloader.client.overlays.IMinecraft;
+import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
@@ -17,19 +26,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ObjectIntIdentityMap;
-import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
 import net.minecraft.util.ResourceLocation;
-
-import org.lwjgl.LWJGLException;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-
-import com.mumfrey.liteloader.client.overlays.IMinecraft;
-import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
-import com.mumfrey.liteloader.core.runtime.Obf;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * A small collection of useful functions for mods
@@ -67,12 +65,11 @@ public abstract class ModUtilities
      * @param entityClass
      * @param renderer
      */
-    @SuppressWarnings("unchecked")
     public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
     {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
 
-        Map<Class<? extends Entity>, Render> entityRenderMap = PrivateFieldsClient.entityRenderMap.get(renderManager);
+        Map<Class<? extends Entity>, Render> entityRenderMap = ((IRenderManager)renderManager).getRenderMap();
         if (entityRenderMap != null)
         {
             entityRenderMap.put(entityClass, renderer);
@@ -84,7 +81,6 @@ public abstract class ModUtilities
         }
     }
 
-    @SuppressWarnings("unchecked")
     public static void addRenderer(Class<? extends TileEntity> tileEntityClass, TileEntitySpecialRenderer renderer)
     {
         TileEntityRendererDispatcher tileEntityRenderer = TileEntityRendererDispatcher.instance;
@@ -92,7 +88,7 @@ public abstract class ModUtilities
         try
         {
             Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap
-                    = PrivateFieldsClient.specialRendererMap.get(tileEntityRenderer);
+                    = ((ITileEntityRendererDispatcher)tileEntityRenderer).getSpecialRenderMap();
             specialRendererMap.put(tileEntityClass, renderer);
             renderer.setRendererDispatcher(tileEntityRenderer);
         }
@@ -203,7 +199,6 @@ public abstract class ModUtilities
         {
             Map<String, Class<? extends TileEntity>> nameToClassMap = PrivateFieldsClient.tileEntityNameToClassMap.get(null);
             Map<Class<? extends TileEntity>, String> classToNameMap = PrivateFieldsClient.tileEntityClassToNameMap.get(null);
-
             nameToClassMap.put(entityName, tileEntityClass);
             classToNameMap.put(tileEntityClass, entityName);
         }
@@ -213,47 +208,18 @@ public abstract class ModUtilities
         }
     }
 
-    /**
-     * Abstraction helper function
-     * 
-     * @param fieldName Name of field to get, returned unmodified if in debug
-     *      mode
-     * @return Obfuscated field name if present
-     * @deprecated use ObfuscationUtilities.getObfuscatedFieldName instead
-     */
-    @Deprecated
-    public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
-    {
-        return ObfuscationUtilities.getObfuscatedFieldName(fieldName, obfuscatedFieldName, seargeFieldName);
-    }
-
-    /**
-     * Abstraction helper function
-     * 
-     * @param obf Field to get, returned unmodified if in debug mode
-     * @return Obfuscated field name if present
-     * @deprecated use ObfuscationUtilities.getObfuscatedFieldName instead
-     */
-    @Deprecated
-    public static String getObfuscatedFieldName(Obf obf)
-    {
-        return ObfuscationUtilities.getObfuscatedFieldName(obf);
-    }
-
-    @SuppressWarnings("unchecked")
     private static <K, V> V removeObjectFromRegistry(RegistrySimple registry, K key)
     {
         if (registry == null) return null;
 
-        ObjectIntIdentityMap underlyingIntegerMap = null;
+        IObjectIntIdentityMap underlyingIntegerMap = null;
 
-        if (registry instanceof RegistryNamespaced)
+        if (registry instanceof INamespacedRegistry)
         {
-            RegistryNamespaced rns = (RegistryNamespaced)registry;
-            underlyingIntegerMap = PrivateFieldsClient.underlyingIntegerMap.get(rns); 
+            underlyingIntegerMap = ((INamespacedRegistry)registry).getUnderlyingMap(); 
         }
 
-        Map<K, V> registryObjects = PrivateFieldsClient.registryObjects.get(registry);
+        Map<K, V> registryObjects = ((IRegistrySimple)registry).<K, V>getRegistryObjects();
         if (registryObjects != null)
         {
             V existingValue = registryObjects.get(key);
@@ -263,8 +229,8 @@ public abstract class ModUtilities
 
                 if (underlyingIntegerMap != null)
                 {
-                    IdentityHashMap<V, Integer> identityMap = PrivateFieldsClient.identityMap.get(underlyingIntegerMap);
-                    List<V> objectList = PrivateFieldsClient.objectList.get(underlyingIntegerMap);
+                    IdentityHashMap<V, Integer> identityMap = underlyingIntegerMap.<V>getIdentityMap();
+                    List<V> objectList = underlyingIntegerMap.<V>getObjectList();
                     if (identityMap != null) identityMap.remove(existingValue);
                     if (objectList != null) objectList.remove(existingValue);
                 }

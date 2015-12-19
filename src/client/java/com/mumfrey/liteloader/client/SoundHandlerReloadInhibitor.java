@@ -2,12 +2,12 @@ package com.mumfrey.liteloader.client;
 
 import java.util.List;
 
+import com.mumfrey.liteloader.client.ducks.IReloadable;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.resources.SimpleReloadableResourceManager;
-
-import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Manager object which handles inhibiting the sound handler's reload
@@ -55,7 +55,7 @@ public class SoundHandlerReloadInhibitor
         {
             if (!this.inhibited)
             {
-                List<IResourceManagerReloadListener> reloadListeners = PrivateFieldsClient.reloadListeners.get(this.resourceManager);
+                List<IResourceManagerReloadListener> reloadListeners = ((IReloadable)this.resourceManager).getReloadListeners();
                 if (reloadListeners != null)
                 {
                     this.storedIndex = reloadListeners.indexOf(this.soundHandler);
@@ -89,7 +89,7 @@ public class SoundHandlerReloadInhibitor
         {
             if (this.inhibited)
             {
-                List<IResourceManagerReloadListener> reloadListeners = PrivateFieldsClient.reloadListeners.get(this.resourceManager);
+                List<IResourceManagerReloadListener> reloadListeners = ((IReloadable)this.resourceManager).getReloadListeners();
                 if (reloadListeners != null)
                 {
                     if (this.storedIndex > -1)

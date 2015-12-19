@@ -8,8 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel;
+
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.api.LiteAPI;
+import com.mumfrey.liteloader.api.MixinConfigProvider;
 import com.mumfrey.liteloader.api.Observer;
 import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
 
@@ -52,6 +56,44 @@ class APIProviderBasic implements APIProvider, APIAdapter
         for (LiteAPI api : this.apis)
         {
             this.apiMap.put(api.getIdentifier(), api);
+        }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.mumfrey.liteloader.api.manager.APIAdapter#initMixins()
+     */
+    @Override
+    public void initMixins()
+    {
+        for (LiteAPI api : this.apis)
+        {
+            MixinConfigProvider mixins = api.getMixins();
+            if (mixins != null)
+            {
+                CompatibilityLevel level = mixins.getCompatibilityLevel();
+                if (level != null)
+                {
+                    MixinEnvironment.setCompatibilityLevel(level);
+                }
+                
+                String[] configs = mixins.getMixinConfigs();
+                if (configs != null)
+                {
+                    for (String config : configs)
+                    {
+                        MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
+                    }
+                }
+                
+                String[] errorHandlers = mixins.getErrorHandlers();
+                if (errorHandlers != null)
+                {
+                    for (String handlerName : errorHandlers)
+                    {
+                        MixinEnvironment.getDefaultEnvironment().registerErrorHandlerClass(handlerName);
+                    }
+                }
+            }
         }
     }
 

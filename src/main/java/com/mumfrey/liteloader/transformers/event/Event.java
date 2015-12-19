@@ -42,6 +42,11 @@ public class Event implements Comparable<Event>
     private static final List<Map<MethodNode, List<Event>>> proxyHandlerMethods = new ArrayList<Map<MethodNode, List<Event>>>();
 
     private static int proxyInnerClassIndex = 1;
+    
+    static
+    {
+        Event.resizeProxyList();
+    }
 
     /**
      * The name of this event
@@ -657,14 +662,19 @@ public class Event implements Comparable<Event>
 
     private static List<Event> addMethodToActiveProxy(MethodNode handlerMethod)
     {
-        while (Event.proxyHandlerMethods.size() < Event.proxyInnerClassIndex + 1)
-        {
-            Event.proxyHandlerMethods.add(new LinkedHashMap<MethodNode, List<Event>>());
-        }
+        Event.resizeProxyList();
 
         ArrayList<Event> events = new ArrayList<Event>();
         Event.proxyHandlerMethods.get(Event.proxyInnerClassIndex).put(handlerMethod, events);
         return events;
+    }
+
+    private static void resizeProxyList()
+    {
+        while (Event.proxyHandlerMethods.size() < Event.proxyInnerClassIndex + 1)
+        {
+            Event.proxyHandlerMethods.add(new LinkedHashMap<MethodNode, List<Event>>());
+        }
     }
 
     private static List<Event> getEventsForHandlerMethod(MethodNode handlerMethod)

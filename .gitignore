@@ -2,7 +2,6 @@
 #########
 MANIFEST.MF
 dependency-reduced-pom.xml
-.checkstyle
 
 # Compiled #
 ############
@@ -19,7 +18,6 @@ target
 *.exe
 *.o
 *.so
-*.launch
 
 # Databases #
 #############
@@ -55,9 +53,12 @@ target
 .DS_Store
 ehthumbs.db
 Thumbs.db
+*.bat
+*.sh
 
 # Project #
 ###########
+.checkstyle
 .classpath
 .externalToolBuilders
 .gradle
@@ -73,4 +74,5 @@ nb-configuration.xml
 *.iml
 *.ipr
 *.iws
+*.launch
 

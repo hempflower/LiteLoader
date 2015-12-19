@@ -7,26 +7,10 @@ import java.util.List;
 
 import javax.activity.InvalidActivityException;
 
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-import net.minecraft.launchwrapper.LaunchClassLoader;
-import net.minecraft.network.EnumConnectionState;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.profiler.Profiler;
-import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.api.CoreProvider;
-import com.mumfrey.liteloader.api.CustomisationProvider;
-import com.mumfrey.liteloader.api.Listener;
-import com.mumfrey.liteloader.api.LiteAPI;
-import com.mumfrey.liteloader.api.ModLoadObserver;
-import com.mumfrey.liteloader.api.PostRenderObserver;
-import com.mumfrey.liteloader.api.ShutdownObserver;
-import com.mumfrey.liteloader.api.TickObserver;
-import com.mumfrey.liteloader.api.TranslationProvider;
-import com.mumfrey.liteloader.api.WorldObserver;
+import com.mumfrey.liteloader.api.*;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
 import com.mumfrey.liteloader.common.GameEngine;
@@ -37,12 +21,7 @@ import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.crashreport.CallableLaunchWrapper;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
-import com.mumfrey.liteloader.interfaces.FastIterableDeque;
-import com.mumfrey.liteloader.interfaces.Loadable;
-import com.mumfrey.liteloader.interfaces.LoadableMod;
-import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
-import com.mumfrey.liteloader.interfaces.ObjectFactory;
-import com.mumfrey.liteloader.interfaces.PanelManager;
+import com.mumfrey.liteloader.interfaces.*;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
 import com.mumfrey.liteloader.launch.LoaderProperties;
@@ -55,6 +34,15 @@ import com.mumfrey.liteloader.transformers.event.EventTransformer;
 import com.mumfrey.liteloader.util.Input;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
+import net.minecraft.launchwrapper.LaunchClassLoader;
+import net.minecraft.network.EnumConnectionState;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.profiler.Profiler;
+import net.minecraft.world.World;
 
 /**
  * LiteLoader is a simple loader which loads and provides useful callbacks to
@@ -524,6 +512,7 @@ public final class LiteLoader
         if (LiteLoaderLogger.DEBUG)
         {
             EventTransformer.dumpInjectionState();
+            MixinEnvironment.getCurrentEnvironment().audit();
             LiteLoaderLogger.info("Debug info dumped to console");
         }
         else

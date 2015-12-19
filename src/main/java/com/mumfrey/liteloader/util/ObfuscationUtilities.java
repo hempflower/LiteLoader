@@ -14,25 +14,14 @@ public class ObfuscationUtilities
      * raw field/method names.
      */
     private static boolean fmlDetected = false;
-
+    
+    private static boolean checkedObfEnv = false;
     private static boolean seargeNames = false;
 
     static
     {
         // Check for FML
         ObfuscationUtilities.fmlDetected = ObfuscationUtilities.fmlIsPresent();
-
-        try
-        {
-            MinecraftServer.class.getDeclaredField("serverRunning");
-        }
-        catch (SecurityException ex)
-        {
-        }
-        catch (NoSuchFieldException ex)
-        {
-            ObfuscationUtilities.seargeNames = true;
-        }
     }
 
     public static boolean fmlIsPresent()
@@ -47,6 +36,28 @@ public class ObfuscationUtilities
 
         return false;
     }
+    
+    public static boolean useSeargeNames()
+    {
+        if (!ObfuscationUtilities.checkedObfEnv)
+        {
+            ObfuscationUtilities.checkedObfEnv = true;
+            
+            try
+            {
+                MinecraftServer.class.getDeclaredField("serverRunning");
+            }
+            catch (SecurityException ex)
+            {
+            }
+            catch (NoSuchFieldException ex)
+            {
+                ObfuscationUtilities.seargeNames = true;
+            }
+        }
+        
+        return ObfuscationUtilities.seargeNames;
+    }
 
     /**
      * Abstraction helper function
@@ -58,7 +69,7 @@ public class ObfuscationUtilities
     public static String getObfuscatedFieldName(String fieldName, String obfuscatedFieldName, String seargeFieldName)
     {
         boolean deobfuscated = BlockPos.class.getSimpleName().equals("BlockPos");
-        return deobfuscated ? (ObfuscationUtilities.seargeNames ? seargeFieldName : fieldName)
+        return deobfuscated ? (ObfuscationUtilities.useSeargeNames() ? seargeFieldName : fieldName)
                 : (ObfuscationUtilities.fmlDetected ? seargeFieldName : obfuscatedFieldName);
     }
 
@@ -71,6 +82,6 @@ public class ObfuscationUtilities
     public static String getObfuscatedFieldName(Obf obf)
     {
         boolean deobfuscated = BlockPos.class.getSimpleName().equals("BlockPos");
-        return deobfuscated ? (ObfuscationUtilities.seargeNames ? obf.srg : obf.name) : (ObfuscationUtilities.fmlDetected ? obf.srg : obf.obf);
+        return deobfuscated ? (ObfuscationUtilities.useSeargeNames() ? obf.srg : obf.name) : (ObfuscationUtilities.fmlDetected ? obf.srg : obf.obf);
     }
 }
