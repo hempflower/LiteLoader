@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.spongepowered.asm.mixin.MixinEnvironment;
+import org.spongepowered.asm.mixin.MixinEnvironment.Phase;
 
 import com.google.common.base.Throwables;
 import com.mumfrey.liteloader.LiteMod;
@@ -35,6 +35,7 @@ import com.mumfrey.liteloader.interfaces.Injectable;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.interfaces.MixinContainer;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.ClassTransformerManager;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
@@ -42,6 +43,9 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
  * The enumerator performs all mod discovery functions for LiteLoader, this
@@ -571,7 +575,12 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
             if (tweakContainer.hasClassTransformers())
             {
-                this.addClassTransformersFrom(tweakContainer, tweakContainer.getClassTransformerClassNames());
+                this.addClassTransformersFrom(tweakContainer);
+            }
+            
+            if (tweakContainer.hasMixins())
+            {
+                this.addMixinsFrom(tweakContainer);
             }
         }
     }
@@ -618,11 +627,11 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         }
     }
 
-    private void addClassTransformersFrom(TweakContainer<File> container, List<String> classTransformerClasses)
+    private void addClassTransformersFrom(TweakContainer<File> container)
     {
         try
         {
-            for (String classTransformerClass : classTransformerClasses)
+            for (String classTransformerClass : container.getClassTransformerClassNames())
             {
                 LiteLoaderLogger.info(Verbosity.REDUCED, "Mod file '%s' provides classTransformer '%s', adding to class loader",
                         container.getName(), classTransformerClass);
@@ -639,6 +648,30 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         }
     }
 
+    private void addMixinsFrom(MixinContainer<File> container)
+    {
+        for (String config : container.getMixinConfigs())
+        {
+            if (config.endsWith(".json"))
+            {
+                LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
+                MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
+            }
+            else if (config.contains(".json@"))
+            {
+                int pos = config.indexOf(".json@");
+                String phaseName = config.substring(pos + 6);
+                config = config.substring(0, pos + 5);
+                Phase phase = Phase.forName(phaseName);
+                if (phase != null)
+                {
+                    LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
+                    MixinEnvironment.getEnvironment(phase).addConfiguration(config);
+                }
+            }
+        }
+    }
+    
     /**
      * @param container
      */

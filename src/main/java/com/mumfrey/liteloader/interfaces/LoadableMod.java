@@ -3,8 +3,7 @@ package com.mumfrey.liteloader.interfaces;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -287,7 +286,7 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
         @Override
         public Set<String> getMetaDataKeys()
         {
-            return new HashSet<String>();
+            return Collections.<String>emptySet();
         }
 
         @Override
@@ -305,7 +304,7 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
         @Override
         public Set<String> getDependencies()
         {
-            return new HashSet<String>();
+            return Collections.<String>emptySet();
         }
 
         @Override
@@ -316,13 +315,13 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
         @Override
         public Set<String> getMissingDependencies()
         {
-            return new HashSet<String>();
+            return Collections.<String>emptySet();
         }
 
         @Override
         public Set<String> getRequiredAPIs()
         {
-            return new HashSet<String>();
+            return Collections.<String>emptySet();
         }
 
         @Override
@@ -333,18 +332,24 @@ public interface LoadableMod<L> extends Loadable<L>, Injectable
         @Override
         public Set<String> getMissingAPIs()
         {
-            return new HashSet<String>();
+            return Collections.<String>emptySet();
         }
 
         @Override
         public List<String> getContainedClassNames()
         {
-            return new ArrayList<String>();
+            return Collections.<String>emptyList();
         }
 
         @Override
         public void addContainedMod(String modName)
         {
+        }
+        
+        @Override
+        public boolean requiresPreInitInjection()
+        {
+            return false;
         }
     }
 }

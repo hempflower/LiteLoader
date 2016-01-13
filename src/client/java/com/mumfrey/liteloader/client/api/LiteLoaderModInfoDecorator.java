@@ -74,6 +74,22 @@ public class LiteLoaderModInfoDecorator implements ModInfoDecorator
             });
         }
 
+        if (mod.hasMixins())
+        {
+            icons.add(new IconAbsoluteClickable(LiteLoaderBrandingProvider.ABOUT_TEXTURE,
+                    I18n.format("gui.mod.providesmixins"), 12, 12, 122, 104, 134, 116)
+            {
+                @Override
+                public void onClicked(Object source, Object container)
+                {
+                    if (container instanceof GuiModListPanel)
+                    {
+                        ((GuiModListPanel)container).displayModHelpMessage(mod, "gui.mod.providesmixins", "gui.mod.help.mixins");
+                    }
+                }
+            });
+        }
+        
         if (mod.usesAPI())
         {
             icons.add(new IconAbsolute(LiteLoaderBrandingProvider.ABOUT_TEXTURE,

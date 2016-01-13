@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
+import com.mumfrey.liteloader.interfaces.MixinContainer;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 
 /**
@@ -178,6 +179,14 @@ public abstract class ModInfo<TContainer extends Loadable<?>>
     public boolean hasEventTransformers()
     {
         return (this.container instanceof TweakContainer && ((TweakContainer<?>)this.container).hasEventTransformers());
+    }
+    
+    /**
+     * If this has mixins
+     */
+    public boolean hasMixins()
+    {
+        return (this.container instanceof MixinContainer && ((MixinContainer<?>)this.container).hasMixins());
     }
 
     /**

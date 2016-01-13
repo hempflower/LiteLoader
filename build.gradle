@@ -64,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.4.10-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.4.11-SNAPSHOT') {
         exclude module: 'launchwrapper'
         exclude module: 'guava'
     }
@@ -113,7 +113,7 @@ javadoc {
 afterEvaluate {
     logger.lifecycle '================================================='
     logger.lifecycle '  LiteLoader'
-    logger.lifecycle '  Copyright (C) 2011-2015 Adam Mummery-Smith'
+    logger.lifecycle '  Copyright (C) 2011-2016 Adam Mummery-Smith'
     logger.lifecycle '  Running in {} mode', (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT")
     logger.lifecycle '================================================='
     
@@ -178,6 +178,14 @@ shadowJar {
     }
     
     classifier = 'release'
+}
+
+sourceJar {
+    dependsOn retromapReplacedDebug
+    dependsOn retromapReplacedClient
+    
+    from zipTree(tasks.retromapReplacedDebug.out)
+    from zipTree(tasks.retromapReplacedClient.out)
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {

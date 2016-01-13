@@ -187,6 +187,7 @@ public class LoadableModFile extends LoadableFile implements LoadableMod<File>
             this.getMetaValuesInto(this.classTransformerClassNames, "classTransformerClasses", ",");
             this.getMetaValuesInto(this.dependencies, "dependsOn", ",");
             this.getMetaValuesInto(this.requiredAPIs, "requiredAPIs", ",");
+            this.getMetaValuesInto(this.mixinConfigs, "mixinConfigs", ",");
         }
         catch (ClassCastException ex)
         {

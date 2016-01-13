@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +29,19 @@ import net.minecraft.launchwrapper.LaunchClassLoader;
 
 public class LoadableFile extends File implements TweakContainer<File>
 {
+    public static final String MFATT_MODTYPE = "ModType";
+    public static final String MFATT_TWEAK_CLASS = "TweakClass";
+    public static final String MFATT_CLASS_PATH = "Class-Path";
+    public static final String MFATT_TWEAK_ORDER = "TweakOrder";
+    public static final String MFATT_IMPLEMENTATION_TITLE = "Implementation-Title";
+    public static final String MFATT_TWEAK_NAME = "TweakName";
+    public static final String MFATT_IMPLEMENTATION_VERSION = "Implementation-Version";
+    public static final String MFATT_TWEAK_VERSION = "TweakVersion";
+    public static final String MFATT_IMPLEMENTATION_VENDOR = "Implementation-Vendor";
+    public static final String MFATT_TWEAK_AUTHOR = "TweakAuthor";
+    public static final String MFATT_MIXIN_CONFIGS = "MixinConfigs";
+    public static final String MFATT_INJECTION_STRATEGY = "TweakInjectionStrategy";
+
     private static final Pattern versionPattern = Pattern.compile("([0-9]+\\.)+[0-9]+([_A-Z0-9]+)?");
 
     private static final long serialVersionUID = 1L;
@@ -73,6 +85,11 @@ public class LoadableFile extends File implements TweakContainer<File>
     protected String author = "Unknown";
 
     protected boolean hasEventTransformers;
+
+    /**
+     * Mixin config resource names
+     */
+    protected Set<String> mixinConfigs = new HashSet<String>();
 
     /**
      * Create a new tweak container wrapping the specified file
@@ -145,12 +162,24 @@ public class LoadableFile extends File implements TweakContainer<File>
             if (jar.getManifest() != null)
             {
                 LiteLoaderLogger.info("Inspecting jar metadata in '%s'", this.getName());
-                Attributes manifestAttributes = jar.getManifest().getMainAttributes();
+                Attributes mfAttributes = jar.getManifest().getMainAttributes();
 
-                String modSystemList = manifestAttributes.getValue("ModType");
-                if (modSystemList != null)
+                String mfAttmodSystemList     = mfAttributes.getValue(LoadableFile.MFATT_MODTYPE);
+                String mfAttTweakClass        = mfAttributes.getValue(LoadableFile.MFATT_TWEAK_CLASS);
+                String mfAttClassPath         = mfAttributes.getValue(LoadableFile.MFATT_CLASS_PATH);
+                String mfAttTweakOrder        = mfAttributes.getValue(LoadableFile.MFATT_TWEAK_ORDER);
+                String mfAttDisplayName       = mfAttributes.getValue(LoadableFile.MFATT_IMPLEMENTATION_TITLE);
+                String mfAttTweakName         = mfAttributes.getValue(LoadableFile.MFATT_TWEAK_NAME);
+                String mfAttVersion           = mfAttributes.getValue(LoadableFile.MFATT_IMPLEMENTATION_VERSION);
+                String mfAttTweakVersion      = mfAttributes.getValue(LoadableFile.MFATT_TWEAK_VERSION);
+                String mfAttAuthor            = mfAttributes.getValue(LoadableFile.MFATT_IMPLEMENTATION_VENDOR);
+                String mfAttTweakAuthor       = mfAttributes.getValue(LoadableFile.MFATT_TWEAK_AUTHOR);
+                String mfAttMixinConfigs      = mfAttributes.getValue(LoadableFile.MFATT_MIXIN_CONFIGS);
+                String mfAttInjectionStrategy = mfAttributes.getValue(LoadableFile.MFATT_INJECTION_STRATEGY);
+                
+                if (mfAttmodSystemList != null)
                 {
-                    for (String modSystem : modSystemList.split(","))
+                    for (String modSystem : mfAttmodSystemList.split(","))
                     {
                         modSystem = modSystem.trim();
                         if (modSystem.length() > 0)
@@ -160,57 +189,37 @@ public class LoadableFile extends File implements TweakContainer<File>
                     }
                 }
 
-                this.tweakClassName = manifestAttributes.getValue("TweakClass");
-                if (this.tweakClassName != null)
+                this.tweakClassName = mfAttTweakClass;
+                if (this.tweakClassName != null && mfAttClassPath != null)
                 {
-                    String classPath = manifestAttributes.getValue("Class-Path");
-                    if (classPath != null)
-                    {
-                        this.classPathEntries = classPath.split(" ");
-                    }
+                    this.classPathEntries = mfAttClassPath.split(" ");
                 }
 
-                if (manifestAttributes.getValue("TweakOrder") != null)
+                if (mfAttTweakOrder != null)
                 {
-                    Integer tweakOrder = Ints.tryParse(manifestAttributes.getValue("TweakOrder"));
+                    Integer tweakOrder = Ints.tryParse(mfAttTweakOrder);
                     if (tweakOrder != null)
                     {
                         this.tweakPriority = tweakOrder.intValue();
                     }
                 }
 
-                if (manifestAttributes.getValue("Implementation-Title") != null)
+                if (mfAttDisplayName  != null) this.displayName = mfAttDisplayName;
+                if (mfAttTweakName    != null) this.displayName = mfAttTweakName;
+                if (mfAttVersion      != null) this.version     = mfAttVersion;
+                if (mfAttTweakVersion != null) this.version     = mfAttTweakVersion;
+                if (mfAttAuthor       != null) this.author      = mfAttAuthor;
+                if (mfAttTweakAuthor  != null) this.author      = mfAttTweakAuthor;
+                
+                if (mfAttMixinConfigs != null)
                 {
-                    this.displayName = manifestAttributes.getValue("Implementation-Title");
+                    for (String config : mfAttMixinConfigs.split(","))
+                    {
+                        this.mixinConfigs.add(config);
+                    }
                 }
 
-                if (manifestAttributes.getValue("TweakName") != null)
-                {
-                    this.displayName = manifestAttributes.getValue("TweakName");
-                }
-
-                if (manifestAttributes.getValue("Implementation-Version") != null)
-                {
-                    this.version = manifestAttributes.getValue("Implementation-Version");
-                }
-
-                if (manifestAttributes.getValue("TweakVersion") != null)
-                {
-                    this.version = manifestAttributes.getValue("TweakVersion");
-                }
-
-                if (manifestAttributes.getValue("Implementation-Vendor") != null)
-                {
-                    this.author = manifestAttributes.getValue("Implementation-Vendor");
-                }
-
-                if (manifestAttributes.getValue("TweakAuthor") != null)
-                {
-                    this.author = manifestAttributes.getValue("TweakAuthor");
-                }
-
-                String tweakInjectionStrategy = manifestAttributes.getValue("TweakInjectionStrategy");
-                this.injectionStrategy = InjectionStrategy.parseStrategy(tweakInjectionStrategy, InjectionStrategy.TOP);
+                this.injectionStrategy = InjectionStrategy.parseStrategy(mfAttInjectionStrategy, InjectionStrategy.TOP);
             }
         }
         catch (Exception ex)
@@ -314,7 +323,19 @@ public class LoadableFile extends File implements TweakContainer<File>
     @Override
     public List<String> getClassTransformerClassNames()
     {
-        return new ArrayList<String>();
+        return Collections.<String>emptyList();
+    }
+    
+    @Override
+    public boolean hasMixins()
+    {
+        return this.mixinConfigs.size() > 0;
+    }
+    
+    @Override
+    public Set<String> getMixinConfigs()
+    {
+        return this.mixinConfigs;
     }
 
     @Override
@@ -336,6 +357,12 @@ public class LoadableFile extends File implements TweakContainer<File>
     public void setForceInjection(boolean forceInjection)
     {
         this.forceInjection = forceInjection;
+    }
+    
+    @Override
+    public boolean requiresPreInitInjection()
+    {
+        return this.hasTweakClass() || this.hasClassTransformers() || this.hasMixins();
     }
 
     @Override

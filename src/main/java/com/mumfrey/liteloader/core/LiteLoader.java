@@ -626,7 +626,6 @@ public final class LiteLoader
      * @param modNameOrId
      * @param metaDataKey
      * @param defaultValue
-     * @throws InvalidActivityException Thrown by getMod if init is not complete
      * @throws IllegalArgumentException Thrown by getMod if argument is null
      */
     public String getModMetaData(String modNameOrId, String metaDataKey, String defaultValue) throws IllegalArgumentException
