@@ -1,23 +1,8 @@
 package com.mumfrey.liteloader.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.GuiNewChat;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.entity.Render;
-import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourceManagerReloadListener;
-import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.entity.Entity;
-import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.ScreenShotHelper;
-import net.minecraft.util.Timer;
-
 import org.lwjgl.input.Mouse;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
@@ -31,12 +16,28 @@ import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.core.event.ProfilingHandlerList;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.launch.LoaderProperties;
-import com.mumfrey.liteloader.transformers.event.EventInfo;
-import com.mumfrey.liteloader.transformers.event.ReturnEventInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.entity.Render;
+import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourceManagerReloadListener;
+import net.minecraft.client.shader.Framebuffer;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.util.Timer;
 
 public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer> implements IResourceManagerReloadListener
 {
+    /**
+     * Singleton 
+     */
     private static LiteLoaderEventBrokerClient instance;
 
     /**
@@ -93,7 +94,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
         this.tickListeners = new ProfilingHandlerList<Tickable>(Tickable.class, this.engineClient.getProfiler());
     }
 
-    static LiteLoaderEventBrokerClient getInstance()
+    public static LiteLoaderEventBrokerClient getInstance()
     {
         return LiteLoaderEventBrokerClient.instance;
     }
@@ -363,8 +364,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      */
     void postRenderChat(GuiNewChat chatGui, float partialTicks)
     {
-        GuiNewChat chat = this.engineClient.getChatGUI();
-        this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chat);
+        this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chatGui);
     }
 
     /**
@@ -442,7 +442,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * @param message
      */
-    void onSendChatMessage(EventInfo<EntityPlayerSP> e, String message)
+    void onSendChatMessage(CallbackInfo e, String message)
     {
         if (!this.outboundChatFilters.all().onSendChatMessage(message))
         {
@@ -523,13 +523,13 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param height
      * @param fbo
      */
-    void onScreenshot(ReturnEventInfo<ScreenShotHelper, IChatComponent> e, String name, int width, int height, Framebuffer fbo)
+    void onScreenshot(CallbackInfoReturnable<IChatComponent> ci, String name, int width, int height, Framebuffer fbo)
     {
-        ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>(e.getReturnValue());
+        ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>(ci.getReturnValue());
 
         if (!this.screenshotListeners.all().onSaveScreenshot(name, width, height, fbo, ret))
         {
-            e.setReturnValue(ret.get());
+            ci.setReturnValue(ret.get());
         }
     }
 

@@ -53,7 +53,13 @@ public interface LiteAPI
      * dependency using the api@revision syntax.
      */
     public abstract int getRevision();
-
+    
+    /**
+     * Get mixin environment configuration provider for this API, can return
+     * null.
+     */
+    public abstract MixinConfigProvider getMixins();
+    
     /**
      * Should return an array of required transformer names, these transformers
      * will be injected UPSTREAM. Can return null.

@@ -1,5 +1,6 @@
 buildscript {
     repositories {
+        jcenter()
         mavenLocal()
         mavenCentral()
         maven {
@@ -13,37 +14,61 @@ buildscript {
     }
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'org.spongepowered:mixingradle:0.1-SNAPSHOT'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.tweaker-client'
 apply plugin: 'checkstyle'
 apply plugin: 'maven'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'org.spongepowered.mixin'
 
-// Artefact details
-ext.buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
-ext.ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
-ext.commit = project.hasProperty("commit") ? commit : 'unknown'
-ext.classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
-ext.isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
-ext.mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
+// Default tasks
+defaultTasks 'build'
+
+ext {
+    // Artefact details
+    buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+    buildVersion = project.hasProperty("buildVersion") ? buildVersion : '0.0'
+    ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
+    commit = project.hasProperty("commit") ? commit : 'unknown'
+    classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
+    isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
+    mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
+    
+    // Extended project information
+    projectName = 'LiteLoader'
+    inceptionYear = '2012'
+    packaging = 'jar'
+    
+    startClass = 'com.mumfrey.liteloader.debug.Start'
+    tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
+}
 
 // Basic project information
 group = "com.mumfrey"
 archivesBaseName = "liteloader"
 version = buildVersion + (project.isReleaseBuild ? '' : '-' + project.classifier)
 
-// Extended project information
-ext.projectName = 'LiteLoader'
-ext.inceptionYear = '2012'
-ext.packaging = 'jar'
-
-ext.startClass = 'com.mumfrey.liteloader.debug.Start'
-ext.tweakClass = 'com.mumfrey.liteloader.launch.LiteLoaderTweaker'
-
 // Minimum version of Java required
 sourceCompatibility = '1.6'
 targetCompatibility = '1.6'
+
+repositories {
+    maven {
+        name = 'sponge'
+        url = 'https://repo.spongepowered.org/maven/'
+    }
+}
+
+dependencies {
+    compile('org.spongepowered:mixin:0.4.11-SNAPSHOT') {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+}
 
 minecraft {
     version = project.mcVersion
@@ -53,20 +78,28 @@ minecraft {
 }
 
 sourceSets {
+    main {
+        refMap = "mixins.liteloader.core.refmap.json"
+    }
     client {
         compileClasspath += main.compileClasspath + main.output
+        refMap = "mixins.liteloader.client.refmap.json"
     }
     debug {
         compileClasspath += client.compileClasspath + client.output
     }
 }
 
+mixin {
+    defaultObfuscationEnv notch
+}
+
 checkstyle {
     configProperties = [
-            "name"        : project.name,
-            "organization": project.organization,
-            "url"         : project.url,
-            "year"        : project.inceptionYear
+        "name"        : project.name,
+        "organization": project.organization,
+        "url"         : project.url,
+        "year"        : project.inceptionYear
     ]
     configFile = file("checkstyle.xml")
     toolVersion = '6.13'
@@ -77,8 +110,19 @@ javadoc {
     source sourceSets.debug.allJava
 }
 
-// hacks for run configs
 afterEvaluate {
+    logger.lifecycle '================================================='
+    logger.lifecycle '  LiteLoader'
+    logger.lifecycle '  Copyright (C) 2011-2016 Adam Mummery-Smith'
+    logger.lifecycle '  Running in {} mode', (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT")
+    logger.lifecycle '================================================='
+    
+    makeEclipseCleanRunClient {
+        arguments = ""
+        jvmArguments = "-Dliteloader.debug=true -Dmixin.debug.verbose=true -Dmixin.debug.verify=true"
+    }
+    
+    // hacks for run configs
     def mc = plugins.getPlugin 'net.minecraftforge.gradle.tweaker-client'
     mc.replacer.putReplacement '{RUN_CLIENT_MAIN}', project.startClass
     mc.replacer.putReplacement '{RUN_CLIENT_TWEAKER}', minecraft.tweakClass
@@ -96,6 +140,14 @@ def jarManifest = {
 }
 
 jar {
+    doFirst {
+        // Seriously forge?
+        ant.replace(
+            file: sourceSets.main.refMapFile,
+            token: "func_72355_a(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;)V",
+            value: "initializeConnectionToPlayer(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;Lnet/minecraft/network/NetHandlerPlayServer;)V"
+        )
+    }
     from sourceSets.client.output
     from sourceSets.debug.output
     manifest jarManifest
@@ -104,8 +156,36 @@ jar {
 task releaseJar(type: Jar) {
     from sourceSets.main.output
     from sourceSets.client.output
+    
     manifest jarManifest
+    classifier = 'staging'
+}
+
+shadowJar {
+    manifest jarManifest
+    dependsOn 'reobfReleaseJar'
+
+    from sourceSets.main.output
+    from sourceSets.client.output
+    
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+    exclude 'dummyThing'
+    exclude 'LICENSE.txt'
+    
+    dependencies {
+        include(dependency('org.spongepowered:mixin'))
+    }
+    
     classifier = 'release'
+}
+
+sourceJar {
+    dependsOn retromapReplacedDebug
+    dependsOn retromapReplacedClient
+    
+    from zipTree(tasks.retromapReplacedDebug.out)
+    from zipTree(tasks.retromapReplacedClient.out)
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
@@ -122,7 +202,12 @@ task runClient(type: JavaExec, overwrite: true) {
 }
 
 tasks.withType(JavaCompile) {
-    options.compilerArgs += ['-Xlint:all', '-Xlint:-path', '-Xlint:-rawtypes']
+    options.compilerArgs += [
+        '-Xlint:all',
+        '-Xlint:-path',
+        '-Xlint:-rawtypes',
+        '-Xlint:-processing'
+    ]
     options.deprecation = true
     options.encoding = 'utf8'
 }
@@ -136,29 +221,37 @@ if (JavaVersion.current().isJava8Compatible()) {
 
 reobf {
     jar {
-        useSrgSrg()
+        mappingType = 'SEARGE'
     }
     releaseJar {
-        useNotchSrg()
+        mappingType = 'NOTCH'
+        classpath = sourceSets.main.compileClasspath
+    }
+    shadowJar {
+        mappingType = 'NOTCH'
         classpath = sourceSets.main.compileClasspath
     }
 }
 
-compileJava.doFirst {
-    println '------------------------------------------------------------'
-    println 'Running ' + (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT") + ' build'
-    println '------------------------------------------------------------'
-}
-
-build.dependsOn "reobfReleaseJar"
+build.dependsOn {[
+    'reobfReleaseJar',
+    'reobfShadowJar'
+]}
 
 artifacts {
     if (project.isReleaseBuild) {
         archives jar
     }
-    archives releaseJar
+    archives shadowJar
     archives sourceJar
     archives javadocJar
+}
+
+task deploy(type: Copy, dependsOn: build) {
+    def libraryDir = new File(new File(System.env.APPDATA), ".minecraft/libraries")
+    from shadowJar.outputs.files[0]
+    into new File(libraryDir, sprintf('%1$s%4$s%2$s%4$s%3$s', project.group.replace('.', File.separator), archivesBaseName, buildVersion, File.separatorChar)) 
+    rename shadowJar.outputs.files[0].name, sprintf("%s-%s.jar", archivesBaseName, buildVersion)
 }
 
 uploadArchives { 

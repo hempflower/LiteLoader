@@ -7,7 +7,7 @@ import java.util.List;
  * 
  * @author Adam Mummery-Smith
  */
-public interface TweakContainer<L> extends Loadable<L>, Injectable
+public interface TweakContainer<L> extends MixinContainer<L>
 {
     /**
      * Get whether this tweak container has a defined tweak class in its

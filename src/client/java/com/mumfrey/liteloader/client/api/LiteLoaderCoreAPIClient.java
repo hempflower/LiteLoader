@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.server.integrated.IntegratedServer;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ObjectArrays;
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.api.CustomisationProvider;
 import com.mumfrey.liteloader.api.InterfaceProvider;
@@ -36,12 +37,20 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 
     private static final String[] requiredDownstreamTransformers = {
             LiteLoaderCoreAPI.PKG_LITELOADER_COMMON + ".transformers.LiteLoaderPacketTransformer",
-            LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.LiteLoaderEventInjectionTransformer",
             LiteLoaderCoreAPIClient.PKG_LITELOADER_CLIENT + ".transformers.MinecraftTransformer",
             LiteLoaderCoreAPI.PKG_LITELOADER + ".transformers.event.json.ModEventInjectionTransformer"
     };
 
     private ObjectFactory<Minecraft, IntegratedServer> objectFactory;
+    
+    @Override
+    public String[] getMixinConfigs()
+    {
+        String[] commonConfigs = super.getMixinConfigs();
+        return ObjectArrays.concat(commonConfigs, new String[] {
+            "mixins.liteloader.client.json"
+        }, String.class);
+    }
 
     /* (non-Javadoc)
      * @see com.mumfrey.liteloader.api.LiteAPI#getRequiredTransformers()
@@ -69,11 +78,11 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
     public List<CustomisationProvider> getCustomisationProviders()
     {
         return ImmutableList.<CustomisationProvider>of
-                (
-                        new LiteLoaderBrandingProvider(),
-                        new LiteLoaderModInfoDecorator(),
-                        new Translator()
-                        );
+        (
+            new LiteLoaderBrandingProvider(),
+            new LiteLoaderModInfoDecorator(),
+            new Translator()
+        );
     }
 
     /* (non-Javadoc)
@@ -83,10 +92,10 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
     public List<CoreProvider> getCoreProviders()
     {
         return ImmutableList.<CoreProvider>of
-                (
-                        new LiteLoaderCoreProviderClient(this.properties),
-                        LiteLoader.getInput()
-                        );
+        (
+            new LiteLoaderCoreProviderClient(this.properties),
+            LiteLoader.getInput()
+        );
     }
 
 
@@ -99,13 +108,13 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
         ObjectFactory<?, ?> objectFactory = this.getObjectFactory();
 
         return ImmutableList.<InterfaceProvider>of
-                (
-                        objectFactory.getEventBroker(),
-                        objectFactory.getPacketEventBroker(),
-                        objectFactory.getClientPluginChannels(),
-                        objectFactory.getServerPluginChannels(),
-                        MessageBus.getInstance()
-                        );
+        (
+            objectFactory.getEventBroker(),
+            objectFactory.getPacketEventBroker(),
+            objectFactory.getClientPluginChannels(),
+            objectFactory.getServerPluginChannels(),
+            MessageBus.getInstance()
+        );
     }
 
     /* (non-Javadoc)
@@ -115,9 +124,9 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
     public List<Observer> getPreInitObservers()
     {
         return ImmutableList.<Observer>of
-                (
-                        new ModEvents()
-                        );
+        (
+            new ModEvents()
+        );
     }
 
     /* (non-Javadoc)
@@ -129,11 +138,11 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
         ObjectFactory<?, ?> objectFactory = this.getObjectFactory();
 
         return ImmutableList.<Observer>of
-                (
-                        new ResourceObserver(),
-                        objectFactory.getPanelManager(),
-                        objectFactory.getEventBroker()
-                        );
+        (
+            new ResourceObserver(),
+            objectFactory.getPanelManager(),
+            objectFactory.getEventBroker()
+        );
     }
 
     /* (non-Javadoc)

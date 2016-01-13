@@ -1,5 +1,22 @@
 package com.mumfrey.liteloader.client;
 
+import com.mojang.realmsclient.dto.RealmsServer;
+import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.common.ducks.IChatPacket;
+import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
+import com.mumfrey.liteloader.core.ClientPluginChannels;
+import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
+import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
+import com.mumfrey.liteloader.core.PacketEvents;
+import com.mumfrey.liteloader.core.event.EventCancellationException;
+import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
+import com.mumfrey.liteloader.core.runtime.Packets;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.util.ChatUtilities;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.Packet;
@@ -12,29 +29,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.util.IThreadListener;
-
-import com.mojang.realmsclient.RealmsMainScreen;
-import com.mojang.realmsclient.dto.RealmsServer;
-import com.mumfrey.liteloader.ChatFilter;
-import com.mumfrey.liteloader.ChatListener;
-import com.mumfrey.liteloader.JoinGameListener;
-import com.mumfrey.liteloader.PostLoginListener;
-import com.mumfrey.liteloader.PreJoinGameListener;
-import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
-import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
-import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
-import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
-import com.mumfrey.liteloader.core.PacketEvents;
-import com.mumfrey.liteloader.core.event.EventCancellationException;
-import com.mumfrey.liteloader.core.event.HandlerList;
-import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
-import com.mumfrey.liteloader.core.runtime.Packets;
-import com.mumfrey.liteloader.interfaces.FastIterableDeque;
-import com.mumfrey.liteloader.transformers.event.EventInfo;
-import com.mumfrey.liteloader.util.ChatUtilities;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Client-side packet event handlers
@@ -113,7 +107,7 @@ public class PacketEventsClient extends PacketEvents
         this.postLoginListeners.add(postLoginListener);
     }
 
-    public static void onJoinRealm(EventInfo<RealmsMainScreen> e, long arg1, RealmsServer server)
+    public static void onJoinRealm(long serverId, RealmsServer server)
     {
         PacketEventsClient.joiningRealm = server;
     }
@@ -254,7 +248,7 @@ public class PacketEventsClient extends PacketEvents
             try
             {
                 chat = ChatUtilities.convertLegacyCodes(chat);
-                PrivateFieldsClient.chatMessage.set(packet, chat);
+                ((IChatPacket)packet).setChatComponent(chat);
             }
             catch (Exception ex)
             {

@@ -91,4 +91,10 @@ public interface Loadable<L> extends Comparable<L>
      * File instance, otherwise returns null.
      */
     public abstract File toFile();
+    
+    /**
+     * Get whether this container requires early injection, eg. it contains a
+     * tweaker, transformer or mixins
+     */
+    public abstract boolean requiresPreInitInjection();
 }

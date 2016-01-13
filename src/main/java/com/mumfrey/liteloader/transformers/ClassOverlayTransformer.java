@@ -76,7 +76,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * </ul>
  * 
  * @author Adam Mummery-Smith
+ * @deprecated Use mixins instead!
  */
+@Deprecated
 public abstract class ClassOverlayTransformer extends ClassTransformer
 {
     /**

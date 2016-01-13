@@ -1,7 +1,10 @@
 package com.mumfrey.liteloader.client;
 
+import com.mumfrey.liteloader.client.ducks.IClientNetLoginHandler;
+import com.mumfrey.liteloader.core.ClientPluginChannels;
+import com.mumfrey.liteloader.core.exceptions.UnregisteredChannelException;
+
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
@@ -11,10 +14,6 @@ import net.minecraft.network.play.INetHandlerPlayClient;
 import net.minecraft.network.play.client.C17PacketCustomPayload;
 import net.minecraft.network.play.server.S01PacketJoinGame;
 import net.minecraft.network.play.server.S3FPacketCustomPayload;
-
-import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
-import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.exceptions.UnregisteredChannelException;
 
 /**
  * Handler for client plugin channels
@@ -67,7 +66,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
     {
         if (netHandler instanceof INetHandlerLoginClient)
         {
-            NetworkManager networkManager = PrivateFieldsClient.netManager.get(((NetHandlerLoginClient)netHandler));
+            NetworkManager networkManager = ((IClientNetLoginHandler)netHandler).getNetMgr();
             networkManager.sendPacket(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
         }
         else if (netHandler instanceof INetHandlerPlayClient)

@@ -3,8 +3,6 @@ package com.mumfrey.liteloader.util;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import net.minecraft.network.play.client.C15PacketClientSettings;
-
 import com.mumfrey.liteloader.core.runtime.Obf;
 
 /**
@@ -124,9 +122,4 @@ public class PrivateFields<P, T>
 
         return value;
     }
-    
-    // CHECKSTYLE:OFF
-
-    public static final PrivateFields<C15PacketClientSettings, Integer> viewDistance = new PrivateFields<C15PacketClientSettings, Integer>(C15PacketClientSettings.class, Obf.viewDistance);
-
 }

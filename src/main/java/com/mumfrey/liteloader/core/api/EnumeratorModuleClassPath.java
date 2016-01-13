@@ -92,7 +92,7 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
                         if (enumerator.registerModContainer(classPathMod))
                         {
                             this.loadableMods.add(classPathMod);
-                            if (classPathMod.hasTweakClass() || classPathMod.hasClassTransformers())
+                            if (classPathMod.requiresPreInitInjection())
                             {
                                 enumerator.registerTweakContainer(classPathMod);
                             }

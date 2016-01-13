@@ -16,6 +16,12 @@ import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
 public interface APIAdapter
 {
     /**
+     * APIs should register their mixin configs and set up the mixin environment
+     * here. 
+     */
+    public abstract void initMixins();
+    
+    /**
      * Aggregate and return required transformers from all registered APIs
      */
     public abstract List<String> getRequiredTransformers();

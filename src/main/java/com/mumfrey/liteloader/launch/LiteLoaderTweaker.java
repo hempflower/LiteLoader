@@ -10,10 +10,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.spongepowered.asm.launch.MixinBootstrap;
+
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
+import com.google.common.base.Preconditions;
+import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -231,6 +235,8 @@ public class LiteLoaderTweaker implements ITweaker
     @Override
     public void acceptOptions(List<String> args, File gameDirectory, File assetsDirectory, String profile)
     {
+        LiteLoaderTweaker.injectTweakClass("org.spongepowered.asm.launch.MixinTweaker");
+        
         Launch.classLoader.addClassLoaderExclusion("org.apache.");
         Launch.classLoader.addClassLoaderExclusion("com.google.common.");
         Launch.classLoader.addClassLoaderExclusion("org.objectweb.asm.");
@@ -334,6 +340,8 @@ public class LiteLoaderTweaker implements ITweaker
 
         try
         {
+            MixinBootstrap.init();
+            
             this.bootstrap.preInit(Launch.classLoader, true, this.env.getModFilterList());
 
             this.injectDiscoveredTweakClasses();
@@ -360,6 +368,7 @@ public class LiteLoaderTweaker implements ITweaker
         {
             this.transformerManager.injectDownstreamTransformers(Launch.classLoader);
             this.bootstrap.preBeginGame();
+            MixinBootstrap.addProxy();
             StartupState.BEGINGAME.completed();
         }
         catch (Throwable th)
@@ -437,17 +446,15 @@ public class LiteLoaderTweaker implements ITweaker
 
             LiteLoaderLogger.info("Injecting cascaded tweakers...");
 
-            @SuppressWarnings("unchecked")
-            List<String> tweakClasses = (List<String>)Launch.blackboard.get("TweakClasses");
-            @SuppressWarnings("unchecked")
-            List<ITweaker> tweakers = (List<ITweaker>)Launch.blackboard.get("Tweaks");
+            List<String> tweakClasses = LiteLoaderTweaker.getTweakClasses();
+            List<ITweaker> tweakers = LiteLoaderTweaker.getTweakers();
             if (tweakClasses != null && tweakers != null)
             {
                 for (SortableValue<String> tweak : this.sortedCascadingTweaks)
                 {
                     String tweakClass = tweak.getValue();
                     LiteLoaderLogger.info(Verbosity.REDUCED, "Injecting tweak class %s with priority %d", tweakClass, tweak.getPriority());
-                    this.injectTweakClass(tweakClass, tweakClasses, tweakers);
+                    LiteLoaderTweaker.injectTweakClass(tweakClass, tweakClasses, tweakers);
                 }
             }
 
@@ -455,26 +462,36 @@ public class LiteLoaderTweaker implements ITweaker
             this.sortedCascadingTweaks.clear();
         }
     }
+    
+    private static boolean injectTweakClass(String tweakClass)
+    {
+        List<String> tweakClasses = LiteLoaderTweaker.getTweakClasses();
+        List<ITweaker> tweakers = LiteLoaderTweaker.getTweakers();
+        return LiteLoaderTweaker.injectTweakClass(tweakClass, tweakClasses, tweakers);
+    }
 
     /**
      * @param tweakClass
      * @param tweakClasses
      * @param tweakers
      */
-    private void injectTweakClass(String tweakClass, List<String> tweakClasses, List<ITweaker> tweakers)
+    private static boolean injectTweakClass(String tweakClass, List<String> tweakClasses, List<ITweaker> tweakers)
     {
-        if (!tweakClasses.contains(tweakClass))
+        if (tweakClasses.contains(tweakClass))
         {
-            for (ITweaker existingTweaker : tweakers)
-            {
-                if (tweakClass.equals(existingTweaker.getClass().getName()))
-                {
-                    return;
-                }
-            }
-
-            tweakClasses.add(tweakClass);
+            return false;
         }
+            
+        for (ITweaker existingTweaker : tweakers)
+        {
+            if (tweakClass.equals(existingTweaker.getClass().getName()))
+            {
+                return false;
+            }
+        }
+
+        tweakClasses.add(tweakClass);
+        return true;
     }
 
     /**
@@ -592,11 +609,10 @@ public class LiteLoaderTweaker implements ITweaker
     /**
      * @param clazz
      */
-    @SuppressWarnings("unchecked")
     private static boolean isTweakAlreadyEnqueued(String clazz)
     {
-        List<String> tweakClasses = (List<String>)Launch.blackboard.get("TweakClasses");
-        List<ITweaker> tweakers = (List<ITweaker>)Launch.blackboard.get("Tweaks");
+        List<String> tweakClasses = LiteLoaderTweaker.getTweakClasses();
+        List<ITweaker> tweakers = LiteLoaderTweaker.getTweakers();
 
         if (tweakClasses != null)
         {
@@ -615,6 +631,18 @@ public class LiteLoaderTweaker implements ITweaker
         }
 
         return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<String> getTweakClasses()
+    {
+        return Preconditions.<List<String>>checkNotNull((List<String>)Launch.blackboard.get("TweakClasses"), "TweakClasses");
+    }
+
+    @SuppressWarnings("unchecked")
+    private static List<ITweaker> getTweakers()
+    {
+        return Preconditions.<List<ITweaker>>checkNotNull((List<ITweaker>)Launch.blackboard.get("Tweaks"), "Tweaks");
     }
 
     /**
@@ -655,5 +683,10 @@ public class LiteLoaderTweaker implements ITweaker
     {
         LiteLoaderTweaker.instance.onInit();
         LiteLoaderTweaker.instance.onPostInit();
+    }
+    
+    public static EnvironmentType getEnvironmentType()
+    {
+        return LiteLoaderTweaker.instance.bootstrap.getEnvironment().getType();
     }
 }

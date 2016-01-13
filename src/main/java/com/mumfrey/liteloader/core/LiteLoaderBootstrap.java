@@ -1,11 +1,6 @@
 package com.mumfrey.liteloader.core;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -15,10 +10,7 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
-
-import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
@@ -27,14 +19,14 @@ import com.mumfrey.liteloader.api.manager.APIRegistry;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
-import com.mumfrey.liteloader.launch.ClassTransformerManager;
-import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
-import com.mumfrey.liteloader.launch.LoaderBootstrap;
-import com.mumfrey.liteloader.launch.LoaderEnvironment;
-import com.mumfrey.liteloader.launch.LoaderProperties;
-import com.mumfrey.liteloader.launch.StartupEnvironment;
+import com.mumfrey.liteloader.launch.*;
+import com.mumfrey.liteloader.util.ObfuscationUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
  * LiteLoaderBootstrap is responsible for managing the early part of the
@@ -316,8 +308,16 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 
         this.enumerator = this.spawnEnumerator(classLoader);
         this.enumerator.onPreInit();
+        
+        this.initMixins();
 
         LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader PREINIT complete");
+    }
+
+    private void initMixins()
+    {
+        LiteLoaderLogger.info(Verbosity.REDUCED, "Initialising LiteLoader Mixins");
+        this.getAPIAdapter().initMixins();
     }
 
     /**
@@ -341,6 +341,12 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         }
 
         LoadingProgress.setEnabled(this.getAndStoreBooleanProperty(LoaderProperties.OPTION_LOADING_BAR, true));
+        
+        if (ObfuscationUtilities.fmlIsPresent())
+        {
+            LiteLoaderLogger.info("FML detected, switching to searge mappings");
+            MixinEnvironment.getDefaultEnvironment().setObfuscationContext("searge");
+        }
     }
 
     /* (non-Javadoc)
@@ -740,7 +746,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     @Override
     public List<String> getRequiredTransformers()
     {
-        return this.apiAdapter.getRequiredTransformers();
+        return this.getAPIAdapter().getRequiredTransformers();
     }
 
     /* (non-Javadoc)
@@ -750,7 +756,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     @Override
     public List<String> getRequiredDownstreamTransformers()
     {
-        List<String> requiredDownstreamTransformers = this.apiAdapter.getRequiredDownstreamTransformers();
+        List<String> requiredDownstreamTransformers = this.getAPIAdapter().getRequiredDownstreamTransformers();
         requiredDownstreamTransformers.add(0, "com.mumfrey.liteloader.transformers.event.EventTransformer");
         return requiredDownstreamTransformers;
     }

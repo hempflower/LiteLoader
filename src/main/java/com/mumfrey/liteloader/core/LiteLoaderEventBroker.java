@@ -5,6 +5,23 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.mojang.authlib.GameProfile;
+import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
+import com.mumfrey.liteloader.api.InterfaceProvider;
+import com.mumfrey.liteloader.api.Listener;
+import com.mumfrey.liteloader.api.ShutdownObserver;
+import com.mumfrey.liteloader.common.GameEngine;
+import com.mumfrey.liteloader.common.LoadingProgress;
+import com.mumfrey.liteloader.common.ducks.IPacketClientSettings;
+import com.mumfrey.liteloader.core.event.HandlerList;
+import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
+import com.mumfrey.liteloader.interfaces.FastIterable;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.util.Position;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -24,31 +41,6 @@ import net.minecraft.util.MovingObjectPosition.MovingObjectType;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
-
-import com.mojang.authlib.GameProfile;
-import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.PlayerInteractionListener;
-import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
-import com.mumfrey.liteloader.PlayerMoveListener;
-import com.mumfrey.liteloader.PluginChannelListener;
-import com.mumfrey.liteloader.ServerCommandProvider;
-import com.mumfrey.liteloader.ServerPlayerListener;
-import com.mumfrey.liteloader.ServerPluginChannelListener;
-import com.mumfrey.liteloader.ServerTickable;
-import com.mumfrey.liteloader.ShutdownListener;
-import com.mumfrey.liteloader.api.InterfaceProvider;
-import com.mumfrey.liteloader.api.Listener;
-import com.mumfrey.liteloader.api.ShutdownObserver;
-import com.mumfrey.liteloader.common.GameEngine;
-import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.core.event.HandlerList;
-import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
-import com.mumfrey.liteloader.interfaces.FastIterable;
-import com.mumfrey.liteloader.interfaces.FastIterableDeque;
-import com.mumfrey.liteloader.launch.LoaderProperties;
-import com.mumfrey.liteloader.util.Position;
-import com.mumfrey.liteloader.util.PrivateFields;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * @author Adam Mummery-Smith
@@ -513,7 +505,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
     void onPlayerSettingsReceived(EntityPlayerMP player, C15PacketClientSettings packet)
     {
         PlayerEventState playerState = this.getPlayerState(player);
-        playerState.setTraceDistance(PrivateFields.viewDistance.get(packet));
+        playerState.setTraceDistance(((IPacketClientSettings)packet).getViewDistance());
         playerState.setLocale(packet.getLang());
     }
 

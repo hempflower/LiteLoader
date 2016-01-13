@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel;
+
 import com.mumfrey.liteloader.api.EnumeratorModule;
 import com.mumfrey.liteloader.api.LiteAPI;
+import com.mumfrey.liteloader.api.MixinConfigProvider;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
@@ -18,7 +21,7 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  * 
  * @author Adam Mummery-Smith
  */
-public abstract class LiteLoaderCoreAPI implements LiteAPI
+public abstract class LiteLoaderCoreAPI implements LiteAPI, MixinConfigProvider
 {
     protected static final String PKG_LITELOADER = "com.mumfrey.liteloader";
     protected static final String PKG_LITELOADER_COMMON = LiteLoaderCoreAPI.PKG_LITELOADER + ".common";
@@ -144,4 +147,30 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI
      * Get the ObjectFactory
      */
     public abstract ObjectFactory<?, ?> getObjectFactory();
+    
+    @Override
+    public MixinConfigProvider getMixins()
+    {
+        return this;
+    }
+    
+    @Override
+    public CompatibilityLevel getCompatibilityLevel()
+    {
+        return null;
+    }
+    
+    @Override
+    public String[] getMixinConfigs()
+    {
+        return new String[] {
+            "mixins.liteloader.core.json"
+        };
+    }
+    
+    @Override
+    public String[] getErrorHandlers()
+    {
+        return null;
+    }
 }
