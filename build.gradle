@@ -68,10 +68,9 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.4.11-SNAPSHOT') {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-    }
+    compile 'org.spongepowered:mixin:0.4.11-SNAPSHOT'
+    compile 'com.google.guava:guava:17.0'
+    compile 'com.google.code.gson:gson:2.2.4'
 }
 
 minecraft {
