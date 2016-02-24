@@ -107,7 +107,7 @@ public class PacketEventsClient extends PacketEvents
         this.postLoginListeners.add(postLoginListener);
     }
 
-    public static void onJoinRealm(long serverId, RealmsServer server)
+    public static void onJoinRealm(RealmsServer server)
     {
         PacketEventsClient.joiningRealm = server;
     }
@@ -130,7 +130,7 @@ public class PacketEventsClient extends PacketEvents
      *      net.minecraft.network.play.server.S01PacketJoinGame)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S01PacketJoinGame packet)
     {
         if (this.preJoinGame(e, netHandler, packet))
         {
@@ -149,7 +149,7 @@ public class PacketEventsClient extends PacketEvents
      * @param packet
      * @throws EventCancellationException
      */
-    private boolean preJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet) throws EventCancellationException
+    private boolean preJoinGame(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S01PacketJoinGame packet) throws EventCancellationException
     {
         if (!(netHandler instanceof INetHandlerPlayClient))
         {
@@ -166,7 +166,7 @@ public class PacketEventsClient extends PacketEvents
      * @param netHandler
      * @param packet
      */
-    private void postJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+    private void postJoinGame(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S01PacketJoinGame packet)
     {
         this.joinGameListeners.all().onJoinGame(netHandler, packet, Minecraft.getMinecraft().getCurrentServerData(), PacketEventsClient.joiningRealm);
         PacketEventsClient.joiningRealm = null;
@@ -185,7 +185,7 @@ public class PacketEventsClient extends PacketEvents
      *      net.minecraft.network.login.server.S02PacketLoginSuccess)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketLoginSuccess packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S02PacketLoginSuccess packet)
     {
         if (netHandler instanceof INetHandlerLoginClient)
         {
@@ -208,7 +208,7 @@ public class PacketEventsClient extends PacketEvents
      *      net.minecraft.network.play.server.S02PacketChat)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketChat packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S02PacketChat packet)
     {
         if (packet.getChatComponent() == null)
         {

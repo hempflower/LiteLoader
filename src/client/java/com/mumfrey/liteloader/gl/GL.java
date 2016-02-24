@@ -855,12 +855,12 @@ public class GL
 
     public static void glEnableLight(int light)
     {
-        GlStateManager.enableLight(light); // TODO OBF MCPTEST enableBooleanStateAt - enableLight
+        GlStateManager.enableLight(light);
     }
 
     public static void glDisableLight(int light)
     {
-        GlStateManager.disableLight(light); // TODO OBF MCPTEST disableBooleanStateAt - disableLight
+        GlStateManager.disableLight(light);
     }
 
     public static void glLight(int light, int pname, FloatBuffer params)
@@ -1040,7 +1040,7 @@ public class GL
 
     public static void glTexGen(TexGen tex, int pname, FloatBuffer params)
     {
-        GlStateManager.func_179105_a(tex, pname, params);
+        GlStateManager.texGen(tex, pname, params);
     }
 
     public static void glSetActiveTextureUnit(int texture)
@@ -1050,27 +1050,27 @@ public class GL
 
     public static void glEnableTexture2D()
     {
-        GlStateManager.enableTexture2D(); // TODO OBF MCPTEST func_179098_w - enableTexture2D
+        GlStateManager.enableTexture2D();
     }
 
     public static void glDisableTexture2D()
     {
-        GlStateManager.disableTexture2D(); // TODO OBF MCPTEST func_179090_x - disableTexture2D
+        GlStateManager.disableTexture2D();
     }
 
     public static int glGenTextures()
     {
-        return GlStateManager.generateTexture(); // TODO OBF MCPTEST func_179146_y - generateTexture
+        return GlStateManager.generateTexture();
     }
 
     public static void glDeleteTextures(int textureName)
     {
-        GlStateManager.deleteTexture(textureName); // TODO OBF MCPTEST func_179150_h - deleteTexture
+        GlStateManager.deleteTexture(textureName);
     }
 
     public static void glBindTexture2D(int textureName)
     {
-        GlStateManager.bindTexture(textureName); // TODO OBF MCPTEST func_179144_i - bindTexture
+        GlStateManager.bindTexture(textureName);
     }
 
     public static void glEnableNormalize()

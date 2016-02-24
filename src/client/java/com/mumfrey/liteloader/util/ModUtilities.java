@@ -65,11 +65,11 @@ public abstract class ModUtilities
      * @param entityClass
      * @param renderer
      */
-    public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
+    public static <T extends Entity> void addRenderer(Class<T> entityClass, Render<T> renderer)
     {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
 
-        Map<Class<? extends Entity>, Render> entityRenderMap = ((IRenderManager)renderManager).getRenderMap();
+        Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap = ((IRenderManager)renderManager).getRenderMap();
         if (entityRenderMap != null)
         {
             entityRenderMap.put(entityClass, renderer);
@@ -81,13 +81,13 @@ public abstract class ModUtilities
         }
     }
 
-    public static void addRenderer(Class<? extends TileEntity> tileEntityClass, TileEntitySpecialRenderer renderer)
+    public static <T extends TileEntity> void addRenderer(Class<T> tileEntityClass, TileEntitySpecialRenderer<T> renderer)
     {
         TileEntityRendererDispatcher tileEntityRenderer = TileEntityRendererDispatcher.instance;
 
         try
         {
-            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap
+            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer<? extends TileEntity>> specialRendererMap
                     = ((ITileEntityRendererDispatcher)tileEntityRenderer).getSpecialRenderMap();
             specialRendererMap.put(tileEntityClass, renderer);
             renderer.setRendererDispatcher(tileEntityRenderer);
@@ -109,7 +109,7 @@ public abstract class ModUtilities
      */
     public static void addBlock(int blockId, ResourceLocation blockName, Block block, boolean force)
     {
-        Block existingBlock = (Block)Block.blockRegistry.getObject(blockName);
+        Block existingBlock = Block.blockRegistry.getObject(blockName);
 
         try
         {
@@ -157,7 +157,7 @@ public abstract class ModUtilities
      */
     public static void addItem(int itemId, ResourceLocation itemName, Item item, boolean force)
     {
-        Item existingItem = (Item)Item.itemRegistry.getObject(itemName);
+        Item existingItem = Item.itemRegistry.getObject(itemName);
 
         try
         {
@@ -208,7 +208,7 @@ public abstract class ModUtilities
         }
     }
 
-    private static <K, V> V removeObjectFromRegistry(RegistrySimple registry, K key)
+    private static <K, V> V removeObjectFromRegistry(RegistrySimple<K, V> registry, K key)
     {
         if (registry == null) return null;
 
@@ -219,7 +219,8 @@ public abstract class ModUtilities
             underlyingIntegerMap = ((INamespacedRegistry)registry).getUnderlyingMap(); 
         }
 
-        Map<K, V> registryObjects = ((IRegistrySimple)registry).<K, V>getRegistryObjects();
+        @SuppressWarnings("unchecked")
+        Map<K, V> registryObjects = ((IRegistrySimple<K, V>)registry).getRegistryObjects();
         if (registryObjects != null)
         {
             V existingValue = registryObjects.get(key);

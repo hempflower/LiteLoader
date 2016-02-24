@@ -406,7 +406,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
         Minecraft minecraft = this.engine.getClient();
 
         // Flag indicates whether we are in game at the moment
-        Entity renderViewEntity = minecraft.getRenderViewEntity(); // TODO OBF MCPTEST func_175606_aa - getRenderViewEntity
+        Entity renderViewEntity = minecraft.getRenderViewEntity();
         boolean inGame = renderViewEntity != null && renderViewEntity.worldObj != null;
 
         this.profiler.startSection("loader");
@@ -483,7 +483,6 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     void onRenderWorld(float partialTicks, long timeSlice)
     {
         this.preRenderListeners.all().onRenderWorld(partialTicks);
-        this.renderListeners.all().onRenderWorld();
     }
 
     /**
@@ -543,8 +542,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param render 
      */
-    public void onRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks,
-            Render render)
+    public <T extends Entity> void onRenderEntity(RenderManager source, T entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks, Render<T> render)
     {
         this.entityRenderListeners.all().onRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
     }
@@ -559,8 +558,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param render 
      */
-    public void onPostRenderEntity(RenderManager source, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks,
-            Render render)
+    public <T extends Entity> void onPostRenderEntity(RenderManager source, T entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks, Render<T> render)
     {
         this.entityRenderListeners.all().onPostRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
     }

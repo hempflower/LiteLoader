@@ -1,20 +1,11 @@
 package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
+import static net.minecraft.client.renderer.vertex.DefaultVertexFormats.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -34,6 +25,16 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.modconfig.ConfigManager;
 import com.mumfrey.liteloader.modconfig.ConfigPanel;
 import com.mumfrey.liteloader.util.render.Icon;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiMainMenu;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 
 /**
  * GUI screen which displays info about loaded mods and also allows them to be
@@ -280,7 +281,6 @@ public class GuiLiteLoaderPanel extends GuiScreen
     /* (non-Javadoc)
      * @see net.minecraft.client.gui.GuiScreen#initGui()
      */
-    @SuppressWarnings("unchecked")
     @Override
     public void initGui()
     {
@@ -791,11 +791,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
         Tessellator tessellator = Tessellator.getInstance();
         WorldRenderer worldRenderer = tessellator.getWorldRenderer();
-        worldRenderer.startDrawingQuads();
-        worldRenderer.addVertexWithUV(x + 0,     y + height, 0, u , v2);
-        worldRenderer.addVertexWithUV(x + width, y + height, 0, u2, v2);
-        worldRenderer.addVertexWithUV(x + width, y + 0,      0, u2, v );
-        worldRenderer.addVertexWithUV(x + 0,     y + 0,      0, u , v );
+        worldRenderer.begin(GL_QUADS, POSITION_TEX);
+        worldRenderer.pos(x + 0,     y + height, 0).tex(u , v2).endVertex();
+        worldRenderer.pos(x + width, y + height, 0).tex(u2, v2).endVertex();
+        worldRenderer.pos(x + width, y + 0,      0).tex(u2, v ).endVertex();
+        worldRenderer.pos(x + 0,     y + 0,      0).tex(u , v ).endVertex();
         tessellator.draw();
 
         glDisableBlend();

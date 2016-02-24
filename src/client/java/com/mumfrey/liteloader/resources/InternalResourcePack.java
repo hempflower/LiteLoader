@@ -94,7 +94,7 @@ public class InternalResourcePack implements IResourcePack
      *      java.lang.String)
      */
     @Override
-    public IMetadataSection getPackMetadata(IMetadataSerializer par1MetadataSerializer, String par2Str) throws IOException
+    public <T extends IMetadataSection> T getPackMetadata(IMetadataSerializer par1MetadataSerializer, String par2Str) throws IOException
     {
         return null;
     }

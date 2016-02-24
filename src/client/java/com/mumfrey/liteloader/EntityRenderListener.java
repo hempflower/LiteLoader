@@ -22,7 +22,8 @@ public interface EntityRenderListener extends LiteMod
      * @param yaw
      * @param partialTicks
      */
-    public abstract void onRenderEntity(Render render, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks);
+    public abstract void onRenderEntity(Render<? extends Entity> render, Entity entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks);
 
     /**
      * Called immediately following an entity being rendered
@@ -35,5 +36,6 @@ public interface EntityRenderListener extends LiteMod
      * @param yaw
      * @param partialTicks
      */
-    public abstract void onPostRenderEntity(Render render, Entity entity, double xPos, double yPos, double zPos, float yaw, float partialTicks);
+    public abstract void onPostRenderEntity(Render<? extends Entity> render, Entity entity, double xPos, double yPos, double zPos, float yaw,
+            float partialTicks);
 }

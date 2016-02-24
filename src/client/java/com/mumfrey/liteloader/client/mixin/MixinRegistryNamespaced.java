@@ -11,9 +11,9 @@ import net.minecraft.util.RegistryNamespaced;
 import net.minecraft.util.RegistrySimple;
 
 @Mixin(RegistryNamespaced.class)
-public abstract class MixinRegistryNamespaced extends RegistrySimple implements INamespacedRegistry
+public abstract class MixinRegistryNamespaced<K, V> extends RegistrySimple<K, V> implements INamespacedRegistry
 {
-    @Shadow protected ObjectIntIdentityMap underlyingIntegerMap;
+    @Shadow protected ObjectIntIdentityMap<V> underlyingIntegerMap;
     
     @Override
     public IObjectIntIdentityMap getUnderlyingMap()

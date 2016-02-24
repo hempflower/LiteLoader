@@ -1,44 +1,55 @@
 package com.mumfrey.liteloader.client.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.At.Shift;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
 
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.util.ResourceLocation;
 
 @Mixin(EntityRenderer.class)
-public abstract class MixinEntityRenderer
+public abstract class MixinEntityRenderer implements IEntityRenderer
 {
-    @Inject(method = "updateCameraAndRender(F)V", at = @At(
+    @Shadow private static ResourceLocation[] shaderResourceLocations;
+    @Shadow private boolean useShader;
+    @Shadow private int shaderIndex;
+    
+    @Shadow abstract void loadShader(ResourceLocation resourceLocationIn);
+    @Shadow abstract float getFOVModifier(float partialTicks, boolean useFOVSetting);
+    @Shadow abstract void setupCameraTransform(float partialTicks, int pass);
+    
+    @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
         value = "INVOKE",
         shift = Shift.AFTER,
         target = "Lnet/minecraft/client/renderer/GlStateManager;clear(I)V"
     ))
-    private void onPreRenderGUI(float partialTicks, CallbackInfo ci)
+    private void onPreRenderGUI(float partialTicks, long nanoTime, CallbackInfo ci)
     {
         ClientProxy.preRenderGUI(partialTicks);
     }
 
-    @Inject(method = "updateCameraAndRender(F)V", at = @At(
+    @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
         value = "INVOKE",
         target = "Lnet/minecraft/client/gui/GuiIngame;renderGameOverlay(F)V"
     ))
-    private void onRenderHUD(float partialTicks, CallbackInfo ci)
+    private void onRenderHUD(float partialTicks, long nanoTime, CallbackInfo ci)
     {
         ClientProxy.onRenderHUD(partialTicks);
     }
     
-    @Inject(method = "updateCameraAndRender(F)V", at = @At(
+    @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
         value = "INVOKE",
         shift = Shift.AFTER,
         target = "Lnet/minecraft/client/gui/GuiIngame;renderGameOverlay(F)V"
     ))
-    private void onPostRenderHUD(float partialTicks, CallbackInfo ci)
+    private void onPostRenderHUD(float partialTicks, long nanoTime, CallbackInfo ci)
     {
         ClientProxy.postRenderHUD(partialTicks);
     }
@@ -112,4 +123,53 @@ public abstract class MixinEntityRenderer
     {
         ClientProxy.onRenderClouds(renderGlobalIn, partialTicks, pass);
     }
+    
+    @Override
+    public boolean getUseShader()
+    {
+        return this.useShader;
+    }
+    
+    @Override
+    public void setUseShader(boolean useShader)
+    {
+        this.useShader = useShader;
+    }
+    
+    @Override
+    public ResourceLocation[] getShaders()
+    {
+        return MixinEntityRenderer.shaderResourceLocations;
+    }
+    
+    @Override
+    public int getShaderIndex()
+    {
+        return this.shaderIndex;
+    }
+    
+    @Override
+    public void setShaderIndex(int shaderIndex)
+    {
+        this.shaderIndex = shaderIndex;
+    }
+    
+    @Override
+    public void selectShader(ResourceLocation shader)
+    {
+        this.loadShader(shader);
+    }
+    
+    @Override
+    public float getFOV(float partialTicks, boolean useFOVSetting)
+    {
+        return this.getFOVModifier(partialTicks, useFOVSetting);
+    }
+    
+    @Override
+    public void setupCamera(float partialTicks, int pass)
+    {
+        this.setupCameraTransform(partialTicks, pass);
+    }
+    
 }

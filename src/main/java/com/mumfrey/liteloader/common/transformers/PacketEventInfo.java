@@ -4,7 +4,7 @@ import com.mumfrey.liteloader.transformers.event.EventInfo;
 
 import net.minecraft.network.Packet;
 
-public class PacketEventInfo<S extends Packet> extends EventInfo<S>
+public class PacketEventInfo<S extends Packet<?>> extends EventInfo<S>
 {
     private final int packetId;
 

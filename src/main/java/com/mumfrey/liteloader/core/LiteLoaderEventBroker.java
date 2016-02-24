@@ -30,6 +30,7 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.network.play.client.C15PacketClientSettings;
 import net.minecraft.network.play.server.S08PacketPlayerPosLook;
+import net.minecraft.network.play.server.S08PacketPlayerPosLook.EnumFlags;
 import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
@@ -488,7 +489,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         {
             playerMP.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch);
             playerMP.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
-                    playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.emptySet()));
+                    playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.<EnumFlags>emptySet()));
             return false;
         }
 

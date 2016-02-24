@@ -12,18 +12,18 @@ public class PacketHandlerException extends RuntimeException
 {
     private static final long serialVersionUID = -330946238844640302L;
 
-    private Packet packet;
+    private Packet<?> packet;
 
-    public PacketHandlerException(Packet packet)
+    public PacketHandlerException(Packet<?> packet)
     {
     }
 
-    public PacketHandlerException(Packet packet, String message)
+    public PacketHandlerException(Packet<?> packet, String message)
     {
         super(message);
     }
 
-    public Packet getPacket()
+    public Packet<?> getPacket()
     {
         return this.packet;
     }

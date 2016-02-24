@@ -35,7 +35,7 @@ public class ModResourcePackDir extends FolderResourcePack
      *      java.lang.String)
      */
     @Override
-    public IMetadataSection getPackMetadata(IMetadataSerializer metadataSerializer, String metadataSectionName) throws IOException
+    public <T extends IMetadataSection> T getPackMetadata(IMetadataSerializer metadataSerializer, String metadataSectionName) throws IOException
     {
         try
         {

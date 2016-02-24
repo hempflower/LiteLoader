@@ -22,14 +22,6 @@ public interface RenderListener extends LiteMod
     public abstract void onRenderGui(GuiScreen currentScreen);
 
     /**
-     * Called when the world is rendered
-     * 
-     * @deprecated Use PreRenderListener::onRenderWorld(F)V instead
-     */
-    @Deprecated
-    public abstract void onRenderWorld();
-
-    /**
      * Called immediately after the world/camera transform is initialised
      */
     public abstract void onSetupCameraTransform();

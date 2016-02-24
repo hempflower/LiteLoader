@@ -17,10 +17,10 @@ import net.minecraft.entity.Entity;
 @Mixin(RenderManager.class)
 public abstract class MixinRenderManager implements IRenderManager
 {
-    @Shadow private Map<Class<? extends Entity>, Render> entityRenderMap;
+    @Shadow private Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap;
     
     @Override
-    public Map<Class<? extends Entity>, Render> getRenderMap()
+    public Map<Class<? extends Entity>, Render<? extends Entity>> getRenderMap()
     {
         return this.entityRenderMap;
     }
@@ -29,7 +29,7 @@ public abstract class MixinRenderManager implements IRenderManager
         value = "INVOKE",
         target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V"
     ))
-    private void onRenderEntity(Render render, Entity entity, double x, double y, double z, float entityYaw, float partialTicks)
+    private <T extends Entity> void onRenderEntity(Render<T> render, T entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
         RenderManager source = (RenderManager)(Object)this;
         ClientProxy.onRenderEntity(source, render, entity, x, y, z, entityYaw, partialTicks);

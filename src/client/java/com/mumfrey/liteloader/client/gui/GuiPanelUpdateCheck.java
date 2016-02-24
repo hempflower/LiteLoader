@@ -169,7 +169,7 @@ class GuiPanelUpdateCheck extends GuiPanel
             {
                 this.updateForced = true;
                 this.parentScreen.setToggleable(false);
-                ScaledResolution sr = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
+                ScaledResolution sr = new ScaledResolution(this.mc);
                 this.parentScreen.setWorldAndResolution(this.mc, sr.getScaledWidth(), sr.getScaledHeight());
             }
             else

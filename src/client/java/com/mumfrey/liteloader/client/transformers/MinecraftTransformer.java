@@ -13,27 +13,19 @@ import org.objectweb.asm.tree.TypeInsnNode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
-import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
+import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-public class MinecraftTransformer extends AccessorTransformer
+public class MinecraftTransformer extends ClassTransformer
 {
     private static final String TWEAKCLASS = LiteLoaderTweaker.class.getName().replace('.', '/');
-
+    
     @Override
-    protected void addAccessors()
-    {
-        this.addAccessor(Obf.IMinecraft.name);
-        this.addAccessor(Obf.IGuiTextField.name);
-        this.addAccessor(Obf.IEntityRenderer.name);
-        this.addAccessor(Obf.ISoundHandler.name);
-    }
-
-    @Override
-    protected void postTransform(String name, String transformedName, ClassNode classNode)
+    public byte[] transform(String name, String transformedName, byte[] basicClass)
     {
         if ((Obf.Minecraft.name.equals(transformedName) || Obf.Minecraft.obf.equals(transformedName)))
         {
+            ClassNode classNode = this.readClass(basicClass, true);
             for (MethodNode method : classNode.methods)
             {
                 if (Obf.startGame.obf.equals(method.name) || Obf.startGame.srg.equals(method.name) || Obf.startGame.name.equals(method.name))
@@ -41,8 +33,11 @@ public class MinecraftTransformer extends AccessorTransformer
                     this.transformStartGame(method);
                 }
             }
+            return this.writeClass(classNode);
         }
+        return basicClass;
     }
+
 
     private void transformStartGame(MethodNode method)
     {

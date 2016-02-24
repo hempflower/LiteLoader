@@ -82,7 +82,6 @@ public abstract class ChatUtilities
         return siblings;
     }
 
-    @SuppressWarnings("unchecked")
     private static IChatComponent covertCodesInPlace(IChatComponent component)
     {
         IChatComponent newComponent = null;

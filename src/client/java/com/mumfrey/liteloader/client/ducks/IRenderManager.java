@@ -7,5 +7,5 @@ import net.minecraft.entity.Entity;
 
 public interface IRenderManager
 {
-    public abstract Map<Class<? extends Entity>, Render> getRenderMap();
+    public abstract Map<Class<? extends Entity>, Render<? extends Entity>> getRenderMap();
 }

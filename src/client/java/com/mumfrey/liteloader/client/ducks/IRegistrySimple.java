@@ -2,7 +2,7 @@ package com.mumfrey.liteloader.client.ducks;
 
 import java.util.Map;
 
-public interface IRegistrySimple
+public interface IRegistrySimple<K, V>
 {
-    public abstract <K, V> Map<K, V> getRegistryObjects();
+    public abstract Map<K, V> getRegistryObjects();
 }

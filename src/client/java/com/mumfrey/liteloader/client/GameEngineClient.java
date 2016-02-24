@@ -113,7 +113,7 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 
     public ScaledResolution getScaledResolution()
     {
-        return new ScaledResolution(this.engine, this.engine.displayWidth, this.engine.displayHeight);
+        return new ScaledResolution(this.engine);
     }
 
     public GuiNewChat getChatGUI()

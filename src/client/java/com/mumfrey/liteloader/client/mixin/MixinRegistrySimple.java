@@ -10,14 +10,13 @@ import com.mumfrey.liteloader.client.ducks.IRegistrySimple;
 import net.minecraft.util.RegistrySimple;
 
 @Mixin(RegistrySimple.class)
-public abstract class MixinRegistrySimple implements IRegistrySimple
+public abstract class MixinRegistrySimple<K, V> implements IRegistrySimple<K, V>
 {
-    @Shadow protected Map<?, ?> registryObjects;
+    @Shadow protected Map<K, V> registryObjects;
     
-    @SuppressWarnings("unchecked")
     @Override
-    public <K, V> Map<K, V> getRegistryObjects()
+    public Map<K, V> getRegistryObjects()
     {
-        return (Map<K, V>)this.registryObjects;
+        return this.registryObjects;
     }
 }

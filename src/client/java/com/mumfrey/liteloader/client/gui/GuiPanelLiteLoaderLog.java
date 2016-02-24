@@ -98,7 +98,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 
         this.chkScale.checked = GuiPanelLiteLoaderLog.useNativeRes;
 
-        ScaledResolution res = new ScaledResolution(this.mc, this.mc.displayWidth, this.mc.displayHeight);
+        ScaledResolution res = new ScaledResolution(this.mc);
         this.guiScale = res.getScaleFactor();
 
         this.scrollPane.setSizeAndPosition(MARGIN, TOP, this.width - (MARGIN * 2), this.height - TOP - BOTTOM);

@@ -171,12 +171,14 @@ public abstract class ClientProxy extends Proxy
         ClientProxy.broker.onScreenshot(ci, name, width, height, fbo);
     }
 
-    public static void onRenderEntity(RenderManager source, Render render, Entity entity, double x, double y, double z, float yaw, float pTicks)
+    public static <T extends Entity> void onRenderEntity(RenderManager source, Render<T> render, T entity, double x, double y, double z,
+            float yaw, float pTicks)
     {
         ClientProxy.broker.onRenderEntity(source, entity, x, y, z, yaw, pTicks, render);
     }
 
-    public static void onPostRenderEntity(RenderManager source, Render render, Entity entity, double x, double y, double z, float yaw, float pTicks)
+    public static <T extends Entity> void onPostRenderEntity(RenderManager source, Render<T> render, T entity, double x, double y, double z,
+            float yaw, float pTicks)
     {
         ClientProxy.broker.onPostRenderEntity(source, entity, x, y, z, yaw, pTicks, render);
     }

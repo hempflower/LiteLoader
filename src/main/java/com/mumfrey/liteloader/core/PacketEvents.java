@@ -108,10 +108,10 @@ public abstract class PacketEvents implements InterfaceProvider
      */
     public void registerPacketHandler(PacketHandler handler)
     {
-        List<Class<? extends Packet>> handledPackets = handler.getHandledPackets();
+        List<Class<? extends Packet<?>>> handledPackets = handler.getHandledPackets();
         if (handledPackets != null)
         {
-            for (Class<? extends Packet> packetClass : handledPackets)
+            for (Class<? extends Packet<?>> packetClass : handledPackets)
             {
                 String packetClassName = packetClass.getName();
                 int packetId = Packets.indexOf(packetClassName);
@@ -138,12 +138,12 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param e
      * @param netHandler
      */
-    public static void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler)
+    public static void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler)
     {
         PacketEvents.instance.handlePacket(e, netHandler, e.getPacketId());
     }
 
-    private void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
+    private void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, int packetId)
     {
         Packets packetInfo = Packets.packets[e.getPacketId()];
         IThreadListener threadListener = this.getPacketContextListener(packetInfo.getContext());
@@ -176,9 +176,9 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packetId
      */
-    protected void handleAsyncPacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
+    protected void handleAsyncPacketEvent(PacketEventInfo<Packet<?>> e, INetHandler netHandler, int packetId)
     {
-        Packet packet = e.getSource();
+        Packet<?> packet = e.getSource();
 
         if (packetId == this.loginSuccessPacketId)
         {
@@ -193,9 +193,9 @@ public abstract class PacketEvents implements InterfaceProvider
      * @return true if the packet was handled by a local handler and shouldn't
      *      be forwarded to later handlers
      */
-    protected boolean handlePacketEvent(PacketEventInfo<Packet> e, INetHandler netHandler, int packetId)
+    protected boolean handlePacketEvent(PacketEventInfo<Packet<?>> e, INetHandler netHandler, int packetId)
     {
-        Packet packet = e.getSource();
+        Packet<?> packet = e.getSource();
 
         if (packetId == this.serverChatPacketId)
         {
@@ -241,7 +241,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected abstract void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketLoginSuccess packet);
+    protected abstract void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S02PacketLoginSuccess packet);
 
     /**
      * S02PacketChat::processPacket()
@@ -249,7 +249,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected abstract void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketChat packet);
+    protected abstract void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S02PacketChat packet);
 
     /**
      * S02PacketChat::processPacket()
@@ -257,7 +257,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, C01PacketChatMessage packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, C01PacketChatMessage packet)
     {
         EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
 
@@ -273,7 +273,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S01PacketJoinGame packet)
     {
         this.loader.onJoinGame(netHandler, packet);
     }
@@ -284,7 +284,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S3FPacketCustomPayload packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, S3FPacketCustomPayload packet)
     {
         LiteLoader.getClientPluginChannels().onPluginChannelMessage(packet);
     }
@@ -295,7 +295,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, C17PacketCustomPayload packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, C17PacketCustomPayload packet)
     {
         LiteLoader.getServerPluginChannels().onPluginChannelMessage(netHandler, packet);
     }
@@ -307,7 +307,7 @@ public abstract class PacketEvents implements InterfaceProvider
      * @param netHandler
      * @param packet
      */
-    private void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, C15PacketClientSettings packet)
+    private void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, C15PacketClientSettings packet)
     {
         if (netHandler instanceof NetHandlerPlayServer)
         {

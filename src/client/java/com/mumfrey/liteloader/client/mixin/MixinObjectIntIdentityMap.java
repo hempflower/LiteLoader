@@ -11,10 +11,10 @@ import com.mumfrey.liteloader.client.ducks.IObjectIntIdentityMap;
 import net.minecraft.util.ObjectIntIdentityMap;
 
 @Mixin(ObjectIntIdentityMap.class)
-public abstract class MixinObjectIntIdentityMap implements IObjectIntIdentityMap
+public abstract class MixinObjectIntIdentityMap<T> implements IObjectIntIdentityMap
 {
-    @Shadow private IdentityHashMap<?, Integer> identityMap;
-    @Shadow private List<?> objectList;
+    @Shadow private IdentityHashMap<T, Integer> identityMap;
+    @Shadow private List<T> objectList;
     
     @SuppressWarnings("unchecked")
     @Override

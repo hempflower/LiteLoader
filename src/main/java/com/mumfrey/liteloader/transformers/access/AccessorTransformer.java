@@ -37,6 +37,8 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public abstract class AccessorTransformer extends ClassTransformer
 {
+    static final String EXCEPTION = "com/mumfrey/liteloader/transformers/access/AccessorException";
+    
     static final Pattern ordinalRefPattern = Pattern.compile("^#([0-9]{1,5})$");
 
     /**
@@ -269,13 +271,14 @@ public abstract class AccessorTransformer extends ClassTransformer
             {
                 LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s has no @Accessor or @Invoker annotation, the method will "
                         + "be ABSTRACT!", method.name, this.iface);
-                this.injectException(classNode, method, "No @Accessor or @Invoker annotation on method");
+                this.injectException(classNode, method, AccessorTransformer.EXCEPTION, "No @Accessor or @Invoker annotation on method");
                 return;
             }
 
             LiteLoaderLogger.severe("[AccessorTransformer] Method %s for %s could not locate target member, the method will be ABSTRACT!",
                     method.name, this.iface);
-            this.injectException(classNode, method, "Could not locate target class member '" + targetId + "'");
+            this.injectException(classNode, method, AccessorTransformer.EXCEPTION,
+                    "Accessor could not locate target class member '" + targetId + "'");
         }
 
         /**
@@ -437,18 +440,19 @@ public abstract class AccessorTransformer extends ClassTransformer
          * 
          * @param classNode
          * @param method
+         * @param exceptionType
          * @param message
          */
-        private void injectException(ClassNode classNode, MethodNode method, String message)
+        private void injectException(ClassNode classNode, MethodNode method, String exceptionType, String message)
         {
             InsnList insns = method.instructions;
             method.maxStack = 2;
 
             insns.clear();
-            insns.add(new TypeInsnNode(Opcodes.NEW, "java/lang/RuntimeException"));
+            insns.add(new TypeInsnNode(Opcodes.NEW, exceptionType));
             insns.add(new InsnNode(Opcodes.DUP));
             insns.add(new LdcInsnNode(message));
-            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "java/lang/RuntimeException", "<init>", "(Ljava/lang/String;)V", false));
+            insns.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, exceptionType, "<init>", "(Ljava/lang/String;)V", false));
             insns.add(new InsnNode(Opcodes.ATHROW));
         }
 
