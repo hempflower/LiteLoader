@@ -41,6 +41,7 @@ ext {
     classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
     isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
     mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
+    brand = project.hasProperty("jenkins") ? "${project.mcVersion}-SNAPSHOT-r${System.env.GIT_COMMIT.take(7).toUpperCase()}-b${System.env.BUILD_NUMBER}-${System.env.BUILD_ID}" : ""
     
     // Extended project information
     projectName = 'LiteLoader'
@@ -135,6 +136,14 @@ afterEvaluate {
     def mc = plugins.getPlugin 'net.minecraftforge.gradle.tweaker-client'
     mc.replacer.putReplacement '{RUN_CLIENT_MAIN}', project.startClass
     mc.replacer.putReplacement '{RUN_CLIENT_TWEAKER}', minecraft.tweakClass
+}
+
+processResources {
+    inputs.property "brand", project.brand
+    from (sourceSets.main.resources.srcDirs) {
+        include 'liteloader.properties'
+        filter { line -> line.startsWith('brand=') ? line + project.brand : line }
+    }
 }
 
 // manifest entries for all jars
