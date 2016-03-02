@@ -152,7 +152,7 @@ jar {
     doFirst {
         // Seriously forge?
         ant.replace(
-            file: sourceSets.main.refMapFile,
+            file: file("${compileJava.temporaryDir}/${sourceSets.main.refMap}"),
             token: "func_72355_a(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;)V",
             value: "initializeConnectionToPlayer(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;Lnet/minecraft/network/NetHandlerPlayServer;)V"
         )
@@ -290,7 +290,20 @@ uploadArchives {
                         url 'http://develop.liteloader.com/liteloader/LiteLoader/issues'
                     }
                 }
+//                whenConfigured {
+//                    dependencies = dependencies.findAll {
+//                        !it.artifactId.contains('mixin')
+//                    }
+//                }
             }
         }
     }
 }
+
+//install.repositories.mavenInstaller.pom {
+//    whenConfigured {
+//        dependencies = dependencies.findAll {
+//            !it.artifactId.contains('mixin')
+//        }
+//    }
+//}
