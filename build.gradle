@@ -290,20 +290,20 @@ uploadArchives {
                         url 'http://develop.liteloader.com/liteloader/LiteLoader/issues'
                     }
                 }
-//                whenConfigured {
-//                    dependencies = dependencies.findAll {
-//                        !it.artifactId.contains('mixin')
-//                    }
-//                }
+                whenConfigured {
+                    dependencies = dependencies.findAll {
+                        !it.artifactId.contains('mixin')
+                    }
+                }
             }
         }
     }
 }
 
-//install.repositories.mavenInstaller.pom {
-//    whenConfigured {
-//        dependencies = dependencies.findAll {
-//            !it.artifactId.contains('mixin')
-//        }
-//    }
-//}
+install.repositories.mavenInstaller.pom {
+    whenConfigured {
+        dependencies = dependencies.findAll {
+            !it.artifactId.contains('mixin')
+        }
+    }
+}
