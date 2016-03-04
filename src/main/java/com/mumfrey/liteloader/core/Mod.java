@@ -127,6 +127,15 @@ class Mod extends ModInfo<LoadableMod<?>>
         return this.name;
     }
 
+    /**
+     * Get the mod description
+     */
+    @Override
+    public String getDescription()
+    {
+        return this.container.getDescription(this.key);
+    }
+
     /* (non-Javadoc)
      * @see com.mumfrey.liteloader.core.ModInfo#getVersion()
      */
