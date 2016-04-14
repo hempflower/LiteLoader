@@ -19,16 +19,10 @@ public abstract class MixinRegistryNamespaced<K, V> extends MixinRegistrySimple<
     public V removeObjectFromRegistry(K key)
     {
         V removed = super.removeObjectFromRegistry(key);
-        System.err.println("====================================================================================================");
-        System.err.println("====================================================================================================");
-        System.err.println("Removed object: " + removed);
         if (removed != null && this.underlyingIntegerMap instanceof IIntIdentityHashBiMap)
         {
-            System.err.println("Removing  " + removed + "  from underlying int map");
             ((IIntIdentityHashBiMap<V>)this.underlyingIntegerMap).removeObject(removed);
         }
-        System.err.println("====================================================================================================");
-        System.err.println("====================================================================================================");
         return removed;
     }
 }

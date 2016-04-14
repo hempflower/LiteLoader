@@ -19,12 +19,6 @@ public abstract class MixinRegistrySimple<K, V> implements IMutableRegistry<K, V
     @Override
     public V removeObjectFromRegistry(K key)
     {
-        System.err.println("====================================================================================================");
-        System.err.println("====================================================================================================");
-        System.err.println("removeObjectFromRegistry: " + key);
-        System.err.println("====================================================================================================");
-        System.err.println("====================================================================================================");
-        
         this.values = null;
         return this.registryObjects.remove(key);
     }
