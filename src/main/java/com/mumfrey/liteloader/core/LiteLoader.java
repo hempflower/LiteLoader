@@ -40,7 +40,7 @@ import net.minecraft.crash.CrashReportCategory;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.network.EnumConnectionState;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.SPacketJoinGame;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.world.World;
 
@@ -880,7 +880,7 @@ public final class LiteLoader
      * @param netHandler
      * @param loginPacket
      */
-    void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
+    void onJoinGame(INetHandler netHandler, SPacketJoinGame loginPacket)
     {
         if (this.permissionsManagerClient != null)
         {

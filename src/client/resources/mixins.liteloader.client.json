@@ -20,7 +20,8 @@
         "MixinTileEntityRendererDispatcher",
         "MixinSimpleReloadableResourceManager",
         "MixinSoundHandler",
-        "MixinGuiTextField"
+        "MixinGuiTextField",
+        "MixinIntIdentityHashBiMap"
     ],
     "injectors": {
         "defaultRequire": 1

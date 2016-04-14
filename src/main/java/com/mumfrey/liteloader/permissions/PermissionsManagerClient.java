@@ -14,7 +14,7 @@ import java.util.TreeSet;
 import net.eq2online.permissions.ReplicatedPermissionsContainer;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.Permissible;
@@ -185,7 +185,7 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
         this.registeredClientPermissions.put(mod, new TreeSet<String>());
     }
 
-    public void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket)
+    public void onJoinGame(INetHandler netHandler, SPacketJoinGame joinGamePacket)
     {
         this.clearServerPermissions();
         this.scheduleRefresh();
@@ -207,7 +207,9 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
         this.serverPermissions.clear();
 
         for (Permissible permissible : this.permissibles)
+        {
             permissible.onPermissionsCleared(this);
+        }
     }
 
     /**
@@ -216,7 +218,9 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
     protected void sendPermissionQueries()
     {
         for (Permissible mod : this.registeredClientMods.values())
+        {
             this.sendPermissionQuery(mod);
+        }
     }
 
     /**

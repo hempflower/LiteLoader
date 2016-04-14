@@ -17,7 +17,7 @@ import net.minecraft.util.ResourceLocation;
 @Mixin(EntityRenderer.class)
 public abstract class MixinEntityRenderer implements IEntityRenderer
 {
-    @Shadow private static ResourceLocation[] shaderResourceLocations;
+    @Shadow private static ResourceLocation[] SHADERS_TEXTURES;
     @Shadow private boolean useShader;
     @Shadow private int shaderIndex;
     
@@ -139,7 +139,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     @Override
     public ResourceLocation[] getShaders()
     {
-        return MixinEntityRenderer.shaderResourceLocations;
+        return MixinEntityRenderer.SHADERS_TEXTURES;
     }
     
     @Override

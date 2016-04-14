@@ -4,7 +4,20 @@ import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.ChatRenderListener;
+import com.mumfrey.liteloader.EntityRenderListener;
+import com.mumfrey.liteloader.FrameBufferListener;
+import com.mumfrey.liteloader.GameLoopListener;
+import com.mumfrey.liteloader.HUDRenderListener;
+import com.mumfrey.liteloader.InitCompleteListener;
+import com.mumfrey.liteloader.OutboundChatFilter;
+import com.mumfrey.liteloader.OutboundChatListener;
+import com.mumfrey.liteloader.PostRenderListener;
+import com.mumfrey.liteloader.PreRenderListener;
+import com.mumfrey.liteloader.RenderListener;
+import com.mumfrey.liteloader.ScreenshotListener;
+import com.mumfrey.liteloader.Tickable;
+import com.mumfrey.liteloader.ViewportListener;
 import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
@@ -28,10 +41,10 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.resources.IResourceManagerReloadListener;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
-import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.util.Timer;
+import net.minecraft.util.text.ITextComponent;
 
 public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer> implements IResourceManagerReloadListener
 {
@@ -434,7 +447,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param packet
      * @param message
      */
-    void onSendChatMessage(C01PacketChatMessage packet, String message)
+    void onSendChatMessage(CPacketChatMessage packet, String message)
     {
         this.outboundChatListeners.all().onSendChatMessage(packet, message);
     }
@@ -522,9 +535,9 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param height
      * @param fbo
      */
-    void onScreenshot(CallbackInfoReturnable<IChatComponent> ci, String name, int width, int height, Framebuffer fbo)
+    void onScreenshot(CallbackInfoReturnable<ITextComponent> ci, String name, int width, int height, Framebuffer fbo)
     {
-        ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>(ci.getReturnValue());
+        ReturnValue<ITextComponent> ret = new ReturnValue<ITextComponent>(ci.getReturnValue());
 
         if (!this.screenshotListeners.all().onSaveScreenshot(name, width, height, fbo, ret))
         {

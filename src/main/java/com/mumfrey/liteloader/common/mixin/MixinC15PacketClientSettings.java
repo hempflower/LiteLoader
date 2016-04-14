@@ -5,9 +5,9 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.mumfrey.liteloader.common.ducks.IPacketClientSettings;
 
-import net.minecraft.network.play.client.C15PacketClientSettings;
+import net.minecraft.network.play.client.CPacketClientSettings;
 
-@Mixin(C15PacketClientSettings.class)
+@Mixin(CPacketClientSettings.class)
 public abstract class MixinC15PacketClientSettings implements IPacketClientSettings
 {
     @Shadow private int view;

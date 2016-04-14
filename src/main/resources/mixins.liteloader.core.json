@@ -5,9 +5,9 @@
     "refmap": "mixins.liteloader.core.refmap.json",
     "mixins": [
         "MixinMinecraftServer",
-        "MixinServerConfigurationManager",
+        "MixinPlayerList",
         "MixinNetHandlerPlayServer",
-        "MixinItemInWorldManager",
+        "MixinPlayerInteractionManager",
         "MixinC15PacketClientSettings",
         "MixinS02PacketChat"
     ],

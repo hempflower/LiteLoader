@@ -1,7 +1,6 @@
 package com.mumfrey.liteloader.client.gui.startup;
 
 import static com.mumfrey.liteloader.gl.GL.*;
-import static net.minecraft.client.renderer.vertex.DefaultVertexFormats.*;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -15,7 +14,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -255,13 +254,13 @@ public class LoadingBar extends LoadingProgress
 
         this.textureManager.bindTexture(this.textureLocation);
         Tessellator tessellator = Tessellator.getInstance();
-        WorldRenderer worldRenderer = tessellator.getWorldRenderer();
-        worldRenderer.begin(GL_QUADS, POSITION);
+        VertexBuffer vertexBuffer = tessellator.getBuffer();
+        vertexBuffer.begin(GL_QUADS, VF_POSITION);
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        worldRenderer.pos(0.0D,        scaledHeight, 0.0D).endVertex();
-        worldRenderer.pos(scaledWidth, scaledHeight, 0.0D).endVertex();
-        worldRenderer.pos(scaledWidth, 0.0D,         0.0D).endVertex();
-        worldRenderer.pos(0.0D,        0.0D,         0.0D).endVertex();
+        vertexBuffer.pos(0.0D,        scaledHeight, 0.0D).endVertex();
+        vertexBuffer.pos(scaledWidth, scaledHeight, 0.0D).endVertex();
+        vertexBuffer.pos(scaledWidth, 0.0D,         0.0D).endVertex();
+        vertexBuffer.pos(0.0D,        0.0D,         0.0D).endVertex();
         tessellator.draw();
 
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -274,11 +273,11 @@ public class LoadingBar extends LoadingProgress
         int v2 = 256;
 
         float texMapScale = 0.00390625F;
-        worldRenderer.begin(GL_QUADS, POSITION_TEX);
-        worldRenderer.pos(left + 0,  top + v2, 0.0D).tex((u1 + 0)  * texMapScale, (v1 + v2) * texMapScale).endVertex();
-        worldRenderer.pos(left + u2, top + v2, 0.0D).tex((u1 + u2) * texMapScale, (v1 + v2) * texMapScale).endVertex();
-        worldRenderer.pos(left + u2, top + 0,  0.0D).tex((u1 + u2) * texMapScale, (v1 + 0)  * texMapScale).endVertex();
-        worldRenderer.pos(left + 0,  top + 0,  0.0D).tex((u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale).endVertex();
+        vertexBuffer.begin(GL_QUADS, VF_POSITION_TEX);
+        vertexBuffer.pos(left + 0,  top + v2, 0.0D).tex((u1 + 0)  * texMapScale, (v1 + v2) * texMapScale).endVertex();
+        vertexBuffer.pos(left + u2, top + v2, 0.0D).tex((u1 + u2) * texMapScale, (v1 + v2) * texMapScale).endVertex();
+        vertexBuffer.pos(left + u2, top + 0,  0.0D).tex((u1 + u2) * texMapScale, (v1 + 0)  * texMapScale).endVertex();
+        vertexBuffer.pos(left + 0,  top + 0,  0.0D).tex((u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale).endVertex();
         tessellator.draw();
 
         glEnableTexture2D();
@@ -319,25 +318,25 @@ public class LoadingBar extends LoadingProgress
 //        tessellator.addVertex(0.0D,               scaledHeight - (scaledHeight / 3), 0.0D);
 //        tessellator.draw();
 
-        worldRenderer.begin(GL_QUADS, POSITION);
+        vertexBuffer.begin(GL_QUADS, VF_POSITION);
         float luma = this.barLuma / 255.0F;
         glColor4f(luma, luma, luma, 0.5F);
-        worldRenderer.pos(0.0D,               scaledHeight,             0.0D).endVertex();
-        worldRenderer.pos(0.0D + scaledWidth, scaledHeight,             0.0D).endVertex();
-        worldRenderer.pos(0.0D + scaledWidth, scaledHeight - barHeight, 0.0D).endVertex();
-        worldRenderer.pos(0.0D,               scaledHeight - barHeight, 0.0D).endVertex();
+        vertexBuffer.pos(0.0D,               scaledHeight,             0.0D).endVertex();
+        vertexBuffer.pos(0.0D + scaledWidth, scaledHeight,             0.0D).endVertex();
+        vertexBuffer.pos(0.0D + scaledWidth, scaledHeight - barHeight, 0.0D).endVertex();
+        vertexBuffer.pos(0.0D,               scaledHeight - barHeight, 0.0D).endVertex();
         tessellator.draw();
 
         barHeight -= 1;
 
-        worldRenderer.begin(GL_QUADS, POSITION_COLOR);
+        vertexBuffer.begin(GL_QUADS, VF_POSITION_COLOR);
         float r2 = this.r2 / 255.0F;
         float g2 = this.g2 / 255.0F;
         float b2 = this.b2 / 255.0F;
-        worldRenderer.pos(1.0D + barWidth * progress, scaledHeight - 1,         1.0D).color(r2, g2, b2, 1.0F).endVertex();
-        worldRenderer.pos(1.0D + barWidth * progress, scaledHeight - barHeight, 1.0D).color(r2, g2, b2, 1.0F).endVertex();
-        worldRenderer.pos(1.0D,                       scaledHeight - barHeight, 1.0D).color(0.0F, 0.0F, 0.0F, 1.0F).endVertex();
-        worldRenderer.pos(1.0D,                       scaledHeight - 1,         1.0D).color(0.0F, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexBuffer.pos(1.0D + barWidth * progress, scaledHeight - 1,         1.0D).color(r2, g2, b2, 1.0F).endVertex();
+        vertexBuffer.pos(1.0D + barWidth * progress, scaledHeight - barHeight, 1.0D).color(r2, g2, b2, 1.0F).endVertex();
+        vertexBuffer.pos(1.0D,                       scaledHeight - barHeight, 1.0D).color(0.0F, 0.0F, 0.0F, 1.0F).endVertex();
+        vertexBuffer.pos(1.0D,                       scaledHeight - 1,         1.0D).color(0.0F, 0.0F, 0.0F, 1.0F).endVertex();
         tessellator.draw();
 
         glAlphaFunc(GL_GREATER, 0.1F);

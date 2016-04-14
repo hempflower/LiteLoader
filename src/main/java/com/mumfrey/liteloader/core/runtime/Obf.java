@@ -12,7 +12,7 @@ import org.spongepowered.asm.obfuscation.SrgMethod;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.8.9
+ * TODO Obfuscation 1.9
  */
 public class Obf
 {
@@ -38,14 +38,14 @@ public class Obf
 
     // Classes
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "ave" );
-    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bfk" );
-    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "afi" );
+    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bcf" );
+    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bng" );
+    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "aju" );
     public static final Obf                CrashReport$6 = new Obf("net.minecraft.crash.CrashReport$6",                          "b$6" );
     public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "ep"  );
-    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "zy"  );
-    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "ny"  );
-    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "akw" );
+    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ads" );
+    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "oo"  );
+    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "apw" );
 
     // Fields
     // -----------------------------------------------------------------------------------------
@@ -54,11 +54,11 @@ public class Obf
 
     // Methods
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    startGame = new Obf(Obf.Minecraft,                   "func_71384_a",              "am"  );
+    public static final Obf                    startGame = new Obf(Obf.Minecraft,                   "func_71384_a",              "an"  );
     public static final Obf                 startSection = new Obf(Obf.Profiler,                    "func_76320_a",              "a"   );
     public static final Obf                   endSection = new Obf(Obf.Profiler,                    "func_76319_b",              "b"   );
     public static final Obf              endStartSection = new Obf(Obf.Profiler,                    "func_76318_c",              "c"   );
-    public static final Obf                processPacket = new Obf(Packets.S12PacketEntityVelocity, "func_148833_a",             "a"   );
+    public static final Obf                processPacket = new Obf(Packets.SPacketEntityVelocity,   "func_148833_a",             "a"   );
 
     // CHECKSTYLE:ON
 

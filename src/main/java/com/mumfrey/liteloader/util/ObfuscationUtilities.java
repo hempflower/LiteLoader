@@ -3,7 +3,7 @@ package com.mumfrey.liteloader.util;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 

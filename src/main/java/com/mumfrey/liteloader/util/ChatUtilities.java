@@ -2,10 +2,10 @@ package com.mumfrey.liteloader.util;
 
 import java.util.List;
 
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 
 /**
  * Utility functions for chat
@@ -20,7 +20,7 @@ public abstract class ChatUtilities
     {
         StringBuilder formattingCodes = new StringBuilder();
 
-        for (EnumChatFormatting chatFormat : EnumChatFormatting.values())
+        for (TextFormatting chatFormat : TextFormatting.values())
         {
             formattingCodes.append(chatFormat.toString().charAt(1));
         }
@@ -36,13 +36,13 @@ public abstract class ChatUtilities
      * @param code Code
      * @return chat style
      */
-    public static ChatStyle getChatStyleFromCode(char code)
+    public static Style getChatStyleFromCode(char code)
     {
         int pos = ChatUtilities.formattingCodeLookup.indexOf(code);
         if (pos < 0) return null;
-        EnumChatFormatting format = EnumChatFormatting.values()[pos];
+        TextFormatting format = TextFormatting.values()[pos];
 
-        ChatStyle style = new ChatStyle();
+        Style style = new Style();
         if (format.isColor())
         {
             style.setColor(format);
@@ -67,12 +67,12 @@ public abstract class ChatUtilities
      * Convert a component containing text formatted with legacy codes to a
      * native ChatComponent structure.
      */
-    public static IChatComponent convertLegacyCodes(IChatComponent chat)
+    public static ITextComponent convertLegacyCodes(ITextComponent chat)
     {
         return ChatUtilities.covertCodesInPlace(chat);
     }
 
-    private static List<IChatComponent> covertCodesInPlace(List<IChatComponent> siblings)
+    private static List<ITextComponent> covertCodesInPlace(List<ITextComponent> siblings)
     {
         for (int index = 0; index < siblings.size(); index++)
         {
@@ -82,21 +82,21 @@ public abstract class ChatUtilities
         return siblings;
     }
 
-    private static IChatComponent covertCodesInPlace(IChatComponent component)
+    private static ITextComponent covertCodesInPlace(ITextComponent component)
     {
-        IChatComponent newComponent = null;
-        if (component instanceof ChatComponentText)
+        ITextComponent newComponent = null;
+        if (component instanceof TextComponentString)
         {
-            ChatComponentText textComponent = (ChatComponentText)component;
-            ChatStyle style = textComponent.getChatStyle();
-            String text = textComponent.getChatComponentText_TextValue();
+            TextComponentString textComponent = (TextComponentString)component;
+            Style style = textComponent.getStyle();
+            String text = textComponent.getFormattedText();
 
             int pos = text.indexOf('\247');
             while (pos > -1 && text != null)
             {
                 if (pos < text.length() - 1)
                 {
-                    IChatComponent head = new ChatComponentText(pos > 0 ? text.substring(0, pos) : "").setChatStyle(style);
+                    ITextComponent head = new TextComponentString(pos > 0 ? text.substring(0, pos) : "").setStyle(style);
                     style = ChatUtilities.getChatStyleFromCode(text.charAt(pos + 1));
                     text = text.substring(pos + 2);
                     newComponent = (newComponent == null) ? head : newComponent.appendSibling(head);
@@ -110,7 +110,7 @@ public abstract class ChatUtilities
 
             if (text != null)
             {
-                IChatComponent tail = new ChatComponentText(text).setChatStyle(style);
+                ITextComponent tail = new TextComponentString(text).setStyle(style);
                 newComponent = (newComponent == null) ? tail : newComponent.appendSibling(tail);
             }
         }
@@ -121,7 +121,7 @@ public abstract class ChatUtilities
             return component;
         }
 
-        for (IChatComponent oldSibling : ChatUtilities.covertCodesInPlace((List<IChatComponent>)component.getSiblings()))
+        for (ITextComponent oldSibling : ChatUtilities.covertCodesInPlace((List<ITextComponent>)component.getSiblings()))
         {
             newComponent.appendSibling(oldSibling);
         }

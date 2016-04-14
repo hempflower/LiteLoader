@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader;
 
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
 
 import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 
@@ -24,5 +24,5 @@ public interface ScreenshotListener extends LiteMod
      * @return FALSE to suspend further processing, or TRUE to allow processing
      *      to continue normally
      */
-    public boolean onSaveScreenshot(String screenshotName, int width, int height, Framebuffer fbo, ReturnValue<IChatComponent> message);
+    public boolean onSaveScreenshot(String screenshotName, int width, int height, Framebuffer fbo, ReturnValue<ITextComponent> message);
 }

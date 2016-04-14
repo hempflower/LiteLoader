@@ -2,21 +2,30 @@ package com.mumfrey.liteloader.client.mixin;
 
 import java.util.Map;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-import com.mumfrey.liteloader.client.ducks.IRegistrySimple;
+import com.mumfrey.liteloader.client.ducks.IMutableRegistry;
 
-import net.minecraft.util.RegistrySimple;
+import net.minecraft.util.registry.RegistrySimple;
 
 @Mixin(RegistrySimple.class)
-public abstract class MixinRegistrySimple<K, V> implements IRegistrySimple<K, V>
+public abstract class MixinRegistrySimple<K, V> implements IMutableRegistry<K, V>
 {
-    @Shadow protected Map<K, V> registryObjects;
+    @Shadow private Object[] values;
+    @Shadow @Final protected Map<K, V> registryObjects;
     
     @Override
-    public Map<K, V> getRegistryObjects()
+    public V removeObjectFromRegistry(K key)
     {
-        return this.registryObjects;
+        System.err.println("====================================================================================================");
+        System.err.println("====================================================================================================");
+        System.err.println("removeObjectFromRegistry: " + key);
+        System.err.println("====================================================================================================");
+        System.err.println("====================================================================================================");
+        
+        this.values = null;
+        return this.registryObjects.remove(key);
     }
 }

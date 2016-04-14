@@ -2,7 +2,7 @@ package com.mumfrey.liteloader.core;
 
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S3FPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketCustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.api.Listener;
@@ -76,7 +76,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
      * 
      * @param customPayload
      */
-    public abstract void onPluginChannelMessage(S3FPacketCustomPayload customPayload);
+    public abstract void onPluginChannelMessage(SPacketCustomPayload customPayload);
 
     /**
      * @param channel

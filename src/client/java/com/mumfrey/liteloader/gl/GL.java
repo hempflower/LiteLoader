@@ -6,7 +6,11 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.CullFace;
+import net.minecraft.client.renderer.GlStateManager.FogMode;
 import net.minecraft.client.renderer.GlStateManager.TexGen;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
@@ -42,6 +46,20 @@ import org.lwjgl.util.glu.GLU;
  */
 public class GL
 {
+    // Vertex Formats
+    public static final VertexFormat VF_BLOCK = DefaultVertexFormats.BLOCK;
+    public static final VertexFormat VF_ITEM = DefaultVertexFormats.ITEM;
+    public static final VertexFormat VF_OLDMODEL_POSITION_TEX_NORMAL = DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL;
+    public static final VertexFormat VF_PARTICLE_POSITION_TEX_COLOR_LMAP = DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP;
+    public static final VertexFormat VF_POSITION = DefaultVertexFormats.POSITION;
+    public static final VertexFormat VF_POSITION_COLOR = DefaultVertexFormats.POSITION_COLOR;
+    public static final VertexFormat VF_POSITION_TEX = DefaultVertexFormats.POSITION_TEX;
+    public static final VertexFormat VF_POSITION_NORMAL = DefaultVertexFormats.POSITION_NORMAL;
+    public static final VertexFormat VF_POSITION_TEX_COLOR = DefaultVertexFormats.POSITION_TEX_COLOR;
+    public static final VertexFormat VF_POSITION_TEX_NORMAL = DefaultVertexFormats.POSITION_TEX_NORMAL;
+    public static final VertexFormat VF_POSITION_TEX_LMAP_COLOR = DefaultVertexFormats.POSITION_TEX_LMAP_COLOR;
+    public static final VertexFormat VF_POSITION_TEX_COLOR_NORMAL = DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL;
+    
     // GL11
     public static final int GL_ACCUM = 0x100;
     public static final int GL_LOAD = 0x101;
@@ -943,7 +961,7 @@ public class GL
         GlStateManager.disableFog();
     }
 
-    public static void glSetFogMode(int mode)
+    public static void glSetFogMode(FogMode mode)
     {
         GlStateManager.setFog(mode);
     }
@@ -988,7 +1006,7 @@ public class GL
         GlStateManager.disableCull();
     }
 
-    public static void glCullFace(int mode)
+    public static void glCullFace(CullFace mode)
     {
         GlStateManager.cullFace(mode);
     }

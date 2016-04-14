@@ -5,22 +5,22 @@ import org.spongepowered.asm.mixin.Shadow;
 
 import com.mumfrey.liteloader.common.ducks.IChatPacket;
 
-import net.minecraft.network.play.server.S02PacketChat;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.network.play.server.SPacketChat;
+import net.minecraft.util.text.ITextComponent;
 
-@Mixin(S02PacketChat.class)
+@Mixin(SPacketChat.class)
 public abstract class MixinS02PacketChat implements IChatPacket
 {
-    @Shadow private IChatComponent chatComponent;
+    @Shadow private ITextComponent chatComponent;
     
     @Override
-    public IChatComponent getChatComponent()
+    public ITextComponent getChatComponent()
     {
         return this.chatComponent;
     }
     
     @Override
-    public void setChatComponent(IChatComponent chatComponent)
+    public void setChatComponent(ITextComponent chatComponent)
     {
         this.chatComponent = chatComponent;
     }

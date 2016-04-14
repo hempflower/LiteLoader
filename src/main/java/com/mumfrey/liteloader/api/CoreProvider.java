@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader.api;
 
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
@@ -59,5 +59,5 @@ public interface CoreProvider extends TickObserver, WorldObserver, ShutdownObser
      * @param netHandler
      * @param loginPacket
      */
-    public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket);
+    public abstract void onJoinGame(INetHandler netHandler, SPacketJoinGame loginPacket);
 }

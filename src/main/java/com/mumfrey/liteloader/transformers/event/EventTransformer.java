@@ -27,7 +27,6 @@ import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * EventTransformer is the spiritual successor to the
@@ -379,8 +378,7 @@ public final class EventTransformer extends ClassTransformer
     {
         Event head = injection.getHead();
 
-        Verbosity verbosity = head.isVerbose() ? Verbosity.NORMAL : Verbosity.VERBOSE;
-        LiteLoaderLogger.info(verbosity, "Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name,
+        LiteLoaderLogger.debug("Injecting %s[x%d] in %s in %s", head.getName(), injection.size(), method.name,
                 ClassTransformer.getSimpleClassName(classNode));
 
         MethodNode handler = head.inject(injectionPoint, injection.isCancellable(), this.globalEventID, injection.captureLocals(),

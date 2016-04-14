@@ -16,7 +16,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.WorldSettings;
 
 /**
@@ -165,7 +165,7 @@ public abstract class ClientProxy extends Proxy
         ClientProxy.broker.onRenderTerrain(partialTicks, pass, timeSlice);
     }
 
-    public static void onSaveScreenshot(CallbackInfoReturnable<IChatComponent> ci, File gameDir, String name, int width, int height,
+    public static void onSaveScreenshot(CallbackInfoReturnable<ITextComponent> ci, File gameDir, String name, int width, int height,
             Framebuffer fbo)
     {
         ClientProxy.broker.onScreenshot(ci, name, width, height, fbo);

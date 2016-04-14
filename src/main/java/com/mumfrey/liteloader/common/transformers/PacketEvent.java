@@ -1,5 +1,8 @@
 package com.mumfrey.liteloader.common.transformers;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
@@ -20,6 +23,8 @@ import com.mumfrey.liteloader.transformers.event.EventInfo;
  */
 public class PacketEvent extends Event
 {
+    private static Set<String> names = new HashSet<String>();
+    
     /**
      * Soft index for this packet, used as a lookup for speed when determining
      * handlers.
@@ -28,7 +33,7 @@ public class PacketEvent extends Event
 
     PacketEvent(Packets packet)
     {
-        super("on" + packet.getShortName(), true, 1000);
+        super(PacketEvent.getPacketEventName(packet), true, 1000);
         this.packetIndex = packet.getIndex();
         this.verbose = false;
     }
@@ -61,5 +66,27 @@ public class PacketEvent extends Event
                 EventInfo.getConstructorDescriptor().replace(")", "I)"), false));
 
         return ctorMAXS;
+    }
+
+    private static String getPacketEventName(Packets packet)
+    {
+        String baseName = "on" + packet.getShortName();
+        if (!PacketEvent.names.contains(baseName))
+        {
+            PacketEvent.names.add(baseName);
+            return baseName;
+        }
+        
+        for (int ordinal = 1; ordinal < 33; ordinal++)
+        {
+            String offsetName = String.format("%s#%d", baseName, ordinal);
+            if (!PacketEvent.names.contains(offsetName))
+            {
+                PacketEvent.names.add(offsetName);
+                return offsetName;
+            }
+        }
+        
+        throw new IllegalArgumentException("Too many packet events with the same name: " + baseName);
     }
 }

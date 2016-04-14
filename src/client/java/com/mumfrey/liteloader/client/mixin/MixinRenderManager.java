@@ -25,7 +25,7 @@ public abstract class MixinRenderManager implements IRenderManager
         return this.entityRenderMap;
     }
     
-    @Redirect(method = "doRenderEntity(Lnet/minecraft/entity/Entity;DDDFFZ)Z", at = @At(
+    @Redirect(method = "doRenderEntity(Lnet/minecraft/entity/Entity;DDDFFZ)V", at = @At(
         value = "INVOKE",
         target = "Lnet/minecraft/client/renderer/entity/Render;doRender(Lnet/minecraft/entity/Entity;DDDFF)V"
     ))

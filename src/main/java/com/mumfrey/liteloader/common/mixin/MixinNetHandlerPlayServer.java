@@ -2,27 +2,32 @@ package com.mumfrey.liteloader.common.mixin;
 
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Surrogate;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import com.mumfrey.liteloader.common.ducks.ITeleportHandler;
 import com.mumfrey.liteloader.core.Proxy;
 
 import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.client.C07PacketPlayerDigging;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
-import net.minecraft.network.play.client.C0APacketAnimation;
+import net.minecraft.network.play.client.CPacketAnimation;
+import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.network.play.client.CPacketPlayerBlockPlacement;
+import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 
 @Mixin(NetHandlerPlayServer.class)
-public abstract class MixinNetHandlerPlayServer
+public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
 {
+    @Shadow private int teleportId;
+    @Shadow private Vec3d field_184362_y;
+    
     @Inject(
-        method = "processPlayerBlockPlacement(Lnet/minecraft/network/play/client/C08PacketPlayerBlockPlacement;)V",
+        method = "processPlayerBlockPlacement(Lnet/minecraft/network/play/client/CPacketPlayerBlockPlacement;)V",
         cancellable = true,
         at = @At(
             value = "INVOKE",
@@ -31,13 +36,13 @@ public abstract class MixinNetHandlerPlayServer
                     + "(Lnet/minecraft/network/Packet;Lnet/minecraft/network/INetHandler;Lnet/minecraft/util/IThreadListener;)V"
         )
     )
-    private void onPlaceBlock(C08PacketPlayerBlockPlacement packetIn, CallbackInfo ci)
+    private void onPlaceBlock(CPacketPlayerBlockPlacement packetIn, CallbackInfo ci)
     {
         Proxy.onPlaceBlock(ci, (NetHandlerPlayServer)(Object)this, packetIn);
     }
     
     @Inject(
-        method = "handleAnimation(Lnet/minecraft/network/play/client/C0APacketAnimation;)V",
+        method = "handleAnimation(Lnet/minecraft/network/play/client/CPacketAnimation;)V",
         cancellable = true,
         at = @At(
             value = "INVOKE",
@@ -46,13 +51,13 @@ public abstract class MixinNetHandlerPlayServer
                     + "(Lnet/minecraft/network/Packet;Lnet/minecraft/network/INetHandler;Lnet/minecraft/util/IThreadListener;)V"
         )
     )
-    private void onClickedAir(C0APacketAnimation packetIn, CallbackInfo ci)
+    private void onClickedAir(CPacketAnimation packetIn, CallbackInfo ci)
     {
         Proxy.onClickedAir(ci, (NetHandlerPlayServer)(Object)this, packetIn);
     }
     
     @Inject(
-        method = "processPlayerDigging(Lnet/minecraft/network/play/client/C07PacketPlayerDigging;)V",
+        method = "processPlayerDigging(Lnet/minecraft/network/play/client/CPacketPlayerDigging;)V",
         cancellable = true,
         at = @At(
             value = "INVOKE",
@@ -61,31 +66,37 @@ public abstract class MixinNetHandlerPlayServer
                     + "(Lnet/minecraft/network/Packet;Lnet/minecraft/network/INetHandler;Lnet/minecraft/util/IThreadListener;)V"
         )
     )
-    private void onPlayerDigging(C07PacketPlayerDigging packetIn, CallbackInfo ci)
+    private void onPlayerDigging(CPacketPlayerDigging packetIn, CallbackInfo ci)
     {
         Proxy.onPlayerDigging(ci, (NetHandlerPlayServer)(Object)this, packetIn);
     }
     
     @Inject(
-        method = "processPlayer(Lnet/minecraft/network/play/client/C03PacketPlayer;)V",
+        method = "processPlayer(Lnet/minecraft/network/play/client/CPacketPlayer;)V",
         cancellable = true,
         locals = LocalCapture.CAPTURE_FAILHARD,
         at = @At(
             value = "FIELD",
             opcode = Opcodes.GETFIELD,
             target = "Lnet/minecraft/entity/player/EntityPlayerMP;posY:D",
-            ordinal = 4
+            ordinal = 3
         )
     )
-    private void onPlayerMoved(C03PacketPlayer packetIn, CallbackInfo ci, WorldServer world, double oldPosX, double oldPosY, double oldPosZ,
-            double deltaMoveSq, double deltaX, double deltaY, double deltaZ)
+    private void onPlayerMoved(CPacketPlayer packetIn, CallbackInfo ci, WorldServer world)
     {
-        Proxy.onPlayerMoved(ci, (NetHandlerPlayServer)(Object)this, packetIn, world, oldPosX, oldPosY, oldPosZ, deltaMoveSq, deltaX, deltaY, deltaZ);
+        Proxy.onPlayerMoved(ci, (NetHandlerPlayServer)(Object)this, packetIn, world);
     }
     
-    @Surrogate
-    private void onPlayerMoved(C03PacketPlayer packetIn, CallbackInfo ci, WorldServer world, double oldPosX, double oldPosY, double oldPosZ)
+    @Override
+    public int beginTeleport(Vec3d location)
     {
-        Proxy.onPlayerMoved(ci, (NetHandlerPlayServer)(Object)this, packetIn, world, oldPosX, oldPosY, oldPosZ);
+        this.field_184362_y = location;
+
+        if (++this.teleportId == Integer.MAX_VALUE)
+        {
+            this.teleportId = 0;
+        }
+        
+        return this.teleportId;
     }
 }

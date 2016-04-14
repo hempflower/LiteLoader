@@ -1,7 +1,7 @@
 package com.mumfrey.liteloader;
 
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.client.CPacketChatMessage;
 
 /**
  * Interface for mods which can filter inbound chat
@@ -18,5 +18,5 @@ public interface ServerChatFilter extends LiteMod
      * @param message Chat message
      * @return True to keep the packet, false to discard
      */
-    public abstract boolean onChat(EntityPlayerMP player, C01PacketChatMessage chatPacket, String message);
+    public abstract boolean onChat(EntityPlayerMP player, CPacketChatMessage chatPacket, String message);
 }

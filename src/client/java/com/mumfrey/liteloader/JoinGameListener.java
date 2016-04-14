@@ -2,7 +2,7 @@ package com.mumfrey.liteloader;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 import com.mojang.realmsclient.dto.RealmsServer;
 
@@ -25,5 +25,5 @@ public interface JoinGameListener extends LiteMod
      * @param realmsServer If connecting to a realm, a reference to the
      *      RealmsServer object
      */
-    public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket, ServerData serverData, RealmsServer realmsServer);
+    public abstract void onJoinGame(INetHandler netHandler, SPacketJoinGame joinGamePacket, ServerData serverData, RealmsServer realmsServer);
 }

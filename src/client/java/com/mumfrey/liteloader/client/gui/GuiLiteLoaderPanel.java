@@ -1,7 +1,6 @@
 package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
-import static net.minecraft.client.renderer.vertex.DefaultVertexFormats.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,7 +31,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.VertexBuffer;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
@@ -790,8 +789,8 @@ public class GuiLiteLoaderPanel extends GuiScreen
         glColor4f(1.0F, 1.0F, 1.0F, alpha);
 
         Tessellator tessellator = Tessellator.getInstance();
-        WorldRenderer worldRenderer = tessellator.getWorldRenderer();
-        worldRenderer.begin(GL_QUADS, POSITION_TEX);
+        VertexBuffer worldRenderer = tessellator.getBuffer();
+        worldRenderer.begin(GL_QUADS, VF_POSITION_TEX);
         worldRenderer.pos(x + 0,     y + height, 0).tex(u , v2).endVertex();
         worldRenderer.pos(x + width, y + height, 0).tex(u2, v2).endVertex();
         worldRenderer.pos(x + width, y + 0,      0).tex(u2, v ).endVertex();
