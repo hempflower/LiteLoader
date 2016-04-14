@@ -123,6 +123,7 @@ public abstract class Start
 
         File gameDir = new File(System.getProperty("user.dir"));
         File assetsDir = new File(gameDir, "assets");
+        File assetIndexDir = new File(assetsDir, "indexes");
 
         Start.addArg(qualifiedArgs, "--tweakClass",     LiteLoaderTweaker.class.getName());
         Start.addArg(qualifiedArgs, "--username",       loginManager.getProfileName());
@@ -130,10 +131,10 @@ public abstract class Start
         Start.addArg(qualifiedArgs, "--accessToken",    loginManager.getAuthenticatedToken());
         Start.addArg(qualifiedArgs, "--userType",       loginManager.getUserType());
         Start.addArg(qualifiedArgs, "--userProperties", loginManager.getUserProperties());
-        Start.addArg(qualifiedArgs, "--version",        "mcp");
-        Start.addArg(qualifiedArgs, "--gameDir",        gameDir.getAbsolutePath());
-        Start.addArg(qualifiedArgs, "--assetIndex",     LiteLoaderTweaker.VERSION);
-        Start.addArg(qualifiedArgs, "--assetsDir",      assetsDir.getAbsolutePath());
+        Start.addArg(qualifiedArgs, "--version",        "mcp", true);
+        Start.addArg(qualifiedArgs, "--gameDir",        gameDir.getAbsolutePath(), true);
+        Start.addArg(qualifiedArgs, "--assetIndex",     LiteLoaderTweaker.VERSION, true);
+        Start.addArg(qualifiedArgs, "--assetsDir",      assetsDir.getAbsolutePath(), !assetIndexDir.exists());
     }
 
     private static void addRequiredArgsServer(String[] args, List<String> unqualifiedArgs, Map<String, Set<String>> qualifiedArgs)
@@ -162,12 +163,21 @@ public abstract class Start
 
     private static void addArg(Map<String, Set<String>> qualifiedArgs, String qualifier, String arg)
     {
+        Start.addArg(qualifiedArgs, qualifier, arg, false);
+    }
+    
+    private static void addArg(Map<String, Set<String>> qualifiedArgs, String qualifier, String arg, boolean skipExisting)
+    {
         Set<String> args = qualifiedArgs.get(qualifier);
-
+        
         if (args == null)
         {
             args =  new HashSet<String>();
             qualifiedArgs.put(qualifier, args);
+        }
+        else if (skipExisting)
+        {
+            return;
         }
 
         if (!Start.MULTI_VALUE_ARGS.contains(qualifier))
