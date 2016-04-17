@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers.event;
 
 import java.io.File;
@@ -20,6 +25,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.CheckClassAdapter;
+
 import com.google.common.collect.Maps;
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
@@ -184,7 +190,9 @@ public final class EventTransformer extends ClassTransformer
         {
             boolean cancellable = false;
             for (Event event : this.events)
+            {
                 cancellable |= event.isCancellable();
+            }
             return cancellable;
         }
     }

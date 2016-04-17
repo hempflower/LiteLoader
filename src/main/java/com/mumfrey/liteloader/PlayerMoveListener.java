@@ -1,9 +1,14 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
-
-import net.minecraft.entity.player.EntityPlayerMP;
 
 import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 import com.mumfrey.liteloader.util.Position;
+
+import net.minecraft.entity.player.EntityPlayerMP;
 
 /**
  * Interface for mods which want to monitor or control player movements

@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.api;
 
 import java.net.URI;
 
-import net.minecraft.util.ResourceLocation;
-
 import com.mumfrey.liteloader.util.render.Icon;
+
+import net.minecraft.util.ResourceLocation;
 
 /**
  * LiteLoader Extensible API - Branding Provider

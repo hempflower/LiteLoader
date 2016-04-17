@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
+
+import com.mojang.realmsclient.dto.RealmsServer;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.play.server.SPacketJoinGame;
-
-import com.mojang.realmsclient.dto.RealmsServer;
 
 
 /**

@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util.log;
 
 import java.io.IOException;
@@ -5,6 +10,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingFormatArgumentException;
@@ -29,7 +35,7 @@ public class LiteLoaderLogger extends AbstractAppender
 
     private static Logger logger = (Logger)LogManager.getLogger("LiteLoader");
 
-    private static LinkedList<String> logTail = new LinkedList<String>();
+    private static Deque<String> logTail = new LinkedList<String>();
 
     private static long logIndex = 0;
 

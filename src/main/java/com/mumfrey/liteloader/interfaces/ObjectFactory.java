@@ -1,6 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.interfaces;
-
-import net.minecraft.server.MinecraftServer;
 
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
@@ -10,6 +13,8 @@ import com.mumfrey.liteloader.core.ServerPluginChannels;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
 import com.mumfrey.liteloader.util.Input;
+
+import net.minecraft.server.MinecraftServer;
 
 /**
  * Factory for generating loader managament objects based on the environment

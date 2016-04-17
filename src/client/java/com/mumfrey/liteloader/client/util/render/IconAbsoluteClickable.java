@@ -1,8 +1,13 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.util.render;
 
-import net.minecraft.util.ResourceLocation;
-
 import com.mumfrey.liteloader.util.render.IconClickable;
+
+import net.minecraft.util.ResourceLocation;
 
 public abstract class IconAbsoluteClickable extends IconAbsolute implements IconClickable
 {

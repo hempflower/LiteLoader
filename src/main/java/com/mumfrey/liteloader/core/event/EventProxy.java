@@ -1,16 +1,21 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core.event;
 
 import java.util.concurrent.Callable;
 
 import javax.management.RuntimeErrorException;
 
-import net.minecraft.crash.CrashReport;
-import net.minecraft.crash.CrashReportCategory;
-
 import org.objectweb.asm.Type;
 
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
+
+import net.minecraft.crash.CrashReport;
+import net.minecraft.crash.CrashReportCategory;
 
 /**
  * EventProxy is a special class used by the EventInjectionTransformer, it is a

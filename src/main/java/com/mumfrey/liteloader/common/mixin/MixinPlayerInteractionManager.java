@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.common.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -11,10 +16,10 @@ import com.mumfrey.liteloader.core.Proxy;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.management.PlayerInteractionManager;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 @Mixin(PlayerInteractionManager.class)

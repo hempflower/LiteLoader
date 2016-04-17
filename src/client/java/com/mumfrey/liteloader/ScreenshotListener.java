@@ -1,9 +1,14 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
+
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.text.ITextComponent;
-
-import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 
 /**
  * Interface for mods which want to handle or inhibit the saving of screenshots

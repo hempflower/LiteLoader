@@ -1,6 +1,17 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -19,7 +30,12 @@ import com.mumfrey.liteloader.api.manager.APIRegistry;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
-import com.mumfrey.liteloader.launch.*;
+import com.mumfrey.liteloader.launch.ClassTransformerManager;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
+import com.mumfrey.liteloader.launch.LoaderBootstrap;
+import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.launch.StartupEnvironment;
 import com.mumfrey.liteloader.util.ObfuscationUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
@@ -200,7 +216,9 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         if (apisToLoad != null)
         {
             for (String apiClassName : apisToLoad)
+            {
                 this.registerAPI(apiClassName);
+            }
         }
 
         this.apiRegistry.bake();

@@ -1,7 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.ChatFilter;
+import com.mumfrey.liteloader.ChatListener;
+import com.mumfrey.liteloader.JoinGameListener;
+import com.mumfrey.liteloader.PostLoginListener;
+import com.mumfrey.liteloader.PreJoinGameListener;
 import com.mumfrey.liteloader.common.ducks.IChatPacket;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
@@ -23,11 +32,11 @@ import net.minecraft.network.Packet;
 import net.minecraft.network.login.INetHandlerLoginClient;
 import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.server.SPacketJoinGame;
 import net.minecraft.network.play.server.SPacketChat;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.ITextComponent;
+import net.minecraft.network.play.server.SPacketJoinGame;
 import net.minecraft.util.IThreadListener;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * Client-side packet event handlers

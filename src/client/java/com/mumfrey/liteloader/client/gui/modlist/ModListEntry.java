@@ -1,10 +1,12 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui.modlist;
 
 import java.util.List;
 import java.util.Set;
-
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.resources.I18n;
 
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
@@ -13,6 +15,9 @@ import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
+
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.resources.I18n;
 
 /**
  * Represents a mod in the mod info screen, keeps track of mod information and

@@ -1,6 +1,12 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
@@ -74,7 +80,7 @@ public class LiteLoaderMods
     /**
      * Global list of mods which we can load
      */
-    protected final List<Mod> allMods = new LinkedList<Mod>();
+    protected final List<Mod> allMods = new ArrayList<Mod>();
 
     /**
      * Global list of mods which are still waiting for initialisiation
@@ -84,22 +90,22 @@ public class LiteLoaderMods
     /**
      * Global list of mods which we have loaded
      */
-    protected final List<Mod> loadedMods = new LinkedList<Mod>();
+    protected final List<Mod> loadedMods = new ArrayList<Mod>();
 
     /**
      * Global list of mods which we found but ignored (eg. outdated, invalid)
      */
-    protected final List<Mod> badMods = new LinkedList<Mod>();
+    protected final List<Mod> badMods = new ArrayList<Mod>();
 
     /**
      * Mods which are loaded but disabled
      */
-    protected final List<ModInfo<?>> disabledMods = new LinkedList<ModInfo<?>>();
+    protected final List<ModInfo<?>> disabledMods = new ArrayList<ModInfo<?>>();
 
     /**
      * Bad containers
      */
-    protected final List<ModInfo<?>> badContainers = new LinkedList<ModInfo<?>>();
+    protected final List<ModInfo<?>> badContainers = new ArrayList<ModInfo<?>>();
 
     private int startupErrorCount, criticalErrorCount;
 

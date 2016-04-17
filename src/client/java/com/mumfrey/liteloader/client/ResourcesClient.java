@@ -1,16 +1,21 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
-
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.common.Resources;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourcePack;
 
 public class ResourcesClient implements Resources<IResourceManager, IResourcePack>
 {

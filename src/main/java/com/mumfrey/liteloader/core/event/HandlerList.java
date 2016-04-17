@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core.event;
 
 import java.io.Closeable;
@@ -15,9 +20,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.launchwrapper.IClassTransformer;
-import net.minecraft.launchwrapper.Launch;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.core.helpers.Booleans;
 import org.objectweb.asm.ClassReader;
@@ -25,7 +27,20 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LineNumberNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
 import com.mumfrey.liteloader.Priority;
@@ -34,6 +49,9 @@ import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.launchwrapper.IClassTransformer;
+import net.minecraft.launchwrapper.Launch;
 
 /**
  * HandlerList is a generic class which supports baking a list of event handlers

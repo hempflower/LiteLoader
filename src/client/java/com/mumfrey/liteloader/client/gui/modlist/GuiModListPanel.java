@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui.modlist;
 
 import static com.mumfrey.liteloader.gl.GL.*;
@@ -6,15 +11,15 @@ import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.util.render.IconClickable;
 import com.mumfrey.liteloader.util.render.IconTextured;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
 
 public class GuiModListPanel extends Gui
 {

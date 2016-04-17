@@ -1,9 +1,11 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.api;
 
 import java.util.List;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.server.integrated.IntegratedServer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ObjectArrays;
@@ -19,6 +21,9 @@ import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.messaging.MessageBus;
 import com.mumfrey.liteloader.transformers.event.json.ModEvents;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.integrated.IntegratedServer;
 
 /**
  * Client side of the core API

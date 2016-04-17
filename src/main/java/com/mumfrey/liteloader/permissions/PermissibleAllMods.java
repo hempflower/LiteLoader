@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.permissions;
 
 import java.io.File;
@@ -58,13 +63,17 @@ public class PermissibleAllMods implements Permissible
     public void onPermissionsCleared(PermissionsManager manager)
     {
         for (Permissible permissible : this.permissibles)
+        {
             permissible.onPermissionsCleared(manager);
+        }
     }
 
     @Override
     public void onPermissionsChanged(PermissionsManager manager)
     {
         for (Permissible permissible : this.permissibles)
+        {
             permissible.onPermissionsChanged(manager);
+        }
     }
 }

@@ -1,19 +1,11 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.util.List;
-
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.Packet;
-import net.minecraft.network.login.server.SPacketLoginSuccess;
-import net.minecraft.network.play.client.CPacketChatMessage;
-import net.minecraft.network.play.client.CPacketClientSettings;
-import net.minecraft.network.play.client.CPacketCustomPayload;
-import net.minecraft.network.play.server.SPacketJoinGame;
-import net.minecraft.network.play.server.SPacketChat;
-import net.minecraft.network.play.server.SPacketCustomPayload;
-import net.minecraft.util.IThreadListener;
 
 import com.mumfrey.liteloader.PacketHandler;
 import com.mumfrey.liteloader.ServerChatFilter;
@@ -25,6 +17,19 @@ import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.core.runtime.Packets;
 import com.mumfrey.liteloader.interfaces.FastIterable;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.Packet;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
+import net.minecraft.network.play.client.CPacketChatMessage;
+import net.minecraft.network.play.client.CPacketClientSettings;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketChat;
+import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketJoinGame;
+import net.minecraft.util.IThreadListener;
 
 /**
  * Packet event handling

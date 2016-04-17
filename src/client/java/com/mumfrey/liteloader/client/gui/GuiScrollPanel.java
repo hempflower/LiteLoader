@@ -1,11 +1,17 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 
 import org.lwjgl.input.Keyboard;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 
 /**
  * Basic non-interactive scrollable panel using OpenGL clipping planes

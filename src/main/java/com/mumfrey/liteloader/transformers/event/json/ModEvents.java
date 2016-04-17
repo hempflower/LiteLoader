@@ -1,11 +1,14 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers.event.json;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
-
-import net.minecraft.launchwrapper.Launch;
 
 import com.google.common.base.Charsets;
 import com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason;
@@ -16,6 +19,8 @@ import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.launchwrapper.Launch;
 
 public class ModEvents implements EnumerationObserver
 {

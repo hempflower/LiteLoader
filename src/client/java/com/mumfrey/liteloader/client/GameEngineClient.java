@@ -1,8 +1,17 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
+
+import com.mumfrey.liteloader.client.overlays.IMinecraft;
+import com.mumfrey.liteloader.common.GameEngine;
+import com.mumfrey.liteloader.common.Resources;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
@@ -13,10 +22,6 @@ import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.integrated.IntegratedServer;
-
-import com.mumfrey.liteloader.client.overlays.IMinecraft;
-import com.mumfrey.liteloader.common.GameEngine;
-import com.mumfrey.liteloader.common.Resources;
 
 /**
  *
@@ -142,7 +147,7 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
     @Override
     public List<KeyBinding> getKeyBindings()
     {
-        LinkedList<KeyBinding> keyBindings = new LinkedList<KeyBinding>();
+        ArrayList<KeyBinding> keyBindings = new ArrayList<KeyBinding>();
         keyBindings.addAll(Arrays.asList(this.engine.gameSettings.keyBindings));
         return keyBindings;
     }

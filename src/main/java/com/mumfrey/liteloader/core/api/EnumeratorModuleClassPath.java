@@ -1,10 +1,13 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core.api;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.launchwrapper.LaunchClassLoader;
 
 import com.mumfrey.liteloader.api.EnumeratorModule;
 import com.mumfrey.liteloader.common.LoadingProgress;
@@ -14,6 +17,8 @@ import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
  * Enumerator module which searches for mods on the classpath

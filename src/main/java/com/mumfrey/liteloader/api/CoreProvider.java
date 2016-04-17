@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.api;
-
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.SPacketJoinGame;
 
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
+
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 /**
  * LiteLoader Extensible API - API Core Provider

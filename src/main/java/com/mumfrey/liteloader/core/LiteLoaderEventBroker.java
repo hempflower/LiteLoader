@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.util.Collections;
@@ -6,8 +11,16 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.PlayerInteractionListener;
 import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
+import com.mumfrey.liteloader.PlayerMoveListener;
+import com.mumfrey.liteloader.PluginChannelListener;
+import com.mumfrey.liteloader.ServerCommandProvider;
+import com.mumfrey.liteloader.ServerPlayerListener;
+import com.mumfrey.liteloader.ServerPluginChannelListener;
+import com.mumfrey.liteloader.ServerTickable;
+import com.mumfrey.liteloader.ShutdownListener;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.ShutdownObserver;
@@ -29,18 +42,18 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketClientSettings;
+import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.network.play.server.SPacketPlayerPosLook;
 import net.minecraft.network.play.server.SPacketPlayerPosLook.EnumFlags;
-import net.minecraft.network.play.server.SPacketBlockChange;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.server.management.PlayerList;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;

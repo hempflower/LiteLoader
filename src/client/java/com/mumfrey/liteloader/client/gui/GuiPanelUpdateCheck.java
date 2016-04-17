@@ -1,12 +1,11 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui;
 
 import java.net.URI;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.client.resources.I18n;
 
 import org.lwjgl.input.Keyboard;
 
@@ -14,6 +13,12 @@ import com.mumfrey.liteloader.core.LiteLoaderUpdateSite;
 import com.mumfrey.liteloader.launch.ClassPathUtilities;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.update.UpdateSite;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.resources.I18n;
 
 /**
  * "Check for updates" panel which docks in the mod info screen

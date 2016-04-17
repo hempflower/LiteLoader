@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.resources;
 
 import java.awt.image.BufferedImage;
@@ -47,7 +52,9 @@ public class InternalResourcePack implements IResourcePack
         this.resourceClass = resourceClass;
 
         for (String domain : domains)
+        {
             this.resourceDomains.add(domain);
+        }
     }
 
     /* (non-Javadoc)

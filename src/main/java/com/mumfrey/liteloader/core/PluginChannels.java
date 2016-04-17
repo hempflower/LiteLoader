@@ -1,22 +1,26 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
-import io.netty.buffer.Unpooled;
-
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
 
 import com.google.common.base.Charsets;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import io.netty.buffer.Unpooled;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
 
 /**
  * Manages plugin channel connections and subscriptions for LiteLoader
@@ -37,7 +41,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
     /**
      * Mapping of plugin channel names to listeners
      */
-    protected final HashMap<String, LinkedList<L>> pluginChannels = new HashMap<String, LinkedList<L>>();
+    protected final HashMap<String, List<L>> pluginChannels = new HashMap<String, List<L>>();
 
     /**
      * List of mods which implement PluginChannelListener interface
@@ -183,7 +187,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 
                 if (!this.pluginChannels.containsKey(channel))
                 {
-                    this.pluginChannels.put(channel, new LinkedList<L>());
+                    this.pluginChannels.put(channel, new ArrayList<L>());
                 }
 
                 this.pluginChannels.get(channel).add(pluginChannelListener);

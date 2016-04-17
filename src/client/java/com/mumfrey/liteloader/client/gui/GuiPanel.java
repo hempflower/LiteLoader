@@ -1,15 +1,20 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+
+import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
-
-import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
 
 /**
  * Base class for panels
@@ -30,7 +35,7 @@ public abstract class GuiPanel extends Gui
     /**
      * Buttons
      */
-    protected List<GuiButton> controls = new LinkedList<GuiButton>();
+    protected List<GuiButton> controls = new ArrayList<GuiButton>();
 
     /**
      * Current available width
@@ -100,7 +105,9 @@ public abstract class GuiPanel extends Gui
     void draw(int mouseX, int mouseY, float partialTicks)
     {
         for (GuiButton control : this.controls)
+        {
             control.drawButton(this.mc, mouseX, mouseY);
+        }
     }
 
     /**

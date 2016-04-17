@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers.event;
 
 import java.util.ArrayList;
@@ -12,7 +17,19 @@ import java.util.Set;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LineNumberNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
+import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
@@ -561,10 +578,12 @@ public class Event implements Comparable<Event>
     static Event getEvent(String eventName)
     {
         for (Event event : Event.events)
+        {
             if (event.name.equalsIgnoreCase(eventName))
             {
                 return event;
             }
+        }
 
         return null;
     }

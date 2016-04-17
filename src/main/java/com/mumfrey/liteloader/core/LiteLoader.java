@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
@@ -10,7 +15,16 @@ import javax.activity.InvalidActivityException;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import com.mumfrey.liteloader.LiteMod;
-import com.mumfrey.liteloader.api.*;
+import com.mumfrey.liteloader.api.CoreProvider;
+import com.mumfrey.liteloader.api.CustomisationProvider;
+import com.mumfrey.liteloader.api.Listener;
+import com.mumfrey.liteloader.api.LiteAPI;
+import com.mumfrey.liteloader.api.ModLoadObserver;
+import com.mumfrey.liteloader.api.PostRenderObserver;
+import com.mumfrey.liteloader.api.ShutdownObserver;
+import com.mumfrey.liteloader.api.TickObserver;
+import com.mumfrey.liteloader.api.TranslationProvider;
+import com.mumfrey.liteloader.api.WorldObserver;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
 import com.mumfrey.liteloader.common.GameEngine;
@@ -21,7 +35,12 @@ import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.crashreport.CallableLaunchWrapper;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
 import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
-import com.mumfrey.liteloader.interfaces.*;
+import com.mumfrey.liteloader.interfaces.FastIterableDeque;
+import com.mumfrey.liteloader.interfaces.Loadable;
+import com.mumfrey.liteloader.interfaces.LoadableMod;
+import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.interfaces.ObjectFactory;
+import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
 import com.mumfrey.liteloader.launch.LoaderProperties;

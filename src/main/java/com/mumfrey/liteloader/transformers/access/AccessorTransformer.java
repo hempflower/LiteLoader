@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers.access;
 
 import java.io.IOException;
@@ -6,8 +11,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import net.minecraft.launchwrapper.Launch;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -28,6 +31,8 @@ import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.launchwrapper.Launch;
 
 /**
  * Transformer which can inject accessor methods defined by an annotated

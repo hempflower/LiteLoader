@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util;
 
 import java.io.File;
@@ -12,18 +17,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import com.mumfrey.liteloader.common.GameEngine;
+import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.launch.LoaderEnvironment;
+import com.mumfrey.liteloader.launch.LoaderProperties;
+import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
+
 import net.java.games.input.Component;
 import net.java.games.input.Controller;
 import net.java.games.input.Event;
 import net.java.games.input.EventQueue;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.profiler.Profiler;
-
-import com.mumfrey.liteloader.common.GameEngine;
-import com.mumfrey.liteloader.core.LiteLoader;
-import com.mumfrey.liteloader.launch.LoaderEnvironment;
-import com.mumfrey.liteloader.launch.LoaderProperties;
-import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
 
 /**
  * Mod input class, aggregates functionality from LiteLoader's mod key
@@ -324,7 +329,9 @@ public final class InputManager extends Input
     {
         Set<Controller> allControllers = new HashSet<Controller>();
         for (Controller controller : this.pollControllers)
+        {
             allControllers.add(controller);
+        }
         return allControllers;
     }
 

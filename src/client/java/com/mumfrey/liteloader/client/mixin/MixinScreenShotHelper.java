@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.mixin;
 
 import java.io.File;
@@ -10,8 +15,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.mumfrey.liteloader.client.ClientProxy;
 
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.ScreenShotHelper;
+import net.minecraft.util.text.ITextComponent;
 
 @Mixin(ScreenShotHelper.class)
 public abstract class MixinScreenShotHelper

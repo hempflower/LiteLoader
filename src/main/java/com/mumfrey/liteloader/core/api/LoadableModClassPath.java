@@ -1,11 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
 
-import net.minecraft.launchwrapper.LaunchClassLoader;
-
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
+
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
  * Mod file reference for a file loaded from class path

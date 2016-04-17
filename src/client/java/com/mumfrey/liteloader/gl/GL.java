@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.gl;
 
 import java.nio.ByteBuffer;
@@ -5,15 +10,15 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.util.glu.GLU;
+
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.GlStateManager.CullFace;
 import net.minecraft.client.renderer.GlStateManager.FogMode;
 import net.minecraft.client.renderer.GlStateManager.TexGen;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.renderer.vertex.VertexFormat;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.util.glu.GLU;
 
 /**
  * Convenience class for working with Mojang's GLStateManager:

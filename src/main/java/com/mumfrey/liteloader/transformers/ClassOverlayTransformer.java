@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers;
 
 import java.io.IOException;
@@ -7,8 +12,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import net.minecraft.launchwrapper.Launch;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -26,6 +29,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.launchwrapper.Launch;
 
 /**
  * This transformer applies one class to another as an "overlay". This works by

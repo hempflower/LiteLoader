@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui.startup;
 
 import static com.mumfrey.liteloader.gl.GL.*;
@@ -9,6 +14,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
+
+import org.lwjgl.opengl.Display;
+
+import com.mumfrey.liteloader.common.LoadingProgress;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -22,11 +32,6 @@ import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ResourceLocation;
-
-import org.lwjgl.opengl.Display;
-
-import com.mumfrey.liteloader.common.LoadingProgress;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Crappy implementation of a "Mojang Screen" loading bar
