@@ -15,7 +15,6 @@ import net.minecraft.util.IntIdentityHashBiMap;
 @Mixin(IntIdentityHashBiMap.class)
 public abstract class MixinIntIdentityHashBiMap<V> implements IIntIdentityHashBiMap<V>
 {
-    @Shadow private static final Object field_186817_a = null;
     @Shadow private V[] objectArray;
     @Shadow private int[] intKeys;
     @Shadow private V[] intToObjects;

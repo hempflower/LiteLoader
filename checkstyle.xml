@@ -5,7 +5,7 @@
     This configuration file was written by the eclipse-cs plugin configuration editor
 -->
 <!--
-    Checkstyle-Configuration: LiteLoader Style
+    Checkstyle-Configuration: LiteLoader
     Description: none
 -->
 <module name="Checker">
@@ -36,7 +36,7 @@
       <message key="name.invalidPattern" value="Type name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="MemberName">
-      <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
+      <property name="format" value="^[a-z]([a-zA-Z0-9_]*)?$"/>
       <message key="name.invalidPattern" value="Member name ''{0}'' must match pattern ''{1}''."/>
     </module>
     <module name="ParameterName">
