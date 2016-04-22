@@ -794,12 +794,12 @@ public class GuiLiteLoaderPanel extends GuiScreen
         glColor4f(1.0F, 1.0F, 1.0F, alpha);
 
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer worldRenderer = tessellator.getBuffer();
-        worldRenderer.begin(GL_QUADS, VF_POSITION_TEX);
-        worldRenderer.pos(x + 0,     y + height, 0).tex(u , v2).endVertex();
-        worldRenderer.pos(x + width, y + height, 0).tex(u2, v2).endVertex();
-        worldRenderer.pos(x + width, y + 0,      0).tex(u2, v ).endVertex();
-        worldRenderer.pos(x + 0,     y + 0,      0).tex(u , v ).endVertex();
+        VertexBuffer buf = tessellator.getBuffer();
+        buf.begin(GL_QUADS, VF_POSITION_TEX);
+        buf.pos(x + 0,     y + height, 0).tex(u , v2).endVertex();
+        buf.pos(x + width, y + height, 0).tex(u2, v2).endVertex();
+        buf.pos(x + width, y + 0,      0).tex(u2, v ).endVertex();
+        buf.pos(x + 0,     y + 0,      0).tex(u , v ).endVertex();
         tessellator.draw();
 
         glDisableBlend();

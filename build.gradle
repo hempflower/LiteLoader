@@ -33,15 +33,17 @@ apply plugin: 'org.spongepowered.mixin'
 defaultTasks 'build'
 
 ext {
+    def isJenkins = project.hasProperty("jenkins")
+    
     // Artefact details
-    buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+    buildNumber = isJenkins ? System.env.BUILD_NUMBER : (project.hasProperty("buildNumber") ? buildNumber : '0')
     buildVersion = project.hasProperty("buildVersion") ? buildVersion : '0.0'
     ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
-    commit = project.hasProperty("commit") ? commit : 'unknown'
+    commit = isJenkins ? System.env.GIT_COMMIT : (project.hasProperty("commit") ? commit : 'unknown')
     classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
     isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
     mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
-    brand = project.hasProperty("jenkins") ? "${project.mcVersion}-SNAPSHOT-r${System.env.GIT_COMMIT.take(7).toUpperCase()}-b${System.env.BUILD_NUMBER}-${System.env.BUILD_ID}" : ""
+    brand = isJenkins ? "${project.mcVersion}-SNAPSHOT-r${System.env.GIT_COMMIT.take(7).toUpperCase()}-b${System.env.BUILD_NUMBER}-${System.env.BUILD_ID}" : ""
     
     // Extended project information
     projectName = 'LiteLoader'
