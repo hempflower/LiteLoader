@@ -1,7 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
 import com.mojang.realmsclient.dto.RealmsServer;
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.ChatFilter;
+import com.mumfrey.liteloader.ChatListener;
+import com.mumfrey.liteloader.JoinGameListener;
+import com.mumfrey.liteloader.PostLoginListener;
+import com.mumfrey.liteloader.PreJoinGameListener;
 import com.mumfrey.liteloader.common.ducks.IChatPacket;
 import com.mumfrey.liteloader.common.transformers.PacketEventInfo;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
@@ -21,14 +30,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.INetHandler;
 import net.minecraft.network.Packet;
 import net.minecraft.network.login.INetHandlerLoginClient;
-import net.minecraft.network.login.server.S02PacketLoginSuccess;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S02PacketChat;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.network.play.server.SPacketChat;
+import net.minecraft.network.play.server.SPacketJoinGame;
 import net.minecraft.util.IThreadListener;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 
 /**
  * Client-side packet event handlers
@@ -107,7 +115,7 @@ public class PacketEventsClient extends PacketEvents
         this.postLoginListeners.add(postLoginListener);
     }
 
-    public static void onJoinRealm(long serverId, RealmsServer server)
+    public static void onJoinRealm(RealmsServer server)
     {
         PacketEventsClient.joiningRealm = server;
     }
@@ -115,22 +123,23 @@ public class PacketEventsClient extends PacketEvents
     @Override
     protected IThreadListener getPacketContextListener(Packets.Context context)
     {
+        Minecraft minecraft = Minecraft.getMinecraft();
         if (context == Packets.Context.SERVER)
         {
-            return MinecraftServer.getServer();
+            return minecraft.getIntegratedServer();
         }
 
-        return Minecraft.getMinecraft();
+        return minecraft;
     }
 
     /* (non-Javadoc)
      * @see com.mumfrey.liteloader.core.PacketEvents#handlePacket(
      *      com.mumfrey.liteloader.common.transformers.PacketEventInfo,
      *      net.minecraft.network.INetHandler,
-     *      net.minecraft.network.play.server.S01PacketJoinGame)
+     *      net.minecraft.network.play.server.SPacketJoinGame)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, SPacketJoinGame packet)
     {
         if (this.preJoinGame(e, netHandler, packet))
         {
@@ -149,7 +158,7 @@ public class PacketEventsClient extends PacketEvents
      * @param packet
      * @throws EventCancellationException
      */
-    private boolean preJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet) throws EventCancellationException
+    private boolean preJoinGame(PacketEventInfo<Packet<?>> e, INetHandler netHandler, SPacketJoinGame packet) throws EventCancellationException
     {
         if (!(netHandler instanceof INetHandlerPlayClient))
         {
@@ -166,7 +175,7 @@ public class PacketEventsClient extends PacketEvents
      * @param netHandler
      * @param packet
      */
-    private void postJoinGame(PacketEventInfo<Packet> e, INetHandler netHandler, S01PacketJoinGame packet)
+    private void postJoinGame(PacketEventInfo<Packet<?>> e, INetHandler netHandler, SPacketJoinGame packet)
     {
         this.joinGameListeners.all().onJoinGame(netHandler, packet, Minecraft.getMinecraft().getCurrentServerData(), PacketEventsClient.joiningRealm);
         PacketEventsClient.joiningRealm = null;
@@ -185,7 +194,7 @@ public class PacketEventsClient extends PacketEvents
      *      net.minecraft.network.login.server.S02PacketLoginSuccess)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketLoginSuccess packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, SPacketLoginSuccess packet)
     {
         if (netHandler instanceof INetHandlerLoginClient)
         {
@@ -208,21 +217,21 @@ public class PacketEventsClient extends PacketEvents
      *      net.minecraft.network.play.server.S02PacketChat)
      */
     @Override
-    protected void handlePacket(PacketEventInfo<Packet> e, INetHandler netHandler, S02PacketChat packet)
+    protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, SPacketChat packet)
     {
         if (packet.getChatComponent() == null)
         {
             return;
         }
 
-        IChatComponent originalChat = packet.getChatComponent();
-        IChatComponent chat = originalChat;
+        ITextComponent originalChat = packet.getChatComponent();
+        ITextComponent chat = originalChat;
         String message = chat.getFormattedText();
 
         // Chat filters get a stab at the chat first, if any filter returns false the chat is discarded
         for (ChatFilter chatFilter : this.chatFilters)
         {
-            ReturnValue<IChatComponent> ret = new ReturnValue<IChatComponent>();
+            ReturnValue<ITextComponent> ret = new ReturnValue<ITextComponent>();
 
             if (chatFilter.onChat(chat, message, ret))
             {
@@ -231,7 +240,7 @@ public class PacketEventsClient extends PacketEvents
                     chat = ret.get();
                     if (chat == null)
                     {
-                        chat = new ChatComponentText("");
+                        chat = new TextComponentString("");
                     }
                     message = chat.getFormattedText();
                 }

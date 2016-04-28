@@ -1,11 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util;
+
+import com.mumfrey.liteloader.core.runtime.Obf;
 
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.BlockPos;
-
-import com.mumfrey.liteloader.core.runtime.Obf;
+import net.minecraft.util.math.BlockPos;
 
 public class ObfuscationUtilities
 {

@@ -1,10 +1,13 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core.event;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-
-import net.minecraft.profiler.Profiler;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -17,6 +20,8 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.core.runtime.Obf;
+
+import net.minecraft.profiler.Profiler;
 
 /**
  * A HandlerList which calls Profiler.beginSection and Profiler.endSection

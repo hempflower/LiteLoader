@@ -1,18 +1,31 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.launch;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.launchwrapper.LogWrapper;
-
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
-import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 /**
  * Manages injection of required and optional transformers

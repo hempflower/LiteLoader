@@ -1,11 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
-
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
-import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
 import com.mumfrey.liteloader.ServerPluginChannelListener;
 import com.mumfrey.liteloader.api.Listener;
@@ -14,6 +12,13 @@ import com.mumfrey.liteloader.core.exceptions.UnregisteredChannelException;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketCustomPayload;
 
 /**
  * Handler for server plugin channels
@@ -99,7 +104,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
      * @param netHandler 
      * @param customPayload
      */
-    public void onPluginChannelMessage(INetHandler netHandler, C17PacketCustomPayload customPayload)
+    public void onPluginChannelMessage(INetHandler netHandler, CPacketCustomPayload customPayload)
     {
         if (customPayload != null && customPayload.getChannelName() != null)
         {
@@ -195,7 +200,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
      */
     private void sendRegistrationData(EntityPlayerMP recipient, PacketBuffer registrationData)
     {
-        ServerPluginChannels.dispatch(recipient, new S3FPacketCustomPayload(CHANNEL_REGISTER, registrationData));
+        ServerPluginChannels.dispatch(recipient, new SPacketCustomPayload(CHANNEL_REGISTER, registrationData));
     }
 
     /**
@@ -237,7 +242,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
             throw new UnregisteredChannelException(channel);
         }
 
-        S3FPacketCustomPayload payload = new S3FPacketCustomPayload(channel, data);
+        SPacketCustomPayload payload = new SPacketCustomPayload(channel, data);
         return ServerPluginChannels.dispatch(recipient, payload);
     }
 
@@ -245,7 +250,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
      * @param recipient
      * @param payload
      */
-    static boolean dispatch(EntityPlayerMP recipient, S3FPacketCustomPayload payload)
+    static boolean dispatch(EntityPlayerMP recipient, SPacketCustomPayload payload)
     {
         try
         {

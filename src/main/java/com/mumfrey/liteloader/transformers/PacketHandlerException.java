@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers;
 
 import net.minecraft.network.Packet;
@@ -12,18 +17,18 @@ public class PacketHandlerException extends RuntimeException
 {
     private static final long serialVersionUID = -330946238844640302L;
 
-    private Packet packet;
+    private Packet<?> packet;
 
-    public PacketHandlerException(Packet packet)
+    public PacketHandlerException(Packet<?> packet)
     {
     }
 
-    public PacketHandlerException(Packet packet, String message)
+    public PacketHandlerException(Packet<?> packet, String message)
     {
         super(message);
     }
 
-    public Packet getPacket()
+    public Packet<?> getPacket()
     {
         return this.packet;
     }

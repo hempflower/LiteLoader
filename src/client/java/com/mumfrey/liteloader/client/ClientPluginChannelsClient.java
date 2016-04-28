@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
 import com.mumfrey.liteloader.client.ducks.IClientNetLoginHandler;
@@ -9,11 +14,11 @@ import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.login.INetHandlerLoginClient;
-import net.minecraft.network.login.server.S02PacketLoginSuccess;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 import net.minecraft.network.play.INetHandlerPlayClient;
-import net.minecraft.network.play.client.C17PacketCustomPayload;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.network.play.server.S3FPacketCustomPayload;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketCustomPayload;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 /**
  * Handler for client plugin channels
@@ -26,7 +31,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
      * @param netHandler
      * @param loginPacket
      */
-    void onPostLogin(INetHandlerLoginClient netHandler, S02PacketLoginSuccess loginPacket)
+    void onPostLogin(INetHandlerLoginClient netHandler, SPacketLoginSuccess loginPacket)
     {
         this.clearPluginChannels(netHandler);
     }
@@ -35,7 +40,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
      * @param netHandler
      * @param loginPacket
      */
-    void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
+    void onJoinGame(INetHandler netHandler, SPacketJoinGame loginPacket)
     {
         this.sendRegisteredPluginChannels(netHandler);
     }
@@ -46,7 +51,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
      * @param customPayload
      */
     @Override
-    public void onPluginChannelMessage(S3FPacketCustomPayload customPayload)
+    public void onPluginChannelMessage(SPacketCustomPayload customPayload)
     {
         if (customPayload != null && customPayload.getChannelName() != null)
         {
@@ -67,11 +72,11 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
         if (netHandler instanceof INetHandlerLoginClient)
         {
             NetworkManager networkManager = ((IClientNetLoginHandler)netHandler).getNetMgr();
-            networkManager.sendPacket(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
+            networkManager.sendPacket(new CPacketCustomPayload(CHANNEL_REGISTER, registrationData));
         }
         else if (netHandler instanceof INetHandlerPlayClient)
         {
-            ClientPluginChannelsClient.dispatch(new C17PacketCustomPayload(CHANNEL_REGISTER, registrationData));
+            ClientPluginChannelsClient.dispatch(new CPacketCustomPayload(CHANNEL_REGISTER, registrationData));
         }
     }
 
@@ -95,14 +100,14 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
             throw new UnregisteredChannelException(channel);
         }
 
-        C17PacketCustomPayload payload = new C17PacketCustomPayload(channel, data);
+        CPacketCustomPayload payload = new CPacketCustomPayload(channel, data);
         return ClientPluginChannelsClient.dispatch(payload);
     }
 
     /**
      * @param payload
      */
-    static boolean dispatch(C17PacketCustomPayload payload)
+    static boolean dispatch(CPacketCustomPayload payload)
     {
         try
         {

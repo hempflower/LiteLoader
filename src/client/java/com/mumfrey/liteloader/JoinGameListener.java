@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
+
+import com.mojang.realmsclient.dto.RealmsServer;
 
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-
-import com.mojang.realmsclient.dto.RealmsServer;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 
 /**
@@ -25,5 +30,5 @@ public interface JoinGameListener extends LiteMod
      * @param realmsServer If connecting to a realm, a reference to the
      *      RealmsServer object
      */
-    public abstract void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket, ServerData serverData, RealmsServer realmsServer);
+    public abstract void onJoinGame(INetHandler netHandler, SPacketJoinGame joinGamePacket, ServerData serverData, RealmsServer realmsServer);
 }

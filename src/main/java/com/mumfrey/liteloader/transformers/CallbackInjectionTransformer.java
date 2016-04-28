@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers;
 
 import java.util.HashMap;
@@ -236,7 +241,9 @@ public abstract class CallbackInjectionTransformer extends ClassTransformer
         if (callback.getChainedCallbacks().size() > 0)
         {
             for (Callback chainedCallback : callback.getChainedCallbacks())
+            {
                 this.genProfilerCallbackInsns(injected, chainedCallback, refNumber);
+            }
         }
 
         return injected;

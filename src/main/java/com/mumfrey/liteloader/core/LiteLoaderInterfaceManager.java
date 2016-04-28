@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.lang.reflect.Method;
@@ -7,9 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.InterfaceObserver;
 import com.mumfrey.liteloader.api.InterfaceProvider;
+import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.Observer;
 import com.mumfrey.liteloader.api.exceptions.InvalidProviderException;

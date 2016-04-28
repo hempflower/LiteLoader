@@ -1,9 +1,14 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.transformers.event;
-
-import joptsimple.internal.Strings;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
+
+import joptsimple.internal.Strings;
 
 /**
  * Encapsulates a method descriptor with varying degrees of accuracy from a

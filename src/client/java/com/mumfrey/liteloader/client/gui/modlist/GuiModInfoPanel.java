@@ -1,11 +1,12 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui.modlist;
 
 import static com.mumfrey.liteloader.gl.GL.*;
 import static com.mumfrey.liteloader.gl.GLClippingPlanes.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.resources.I18n;
 
 import com.google.common.base.Strings;
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
@@ -13,6 +14,11 @@ import com.mumfrey.liteloader.client.gui.GuiSimpleScrollBar;
 import com.mumfrey.liteloader.client.util.render.IconAbsolute;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.util.render.IconTextured;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.resources.I18n;
 
 public class GuiModInfoPanel extends Gui
 {

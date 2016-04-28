@@ -1,7 +1,12 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
 
 import net.minecraft.network.login.INetHandlerLoginClient;
-import net.minecraft.network.login.server.S02PacketLoginSuccess;
+import net.minecraft.network.login.server.SPacketLoginSuccess;
 
 /**
  *
@@ -17,5 +22,5 @@ public interface PostLoginListener extends LiteMod
      * @param netHandler
      * @param packet
      */
-    public abstract void onPostLogin(INetHandlerLoginClient netHandler, S02PacketLoginSuccess packet);
+    public abstract void onPostLogin(INetHandlerLoginClient netHandler, SPacketLoginSuccess packet);
 }

@@ -1,11 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui.modlist;
 
 import java.util.List;
 
-import net.minecraft.client.gui.FontRenderer;
-
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.core.ModInfo;
+
+import net.minecraft.client.gui.FontRenderer;
 
 public class GuiModListPanelInvalid extends GuiModListPanel
 {

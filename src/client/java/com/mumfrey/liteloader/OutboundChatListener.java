@@ -1,6 +1,11 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
 
-import net.minecraft.network.play.client.C01PacketChatMessage;
+import net.minecraft.network.play.client.CPacketChatMessage;
 
 /**
  * Interface for mods which want to monitor outbound chat
@@ -16,5 +21,5 @@ public interface OutboundChatListener extends LiteMod
      * @param packet
      * @param message
      */
-    public abstract void onSendChatMessage(C01PacketChatMessage packet, String message);
+    public abstract void onSendChatMessage(CPacketChatMessage packet, String message);
 }

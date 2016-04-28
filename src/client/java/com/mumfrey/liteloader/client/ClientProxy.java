@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
 
 import java.io.File;
@@ -16,7 +21,7 @@ import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.WorldSettings;
 
 /**
@@ -165,18 +170,20 @@ public abstract class ClientProxy extends Proxy
         ClientProxy.broker.onRenderTerrain(partialTicks, pass, timeSlice);
     }
 
-    public static void onSaveScreenshot(CallbackInfoReturnable<IChatComponent> ci, File gameDir, String name, int width, int height,
+    public static void onSaveScreenshot(CallbackInfoReturnable<ITextComponent> ci, File gameDir, String name, int width, int height,
             Framebuffer fbo)
     {
         ClientProxy.broker.onScreenshot(ci, name, width, height, fbo);
     }
 
-    public static void onRenderEntity(RenderManager source, Render render, Entity entity, double x, double y, double z, float yaw, float pTicks)
+    public static <T extends Entity> void onRenderEntity(RenderManager source, Render<T> render, T entity, double x, double y, double z,
+            float yaw, float pTicks)
     {
         ClientProxy.broker.onRenderEntity(source, entity, x, y, z, yaw, pTicks, render);
     }
 
-    public static void onPostRenderEntity(RenderManager source, Render render, Entity entity, double x, double y, double z, float yaw, float pTicks)
+    public static <T extends Entity> void onPostRenderEntity(RenderManager source, Render<T> render, T entity, double x, double y, double z,
+            float yaw, float pTicks)
     {
         ClientProxy.broker.onPostRenderEntity(source, entity, x, y, z, yaw, pTicks, render);
     }

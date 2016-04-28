@@ -1,30 +1,35 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.api;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.server.integrated.IntegratedServer;
-
-import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.ClientPluginChannelsClient;
 import com.mumfrey.liteloader.client.GameEngineClient;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.LiteLoaderPanelManager;
 import com.mumfrey.liteloader.client.PacketEventsClient;
 import com.mumfrey.liteloader.client.gui.startup.LoadingBar;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
-import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.LiteLoader;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 import com.mumfrey.liteloader.core.PacketEvents;
 import com.mumfrey.liteloader.core.ServerPluginChannels;
-import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
+import com.mumfrey.liteloader.interfaces.PanelManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.permissions.PermissionsManagerServer;
 import com.mumfrey.liteloader.util.Input;
 import com.mumfrey.liteloader.util.InputManager;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.server.integrated.IntegratedServer;
 
 /**
  * Factory for lifetime loader objects for the client side

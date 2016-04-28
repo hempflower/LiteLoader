@@ -1,6 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.overlays;
-
-import com.mumfrey.liteloader.transformers.access.Accessor;
 
 /**
  * Adapter for GuiTextField to expose internal properties, mainly to allow
@@ -8,29 +11,19 @@ import com.mumfrey.liteloader.transformers.access.Accessor;
  * 
  * @author Adam Mummery-Smith
  */
-@Accessor("GuiTextField")
 public interface IGuiTextField
 {
-    @Accessor("#2")  public abstract int     getXPosition();
-    @Accessor("#2")  public abstract void    setXPosition(int xPosition);
-
-    @Accessor("#3")  public abstract int     getYPosition();
-    @Accessor("#3")  public abstract void    setYPosition(int yPosition);
-
-    @Accessor("#4")  public abstract int     getInternalWidth();
-    @Accessor("#4")  public abstract void    setInternalWidth(int width);
-
-    @Accessor("#5")  public abstract int     getHeight();
-    @Accessor("#5")  public abstract void    setHeight(int height);
-
-    @Accessor("#12") public abstract boolean isEnabled();
-//    @Accessor("#12") public abstract void    setEnabled(boolean enabled); // built in
-
-    @Accessor("#13") public abstract int     getLineScrollOffset();
-
-    @Accessor("#16") public abstract int     getTextColor();
-//    @Accessor("#16") public abstract void    setTextColor(int color); // built in
-
-    @Accessor("#17") public abstract int     getDisabledTextColour();
-//    @Accessor("#17") public abstract void    setDisabledTextColour(int color); // built in
+    public abstract int     getXPosition();
+    public abstract void    setXPosition(int xPosition);
+    public abstract int     getYPosition();
+    public abstract void    setYPosition(int yPosition);
+    public abstract int     getInternalWidth();
+    public abstract void    setInternalWidth(int width);
+    public abstract int     getHeight();
+    public abstract void    setHeight(int height);
+    public abstract boolean isEnabled();
+    public abstract int     getLineScrollOffset();
+    public abstract int     getTextColor();
+    public abstract int     getDisabledTextColour();
+    
 }

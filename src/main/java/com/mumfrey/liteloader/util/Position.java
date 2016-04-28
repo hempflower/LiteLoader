@@ -1,14 +1,19 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 /**
  * A 3D vector position with rotation as well
  * 
  * @author Adam Mummery-Smith
  */
-public class Position extends Vec3
+public class Position extends Vec3d
 {
     public final float yaw;
 

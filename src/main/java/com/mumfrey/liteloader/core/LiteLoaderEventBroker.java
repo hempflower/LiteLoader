@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.util.Collections;
@@ -6,14 +11,23 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.mojang.authlib.GameProfile;
-import com.mumfrey.liteloader.*;
+import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.PlayerInteractionListener;
 import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
+import com.mumfrey.liteloader.PlayerMoveListener;
+import com.mumfrey.liteloader.PluginChannelListener;
+import com.mumfrey.liteloader.ServerCommandProvider;
+import com.mumfrey.liteloader.ServerPlayerListener;
+import com.mumfrey.liteloader.ServerPluginChannelListener;
+import com.mumfrey.liteloader.ServerTickable;
+import com.mumfrey.liteloader.ShutdownListener;
 import com.mumfrey.liteloader.api.InterfaceProvider;
 import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.ShutdownObserver;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.common.ducks.IPacketClientSettings;
+import com.mumfrey.liteloader.common.ducks.ITeleportHandler;
 import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.core.event.HandlerList.ReturnLogicOp;
 import com.mumfrey.liteloader.interfaces.FastIterable;
@@ -25,19 +39,22 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ServerCommandManager;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.ItemStack;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.client.C15PacketClientSettings;
-import net.minecraft.network.play.server.S08PacketPlayerPosLook;
-import net.minecraft.network.play.server.S23PacketBlockChange;
+import net.minecraft.network.play.client.CPacketClientSettings;
+import net.minecraft.network.play.client.CPacketPlayer;
+import net.minecraft.network.play.server.SPacketBlockChange;
+import net.minecraft.network.play.server.SPacketPlayerPosLook;
+import net.minecraft.network.play.server.SPacketPlayerPosLook.EnumFlags;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.ItemInWorldManager;
-import net.minecraft.server.management.ServerConfigurationManager;
-import net.minecraft.util.BlockPos;
+import net.minecraft.server.management.PlayerInteractionManager;
+import net.minecraft.server.management.PlayerList;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MovingObjectPosition.MovingObjectType;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult.Type;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldSettings;
@@ -94,7 +111,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         LEFT_CLICK,
         LEFT_CLICK_BLOCK,
         PLACE_BLOCK_MAYBE,
-        DIG_BLOCK_MAYBE
+        DIG_BLOCK_MAYBE,
+        DIG_BLOCK_END
     }
 
     /**
@@ -309,7 +327,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      * @param player
      * @param profile
      */
-    public void onSpawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, GameProfile profile)
+    public void onSpawnPlayer(PlayerList scm, EntityPlayerMP player, GameProfile profile)
     {
         this.serverPlayerListeners.all().onPlayerConnect(player, profile);
         PlayerEventState playerState = this.getPlayerState(player);
@@ -320,7 +338,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      * @param scm
      * @param player
      */
-    public void onPlayerLogin(ServerConfigurationManager scm, EntityPlayerMP player)
+    public void onPlayerLogin(PlayerList scm, EntityPlayerMP player)
     {
         LiteLoader.getServerPluginChannels().onPlayerJoined(player);
     }
@@ -330,7 +348,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      * @param netManager
      * @param player
      */
-    public void onInitializePlayerConnection(ServerConfigurationManager scm, NetworkManager netManager, EntityPlayerMP player)
+    public void onInitializePlayerConnection(PlayerList scm, NetworkManager netManager, EntityPlayerMP player)
     {
         this.serverPlayerListeners.all().onPlayerLoggedIn(player);
     }
@@ -342,7 +360,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      * @param dimension
      * @param won
      */
-    public void onRespawnPlayer(ServerConfigurationManager scm, EntityPlayerMP player, EntityPlayerMP oldPlayer, int dimension, boolean won)
+    public void onRespawnPlayer(PlayerList scm, EntityPlayerMP player, EntityPlayerMP oldPlayer, int dimension, boolean won)
     {
         this.serverPlayerListeners.all().onPlayerRespawn(player, oldPlayer, dimension, won);
     }
@@ -351,7 +369,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
      * @param scm
      * @param player
      */
-    public void onPlayerLogout(ServerConfigurationManager scm, EntityPlayerMP player)
+    public void onPlayerLogout(PlayerList scm, EntityPlayerMP player)
     {
         this.serverPlayerListeners.all().onPlayerLogout(player);
         this.removePlayer(player);
@@ -388,29 +406,29 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         this.serverTickListeners.all().onTick(server);
     }
 
-    public boolean onPlaceBlock(NetHandlerPlayServer netHandler, EntityPlayerMP playerMP, BlockPos pos, EnumFacing facing)
+    public boolean onPlaceBlock(NetHandlerPlayServer netHandler, EntityPlayerMP player, EnumHand hand, BlockPos pos, EnumFacing facing)
     {
-        if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, facing))
+        if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, player, hand, player.getHeldItem(hand), pos, facing))
         {
-            S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos.offset(facing));
+            SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos.offset(facing));
             netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
-            playerMP.sendContainerToPlayer(playerMP.inventoryContainer);
+            player.sendContainerToPlayer(player.inventoryContainer);
             return false;
         }
 
         return true;
     }
 
-    public boolean onClickedAir(NetHandlerPlayServer netHandler)
+    public boolean onClickedAir(InteractType action, EntityPlayerMP player, EnumHand hand)
     {
-        return this.onPlayerInteract(InteractType.LEFT_CLICK, netHandler.playerEntity, null, EnumFacing.SOUTH);
+        return this.onPlayerInteract(action, player, hand, player.getHeldItem(hand), null, EnumFacing.SOUTH);
     }
 
-    public boolean onPlayerDigging(NetHandlerPlayServer netHandler, BlockPos pos, EntityPlayerMP playerMP)
+    public boolean onPlayerDigging(InteractType action, EntityPlayerMP player, NetHandlerPlayServer netHandler, BlockPos pos)
     {
-        if (!this.onPlayerInteract(InteractType.DIG_BLOCK_MAYBE, playerMP, pos, EnumFacing.SOUTH))
+        if (!this.onPlayerInteract(action, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, EnumFacing.SOUTH))
         {
-            S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
+            SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos);
             netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
             return false;
         }
@@ -418,80 +436,68 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         return true;
     }
 
-    public boolean onUseItem(BlockPos pos, EnumFacing side, EntityPlayerMP playerMP)
+    public boolean onUseItem(EntityPlayerMP player, EnumHand hand, ItemStack stack, BlockPos pos, EnumFacing side)
     {
-        if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, playerMP, pos, side))
+        if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, player, hand, stack, pos, side))
         {
-            S23PacketBlockChange cancellation = new S23PacketBlockChange(playerMP.worldObj, pos);
-            playerMP.playerNetServerHandler.sendPacket(cancellation);
+            SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos);
+            player.playerNetServerHandler.sendPacket(cancellation);
             return false;
         }
 
         return true;
     }
 
-    public boolean onBlockClicked(BlockPos pos, EnumFacing side, ItemInWorldManager manager)
+    public boolean onBlockClicked(BlockPos pos, EnumFacing side, PlayerInteractionManager manager)
     {
-        if (!this.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, manager.thisPlayerMP, pos, side))
+        EntityPlayerMP player = manager.thisPlayerMP;
+        if (!this.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, side))
         {
-            S23PacketBlockChange cancellation = new S23PacketBlockChange(manager.theWorld, pos);
-            manager.thisPlayerMP.playerNetServerHandler.sendPacket(cancellation);
+            SPacketBlockChange cancellation = new SPacketBlockChange(manager.theWorld, pos);
+            player.playerNetServerHandler.sendPacket(cancellation);
             return false;
         }
 
         return true;
     }
-
-    public boolean onPlayerInteract(InteractType action, EntityPlayerMP player, BlockPos position, EnumFacing side)
+    
+    public boolean onPlayerInteract(InteractType action, EntityPlayerMP player, EnumHand hand, ItemStack stack, BlockPos position, EnumFacing side)
     {
-        PlayerEventState eventState = this.getPlayerState(player);
-        return eventState.onPlayerInteract(action, player, position, side);
+        return this.getPlayerState(player).onPlayerInteract(action, player, hand, stack, position, side);
     }
 
-    void onPlayerClickedAir(EntityPlayerMP player, MouseButton button, BlockPos tracePos, EnumFacing traceSideHit, MovingObjectType traceHitType)
+    public boolean onPlayerSwapItems(EntityPlayerMP player)
+    {
+        return this.playerInteractionListeners.all().onPlayerSwapItems(player);
+    }
+
+    void onPlayerClickedAir(EntityPlayerMP player, MouseButton button, EnumHand hand, BlockPos tracePos, EnumFacing traceSideHit, Type traceHitType)
     {
         this.playerInteractionListeners.all().onPlayerClickedAir(player, button, tracePos, traceSideHit, traceHitType);
     }
 
-    boolean onPlayerClickedBlock(EntityPlayerMP player, MouseButton button, BlockPos hitPos, EnumFacing sideHit)
+    boolean onPlayerClickedBlock(EntityPlayerMP player, MouseButton button, EnumHand hand, ItemStack stack, BlockPos hitPos, EnumFacing sideHit)
     {
-        return this.playerInteractionListeners.all().onPlayerClickedBlock(player, button, hitPos, sideHit);
+        return this.playerInteractionListeners.all().onPlayerClickedBlock(player, button, hand, stack, hitPos, sideHit);
     }
 
-    public boolean onPlayerMove(NetHandlerPlayServer netHandler, C03PacketPlayer packet, EntityPlayerMP playerMP, WorldServer world)
+    public boolean onPlayerMove(NetHandlerPlayServer netHandler, CPacketPlayer packet, EntityPlayerMP player, WorldServer world)
     {
-        Position from = new Position(playerMP, true);
-
-        double toX = playerMP.posX;
-        double toY = playerMP.posY;
-        double toZ = playerMP.posZ;
-        float toYaw = playerMP.rotationYaw;
-        float toPitch = playerMP.rotationPitch;
-
-        if (packet.isMoving())
-        {
-            toX = packet.getPositionX();
-            toY = packet.getPositionY();
-            toZ = packet.getPositionZ();
-        }
-
-        if (packet.getRotating())
-        {
-            toYaw = packet.getYaw();
-            toPitch = packet.getPitch();
-        }
-
-        Position to = new Position(toX, toY, toZ, toYaw, toPitch);
+        Position from = new Position(player, true);
+        Position to = new Position(packet.getX(player.posX), packet.getY(player.posY), packet.getZ(player.posZ),
+                packet.getYaw(player.rotationYaw), packet.getPitch(player.rotationPitch));
+        
         ReturnValue<Position> pos = new ReturnValue<Position>(to);
 
-        if (!this.playerMoveListeners.all().onPlayerMove(playerMP, from, to, pos))
+        if (!this.playerMoveListeners.all().onPlayerMove(player, from, to, pos))
         {
-            playerMP.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, playerMP.prevRotationYaw, playerMP.prevRotationPitch);
-            playerMP.playerNetServerHandler.sendPacket(new S08PacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
-                    playerMP.prevRotationYaw, playerMP.prevRotationPitch, Collections.emptySet()));
+            int teleportId = ((ITeleportHandler)player.playerNetServerHandler).beginTeleport(from);
+            player.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, player.prevRotationYaw, player.prevRotationPitch);
+            player.playerNetServerHandler.sendPacket(new SPacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
+                    player.prevRotationYaw, player.prevRotationPitch, Collections.<EnumFlags>emptySet(), teleportId));
             return false;
         }
-
+        
         if (pos.isSet())
         {
             Position newPos = pos.get();
@@ -502,7 +508,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         return true;
     }
 
-    void onPlayerSettingsReceived(EntityPlayerMP player, C15PacketClientSettings packet)
+    void onPlayerSettingsReceived(EntityPlayerMP player, CPacketClientSettings packet)
     {
         PlayerEventState playerState = this.getPlayerState(player);
         playerState.setTraceDistance(((IPacketClientSettings)packet).getViewDistance());

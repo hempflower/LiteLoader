@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util.net;
 
 import java.io.BufferedReader;
@@ -188,7 +193,9 @@ public class HttpStringRetriever extends Thread
             if (this.headers != null)
             {
                 for (Entry<String, String> header : this.headers.entrySet())
+                {
                     httpClient.addRequestProperty(header.getKey(), header.getValue());
+                }
             }
 
             this.httpResponseCode = httpClient.getResponseCode();

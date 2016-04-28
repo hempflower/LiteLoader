@@ -1,16 +1,21 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-import com.mumfrey.liteloader.client.ducks.*;
+import com.mumfrey.liteloader.client.ducks.IMutableRegistry;
+import com.mumfrey.liteloader.client.ducks.IRenderManager;
+import com.mumfrey.liteloader.client.ducks.ITileEntityRendererDispatcher;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -26,7 +31,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.RegistrySimple;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -65,11 +69,11 @@ public abstract class ModUtilities
      * @param entityClass
      * @param renderer
      */
-    public static void addRenderer(Class<? extends Entity> entityClass, Render renderer)
+    public static <T extends Entity> void addRenderer(Class<T> entityClass, Render<T> renderer)
     {
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
 
-        Map<Class<? extends Entity>, Render> entityRenderMap = ((IRenderManager)renderManager).getRenderMap();
+        Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap = ((IRenderManager)renderManager).getRenderMap();
         if (entityRenderMap != null)
         {
             entityRenderMap.put(entityClass, renderer);
@@ -81,13 +85,13 @@ public abstract class ModUtilities
         }
     }
 
-    public static void addRenderer(Class<? extends TileEntity> tileEntityClass, TileEntitySpecialRenderer renderer)
+    public static <T extends TileEntity> void addRenderer(Class<T> tileEntityClass, TileEntitySpecialRenderer<T> renderer)
     {
         TileEntityRendererDispatcher tileEntityRenderer = TileEntityRendererDispatcher.instance;
 
         try
         {
-            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer> specialRendererMap
+            Map<Class<? extends TileEntity>, TileEntitySpecialRenderer<? extends TileEntity>> specialRendererMap
                     = ((ITileEntityRendererDispatcher)tileEntityRenderer).getSpecialRenderMap();
             specialRendererMap.put(tileEntityClass, renderer);
             renderer.setRendererDispatcher(tileEntityRenderer);
@@ -106,24 +110,32 @@ public abstract class ModUtilities
      * @param blockName Block identifier
      * @param block Block to register
      * @param force Force insertion even if the operation is blocked by FMl
+     * 
+     * @deprecated Register blocks directly with the registry
      */
+    @SuppressWarnings("unchecked")
+    @Deprecated
     public static void addBlock(int blockId, ResourceLocation blockName, Block block, boolean force)
     {
-        Block existingBlock = (Block)Block.blockRegistry.getObject(blockName);
-
+        boolean exists = Block.REGISTRY.containsKey(blockName);
+        Block existingBlock = Block.REGISTRY.getObject(blockName);
+        
         try
         {
-            Block.blockRegistry.register(blockId, blockName, block);
+            Block.REGISTRY.register(blockId, blockName, block);
         }
         catch (IllegalArgumentException ex)
         {
             if (!force) throw new IllegalArgumentException("Could not register block '" + blockName + "', the operation was blocked by FML.", ex);
 
-            ModUtilities.removeObjectFromRegistry(Block.blockRegistry, blockName);
-            Block.blockRegistry.register(blockId, blockName, block);
+            if (Block.REGISTRY instanceof IMutableRegistry)
+            {
+                ((IMutableRegistry<ResourceLocation, Block>)Block.REGISTRY).removeObjectFromRegistry(blockName);
+                Block.REGISTRY.register(blockId, blockName, block);
+            }
         }
 
-        if (existingBlock != null)
+        if (exists)
         {
             try
             {
@@ -154,24 +166,32 @@ public abstract class ModUtilities
      * @param itemName Item identifier
      * @param item Item to register
      * @param force Force insertion even if the operation is blocked by FMl
+     * 
+     * @deprecated Register items directly with the registry
      */
+    @SuppressWarnings("unchecked")
+    @Deprecated
     public static void addItem(int itemId, ResourceLocation itemName, Item item, boolean force)
     {
-        Item existingItem = (Item)Item.itemRegistry.getObject(itemName);
-
+        boolean exists = Item.REGISTRY.containsKey(itemName);
+        Item existingItem = Item.REGISTRY.getObject(itemName);
+        
         try
         {
-            Item.itemRegistry.register(itemId, itemName, item);
+            Item.REGISTRY.register(itemId, itemName, item);
         }
         catch (IllegalArgumentException ex)
         {
             if (!force) throw new IllegalArgumentException("Could not register item '" + itemName + "', the operation was blocked by FML.", ex);
 
-            ModUtilities.removeObjectFromRegistry(Block.blockRegistry, itemName);
-            Item.itemRegistry.register(itemId, itemName, item);
+            if (Block.REGISTRY instanceof IMutableRegistry)
+            {
+                ((IMutableRegistry<ResourceLocation, Block>)Item.REGISTRY).removeObjectFromRegistry(itemName);
+                Item.REGISTRY.register(itemId, itemName, item);
+            }
         }
 
-        if (existingItem != null)
+        if (exists)
         {
             try
             {
@@ -206,40 +226,6 @@ public abstract class ModUtilities
         {
             ex.printStackTrace();
         }
-    }
-
-    private static <K, V> V removeObjectFromRegistry(RegistrySimple registry, K key)
-    {
-        if (registry == null) return null;
-
-        IObjectIntIdentityMap underlyingIntegerMap = null;
-
-        if (registry instanceof INamespacedRegistry)
-        {
-            underlyingIntegerMap = ((INamespacedRegistry)registry).getUnderlyingMap(); 
-        }
-
-        Map<K, V> registryObjects = ((IRegistrySimple)registry).<K, V>getRegistryObjects();
-        if (registryObjects != null)
-        {
-            V existingValue = registryObjects.get(key);
-            if (existingValue != null)
-            {
-                registryObjects.remove(key);
-
-                if (underlyingIntegerMap != null)
-                {
-                    IdentityHashMap<V, Integer> identityMap = underlyingIntegerMap.<V>getIdentityMap();
-                    List<V> objectList = underlyingIntegerMap.<V>getObjectList();
-                    if (identityMap != null) identityMap.remove(existingValue);
-                    if (objectList != null) objectList.remove(existingValue);
-                }
-
-                return existingValue;
-            }
-        }
-
-        return null;
     }
 
     private static void setFinalStaticField(Field field, Object value)

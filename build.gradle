@@ -17,9 +17,9 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.0-SNAPSHOT'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
         classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
-        classpath 'org.spongepowered:mixingradle:0.1-SNAPSHOT'
+        classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
     }
 }
 
@@ -33,14 +33,17 @@ apply plugin: 'org.spongepowered.mixin'
 defaultTasks 'build'
 
 ext {
+    def isJenkins = project.hasProperty("jenkins")
+    
     // Artefact details
-    buildNumber = project.hasProperty("buildNumber") ? buildNumber : '0'
+    buildNumber = isJenkins ? System.env.BUILD_NUMBER : (project.hasProperty("buildNumber") ? buildNumber : '0')
     buildVersion = project.hasProperty("buildVersion") ? buildVersion : '0.0'
     ciSystem = project.hasProperty("ciSystem") ? ciSystem : 'unknown'
-    commit = project.hasProperty("commit") ? commit : 'unknown'
+    commit = isJenkins ? System.env.GIT_COMMIT : (project.hasProperty("commit") ? commit : 'unknown')
     classifier = project.hasProperty("buildType") ? buildType : 'SNAPSHOT'
     isReleaseBuild = "RELEASE".equals(project.classifier.toUpperCase())
     mavenRepo = project.isReleaseBuild ? "mavenUrl" : "mavenSnapshotUrl"
+    brand = isJenkins ? "${project.mcVersion}-SNAPSHOT-r${System.env.GIT_COMMIT.take(7).toUpperCase()}-b${System.env.BUILD_NUMBER}-${System.env.BUILD_ID}" : ""
     
     // Extended project information
     projectName = 'LiteLoader'
@@ -68,9 +71,15 @@ repositories {
 }
 
 dependencies {
-    compile 'org.spongepowered:mixin:0.4.11-SNAPSHOT'
-    compile 'com.google.guava:guava:17.0'
-    compile 'com.google.code.gson:gson:2.2.4'
+//    compile 'org.ow2.asm:asm-debug-all:5.0.3'
+    compile('org.spongepowered:mixin:0.5.5-SNAPSHOT') {
+        exclude module: 'asm-commons'
+        exclude module: 'asm-tree'
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
+//    compile 'com.google.guava:guava:17.0'
+//    compile 'com.google.code.gson:gson:2.2.4'
 }
 
 minecraft {
@@ -131,6 +140,14 @@ afterEvaluate {
     mc.replacer.putReplacement '{RUN_CLIENT_TWEAKER}', minecraft.tweakClass
 }
 
+processResources {
+    inputs.property "brand", project.brand
+    from (sourceSets.main.resources.srcDirs) {
+        include 'liteloader.properties'
+        filter { line -> line.startsWith('brand=') ? line + project.brand : line }
+    }
+}
+
 // manifest entries for all jars
 def jarManifest = {
     mainAttributes (
@@ -146,7 +163,7 @@ jar {
     doFirst {
         // Seriously forge?
         ant.replace(
-            file: sourceSets.main.refMapFile,
+            file: file("${compileJava.temporaryDir}/${sourceSets.main.refMap}"),
             token: "func_72355_a(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;)V",
             value: "initializeConnectionToPlayer(Lnet/minecraft/network/NetworkManager;Lnet/minecraft/entity/player/EntityPlayerMP;Lnet/minecraft/network/NetHandlerPlayServer;)V"
         )
@@ -284,7 +301,20 @@ uploadArchives {
                         url 'http://develop.liteloader.com/liteloader/LiteLoader/issues'
                     }
                 }
+                whenConfigured {
+                    dependencies = dependencies.findAll {
+                        !it.artifactId.contains('mixin')
+                    }
+                }
             }
+        }
+    }
+}
+
+install.repositories.mavenInstaller.pom {
+    whenConfigured {
+        dependencies = dependencies.findAll {
+            !it.artifactId.contains('mixin')
         }
     }
 }

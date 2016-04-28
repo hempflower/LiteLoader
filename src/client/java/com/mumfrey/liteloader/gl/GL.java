@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.gl;
 
 import java.nio.ByteBuffer;
@@ -5,11 +10,15 @@ import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.GlStateManager.TexGen;
-
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.glu.GLU;
+
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.GlStateManager.CullFace;
+import net.minecraft.client.renderer.GlStateManager.FogMode;
+import net.minecraft.client.renderer.GlStateManager.TexGen;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.renderer.vertex.VertexFormat;
 
 /**
  * Convenience class for working with Mojang's GLStateManager:
@@ -42,6 +51,20 @@ import org.lwjgl.util.glu.GLU;
  */
 public class GL
 {
+    // Vertex Formats
+    public static final VertexFormat VF_BLOCK = DefaultVertexFormats.BLOCK;
+    public static final VertexFormat VF_ITEM = DefaultVertexFormats.ITEM;
+    public static final VertexFormat VF_OLDMODEL_POSITION_TEX_NORMAL = DefaultVertexFormats.OLDMODEL_POSITION_TEX_NORMAL;
+    public static final VertexFormat VF_PARTICLE_POSITION_TEX_COLOR_LMAP = DefaultVertexFormats.PARTICLE_POSITION_TEX_COLOR_LMAP;
+    public static final VertexFormat VF_POSITION = DefaultVertexFormats.POSITION;
+    public static final VertexFormat VF_POSITION_COLOR = DefaultVertexFormats.POSITION_COLOR;
+    public static final VertexFormat VF_POSITION_TEX = DefaultVertexFormats.POSITION_TEX;
+    public static final VertexFormat VF_POSITION_NORMAL = DefaultVertexFormats.POSITION_NORMAL;
+    public static final VertexFormat VF_POSITION_TEX_COLOR = DefaultVertexFormats.POSITION_TEX_COLOR;
+    public static final VertexFormat VF_POSITION_TEX_NORMAL = DefaultVertexFormats.POSITION_TEX_NORMAL;
+    public static final VertexFormat VF_POSITION_TEX_LMAP_COLOR = DefaultVertexFormats.POSITION_TEX_LMAP_COLOR;
+    public static final VertexFormat VF_POSITION_TEX_COLOR_NORMAL = DefaultVertexFormats.POSITION_TEX_COLOR_NORMAL;
+    
     // GL11
     public static final int GL_ACCUM = 0x100;
     public static final int GL_LOAD = 0x101;
@@ -855,12 +878,12 @@ public class GL
 
     public static void glEnableLight(int light)
     {
-        GlStateManager.enableLight(light); // TODO OBF MCPTEST enableBooleanStateAt - enableLight
+        GlStateManager.enableLight(light);
     }
 
     public static void glDisableLight(int light)
     {
-        GlStateManager.disableLight(light); // TODO OBF MCPTEST disableBooleanStateAt - disableLight
+        GlStateManager.disableLight(light);
     }
 
     public static void glLight(int light, int pname, FloatBuffer params)
@@ -943,7 +966,7 @@ public class GL
         GlStateManager.disableFog();
     }
 
-    public static void glSetFogMode(int mode)
+    public static void glSetFogMode(FogMode mode)
     {
         GlStateManager.setFog(mode);
     }
@@ -988,7 +1011,7 @@ public class GL
         GlStateManager.disableCull();
     }
 
-    public static void glCullFace(int mode)
+    public static void glCullFace(CullFace mode)
     {
         GlStateManager.cullFace(mode);
     }
@@ -1040,7 +1063,7 @@ public class GL
 
     public static void glTexGen(TexGen tex, int pname, FloatBuffer params)
     {
-        GlStateManager.func_179105_a(tex, pname, params);
+        GlStateManager.texGen(tex, pname, params);
     }
 
     public static void glSetActiveTextureUnit(int texture)
@@ -1050,27 +1073,27 @@ public class GL
 
     public static void glEnableTexture2D()
     {
-        GlStateManager.enableTexture2D(); // TODO OBF MCPTEST func_179098_w - enableTexture2D
+        GlStateManager.enableTexture2D();
     }
 
     public static void glDisableTexture2D()
     {
-        GlStateManager.disableTexture2D(); // TODO OBF MCPTEST func_179090_x - disableTexture2D
+        GlStateManager.disableTexture2D();
     }
 
     public static int glGenTextures()
     {
-        return GlStateManager.generateTexture(); // TODO OBF MCPTEST func_179146_y - generateTexture
+        return GlStateManager.generateTexture();
     }
 
     public static void glDeleteTextures(int textureName)
     {
-        GlStateManager.deleteTexture(textureName); // TODO OBF MCPTEST func_179150_h - deleteTexture
+        GlStateManager.deleteTexture(textureName);
     }
 
     public static void glBindTexture2D(int textureName)
     {
-        GlStateManager.bindTexture(textureName); // TODO OBF MCPTEST func_179144_i - bindTexture
+        GlStateManager.bindTexture(textureName);
     }
 
     public static void glEnableNormalize()

@@ -1,8 +1,13 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
 
 import com.mumfrey.liteloader.core.LiteLoaderEventBroker.ReturnValue;
 
-import net.minecraft.util.IChatComponent;
+import net.minecraft.util.text.ITextComponent;
 
 
 /**
@@ -23,5 +28,5 @@ public interface ChatFilter extends LiteMod
      * 
      * @return True to keep the packet, false to discard
      */
-    public abstract boolean onChat(IChatComponent chat, String message, ReturnValue<IChatComponent> newMessage);
+    public abstract boolean onChat(ITextComponent chat, String message, ReturnValue<ITextComponent> newMessage);
 }

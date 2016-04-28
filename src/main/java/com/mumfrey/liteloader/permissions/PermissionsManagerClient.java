@@ -1,6 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.permissions;
-
-import io.netty.buffer.Unpooled;
 
 import java.io.File;
 import java.util.Arrays;
@@ -11,17 +14,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.eq2online.permissions.ReplicatedPermissionsContainer;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.Permissible;
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
 import com.mumfrey.liteloader.core.PluginChannels.ChannelPolicy;
+
+import io.netty.buffer.Unpooled;
+import net.eq2online.permissions.ReplicatedPermissionsContainer;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SPacketJoinGame;
 
 /**
  * This class manages permissions on the client, it is a singleton class which
@@ -185,7 +189,7 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
         this.registeredClientPermissions.put(mod, new TreeSet<String>());
     }
 
-    public void onJoinGame(INetHandler netHandler, S01PacketJoinGame joinGamePacket)
+    public void onJoinGame(INetHandler netHandler, SPacketJoinGame joinGamePacket)
     {
         this.clearServerPermissions();
         this.scheduleRefresh();
@@ -207,7 +211,9 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
         this.serverPermissions.clear();
 
         for (Permissible permissible : this.permissibles)
+        {
             permissible.onPermissionsCleared(this);
+        }
     }
 
     /**
@@ -216,7 +222,9 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
     protected void sendPermissionQueries()
     {
         for (Permissible mod : this.registeredClientMods.values())
+        {
             this.sendPermissionQuery(mod);
+        }
     }
 
     /**

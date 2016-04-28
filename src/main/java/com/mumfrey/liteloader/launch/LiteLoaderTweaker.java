@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.launch;
 
 import java.io.File;
@@ -12,16 +17,16 @@ import java.util.TreeSet;
 
 import org.spongepowered.asm.launch.MixinBootstrap;
 
-import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
-import net.minecraft.launchwrapper.LaunchClassLoader;
-
 import com.google.common.base.Preconditions;
 import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 import com.mumfrey.liteloader.util.SortableValue;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.launchwrapper.ITweaker;
+import net.minecraft.launchwrapper.Launch;
+import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
  * LiteLoader tweak class
@@ -33,8 +38,8 @@ public class LiteLoaderTweaker implements ITweaker
     public static final int ENV_TYPE_CLIENT = 0;
     public static final int ENV_TYPE_DEDICATEDSERVER = 1;
 
-    // TODO Version - 1.8
-    public static final String VERSION = "1.8";
+    // TODO Version - 1.9
+    public static final String VERSION = "1.9";
 
     protected static final String bootstrapClassName = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
 

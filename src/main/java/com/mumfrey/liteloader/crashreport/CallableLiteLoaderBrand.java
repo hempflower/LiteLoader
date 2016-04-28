@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.crashreport;
 
 import java.util.concurrent.Callable;
 
-import net.minecraft.crash.CrashReport;
-
 import com.mumfrey.liteloader.core.LiteLoader;
+
+import net.minecraft.crash.CrashReport;
 
 public class CallableLiteLoaderBrand implements Callable<String>
 {

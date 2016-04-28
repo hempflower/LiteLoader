@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -20,14 +25,6 @@ public interface RenderListener extends LiteMod
      * @param currentScreen Current screen (if any)
      */
     public abstract void onRenderGui(GuiScreen currentScreen);
-
-    /**
-     * Called when the world is rendered
-     * 
-     * @deprecated Use PreRenderListener::onRenderWorld(F)V instead
-     */
-    @Deprecated
-    public abstract void onRenderWorld();
 
     /**
      * Called immediately after the world/camera transform is initialised

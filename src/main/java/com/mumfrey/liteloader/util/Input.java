@@ -1,13 +1,18 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.util;
-
-import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.world.World;
 
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.util.jinput.ComponentRegistry;
+
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.SPacketJoinGame;
+import net.minecraft.world.World;
 
 public abstract class Input implements CoreProvider
 {
@@ -77,7 +82,7 @@ public abstract class Input implements CoreProvider
     }
 
     @Override
-    public void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
+    public void onJoinGame(INetHandler netHandler, SPacketJoinGame loginPacket)
     {
     }
 

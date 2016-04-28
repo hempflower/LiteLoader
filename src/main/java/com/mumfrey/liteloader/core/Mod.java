@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import com.mumfrey.liteloader.LiteMod;
@@ -125,6 +130,15 @@ class Mod extends ModInfo<LoadableMod<?>>
     public String getDisplayName()
     {
         return this.name;
+    }
+
+    /**
+     * Get the mod description
+     */
+    @Override
+    public String getDescription()
+    {
+        return this.container.getDescription(this.key);
     }
 
     /* (non-Javadoc)

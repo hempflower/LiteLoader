@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.util.HashSet;
@@ -7,7 +12,7 @@ import java.util.Set;
  * LiteLoader version table
  *
  * @author Adam Mummery-Smith
- * @version 1.8.0_00
+ * @version 1.9.0_00
  */
 public enum LiteLoaderVersion
 {
@@ -38,12 +43,14 @@ public enum LiteLoaderVersion
     MC_1_7_10_R2(29, 1405369406, "1.7.10", "1.7.10_02", "1.7.10"),
     MC_1_7_10_R3(30, 1407687918, "1.7.10", "1.7.10_03", "1.7.10", "1.7.10_03"),
     MC_1_7_10_R4(31, 1414368553, "1.7.10", "1.7.10_04", "1.7.10", "1.7.10_03", "1.7.10_04"),
-    MC_1_8_0_R0(32, 0,           "1.8",    "1.8.0",     "1.8", "1.8.0");
+    MC_1_8_0_R0(32, 0,           "1.8",    "1.8.0",     "1.8", "1.8.0"),
+    MC_1_8_9_R0(34, 0,           "1.8.9",  "1.8.9",     "1.8.9"),
+    MC_1_9_0_R0(35, 0,           "1.9",    "1.9.0",     "1.9", "1.9.0");
 
     /**
      * Current loader version
      */
-    public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_8_0_R0;
+    public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_9_0_R0;
 
     private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(),
                                                                                     LiteLoaderVersion.CURRENT.getReleaseTimestamp());
@@ -66,7 +73,9 @@ public enum LiteLoaderVersion
         this.loaderVersion = loaderVersion;
 
         for (String supportedVersion : supportedVersions)
+        {
             this.supportedVersions.add(supportedVersion);
+        }
     }
 
     public int getLoaderRevision()

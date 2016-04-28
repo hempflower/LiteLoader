@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.io.File;
@@ -596,30 +601,12 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
             if (this.environment.addCascadedTweaker(tweakClass, tweakPriority))
             {
                 LiteLoaderLogger.info(Verbosity.REDUCED, "tweakClass '%s' was successfully added", tweakClass);
-                container.injectIntoClassPath(this.classLoader, true);
-
                 if (container.isExternalJar())
                 {
                     this.containers.registerInjectedTweak(container);
                 }
 
-                String[] classPathEntries = container.getClassPathEntries();
-                if (classPathEntries != null)
-                {
-                    for (String classPathEntry : classPathEntries)
-                    {
-                        try
-                        {
-                            File classPathJar = new File(this.environment.getGameDirectory(), classPathEntry);
-                            URL classPathJarUrl = classPathJar.toURI().toURL();
-
-                            LiteLoaderLogger.info("Adding Class-Path entry: %s", classPathEntry); 
-                            LiteLoaderTweaker.addURLToParentClassLoader(classPathJarUrl);
-                            this.classLoader.addURL(classPathJarUrl);
-                        }
-                        catch (MalformedURLException ex) {}
-                    }
-                }
+                this.injectTweakContainer(container);
             }
         }
         catch (MalformedURLException ex)
@@ -650,28 +637,62 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
 
     private void addMixinsFrom(MixinContainer<File> container)
     {
-        for (String config : container.getMixinConfigs())
+        try
         {
-            if (config.endsWith(".json"))
+            for (String config : container.getMixinConfigs())
             {
-                LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
-                MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
-            }
-            else if (config.contains(".json@"))
-            {
-                int pos = config.indexOf(".json@");
-                String phaseName = config.substring(pos + 6);
-                config = config.substring(0, pos + 5);
-                Phase phase = Phase.forName(phaseName);
-                if (phase != null)
+                if (config.endsWith(".json"))
                 {
                     LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
-                    MixinEnvironment.getEnvironment(phase).addConfiguration(config);
+                    MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
+                    this.injectContainerRecursive(container);
+                }
+                else if (config.contains(".json@"))
+                {
+                    int pos = config.indexOf(".json@");
+                    String phaseName = config.substring(pos + 6);
+                    config = config.substring(0, pos + 5);
+                    Phase phase = Phase.forName(phaseName);
+                    if (phase != null)
+                    {
+                        LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
+                        MixinEnvironment.getEnvironment(phase).addConfiguration(config);
+                        this.injectContainerRecursive(container);
+                    }
                 }
             }
         }
+        catch (MalformedURLException ex)
+        {
+        }
     }
     
+    protected void injectTweakContainer(TweakContainer<File> container) throws MalformedURLException
+    {
+        if (!container.injectIntoClassPath(this.classLoader, true))
+        {
+            return;
+        }
+        
+        String[] classPathEntries = container.getClassPathEntries();
+        if (classPathEntries != null)
+        {
+            for (String classPathEntry : classPathEntries)
+            {
+                try
+                {
+                    File classPathJar = new File(this.environment.getGameDirectory(), classPathEntry);
+                    URL classPathJarUrl = classPathJar.toURI().toURL();
+
+                    LiteLoaderLogger.info("Adding Class-Path entry: %s", classPathEntry); 
+                    LiteLoaderTweaker.addURLToParentClassLoader(classPathJarUrl);
+                    this.classLoader.addURL(classPathJarUrl);
+                }
+                catch (MalformedURLException ex) {}
+            }
+        }
+    }
+
     /**
      * @param container
      */

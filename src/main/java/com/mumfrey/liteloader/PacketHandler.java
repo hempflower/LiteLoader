@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader;
 
 import java.util.List;
@@ -15,7 +20,7 @@ public interface PacketHandler extends LiteMod
     /**
      * Get list of packets to handle
      */
-    public List<Class<? extends Packet>> getHandledPackets(); 
+    public List<Class<? extends Packet<?>>> getHandledPackets(); 
 
     /**
      * @param netHandler The vanilla nethandler which will handle this packet if
@@ -28,5 +33,5 @@ public interface PacketHandler extends LiteMod
      *      if you wish to inhibit later PacketHandlers but preserve vanilla
      *      behaviour.
      */
-    public abstract boolean handlePacket(INetHandler netHandler, Packet packet);
+    public abstract boolean handlePacket(INetHandler netHandler, Packet<?> packet);
 }

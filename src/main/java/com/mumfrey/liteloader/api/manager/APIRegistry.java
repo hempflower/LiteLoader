@@ -1,3 +1,8 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.api.manager;
 
 import java.util.ArrayList;
@@ -7,14 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.launchwrapper.Launch;
-
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.exceptions.InvalidAPIStateException;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
+
+import net.minecraft.launchwrapper.Launch;
 
 /**
  * This is where we register API classes during early startup before baking the

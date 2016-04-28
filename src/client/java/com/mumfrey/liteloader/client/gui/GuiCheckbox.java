@@ -1,10 +1,16 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client.gui;
 
 import static com.mumfrey.liteloader.gl.GL.*;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiButton;
 
 import com.mumfrey.liteloader.client.api.LiteLoaderBrandingProvider;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiButton;
 
 /**
  * Super-simple implementation of a checkbox control

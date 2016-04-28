@@ -1,8 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
-
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.network.play.server.S3FPacketCustomPayload;
 
 import com.mumfrey.liteloader.PluginChannelListener;
 import com.mumfrey.liteloader.api.Listener;
@@ -10,6 +11,10 @@ import com.mumfrey.liteloader.core.event.HandlerList;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.permissions.PermissionsManagerClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
+
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.server.SPacketCustomPayload;
 
 /**
  * Handler for client plugin channels
@@ -76,7 +81,7 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
      * 
      * @param customPayload
      */
-    public abstract void onPluginChannelMessage(S3FPacketCustomPayload customPayload);
+    public abstract void onPluginChannelMessage(SPacketCustomPayload customPayload);
 
     /**
      * @param channel

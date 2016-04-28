@@ -1,12 +1,9 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.client;
-
-import net.minecraft.client.audio.SoundHandler;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
-import net.minecraft.client.resources.SimpleReloadableResourceManager;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.play.server.S01PacketJoinGame;
-import net.minecraft.world.World;
 
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.common.GameEngine;
@@ -15,6 +12,14 @@ import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.resources.InternalResourcePack;
+
+import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.IResourcePack;
+import net.minecraft.client.resources.SimpleReloadableResourceManager;
+import net.minecraft.network.INetHandler;
+import net.minecraft.network.play.server.SPacketJoinGame;
+import net.minecraft.world.World;
 
 /**
  * CoreProvider which fixes SoundManager derping up at startup
@@ -85,7 +90,7 @@ public class LiteLoaderCoreProviderClient implements CoreProvider
     }
 
     @Override
-    public void onJoinGame(INetHandler netHandler, S01PacketJoinGame loginPacket)
+    public void onJoinGame(INetHandler netHandler, SPacketJoinGame loginPacket)
     {
     }
 

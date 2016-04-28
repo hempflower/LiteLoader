@@ -1,10 +1,15 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.core;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.api.InterfaceProvider;
+import com.mumfrey.liteloader.api.Listener;
 import com.mumfrey.liteloader.core.LiteLoaderInterfaceManager.InterfaceHandler;
 import com.mumfrey.liteloader.interfaces.InterfaceRegistry;
 

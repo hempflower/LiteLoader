@@ -1,9 +1,14 @@
+/*
+ * This file is part of LiteLoader.
+ * Copyright (C) 2012-16 Adam Mummery-Smith
+ * All Rights Reserved.
+ */
 package com.mumfrey.liteloader.modconfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +38,7 @@ public class ConfigManager
     /**
      * List of config writers, for faster iteration in onTick
      */
-    private List<ExposableConfigWriter> configWriterList = new LinkedList<ExposableConfigWriter>();
+    private List<ExposableConfigWriter> configWriterList = new ArrayList<ExposableConfigWriter>();
 
     /**
      * Register a mod, adds the config panel class to the map if the mod
