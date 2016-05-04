@@ -465,6 +465,7 @@ public class LiteLoaderMods
             }
             catch (Throwable th)
             {
+                th.printStackTrace();
                 this.onModLoadFailed(container, mod.getModClassName(), "an error occurred", th);
                 this.registerModStartupError(mod, th);
             }

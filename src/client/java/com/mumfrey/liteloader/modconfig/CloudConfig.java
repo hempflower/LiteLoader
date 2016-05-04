@@ -67,7 +67,7 @@ public abstract class CloudConfig
     /**
      * Same as normal key pattern except that $ gets translated to . for key
      */
-    private static final Pattern keyPattern = Pattern.compile("^[a-z0-9_\\-\\$]{1,32}$");
+    private static final Pattern keyPattern = Pattern.compile("(?i)^[a-z0-9_\\-\\$]{1,32}$");
 
     /**
      * A field value tracker
@@ -85,7 +85,7 @@ public abstract class CloudConfig
         TrackedField(Field handle)
         {
             this.handle = handle;
-            this.name = handle.getName().replace("$", ".");
+            this.name = handle.getName().replace("$", ".").toLowerCase();
         }
         
         @SuppressWarnings("unchecked")
@@ -139,6 +139,14 @@ public abstract class CloudConfig
             }
             else if (value != this.localValue && value != null)
             {
+                if (value.length() > 255)
+                {
+                    LiteLoaderLogger.warning("Unable to synchronise setting [%s], length > 255 chars. The value will be truncated!", this.name);
+                    value = value.substring(0, 255);
+                    this.<String>setValue(value);
+                    this.isDirty();
+                }
+                
                 CloudConfig.this.preferences.set(this.name, value);
             }
             else if (CloudConfig.this.preferences.has(this.name)) 
@@ -147,7 +155,7 @@ public abstract class CloudConfig
                 if (value != remoteValue)
                 {
                     value = remoteValue;
-                    this.setValue(value);
+                    this.<String>setValue(value);
                 }
             }
             
@@ -185,7 +193,7 @@ public abstract class CloudConfig
                 if (value != remoteValue)
                 {
                     value = remoteValue;
-                    this.setValue(value);
+                    this.<Integer>setValue(value);
                 }
             }
             
@@ -235,7 +243,7 @@ public abstract class CloudConfig
                 if (value != remoteValue)
                 {
                     value = remoteValue;
-                    this.setValue(value);
+                    this.<Float>setValue(value);
                 }
             }
             
@@ -282,15 +290,21 @@ public abstract class CloudConfig
             }
             else if (CloudConfig.this.preferences.has(this.name)) 
             {
-                boolean remoteValue = "true".equals(CloudConfig.this.preferences.get(this.name));
+                boolean remoteValue = this.tryParse(CloudConfig.this.preferences.get(this.name), value);
                 if (value != remoteValue)
                 {
                     value = remoteValue;
-                    this.setValue(value);
+                    this.<Boolean>setValue(value);
                 }
             }
             
             this.localValue = value;
+        }
+
+        private boolean tryParse(String string, boolean value)
+        {
+            boolean isTrue = "true".equals(string);
+            return (isTrue || "false".equals(string)) ? isTrue : value; 
         }
     }
     
@@ -474,11 +488,13 @@ public abstract class CloudConfig
             if (Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers))
             {
                 LiteLoaderLogger.debug("Skipping transient field %s in %s", field.getName(), this.getClass().getName());
+                continue;
             }
             
             if (!CloudConfig.keyPattern.matcher(field.getName()).matches())
             {
                 LiteLoaderLogger.warning("Skipping field with invalid name %s in %s", field.getName(), this.getClass().getName());
+                continue;
             }
             
             Class<?> type = field.getType();
