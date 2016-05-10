@@ -17,6 +17,7 @@ import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
 
 import net.minecraft.client.renderer.EntityRenderer;
 import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.shader.ShaderGroup;
 import net.minecraft.util.ResourceLocation;
 
 @Mixin(EntityRenderer.class)
@@ -25,6 +26,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     @Shadow private static ResourceLocation[] SHADERS_TEXTURES;
     @Shadow private boolean useShader;
     @Shadow private int shaderIndex;
+    @Shadow private ShaderGroup theShaderGroup;
     
     @Shadow abstract void loadShader(ResourceLocation resourceLocationIn);
     @Shadow abstract float getFOVModifier(float partialTicks, boolean useFOVSetting);
@@ -162,7 +164,15 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     @Override
     public void selectShader(ResourceLocation shader)
     {
-        this.loadShader(shader);
+        if (shader == null)
+        {
+            this.theShaderGroup = null;
+            this.useShader = false;
+        }
+        else 
+        {
+            this.loadShader(shader);
+        }
     }
     
     @Override
