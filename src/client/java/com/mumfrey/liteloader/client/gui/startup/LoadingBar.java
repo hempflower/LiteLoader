@@ -260,12 +260,12 @@ public class LoadingBar extends LoadingProgress
         this.textureManager.bindTexture(this.textureLocation);
         Tessellator tessellator = Tessellator.getInstance();
         VertexBuffer vertexBuffer = tessellator.getBuffer();
-        vertexBuffer.begin(GL_QUADS, VF_POSITION);
+        vertexBuffer.begin(GL_QUADS, VF_POSITION_TEX_COLOR);
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-        vertexBuffer.pos(0.0D,        scaledHeight, 0.0D).endVertex();
-        vertexBuffer.pos(scaledWidth, scaledHeight, 0.0D).endVertex();
-        vertexBuffer.pos(scaledWidth, 0.0D,         0.0D).endVertex();
-        vertexBuffer.pos(0.0D,        0.0D,         0.0D).endVertex();
+        vertexBuffer.pos(0.0D,        scaledHeight, 0.0D).tex(0.0D, 0.0D).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(scaledWidth, scaledHeight, 0.0D).tex(0.0D, 0.0D).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(scaledWidth, 0.0D,         0.0D).tex(0.0D, 0.0D).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(0.0D,        0.0D,         0.0D).tex(0.0D, 0.0D).color(255, 255, 255, 255).endVertex();
         tessellator.draw();
 
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -278,11 +278,11 @@ public class LoadingBar extends LoadingProgress
         int v2 = 256;
 
         float texMapScale = 0.00390625F;
-        vertexBuffer.begin(GL_QUADS, VF_POSITION_TEX);
-        vertexBuffer.pos(left + 0,  top + v2, 0.0D).tex((u1 + 0)  * texMapScale, (v1 + v2) * texMapScale).endVertex();
-        vertexBuffer.pos(left + u2, top + v2, 0.0D).tex((u1 + u2) * texMapScale, (v1 + v2) * texMapScale).endVertex();
-        vertexBuffer.pos(left + u2, top + 0,  0.0D).tex((u1 + u2) * texMapScale, (v1 + 0)  * texMapScale).endVertex();
-        vertexBuffer.pos(left + 0,  top + 0,  0.0D).tex((u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale).endVertex();
+        vertexBuffer.begin(GL_QUADS, VF_POSITION_TEX_COLOR);
+        vertexBuffer.pos(left + 0,  top + v2, 0.0D).tex((u1 + 0)  * texMapScale, (v1 + v2) * texMapScale).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(left + u2, top + v2, 0.0D).tex((u1 + u2) * texMapScale, (v1 + v2) * texMapScale).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(left + u2, top + 0,  0.0D).tex((u1 + u2) * texMapScale, (v1 + 0)  * texMapScale).color(255, 255, 255, 255).endVertex();
+        vertexBuffer.pos(left + 0,  top + 0,  0.0D).tex((u1 + 0)  * texMapScale, (v1 + 0)  * texMapScale).color(255, 255, 255, 255).endVertex();
         tessellator.draw();
 
         glEnableTexture2D();
