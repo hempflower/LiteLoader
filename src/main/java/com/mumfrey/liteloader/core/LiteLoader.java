@@ -1012,9 +1012,9 @@ public final class LiteLoader
     private static void populateCrashReport(CrashReport crashReport)
     {
         CrashReportCategory category = crashReport.getCategory(); // crashReport.makeCategoryDepth("Mod System Details", 1);
-        category.addCrashSectionCallable("Mod Pack",        new CallableLiteLoaderBrand(crashReport));
-        category.addCrashSectionCallable("LiteLoader Mods", new CallableLiteLoaderMods(crashReport));
-        category.addCrashSectionCallable("LaunchWrapper",   new CallableLaunchWrapper(crashReport));
+        category.addCrashSection("Mod Pack",        new CallableLiteLoaderBrand(crashReport));
+        category.addCrashSection("LiteLoader Mods", new CallableLiteLoaderMods(crashReport));
+        category.addCrashSection("LaunchWrapper",   new CallableLaunchWrapper(crashReport));
     }
 
     static final void createInstance(LoaderEnvironment environment, LoaderProperties properties, LaunchClassLoader classLoader)

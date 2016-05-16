@@ -411,7 +411,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, player, hand, player.getHeldItem(hand), pos, facing))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos.offset(facing));
-            netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+            netHandler.playerEntity.connection.sendPacket(cancellation);
             player.sendContainerToPlayer(player.inventoryContainer);
             return false;
         }
@@ -429,7 +429,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(action, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, EnumFacing.SOUTH))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos);
-            netHandler.playerEntity.playerNetServerHandler.sendPacket(cancellation);
+            netHandler.playerEntity.connection.sendPacket(cancellation);
             return false;
         }
 
@@ -441,7 +441,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, player, hand, stack, pos, side))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(player.worldObj, pos);
-            player.playerNetServerHandler.sendPacket(cancellation);
+            player.connection.sendPacket(cancellation);
             return false;
         }
 
@@ -454,7 +454,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, side))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(manager.theWorld, pos);
-            player.playerNetServerHandler.sendPacket(cancellation);
+            player.connection.sendPacket(cancellation);
             return false;
         }
 
@@ -491,9 +491,9 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 
         if (!this.playerMoveListeners.all().onPlayerMove(player, from, to, pos))
         {
-            int teleportId = ((ITeleportHandler)player.playerNetServerHandler).beginTeleport(from);
+            int teleportId = ((ITeleportHandler)player.connection).beginTeleport(from);
             player.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, player.prevRotationYaw, player.prevRotationPitch);
-            player.playerNetServerHandler.sendPacket(new SPacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
+            player.connection.sendPacket(new SPacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
                     player.prevRotationYaw, player.prevRotationPitch, Collections.<EnumFlags>emptySet(), teleportId));
             return false;
         }

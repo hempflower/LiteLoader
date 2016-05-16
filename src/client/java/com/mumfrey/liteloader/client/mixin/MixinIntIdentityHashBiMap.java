@@ -15,13 +15,13 @@ import net.minecraft.util.IntIdentityHashBiMap;
 @Mixin(IntIdentityHashBiMap.class)
 public abstract class MixinIntIdentityHashBiMap<V> implements IIntIdentityHashBiMap<V>
 {
-    @Shadow private V[] objectArray;
-    @Shadow private int[] intKeys;
-    @Shadow private V[] intToObjects;
-    @Shadow private int field_186821_e;
+    @Shadow private V[] keys;
+    @Shadow private int[] values;
+    @Shadow private V[] byId;
+    @Shadow private int nextFreeIndex;
     @Shadow private int mapSize;
     
-    @Shadow private int func_186816_b(V object, int hash)
+    @Shadow private int getIndex(V object, int hash)
     {
         return -1;
     }
@@ -34,10 +34,10 @@ public abstract class MixinIntIdentityHashBiMap<V> implements IIntIdentityHashBi
     @Override
     public void removeObject(V object)
     {
-        int index = this.func_186816_b(object, this.hashObject(object));
-        int intKey = this.intKeys[index];
-        this.objectArray[index] = null;
-        this.intKeys[index] = 0;
-        this.intToObjects[intKey] = null;
+        int index = this.getIndex(object, this.hashObject(object));
+        int intKey = this.values[index];
+        this.keys[index] = null;
+        this.values[index] = 0;
+        this.byId[intKey] = null;
     }
 }

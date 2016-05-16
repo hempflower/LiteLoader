@@ -13,7 +13,7 @@ import java.util.Set;
 
 import net.minecraft.client.resources.IResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
-import net.minecraft.client.resources.data.IMetadataSerializer;
+import net.minecraft.client.resources.data.MetadataSerializer;
 import net.minecraft.util.ResourceLocation;
 
 /**
@@ -101,7 +101,7 @@ public class InternalResourcePack implements IResourcePack
      *      java.lang.String)
      */
     @Override
-    public <T extends IMetadataSection> T getPackMetadata(IMetadataSerializer par1MetadataSerializer, String par2Str) throws IOException
+    public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer par1MetadataSerializer, String par2Str) throws IOException
     {
         return null;
     }

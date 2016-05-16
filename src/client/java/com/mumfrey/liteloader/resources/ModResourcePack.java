@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import net.minecraft.client.resources.FileResourcePack;
 import net.minecraft.client.resources.data.IMetadataSection;
-import net.minecraft.client.resources.data.IMetadataSerializer;
+import net.minecraft.client.resources.data.MetadataSerializer;
 
 /**
  * Resource pack which wraps a mod file
@@ -40,7 +40,7 @@ public class ModResourcePack extends FileResourcePack
      *      java.lang.String)
      */
     @Override
-    public <T extends IMetadataSection> T getPackMetadata(IMetadataSerializer metadataSerializer, String metadataSectionName) throws IOException
+    public <T extends IMetadataSection> T getPackMetadata(MetadataSerializer metadataSerializer, String metadataSectionName) throws IOException
     {
         try
         {

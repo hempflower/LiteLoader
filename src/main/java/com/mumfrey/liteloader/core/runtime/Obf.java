@@ -17,7 +17,7 @@ import org.spongepowered.asm.obfuscation.SrgMethod;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.9
+ * TODO Obfuscation 1.9.4
  */
 public class Obf
 {
@@ -43,14 +43,14 @@ public class Obf
 
     // Classes
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bcf" );
-    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bng" );
+    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bcd" );
+    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bnd" );
     public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "aju" );
     public static final Obf                CrashReport$6 = new Obf("net.minecraft.crash.CrashReport$6",                          "b$6" );
-    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "ep"  );
+    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "er"  );
     public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ads" );
     public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "oo"  );
-    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "apw" );
+    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "apv" );
 
     // Fields
     // -----------------------------------------------------------------------------------------

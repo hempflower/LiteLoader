@@ -204,7 +204,7 @@ public final class EventProxy
         {
             CrashReportCategory category = crashReport.makeCategoryDepth("Event Handler Error", 1);
 
-            category.addCrashSectionCallable(EventProxy.error, new Callable<String>()
+            category.addCrashSection(EventProxy.error, new Callable<String>()
             {
                 @Override
                 public String call() throws Exception

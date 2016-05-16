@@ -18,9 +18,9 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.network.play.client.CPacketPlayerBlockPlacement;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
 import net.minecraft.network.play.client.CPacketPlayerDigging.Action;
+import net.minecraft.network.play.client.CPacketPlayerTryUseItem;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.server.management.PlayerList;
@@ -79,7 +79,7 @@ public abstract class Proxy
         Proxy.broker.onServerTick(mcServer);
     }
 
-    public static void onPlaceBlock(CallbackInfo ci, NetHandlerPlayServer netHandler, CPacketPlayerBlockPlacement packet)
+    public static void onPlaceBlock(CallbackInfo ci, NetHandlerPlayServer netHandler, CPacketPlayerTryUseItem packet)
     {
         // Potentially not needed any more
 //        if (!Proxy.broker.onPlaceBlock(netHandler, netHandler.playerEntity, packet.getPosition(),

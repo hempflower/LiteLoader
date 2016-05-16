@@ -254,9 +254,9 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
     {
         try
         {
-            if (recipient != null && recipient.playerNetServerHandler != null)
+            if (recipient != null && recipient.connection != null)
             {
-                recipient.playerNetServerHandler.sendPacket(payload);
+                recipient.connection.sendPacket(payload);
                 return true;
             }
         }

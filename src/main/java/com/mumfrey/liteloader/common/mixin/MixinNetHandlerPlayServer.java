@@ -20,8 +20,8 @@ import com.mumfrey.liteloader.core.Proxy;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketPlayer;
-import net.minecraft.network.play.client.CPacketPlayerBlockPlacement;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.CPacketPlayerTryUseItem;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
 
@@ -29,10 +29,10 @@ import net.minecraft.world.WorldServer;
 public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
 {
     @Shadow private int teleportId;
-    @Shadow private Vec3d field_184362_y;
+    @Shadow private Vec3d targetPos;
     
     @Inject(
-        method = "processPlayerBlockPlacement(Lnet/minecraft/network/play/client/CPacketPlayerBlockPlacement;)V",
+        method = "processPlayerBlockPlacement(Lnet/minecraft/network/play/client/CPacketPlayerTryUseItem;)V",
         cancellable = true,
         at = @At(
             value = "INVOKE",
@@ -41,7 +41,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
                     + "(Lnet/minecraft/network/Packet;Lnet/minecraft/network/INetHandler;Lnet/minecraft/util/IThreadListener;)V"
         )
     )
-    private void onPlaceBlock(CPacketPlayerBlockPlacement packetIn, CallbackInfo ci)
+    private void onPlaceBlock(CPacketPlayerTryUseItem packetIn, CallbackInfo ci)
     {
         Proxy.onPlaceBlock(ci, (NetHandlerPlayServer)(Object)this, packetIn);
     }
@@ -95,7 +95,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     @Override
     public int beginTeleport(Vec3d location)
     {
-        this.field_184362_y = location;
+        this.targetPos = location;
 
         if (++this.teleportId == Integer.MAX_VALUE)
         {
