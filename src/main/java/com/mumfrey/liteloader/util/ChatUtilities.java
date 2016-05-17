@@ -126,7 +126,7 @@ public abstract class ChatUtilities
             return component;
         }
 
-        for (ITextComponent oldSibling : ChatUtilities.covertCodesInPlace((List<ITextComponent>)component.getSiblings()))
+        for (ITextComponent oldSibling : ChatUtilities.covertCodesInPlace(component.getSiblings()))
         {
             newComponent.appendSibling(oldSibling);
         }
