@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import com.mojang.authlib.GameProfile;
 import com.mumfrey.liteloader.InitCompleteListener;
+import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.webprefs.WebPreferencesManager;
@@ -308,7 +309,7 @@ public abstract class CloudConfig
         }
     }
     
-    static final class UpdateTicker implements InitCompleteListener
+    static final class UpdateTicker implements InitCompleteListener, Tickable
     {
         private static UpdateTicker instance;
         

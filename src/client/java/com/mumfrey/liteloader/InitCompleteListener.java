@@ -16,7 +16,7 @@ import net.minecraft.client.Minecraft;
  *
  * @author Adam Mummery-Smith
  */
-public interface InitCompleteListener extends Tickable
+public interface InitCompleteListener extends LiteMod
 {
     /**
      * Called as soon as the game is initialised and the main game loop is
