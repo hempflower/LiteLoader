@@ -21,7 +21,8 @@
         "MixinSimpleReloadableResourceManager",
         "MixinSoundHandler",
         "MixinGuiTextField",
-        "MixinIntIdentityHashBiMap"
+        "MixinIntIdentityHashBiMap",
+        "MixinGuiOverlayDebug"
     ],
     "injectors": {
         "defaultRequire": 1
