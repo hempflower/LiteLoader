@@ -226,7 +226,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
 		 */
 		public boolean isSilent()
 		{
-			return (this != ChannelPolicy.DISPATCH_IF_REGISTERED);
+			return (this != ChannelPolicy.DISPATCH);
 		}
 	}
 }
