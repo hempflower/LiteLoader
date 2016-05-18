@@ -166,7 +166,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
         this.toggleable      = true;
 
         this.versionText = I18n.format("gui.about.versiontext", LiteLoader.getVersion());
-        this.activeModText = I18n.format("gui.about.modsloaded", mods.getLoadedMods().size());
+        this.activeModText = I18n.format("gui.about.modsloaded", LiteLoader.getLoadedModsCount());
 
         this.initBranding();
 
