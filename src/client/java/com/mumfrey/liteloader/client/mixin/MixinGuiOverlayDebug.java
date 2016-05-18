@@ -51,7 +51,8 @@ public abstract class MixinGuiOverlayDebug extends Gui
         return list.size();
     }
     
-    @Redirect(method = "renderDebugInfoLeft()V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiOverlayDebug;call()Ljava/util/List;"))
+    @Redirect(method = "renderDebugInfoLeft()V", at = @At(value = "INVOKE",
+            target = "Lnet/minecraft/client/gui/GuiOverlayDebug;call()Ljava/util/List;"))
     private List<String> onCall(GuiOverlayDebug self)
     {
         List<String> list = this.call();
@@ -71,7 +72,8 @@ public abstract class MixinGuiOverlayDebug extends Gui
         return list;
     }
     
-    @Redirect(method = "renderDebugInfoRight(Lnet/minecraft/client/gui/ScaledResolution;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiOverlayDebug;getDebugInfoRight()Ljava/util/List;"))
+    @Redirect(method = "renderDebugInfoRight(Lnet/minecraft/client/gui/ScaledResolution;)V",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiOverlayDebug;getDebugInfoRight()Ljava/util/List;"))
     private <T extends Comparable<T>> List<String> onGetDebugInfoRight(GuiOverlayDebug self)
     {
         List<String> list = this.getDebugInfoRight();
