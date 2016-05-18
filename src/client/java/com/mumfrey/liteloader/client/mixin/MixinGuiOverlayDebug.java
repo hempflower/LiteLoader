@@ -5,6 +5,7 @@
  */
 package com.mumfrey.liteloader.client.mixin;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.spongepowered.asm.mixin.Mixin;
@@ -14,20 +15,39 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.google.common.collect.Lists;
+import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.debug.DebugMessage;
 import com.mumfrey.liteloader.util.debug.DebugMessage.Position;
 
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiOverlayDebug;
+import net.minecraft.client.resources.I18n;
 
 @Mixin(GuiOverlayDebug.class)
 public abstract class MixinGuiOverlayDebug extends Gui
 {
     @Shadow protected abstract List<String> call();
-    
     @Shadow protected abstract <T extends Comparable<T>> List<String> getDebugInfoRight();
     
     private boolean captureNextCall = false;
+    
+    @SuppressWarnings("unchecked")
+    @Redirect(method = "getDebugInfoRight", at = @At(value = "INVOKE", remap = false,
+            target = "Lcom/google/common/collect/Lists;newArrayList([Ljava/lang/Object;)Ljava/util/ArrayList;"))
+    private <E> ArrayList<E> addLoaderBranding(E... elements)
+    {
+        ArrayList<E> list = Lists.newArrayList(elements);
+        list.add((E)"");
+        list.add((E)LiteLoader.getVersionDisplayString());
+        String branding = LiteLoader.getBranding();
+        if (branding != null)
+        {
+            list.add((E)branding);
+        }
+        list.add((E)I18n.format("gui.about.modsloaded", LiteLoader.getLoadedModsCount()));
+        return list;
+    }
     
     @Inject(method = "renderDebugInfoLeft()V", at = @At(value = "HEAD"))
     private void onRenderDebugInfoLeft(CallbackInfo ci)
@@ -35,7 +55,7 @@ public abstract class MixinGuiOverlayDebug extends Gui
         this.captureNextCall = true;
     }
     
-    @Redirect(method = "renderDebugInfoLeft()V", at = @At(value = "INVOKE", target = "Ljava/util/List;size()I"))
+    @Redirect(method = "renderDebugInfoLeft()V", at = @At(value = "INVOKE", remap = false, target = "Ljava/util/List;size()I"))
     private int getSize(List<String> list)
     {
         if (this.captureNextCall)
@@ -53,7 +73,7 @@ public abstract class MixinGuiOverlayDebug extends Gui
     
     @Redirect(method = "renderDebugInfoLeft()V", at = @At(value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiOverlayDebug;call()Ljava/util/List;"))
-    private List<String> onCall(GuiOverlayDebug self)
+    private List<String> onGetDebugInfoLeft(GuiOverlayDebug self)
     {
         List<String> list = this.call();
         

@@ -318,9 +318,19 @@ public final class LiteLoader
     /**
      * Get LiteLoader version
      */
-    public static final String getVersion()
+    public static String getVersion()
     {
         return LiteLoaderVersion.CURRENT.getLoaderVersion();
+    }
+    
+    /**
+     * Used for status displays, returns the total number of loaded mods
+     * 
+     * @return number of loaded litemods
+     */
+    public static int getLoadedModsCount()
+    {
+        return LiteLoader.instance.mods.getLoadedMods().size();
     }
 
     /**
