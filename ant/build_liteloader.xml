@@ -36,6 +36,8 @@
 
 	<property environment="env" />
 	
+	<propertyregex property="gitcommit" input="${env.GIT_COMMIT}" regexp="^(.{7})" select="\1" casesensitive="false" />
+	
 	<target name="setup_client">
 		<property name="clientjar" value="true" />
 		<property name="suffix" value="" />
@@ -68,7 +70,7 @@
 		<property name="md5.outfile" value="${md5.dir}/client_${outmd5set}_production.md5" />
 		<property name="artefact.name" value="${ant.project.name}${suffix}-${mcversion}-SNAPSHOT" />
 		<property name="stage.dir" location="${build.dir}/stage" />
-		<property name="brand" value="${mcversion}-SNAPSHOT-r${env.SVN_REVISION}-b${env.BUILD_NUMBER}-${env.BUILD_ID}" />
+		<property name="brand" value="${mcversion}-SNAPSHOT-r${gitcommit}-b${env.BUILD_NUMBER}-${env.BUILD_ID}" />
 		<property name="meta.version" value="${version} [${brand}]" />
 		<property name="jenkins" value="" />
 	</target>
