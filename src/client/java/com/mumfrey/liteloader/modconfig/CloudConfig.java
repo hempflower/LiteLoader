@@ -20,6 +20,7 @@ import com.mumfrey.liteloader.Tickable;
 import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.webprefs.WebPreferencesManager;
+import com.mumfrey.webprefs.exceptions.InvalidKeyException;
 import com.mumfrey.webprefs.interfaces.IWebPreferences;
 
 import net.minecraft.client.Minecraft;
@@ -66,9 +67,14 @@ public abstract class CloudConfig
     private static final int POLL_RESET_INTERVAL = 60 * CloudConfig.TICKS_PER_SECOND;
 
     /**
+     * Pattern for validating keys
+     */
+    protected static final Pattern keyPattern = Pattern.compile("^[a-z0-9_\\-\\.]{1,32}$");
+
+    /**
      * Same as normal key pattern except that $ gets translated to . for key
      */
-    private static final Pattern keyPattern = Pattern.compile("(?i)^[a-z0-9_\\-\\$]{1,32}$");
+    protected static final Pattern fieldKeyPattern = Pattern.compile("(?i)^[a-z0-9_\\-\\$]{1,32}$");
 
     /**
      * A field value tracker
@@ -86,7 +92,24 @@ public abstract class CloudConfig
         TrackedField(Field handle)
         {
             this.handle = handle;
-            this.name = handle.getName().replace("$", ".").toLowerCase();
+            this.name = this.getName(handle);
+        }
+
+        private String getName(Field handle)
+        {
+            String name = handle.getName().replace("$", ".").toLowerCase();
+            String prefix = CloudConfig.this.getPrefix();
+            if (prefix == null)
+            {
+                return name;
+            }
+            
+            String key = prefix + name;
+            if (!CloudConfig.keyPattern.matcher(key).matches())
+            {
+                throw new InvalidKeyException("[" + key + "] is not a valid key PREFIX=" + prefix + " NAME=" + name);
+            }
+            return key;
         }
         
         @SuppressWarnings("unchecked")
@@ -492,7 +515,7 @@ public abstract class CloudConfig
                 continue;
             }
             
-            if (!CloudConfig.keyPattern.matcher(field.getName()).matches())
+            if (!CloudConfig.fieldKeyPattern.matcher(field.getName()).matches())
             {
                 LiteLoaderLogger.warning("Skipping field with invalid name %s in %s", field.getName(), this.getClass().getName());
                 continue;
@@ -586,5 +609,16 @@ public abstract class CloudConfig
      */
     protected void onUpdated()
     {
+    }
+    
+    /**
+     * Stub for subclasses, used to provide a prefix for all field names in this
+     * class.
+     * 
+     * @return
+     */
+    protected String getPrefix()
+    {
+        return null;
     }
 }
