@@ -5,8 +5,6 @@
  */
 package com.mumfrey.liteloader.client.mixin;
 
-import java.util.UUID;
-
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -30,7 +28,6 @@ public abstract class MixinSession
     ))
     private void generateGameProfile(CallbackInfoReturnable<GameProfile> ci)
     {
-        UUID uuid = EntityPlayer.getUUID(new GameProfile((UUID)null, this.getUsername()));
-        ci.setReturnValue(new GameProfile(uuid, this.getUsername()));
+        ci.setReturnValue(new GameProfile(EntityPlayer.getOfflineUUID(this.getUsername()), this.getUsername()));
     }
 }
