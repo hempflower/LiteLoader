@@ -154,7 +154,6 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
             try
             {
                 pluginChannelListener.onCustomPayload(sender, channel, data);
-                throw new RuntimeException();
             }
             catch (Exception ex)
             {
