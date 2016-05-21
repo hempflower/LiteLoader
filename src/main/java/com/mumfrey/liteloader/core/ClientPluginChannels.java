@@ -120,7 +120,6 @@ public abstract class ClientPluginChannels extends PluginChannels<PluginChannelL
             try
             {
                 pluginChannelListener.onCustomPayload(channel, data);
-                throw new RuntimeException();
             }
             catch (Exception ex)
             {
