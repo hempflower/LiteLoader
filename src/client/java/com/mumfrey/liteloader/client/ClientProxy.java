@@ -10,10 +10,12 @@ import java.io.File;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
 import com.mumfrey.liteloader.client.ducks.IFramebuffer;
 import com.mumfrey.liteloader.core.Proxy;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.client.renderer.entity.Render;
@@ -186,5 +188,15 @@ public abstract class ClientProxy extends Proxy
             float yaw, float pTicks)
     {
         ClientProxy.broker.onPostRenderEntity(source, entity, x, y, z, yaw, pTicks, render);
+    }
+
+    public static boolean onClickMouse(EntityPlayerSP player, MouseButton button)
+    {
+        return ClientProxy.broker.onClickMouse(player, button);
+    }
+
+    public static boolean onMouseHeld(EntityPlayerSP player, MouseButton button)
+    {
+        return ClientProxy.broker.onMouseHeld(player, button);
     }
 }

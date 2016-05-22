@@ -16,6 +16,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
 import com.mumfrey.liteloader.client.ClientProxy;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 
@@ -35,6 +36,9 @@ public abstract class MixinMinecraft implements IMinecraft
     @Shadow private int serverPort;
     
     @Shadow abstract void resize(int width, int height);
+    @Shadow private void clickMouse() {}
+    @Shadow private void rightClickMouse() {}
+    @Shadow private void middleClickMouse() {}
     
     @Inject(method = "startGame()V", at = @At("RETURN"))
     private void onStartupComplete(CallbackInfo ci)
@@ -93,7 +97,7 @@ public abstract class MixinMinecraft implements IMinecraft
         ClientProxy.onTimerUpdate();
     }
     
-    @Inject (method = "runGameLoop()V", at = @At(
+    @Inject(method = "runGameLoop()V", at = @At(
         value = "INVOKE_STRING",
         target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V",
         args = "ldc=gameRenderer"
@@ -101,6 +105,71 @@ public abstract class MixinMinecraft implements IMinecraft
     private void onRender(CallbackInfo ci)
     {
         ClientProxy.onRender();
+    }
+    
+    @Redirect(method = "processKeyBinds()V", at = @At(
+        value = "INVOKE",
+        target = "Lnet/minecraft/client/Minecraft;clickMouse()V"
+    ))
+    private void onClickMouse(Minecraft self)
+    {
+        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.LEFT))
+        {
+            this.clickMouse();
+        }
+    }
+    
+    @Inject(method = "sendClickBlockToController(Z)V", at = @At(
+            value = "FIELD",
+            target = "Lnet/minecraft/client/Minecraft;objectMouseOver:Lnet/minecraft/util/math/RayTraceResult;",
+            ordinal = 0
+        ),
+        cancellable = true
+    )
+    private void onMouseHeld(boolean leftClick, CallbackInfo ci)
+    {
+        if (!ClientProxy.onMouseHeld(((Minecraft)(Object)this).thePlayer, MouseButton.LEFT))
+        {
+            ci.cancel();
+        }
+    }
+    
+    @Redirect(method = "processKeyBinds()V", at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/Minecraft;rightClickMouse()V",
+            ordinal = 0
+    ))
+    private void onRightClickMouse(Minecraft self)
+    {
+        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.RIGHT))
+        {
+            this.rightClickMouse();
+        }
+    }
+    
+    @Redirect(method = "processKeyBinds()V", at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/Minecraft;rightClickMouse()V",
+            ordinal = 1
+    ))
+    private void onRightMouseHeld(Minecraft self)
+    {
+        if (ClientProxy.onMouseHeld(self.thePlayer, MouseButton.RIGHT))
+        {
+            this.rightClickMouse();
+        }
+    }
+    
+    @Redirect(method = "processKeyBinds()V", at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/Minecraft;middleClickMouse()V"
+    ))
+    private void onMiddleClickMouse(Minecraft self)
+    {
+        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.MIDDLE))
+        {
+            this.middleClickMouse();
+        }
     }
 
     @Override

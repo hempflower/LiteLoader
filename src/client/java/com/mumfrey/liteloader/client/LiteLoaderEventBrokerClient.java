@@ -17,6 +17,8 @@ import com.mumfrey.liteloader.HUDRenderListener;
 import com.mumfrey.liteloader.InitCompleteListener;
 import com.mumfrey.liteloader.OutboundChatFilter;
 import com.mumfrey.liteloader.OutboundChatListener;
+import com.mumfrey.liteloader.PlayerClickListener;
+import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
 import com.mumfrey.liteloader.PostRenderListener;
 import com.mumfrey.liteloader.PreRenderListener;
 import com.mumfrey.liteloader.RenderListener;
@@ -37,6 +39,7 @@ import com.mumfrey.liteloader.launch.LoaderProperties;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.RenderGlobal;
@@ -100,6 +103,8 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     private FastIterableDeque<ScreenshotListener>   screenshotListeners   = new HandlerList<ScreenshotListener>(ScreenshotListener.class,
                                                                                                                 ReturnLogicOp.AND_BREAK_ON_FALSE);
     private FastIterableDeque<EntityRenderListener> entityRenderListeners = new HandlerList<EntityRenderListener>(EntityRenderListener.class);
+    private FastIterableDeque<PlayerClickListener>  playerClickListeners  = new HandlerList<PlayerClickListener>(PlayerClickListener.class,
+                                                                                                                ReturnLogicOp.AND);
 
     @SuppressWarnings("cast")
     public LiteLoaderEventBrokerClient(LiteLoader loader, GameEngineClient engine, LoaderProperties properties)
@@ -146,6 +151,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
         delegate.registerInterface(OutboundChatFilter.class);
         delegate.registerInterface(ScreenshotListener.class);
         delegate.registerInterface(EntityRenderListener.class);
+        delegate.registerInterface(PlayerClickListener.class);
     }
 
     /* (non-Javadoc)
@@ -266,6 +272,14 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     public void addEntityRenderListener(EntityRenderListener entityRenderListener)
     {
         this.entityRenderListeners.add(entityRenderListener);
+    }
+    
+    /**
+     * @param playerClickListener
+     */
+    public void addEntityRenderListener(PlayerClickListener playerClickListener)
+    {
+        this.playerClickListeners.add(playerClickListener);
     }
 
     /**
@@ -580,5 +594,15 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
             float partialTicks, Render<T> render)
     {
         this.entityRenderListeners.all().onPostRenderEntity(render, entity, xPos, yPos, zPos, yaw, partialTicks);
+    }
+
+    public boolean onClickMouse(EntityPlayerSP player, MouseButton button)
+    {
+        return this.playerClickListeners.all().onMouseClicked(player, button);
+    }
+
+    public boolean onMouseHeld(EntityPlayerSP player, MouseButton button)
+    {
+        return this.playerClickListeners.all().onMouseHeld(player, button);
     }
 }
