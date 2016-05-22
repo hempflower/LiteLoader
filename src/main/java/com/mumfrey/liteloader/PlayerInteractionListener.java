@@ -14,7 +14,9 @@ import net.minecraft.util.math.RayTraceResult.Type;
 
 /**
  * Interface for mods which want to observe the player's "interaction" status
- * (player mouse clicks), allows block interaction events to be cancelled.
+ * (player mouse clicks), allows block interaction events to be cancelled. This
+ * listener handles clicks on the server side (integrated server in single
+ * player). For client-side interaction events use {@link PlayerClickListener}.
  * 
  * @author Adam Mummery-Smith
  */
@@ -26,7 +28,8 @@ public interface PlayerInteractionListener extends LiteMod
     public static enum MouseButton
     {
         LEFT,
-        RIGHT
+        RIGHT,
+        MIDDLE
     }
 
     /**
