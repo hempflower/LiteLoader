@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.MixinEnvironment.Phase;
+import org.spongepowered.asm.mixin.Mixins;
 
 import com.google.common.base.Throwables;
 import com.mumfrey.liteloader.LiteMod;
@@ -644,7 +645,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
                 if (config.endsWith(".json"))
                 {
                     LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
-                    MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
+                    Mixins.addConfiguration(config);
                     this.injectContainerRecursive(container);
                 }
                 else if (config.contains(".json@"))
@@ -656,6 +657,8 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
                     if (phase != null)
                     {
                         LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
+                        LiteLoaderLogger.warning("%s specifies mixin environment in metadata which is deprecated, use config instead",
+                                container.getName());
                         MixinEnvironment.getEnvironment(phase).addConfiguration(config);
                         this.injectContainerRecursive(container);
                     }

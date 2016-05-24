@@ -15,7 +15,10 @@ public interface MixinConfigProvider
     /**
      * Get the minimum required mixin operating compatibility level for this
      * API, can return null.
+     * 
+     * @deprecated Specify level in configs
      */
+    @Deprecated
     public abstract CompatibilityLevel getCompatibilityLevel();
     
     /**

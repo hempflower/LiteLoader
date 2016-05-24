@@ -15,6 +15,7 @@ import java.util.regex.Matcher;
 
 import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel;
+import org.spongepowered.asm.mixin.Mixins;
 
 import com.mumfrey.liteloader.api.CoreProvider;
 import com.mumfrey.liteloader.api.LiteAPI;
@@ -86,7 +87,7 @@ class APIProviderBasic implements APIProvider, APIAdapter
                 {
                     for (String config : configs)
                     {
-                        MixinEnvironment.getDefaultEnvironment().addConfiguration(config);
+                        Mixins.addConfiguration(config);
                     }
                 }
                 
@@ -95,7 +96,7 @@ class APIProviderBasic implements APIProvider, APIAdapter
                 {
                     for (String handlerName : errorHandlers)
                     {
-                        MixinEnvironment.getDefaultEnvironment().registerErrorHandlerClass(handlerName);
+                        Mixins.registerErrorHandlerClass(handlerName);
                     }
                 }
             }

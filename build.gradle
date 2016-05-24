@@ -72,7 +72,7 @@ repositories {
 
 dependencies {
 //    compile 'org.ow2.asm:asm-debug-all:5.0.3'
-    compile('org.spongepowered:mixin:0.5.5-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.5.6-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
@@ -270,8 +270,8 @@ artifacts {
 task deploy(type: Copy, dependsOn: build) {
     def libraryDir = new File(new File(System.env.APPDATA), ".minecraft/libraries")
     from shadowJar.outputs.files[0]
-    into new File(libraryDir, sprintf('%1$s%4$s%2$s%4$s%3$s', project.group.replace('.', File.separator), archivesBaseName, buildVersion, File.separatorChar)) 
-    rename shadowJar.outputs.files[0].name, sprintf("%s-%s.jar", archivesBaseName, buildVersion)
+    into new File(libraryDir, sprintf('%1$s%4$s%2$s%4$s%3$s', project.group.replace('.', File.separator), archivesBaseName, version, File.separatorChar)) 
+    rename shadowJar.outputs.files[0].name, sprintf("%s-%s.jar", archivesBaseName, version)
 }
 
 uploadArchives { 
