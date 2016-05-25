@@ -640,13 +640,17 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     {
         try
         {
+            if (container.hasMixins())
+            {
+                this.injectContainerRecursive(container);
+            }
+            
             for (String config : container.getMixinConfigs())
             {
                 if (config.endsWith(".json"))
                 {
                     LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
                     Mixins.addConfiguration(config);
-                    this.injectContainerRecursive(container);
                 }
                 else if (config.contains(".json@"))
                 {
@@ -660,7 +664,6 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
                         LiteLoaderLogger.warning("%s specifies mixin environment in metadata which is deprecated, use config instead",
                                 container.getName());
                         MixinEnvironment.getEnvironment(phase).addConfiguration(config);
-                        this.injectContainerRecursive(container);
                     }
                 }
             }
