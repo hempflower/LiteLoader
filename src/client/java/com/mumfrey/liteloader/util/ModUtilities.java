@@ -5,33 +5,25 @@
  */
 package com.mumfrey.liteloader.util;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Map;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
-import com.mumfrey.liteloader.client.ducks.IMutableRegistry;
 import com.mumfrey.liteloader.client.ducks.IRenderManager;
 import com.mumfrey.liteloader.client.ducks.ITileEntityRendererDispatcher;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.Render;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.entity.Entity;
-import net.minecraft.init.Blocks;
-import net.minecraft.init.Items;
-import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
 
 /**
  * A small collection of useful functions for mods
@@ -103,115 +95,6 @@ public abstract class ModUtilities
         }
     }
 
-    /**
-     * Add a block to the blocks registry
-     * 
-     * @param blockId Block ID to insert
-     * @param blockName Block identifier
-     * @param block Block to register
-     * @param force Force insertion even if the operation is blocked by FMl
-     * 
-     * @deprecated Register blocks directly with the registry
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public static void addBlock(int blockId, ResourceLocation blockName, Block block, boolean force)
-    {
-        boolean exists = Block.REGISTRY.containsKey(blockName);
-        Block existingBlock = Block.REGISTRY.getObject(blockName);
-        
-        try
-        {
-            Block.REGISTRY.register(blockId, blockName, block);
-        }
-        catch (IllegalArgumentException ex)
-        {
-            if (!force) throw new IllegalArgumentException("Could not register block '" + blockName + "', the operation was blocked by FML.", ex);
-
-            if (Block.REGISTRY instanceof IMutableRegistry)
-            {
-                ((IMutableRegistry<ResourceLocation, Block>)Block.REGISTRY).removeObjectFromRegistry(blockName);
-                Block.REGISTRY.register(blockId, blockName, block);
-            }
-        }
-
-        if (exists)
-        {
-            try
-            {
-                for (Field field : Blocks.class.getDeclaredFields())
-                {
-                    field.setAccessible(true);
-                    if (field.isAccessible() && Block.class.isAssignableFrom(field.getType()))
-                    {
-                        Block fieldValue = (Block)field.get(null);
-                        if (fieldValue == existingBlock)
-                        {
-                            ModUtilities.setFinalStaticField(field, block);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    /**
-     * Add an item to the items registry
-     * 
-     * @param itemId Item ID to insert
-     * @param itemName Item identifier
-     * @param item Item to register
-     * @param force Force insertion even if the operation is blocked by FMl
-     * 
-     * @deprecated Register items directly with the registry
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public static void addItem(int itemId, ResourceLocation itemName, Item item, boolean force)
-    {
-        boolean exists = Item.REGISTRY.containsKey(itemName);
-        Item existingItem = Item.REGISTRY.getObject(itemName);
-        
-        try
-        {
-            Item.REGISTRY.register(itemId, itemName, item);
-        }
-        catch (IllegalArgumentException ex)
-        {
-            if (!force) throw new IllegalArgumentException("Could not register item '" + itemName + "', the operation was blocked by FML.", ex);
-
-            if (Block.REGISTRY instanceof IMutableRegistry)
-            {
-                ((IMutableRegistry<ResourceLocation, Block>)Item.REGISTRY).removeObjectFromRegistry(itemName);
-                Item.REGISTRY.register(itemId, itemName, item);
-            }
-        }
-
-        if (exists)
-        {
-            try
-            {
-                for (Field field : Items.class.getDeclaredFields())
-                {
-                    field.setAccessible(true);
-                    if (field.isAccessible() && Item.class.isAssignableFrom(field.getType()))
-                    {
-                        Item fieldValue = (Item)field.get(null);
-                        if (fieldValue == existingItem)
-                        {
-                            ModUtilities.setFinalStaticField(field, item);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex) {}
-        }
-    }
-
     @SuppressWarnings("unchecked")
     public static void addTileEntity(String entityName, Class<? extends TileEntity> tileEntityClass)
     {
@@ -226,14 +109,5 @@ public abstract class ModUtilities
         {
             ex.printStackTrace();
         }
-    }
-
-    private static void setFinalStaticField(Field field, Object value)
-            throws NoSuchFieldException, SecurityException, IllegalArgumentException, IllegalAccessException
-    {
-        Field modifiers = Field.class.getDeclaredField("modifiers");
-        modifiers.setAccessible(true);
-        modifiers.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        field.set(null, value);
     }
 }

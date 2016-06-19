@@ -17,7 +17,7 @@ import org.spongepowered.asm.obfuscation.SrgMethod;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.9.4
+ * TODO Obfuscation 1.10
  */
 public class Obf
 {
@@ -43,14 +43,14 @@ public class Obf
 
     // Classes
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bcd" );
-    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bnd" );
-    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "aju" );
+    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bcx" );
+    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bnz" );
+    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "akg" );
     public static final Obf                CrashReport$6 = new Obf("net.minecraft.crash.CrashReport$6",                          "b$6" );
-    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "er"  );
-    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "ads" );
-    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "oo"  );
-    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "apv" );
+    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "et"  );
+    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "aeb" );
+    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "oq"  );
+    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "aqk" );
 
     // Fields
     // -----------------------------------------------------------------------------------------

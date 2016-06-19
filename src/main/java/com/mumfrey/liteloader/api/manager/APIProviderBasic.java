@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
-import org.spongepowered.asm.mixin.MixinEnvironment;
-import org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel;
 import org.spongepowered.asm.mixin.Mixins;
 
 import com.mumfrey.liteloader.api.CoreProvider;
@@ -76,12 +74,6 @@ class APIProviderBasic implements APIProvider, APIAdapter
             MixinConfigProvider mixins = api.getMixins();
             if (mixins != null)
             {
-                CompatibilityLevel level = mixins.getCompatibilityLevel();
-                if (level != null)
-                {
-                    MixinEnvironment.setCompatibilityLevel(level);
-                }
-                
                 String[] configs = mixins.getMixinConfigs();
                 if (configs != null)
                 {

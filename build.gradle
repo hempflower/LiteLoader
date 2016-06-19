@@ -71,15 +71,12 @@ repositories {
 }
 
 dependencies {
-//    compile 'org.ow2.asm:asm-debug-all:5.0.3'
-    compile('org.spongepowered:mixin:0.5.6-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.5.10-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
         exclude module: 'guava'
     }
-//    compile 'com.google.guava:guava:17.0'
-//    compile 'com.google.code.gson:gson:2.2.4'
 }
 
 minecraft {
