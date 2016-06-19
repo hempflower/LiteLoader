@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import org.spongepowered.asm.util.Constants.ManifestAttributes;
+
 import com.google.common.io.Files;
 import com.google.common.primitives.Ints;
 import com.mumfrey.liteloader.core.api.LoadableModFile;
@@ -44,7 +46,7 @@ public class LoadableFile extends File implements TweakContainer<File>
     public static final String MFATT_TWEAK_VERSION = "TweakVersion";
     public static final String MFATT_IMPLEMENTATION_VENDOR = "Implementation-Vendor";
     public static final String MFATT_TWEAK_AUTHOR = "TweakAuthor";
-    public static final String MFATT_MIXIN_CONFIGS = "MixinConfigs";
+    public static final String MFATT_MIXIN_CONFIGS = ManifestAttributes.MIXINCONFIGS;
     public static final String MFATT_INJECTION_STRATEGY = "TweakInjectionStrategy";
 
     private static final Pattern versionPattern = Pattern.compile("([0-9]+\\.)+[0-9]+([_A-Z0-9]+)?");
