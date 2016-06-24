@@ -71,7 +71,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.5.10-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.5.11-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
