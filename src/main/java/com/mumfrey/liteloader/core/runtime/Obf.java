@@ -17,7 +17,7 @@ import org.spongepowered.asm.obfuscation.SrgMethod;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.10
+ * TODO Obfuscation 1.10.2
  */
 public class Obf
 {

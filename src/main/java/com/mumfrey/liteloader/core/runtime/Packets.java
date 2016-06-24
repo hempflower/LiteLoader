@@ -12,7 +12,7 @@ import java.util.Map;
  * Packet obfuscation table
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.10
+ * TODO Obfuscation 1.10.2
  */
 public final class Packets extends Obf
 {
