@@ -1,6 +1,7 @@
 {
     "required": true,
-    "minVersion": "0.5.3",
+    "minVersion": "0.5.10",
+    "target": "@env(DEFAULT)",
     "package": "com.mumfrey.liteloader.client.mixin",
     "refmap": "mixins.liteloader.client.refmap.json",
     "mixins": [

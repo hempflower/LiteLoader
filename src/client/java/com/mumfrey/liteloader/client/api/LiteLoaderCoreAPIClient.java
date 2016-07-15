@@ -52,9 +52,8 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
     public String[] getMixinConfigs()
     {
         String[] commonConfigs = super.getMixinConfigs();
-        return ObjectArrays.concat(commonConfigs, new String[] {
-            "mixins.liteloader.client.json"
-        }, String.class);
+        String[] clientConfigs = new String[] { "mixins.liteloader.client.json" };
+        return ObjectArrays.concat(commonConfigs, clientConfigs, String.class);
     }
 
     /* (non-Javadoc)

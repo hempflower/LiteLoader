@@ -10,8 +10,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.spongepowered.asm.mixin.MixinEnvironment.CompatibilityLevel;
-
 import com.mumfrey.liteloader.api.EnumeratorModule;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.MixinConfigProvider;
@@ -157,12 +155,6 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI, MixinConfigProvider
     public MixinConfigProvider getMixins()
     {
         return this;
-    }
-    
-    @Override
-    public CompatibilityLevel getCompatibilityLevel()
-    {
-        return null;
     }
     
     @Override
