@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableMap;
  * 
  * @author Adam Mummery-Smith
  */
-public class Message
+public final class Message
 {
     /**
      * Regex for matching valid channels
@@ -143,7 +143,7 @@ public class Message
 
     /**
      * Gets the payload with the key "value", which is used with messages
-     * constructed using a string-only payload.
+     * constructed using a object-only payload.
      */
     public <T> T getValue()
     {
@@ -167,7 +167,7 @@ public class Message
     {
         return Message.channelPattern.matcher(channel).matches();
     }
-
+    
     /**
      * Build a KV map from interleaved keys and values, convenience function
      * 

@@ -203,6 +203,18 @@ public final class MessageBus implements InterfaceProvider
     }
 
     /**
+     * Send a message with a value on the specified channel
+     * 
+     * @param channel
+     * @param value
+     */
+    public static void send(String channel, Object value)
+    {
+        Message message = new Message(channel, value, null);
+        MessageBus.getInstance().sendMessage(message);
+    }
+
+    /**
      * Send a message with a value on the specified channel from the specified
      * sender.
      * 
@@ -211,6 +223,20 @@ public final class MessageBus implements InterfaceProvider
      * @param sender
      */
     public static void send(String channel, String value, Messenger sender)
+    {
+        Message message = new Message(channel, value, sender);
+        MessageBus.getInstance().sendMessage(message);
+    }
+
+    /**
+     * Send a message with a value on the specified channel from the specified
+     * sender.
+     * 
+     * @param channel
+     * @param value
+     * @param sender
+     */
+    public static void send(String channel, Object value, Messenger sender)
     {
         Message message = new Message(channel, value, sender);
         MessageBus.getInstance().sendMessage(message);
@@ -232,6 +258,21 @@ public final class MessageBus implements InterfaceProvider
     }
 
     /**
+     * Send a message with a value on the specified channel from the specified
+     * sender.
+     * 
+     * @param channel
+     * @param value
+     * @param sender
+     * @param replyChannel
+     */
+    public static void send(String channel, Object value, Messenger sender, String replyChannel)
+    {
+        Message message = new Message(channel, value, sender, replyChannel);
+        MessageBus.getInstance().sendMessage(message);
+    }
+
+    /**
      * Send a message with a supplied payload on the specified channel
      * 
      * @param channel
@@ -240,6 +281,18 @@ public final class MessageBus implements InterfaceProvider
     public static void send(String channel, Map<String, ?> payload)
     {
         Message message = new Message(channel, payload, null);
+        MessageBus.getInstance().sendMessage(message);
+    }
+
+    /**
+     * Send a message with a supplied payload on the specified channel
+     * 
+     * @param channel
+     * @param payload payload as interleaved key/value pairs
+     */
+    public static void send(String channel, Object... payload)
+    {
+        Message message = new Message(channel, Message.buildMap(payload), null);
         MessageBus.getInstance().sendMessage(message);
     }
 
