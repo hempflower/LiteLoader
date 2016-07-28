@@ -834,6 +834,140 @@ public class GL
     public static final int GL_SRC0_ALPHA = 0x8588;
     public static final int GL_SRC1_ALPHA = 0x8589;
     public static final int GL_SRC2_ALPHA = 0x858a;
+    
+    // GLU
+    public static final int GLU_INVALID_ENUM = GLU.GLU_INVALID_ENUM;
+    public static final int GLU_INVALID_VALUE = GLU.GLU_INVALID_VALUE;
+    public static final int GLU_OUT_OF_MEMORY = GLU.GLU_OUT_OF_MEMORY;
+    public static final int GLU_INCOMPATIBLE_GL_VERSION = GLU.GLU_INCOMPATIBLE_GL_VERSION;
+    
+    public static final int GLU_VERSION = GLU.GLU_VERSION;
+    public static final int GLU_EXTENSIONS = GLU.GLU_EXTENSIONS;
+    
+    public static final boolean GLU_TRUE = GLU.GLU_TRUE;
+    public static final boolean GLU_FALSE = GLU.GLU_FALSE;
+    
+    public static final int GLU_SMOOTH = GLU.GLU_SMOOTH;
+    public static final int GLU_FLAT = GLU.GLU_FLAT;
+    public static final int GLU_NONE = GLU.GLU_NONE;
+    
+    public static final int GLU_POINT = GLU.GLU_POINT;
+    public static final int GLU_LINE = GLU.GLU_LINE;
+    public static final int GLU_FILL = GLU.GLU_FILL;
+    public static final int GLU_SILHOUETTE = GLU.GLU_SILHOUETTE;
+    
+    public static final int GLU_OUTSIDE = GLU.GLU_OUTSIDE;
+    public static final int GLU_INSIDE = GLU.GLU_INSIDE;
+    
+    public static final double GLU_TESS_MAX_COORD = GLU.GLU_TESS_MAX_COORD;
+    public static final double TESS_MAX_COORD = GLU.TESS_MAX_COORD;
+    
+    public static final int GLU_TESS_WINDING_RULE = GLU.GLU_TESS_WINDING_RULE;
+    public static final int GLU_TESS_BOUNDARY_ONLY = GLU.GLU_TESS_BOUNDARY_ONLY;
+    public static final int GLU_TESS_TOLERANCE = GLU.GLU_TESS_TOLERANCE;
+    
+    public static final int GLU_TESS_WINDING_ODD = GLU.GLU_TESS_WINDING_ODD;
+    public static final int GLU_TESS_WINDING_NONZERO = GLU.GLU_TESS_WINDING_NONZERO;
+    public static final int GLU_TESS_WINDING_POSITIVE = GLU.GLU_TESS_WINDING_POSITIVE;
+    public static final int GLU_TESS_WINDING_NEGATIVE = GLU.GLU_TESS_WINDING_NEGATIVE;
+    public static final int GLU_TESS_WINDING_ABS_GEQ_TWO = GLU.GLU_TESS_WINDING_ABS_GEQ_TWO;
+    
+    public static final int GLU_TESS_BEGIN = GLU.GLU_TESS_BEGIN; 
+    public static final int GLU_TESS_VERTEX = GLU.GLU_TESS_VERTEX; 
+    public static final int GLU_TESS_END = GLU.GLU_TESS_END; 
+    public static final int GLU_TESS_ERROR = GLU.GLU_TESS_ERROR; 
+    public static final int GLU_TESS_EDGE_FLAG = GLU.GLU_TESS_EDGE_FLAG; 
+    public static final int GLU_TESS_COMBINE = GLU.GLU_TESS_COMBINE;
+    public static final int GLU_TESS_BEGIN_DATA = GLU.GLU_TESS_BEGIN_DATA;
+    public static final int GLU_TESS_VERTEX_DATA = GLU.GLU_TESS_VERTEX_DATA;
+    public static final int GLU_TESS_END_DATA = GLU.GLU_TESS_END_DATA; 
+    public static final int GLU_TESS_ERROR_DATA = GLU.GLU_TESS_ERROR_DATA;
+    public static final int GLU_TESS_EDGE_FLAG_DATA = GLU.GLU_TESS_EDGE_FLAG_DATA;
+    public static final int GLU_TESS_COMBINE_DATA = GLU.GLU_TESS_COMBINE_DATA;
+    public static final int GLU_TESS_ERROR1 = GLU.GLU_TESS_ERROR1;
+    public static final int GLU_TESS_ERROR2 = GLU.GLU_TESS_ERROR2;
+    public static final int GLU_TESS_ERROR3 = GLU.GLU_TESS_ERROR3;
+    public static final int GLU_TESS_ERROR4 = GLU.GLU_TESS_ERROR4;
+    public static final int GLU_TESS_ERROR5 = GLU.GLU_TESS_ERROR5;
+    public static final int GLU_TESS_ERROR6 = GLU.GLU_TESS_ERROR6;
+    public static final int GLU_TESS_ERROR7 = GLU.GLU_TESS_ERROR7;
+    public static final int GLU_TESS_ERROR8 = GLU.GLU_TESS_ERROR8;
+    
+    public static final int GLU_TESS_MISSING_BEGIN_POLYGON = GLU.GLU_TESS_MISSING_BEGIN_POLYGON;
+    public static final int GLU_TESS_MISSING_BEGIN_CONTOUR = GLU.GLU_TESS_MISSING_BEGIN_CONTOUR;
+    public static final int GLU_TESS_MISSING_END_POLYGON = GLU.GLU_TESS_MISSING_END_POLYGON;
+    public static final int GLU_TESS_MISSING_END_CONTOUR = GLU.GLU_TESS_MISSING_END_CONTOUR;
+    public static final int GLU_TESS_COORD_TOO_LARGE = GLU.GLU_TESS_COORD_TOO_LARGE;
+    public static final int GLU_TESS_NEED_COMBINE_CALLBACK = GLU.GLU_TESS_NEED_COMBINE_CALLBACK;
+    
+    public static final int GLU_AUTO_LOAD_MATRIX = GLU.GLU_AUTO_LOAD_MATRIX;
+    public static final int GLU_CULLING = GLU.GLU_CULLING;
+    public static final int GLU_SAMPLING_TOLERANCE = GLU.GLU_SAMPLING_TOLERANCE;
+    public static final int GLU_DISPLAY_MODE = GLU.GLU_DISPLAY_MODE;
+    public static final int GLU_PARAMETRIC_TOLERANCE = GLU.GLU_PARAMETRIC_TOLERANCE;
+    public static final int GLU_SAMPLING_METHOD = GLU.GLU_SAMPLING_METHOD;
+    public static final int GLU_U_STEP = GLU.GLU_U_STEP;
+    public static final int GLU_V_STEP = GLU.GLU_V_STEP;
+    
+    public static final int GLU_PATH_LENGTH = GLU.GLU_PATH_LENGTH;
+    public static final int GLU_PARAMETRIC_ERROR = GLU.GLU_PARAMETRIC_ERROR;
+    public static final int GLU_DOMAIN_DISTANCE = GLU.GLU_DOMAIN_DISTANCE;
+    
+    public static final int GLU_MAP1_TRIM_2 = GLU.GLU_MAP1_TRIM_2;
+    public static final int GLU_MAP1_TRIM_3 = GLU.GLU_MAP1_TRIM_3;
+    
+    public static final int GLU_OUTLINE_POLYGON = GLU.GLU_OUTLINE_POLYGON;
+    public static final int GLU_OUTLINE_PATCH = GLU.GLU_OUTLINE_PATCH;
+    
+    public static final int GLU_NURBS_ERROR1 = GLU.GLU_NURBS_ERROR1;
+    public static final int GLU_NURBS_ERROR2 = GLU.GLU_NURBS_ERROR2;
+    public static final int GLU_NURBS_ERROR3 = GLU.GLU_NURBS_ERROR3;
+    public static final int GLU_NURBS_ERROR4 = GLU.GLU_NURBS_ERROR4;
+    public static final int GLU_NURBS_ERROR5 = GLU.GLU_NURBS_ERROR5;
+    public static final int GLU_NURBS_ERROR6 = GLU.GLU_NURBS_ERROR6;
+    public static final int GLU_NURBS_ERROR7 = GLU.GLU_NURBS_ERROR7;
+    public static final int GLU_NURBS_ERROR8 = GLU.GLU_NURBS_ERROR8;
+    public static final int GLU_NURBS_ERROR9 = GLU.GLU_NURBS_ERROR9;
+    public static final int GLU_NURBS_ERROR10 = GLU.GLU_NURBS_ERROR10;
+    public static final int GLU_NURBS_ERROR11 = GLU.GLU_NURBS_ERROR11;
+    public static final int GLU_NURBS_ERROR12 = GLU.GLU_NURBS_ERROR12;
+    public static final int GLU_NURBS_ERROR13 = GLU.GLU_NURBS_ERROR13;
+    public static final int GLU_NURBS_ERROR14 = GLU.GLU_NURBS_ERROR14;
+    public static final int GLU_NURBS_ERROR15 = GLU.GLU_NURBS_ERROR15;
+    public static final int GLU_NURBS_ERROR16 = GLU.GLU_NURBS_ERROR16;
+    public static final int GLU_NURBS_ERROR17 = GLU.GLU_NURBS_ERROR17;
+    public static final int GLU_NURBS_ERROR18 = GLU.GLU_NURBS_ERROR18;
+    public static final int GLU_NURBS_ERROR19 = GLU.GLU_NURBS_ERROR19;
+    public static final int GLU_NURBS_ERROR20 = GLU.GLU_NURBS_ERROR20;
+    public static final int GLU_NURBS_ERROR21 = GLU.GLU_NURBS_ERROR21;
+    public static final int GLU_NURBS_ERROR22 = GLU.GLU_NURBS_ERROR22;
+    public static final int GLU_NURBS_ERROR23 = GLU.GLU_NURBS_ERROR23;
+    public static final int GLU_NURBS_ERROR24 = GLU.GLU_NURBS_ERROR24;
+    public static final int GLU_NURBS_ERROR25 = GLU.GLU_NURBS_ERROR25;
+    public static final int GLU_NURBS_ERROR26 = GLU.GLU_NURBS_ERROR26;
+    public static final int GLU_NURBS_ERROR27 = GLU.GLU_NURBS_ERROR27;
+    public static final int GLU_NURBS_ERROR28 = GLU.GLU_NURBS_ERROR28;
+    public static final int GLU_NURBS_ERROR29 = GLU.GLU_NURBS_ERROR29;
+    public static final int GLU_NURBS_ERROR30 = GLU.GLU_NURBS_ERROR30;
+    public static final int GLU_NURBS_ERROR31 = GLU.GLU_NURBS_ERROR31;
+    public static final int GLU_NURBS_ERROR32 = GLU.GLU_NURBS_ERROR32;
+    public static final int GLU_NURBS_ERROR33 = GLU.GLU_NURBS_ERROR33;
+    public static final int GLU_NURBS_ERROR34 = GLU.GLU_NURBS_ERROR34;
+    public static final int GLU_NURBS_ERROR35 = GLU.GLU_NURBS_ERROR35;
+    public static final int GLU_NURBS_ERROR36 = GLU.GLU_NURBS_ERROR36;
+    public static final int GLU_NURBS_ERROR37 = GLU.GLU_NURBS_ERROR37;
+    
+    public static final int GLU_CW = GLU.GLU_CW;
+    public static final int GLU_CCW = GLU.GLU_CCW;
+    public static final int GLU_INTERIOR = GLU.GLU_INTERIOR;
+    public static final int GLU_EXTERIOR = GLU.GLU_EXTERIOR;
+    public static final int GLU_UNKNOWN = GLU.GLU_UNKNOWN;
+    
+    public static final int GLU_BEGIN = GLU.GLU_BEGIN;
+    public static final int GLU_VERTEX = GLU.GLU_VERTEX;
+    public static final int GLU_END = GLU.GLU_END;
+    public static final int GLU_ERROR = GLU.GLU_ERROR;
+    public static final int GLU_EDGE_FLAG = GLU.GLU_EDGE_FLAG;
 
     public static void glPushAttrib()
     {
@@ -888,12 +1022,12 @@ public class GL
 
     public static void glLight(int light, int pname, FloatBuffer params)
     {
-        GL11.glLight(light, pname, params);
+        GlStateManager.glLight(light, pname, params);
     }
 
     public static void glLightModel(int pname, FloatBuffer params)
     {
-        GL11.glLightModel(pname, params);
+        GlStateManager.glLightModel(pname, params);
     }
 
     public static void glLightModeli(int pname, int param)
@@ -988,12 +1122,12 @@ public class GL
 
     public static void glSetFogColour(FloatBuffer colour)
     {
-        GL11.glFog(GL_FOG_COLOR, colour);
+        GlStateManager.glFog(GL_FOG_COLOR, colour);
     }
 
     public static void glFogi(int pname, int param)
     {
-        GL11.glFogi(pname, param);
+        GlStateManager.glFogi(pname, param);
     }
 
     public static void glFogf(int pname, float param)
@@ -1271,7 +1405,22 @@ public class GL
     {
         GlStateManager.resetColor();
     }
+    
+    public static void glEnableClientState(int cap)
+    {
+        GlStateManager.glEnableClientState(cap);
+    }
+    
+    public static void glDisableClientState(int cap)
+    {
+        GlStateManager.glDisableClientState(cap);
+    }
 
+    public static void glDrawArrays(int mode, int first, int count)
+    {
+        GlStateManager.glDrawArrays(mode, first, count);
+    }
+    
     public static void glCallList(int list)
     {
         GlStateManager.callList(list);
@@ -1281,30 +1430,40 @@ public class GL
     {
         GL11.glCallLists(lists);
     }
+    
+    public static int glGenLists(int range)
+    {
+        return GlStateManager.glGenLists(range);
+    }
 
     public static void glNewList(int list, int mode)
     {
-        GL11.glNewList(list, mode);
+        GlStateManager.glNewList(list, mode);
     }
 
     public static void glEndList()
     {
-        GL11.glEndList();
+        GlStateManager.glEndList();
+    }
+    
+    public static void glDeleteLists(int list, int range)
+    {
+        GlStateManager.glDeleteLists(list, range);
     }
 
     public static void glLineWidth(float width)
     {
-        GL11.glLineWidth(width);
+        GlStateManager.glLineWidth(width);
     }
 
     public static void glPolygonMode(int face, int mode)
     {
-        GL11.glPolygonMode(face, mode);
+        GlStateManager.glPolygonMode(face, mode);
     }
 
     public static void glPixelStorei(int pname, int param)
     {
-        GL11.glPixelStorei(pname, param);
+        GlStateManager.glPixelStorei(pname, param);
     }
 
     public static void glReadPixels(int x, int y, int width, int height, int format, int type, ByteBuffer pixels)
@@ -1312,8 +1471,58 @@ public class GL
         GL11.glReadPixels(x, y, width, height, format, type, pixels);
     }
 
+    public static void glReadPixels(int x, int y, int width, int height, int format, int type, IntBuffer pixels)
+    {
+        GlStateManager.glReadPixels(x, y, width, height, format, type, pixels);
+    }
+
     public static void glGetTexImage(int target, int level, int format, int type, ByteBuffer pixels)
     {
         GL11.glGetTexImage(target, level, format, type, pixels);
+    }
+
+    public static void glGetTexImage(int target, int level, int format, int type, IntBuffer pixels)
+    {
+        GlStateManager.glGetTexImage(target, level, format, type, pixels);
+    }
+
+    public static void glNormalPointer(int stride, FloatBuffer pointer)
+    {
+        GL11.glNormalPointer(stride, pointer);
+    }
+    
+    public static void glNormalPointer(int type, int stride, ByteBuffer pointer)
+    {
+        GlStateManager.glNormalPointer(type, stride, pointer);
+    }
+    
+    public static void glTexCoordPointer(int size, int stride, FloatBuffer pointer)
+    {
+        GL11.glTexCoordPointer(size, stride, pointer);
+    }
+    
+    public static void glTexCoordPointer(int size, int type, int stride, int pointerBufferOffset)
+    {
+        GlStateManager.glTexCoordPointer(size, type, stride, pointerBufferOffset);
+    }
+
+    public static void glTexCoordPointer(int size, int type, int stride, ByteBuffer pointer)
+    {
+        GlStateManager.glTexCoordPointer(size, type, stride, pointer);
+    }
+
+    public static void glVertexPointer(int size, int stride, FloatBuffer pointer)
+    {
+        GL11.glVertexPointer(size, stride, pointer);
+    }
+    
+    public static void glVertexPointer(int size, int type, int stride, ByteBuffer pointer)
+    {
+        GlStateManager.glVertexPointer(size, type, stride, pointer);
+    }
+    
+    public static void glEdgeFlagPointer(int stride, ByteBuffer pointer)
+    {
+        GL11.glEdgeFlagPointer(stride, pointer);
     }
 }
