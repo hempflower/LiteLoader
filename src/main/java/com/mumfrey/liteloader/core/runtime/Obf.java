@@ -10,9 +10,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.spongepowered.asm.obfuscation.SrgField;
-import org.spongepowered.asm.obfuscation.SrgMethod;
-
 /**
  * Centralised obfuscation table for LiteLoader
  *
