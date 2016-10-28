@@ -14,7 +14,6 @@
         "MixinFramebuffer",
         "MixinIntegratedServer",
         "MixinScreenShotHelper",
-        "MixinRealmsMainScreen",
         "MixinNetHandlerLoginClient",
         "MixinRegistrySimple",
         "MixinRegistryNamespaced",

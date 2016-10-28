@@ -46,14 +46,18 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
             LiteLoaderCoreAPI.PKG_LITELOADER + ".transformers.event.json.ModEventInjectionTransformer"
     };
 
+    private static final String[] clientMixinConfigs = new String[] {
+            "mixins.liteloader.client.json",
+            "mixins.liteloader.client.optional.json",
+    };
+
     private ObjectFactory<Minecraft, IntegratedServer> objectFactory;
     
     @Override
     public String[] getMixinConfigs()
     {
         String[] commonConfigs = super.getMixinConfigs();
-        String[] clientConfigs = new String[] { "mixins.liteloader.client.json" };
-        return ObjectArrays.concat(commonConfigs, clientConfigs, String.class);
+        return ObjectArrays.concat(commonConfigs, LiteLoaderCoreAPIClient.clientMixinConfigs, String.class);
     }
 
     /* (non-Javadoc)
