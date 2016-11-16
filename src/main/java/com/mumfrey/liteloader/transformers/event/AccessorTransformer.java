@@ -3,7 +3,7 @@
  * Copyright (C) 2012-16 Adam Mummery-Smith
  * All Rights Reserved.
  */
-package com.mumfrey.liteloader.transformers.access;
+package com.mumfrey.liteloader.transformers.event;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -30,6 +30,9 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
+import com.mumfrey.liteloader.transformers.access.Accessor;
+import com.mumfrey.liteloader.transformers.access.Invoker;
+import com.mumfrey.liteloader.transformers.access.ObfTableClass;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.launchwrapper.Launch;
@@ -40,7 +43,7 @@ import net.minecraft.launchwrapper.Launch;
  * 
  * @author Adam Mummery-Smith
  */
-public abstract class AccessorTransformer extends ClassTransformer
+abstract class AccessorTransformer extends ClassTransformer
 {
     static final String EXCEPTION = "com/mumfrey/liteloader/transformers/access/AccessorException";
     

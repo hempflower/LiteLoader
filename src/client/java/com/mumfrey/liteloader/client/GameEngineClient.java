@@ -66,7 +66,7 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
     @Override
     public boolean isInGame()
     {
-        return this.engine.thePlayer != null && this.engine.theWorld != null && this.engine.theWorld.isRemote;
+        return this.engine.player != null && this.engine.world != null && this.engine.world.isRemote;
     }
 
     /* (non-Javadoc)

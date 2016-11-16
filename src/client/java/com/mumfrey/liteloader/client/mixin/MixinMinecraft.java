@@ -29,7 +29,7 @@ import net.minecraft.util.Timer;
 @Mixin(Minecraft.class)
 public abstract class MixinMinecraft implements IMinecraft
 {
-    @Shadow private Timer timer;
+    @Shadow @Final private Timer timer;
     @Shadow volatile boolean running;
     @Shadow @Final private List<IResourcePack> defaultResourcePacks;
     @Shadow private String serverName;
@@ -113,7 +113,7 @@ public abstract class MixinMinecraft implements IMinecraft
     ))
     private void onClickMouse(Minecraft self)
     {
-        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.LEFT))
+        if (ClientProxy.onClickMouse(self.player, MouseButton.LEFT))
         {
             this.clickMouse();
         }
@@ -128,7 +128,7 @@ public abstract class MixinMinecraft implements IMinecraft
     )
     private void onMouseHeld(boolean leftClick, CallbackInfo ci)
     {
-        if (!ClientProxy.onMouseHeld(((Minecraft)(Object)this).thePlayer, MouseButton.LEFT))
+        if (!ClientProxy.onMouseHeld(((Minecraft)(Object)this).player, MouseButton.LEFT))
         {
             ci.cancel();
         }
@@ -141,7 +141,7 @@ public abstract class MixinMinecraft implements IMinecraft
     ))
     private void onRightClickMouse(Minecraft self)
     {
-        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.RIGHT))
+        if (ClientProxy.onClickMouse(self.player, MouseButton.RIGHT))
         {
             this.rightClickMouse();
         }
@@ -154,7 +154,7 @@ public abstract class MixinMinecraft implements IMinecraft
     ))
     private void onRightMouseHeld(Minecraft self)
     {
-        if (ClientProxy.onMouseHeld(self.thePlayer, MouseButton.RIGHT))
+        if (ClientProxy.onMouseHeld(self.player, MouseButton.RIGHT))
         {
             this.rightClickMouse();
         }
@@ -166,7 +166,7 @@ public abstract class MixinMinecraft implements IMinecraft
     ))
     private void onMiddleClickMouse(Minecraft self)
     {
-        if (ClientProxy.onClickMouse(self.thePlayer, MouseButton.MIDDLE))
+        if (ClientProxy.onClickMouse(self.player, MouseButton.MIDDLE))
         {
             this.middleClickMouse();
         }

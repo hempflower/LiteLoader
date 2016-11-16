@@ -14,7 +14,6 @@ import org.lwjgl.opengl.DisplayMode;
 import com.mumfrey.liteloader.client.ducks.IRenderManager;
 import com.mumfrey.liteloader.client.ducks.ITileEntityRendererDispatcher;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
-import com.mumfrey.liteloader.client.util.PrivateFieldsClient;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 import net.minecraft.client.Minecraft;
@@ -92,22 +91,6 @@ public abstract class ModUtilities
         {
             LiteLoaderLogger.warning("Attempted to set renderer %s for tile entity class %s but the operation failed",
                     renderer.getClass().getSimpleName(), tileEntityClass.getSimpleName());
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static void addTileEntity(String entityName, Class<? extends TileEntity> tileEntityClass)
-    {
-        try
-        {
-            Map<String, Class<? extends TileEntity>> nameToClassMap = PrivateFieldsClient.tileEntityNameToClassMap.get(null);
-            Map<Class<? extends TileEntity>, String> classToNameMap = PrivateFieldsClient.tileEntityClassToNameMap.get(null);
-            nameToClassMap.put(entityName, tileEntityClass);
-            classToNameMap.put(tileEntityClass, entityName);
-        }
-        catch (Exception ex)
-        {
-            ex.printStackTrace();
         }
     }
 }

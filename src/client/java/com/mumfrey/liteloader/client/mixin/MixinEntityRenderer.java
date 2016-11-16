@@ -5,6 +5,7 @@
  */
 package com.mumfrey.liteloader.client.mixin;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -23,7 +24,7 @@ import net.minecraft.util.ResourceLocation;
 @Mixin(EntityRenderer.class)
 public abstract class MixinEntityRenderer implements IEntityRenderer
 {
-    @Shadow private static ResourceLocation[] SHADERS_TEXTURES;
+    @Shadow @Final private static ResourceLocation[] SHADERS_TEXTURES;
     @Shadow private boolean useShader;
     @Shadow private int shaderIndex;
     @Shadow private ShaderGroup theShaderGroup;

@@ -296,7 +296,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
         this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRendererObj,
                 I18n.format("gui.about.taboptions"), this.brandColour));
 
-        if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.theWorld == null && !this.isSnapshot)
+        if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.world == null && !this.isSnapshot)
         {
             this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50,
                     this.fontRendererObj, I18n.format("gui.about.checkupdates"), this.brandColour));

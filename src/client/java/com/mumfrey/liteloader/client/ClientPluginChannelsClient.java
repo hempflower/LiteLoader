@@ -113,9 +113,9 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
         {
             Minecraft minecraft = Minecraft.getMinecraft();
 
-            if (minecraft.thePlayer != null && minecraft.thePlayer.connection != null)
+            if (minecraft.player != null && minecraft.player.connection != null)
             {
-                minecraft.thePlayer.connection.sendPacket(payload);
+                minecraft.player.connection.sendPacket(payload);
                 return true;
             }
         }

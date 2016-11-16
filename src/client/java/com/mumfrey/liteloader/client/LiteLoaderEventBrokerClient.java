@@ -439,7 +439,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
 
         // Flag indicates whether we are in game at the moment
         Entity renderViewEntity = minecraft.getRenderViewEntity();
-        boolean inGame = renderViewEntity != null && renderViewEntity.worldObj != null;
+        boolean inGame = renderViewEntity != null && renderViewEntity.world != null;
 
         this.profiler.startSection("loader");
         super.onTick(clock, partialTicks, inGame);
@@ -454,11 +454,11 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
         this.tickListeners.all().onTick(minecraft, partialTicks, inGame, clock);
 
         // Detected world change
-        int worldHashCode = (minecraft.theWorld != null) ? minecraft.theWorld.hashCode() : 0;
+        int worldHashCode = (minecraft.world != null) ? minecraft.world.hashCode() : 0;
         if (worldHashCode != this.worldHashCode)
         {
             this.worldHashCode = worldHashCode;
-            super.onWorldChanged(minecraft.theWorld);
+            super.onWorldChanged(minecraft.world);
         }
     }
 

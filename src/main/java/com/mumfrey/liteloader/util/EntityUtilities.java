@@ -121,7 +121,7 @@ public abstract class EntityUtilities
     {
         AxisAlignedBB boundingBox = source.getEntityBoundingBox();
         AxisAlignedBB traceBox = boundingBox.addCoord(dir.xCoord, dir.yCoord, dir.zCoord);
-        List<Entity> entities = source.worldObj.getEntitiesInAABBexcluding(source, traceBox.expand(1.0F, 1.0F, 1.0F), filter);
+        List<Entity> entities = source.world.getEntitiesInAABBexcluding(source, traceBox.expand(1.0F, 1.0F, 1.0F), filter);
         return entities;
     }
     
@@ -130,7 +130,7 @@ public abstract class EntityUtilities
         Vec3d traceStart = EntityUtilities.getPositionEyes(source, partialTicks);
         Vec3d lookDir = source.getLook(partialTicks).scale(traceDistance);
         Vec3d traceEnd = traceStart.add(lookDir);
-        return source.worldObj.rayTraceBlocks(traceStart, traceEnd, false, false, true);
+        return source.world.rayTraceBlocks(traceStart, traceEnd, false, false, true);
     }
 
     public static Vec3d getPositionEyes(Entity entity, float partialTicks)

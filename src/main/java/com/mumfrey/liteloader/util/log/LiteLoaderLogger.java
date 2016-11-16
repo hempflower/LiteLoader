@@ -296,8 +296,7 @@ public class LiteLoaderLogger extends AbstractAppender
     {
         if (LiteLoaderLogger.DEBUG)
         {
-            System.err.print("[DEBUG] ");
-            System.err.println(String.format(format, data));
+            System.err.printf("[DEBUG] %s\n", String.format(format, data));
         }
     }
 

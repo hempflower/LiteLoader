@@ -7,6 +7,7 @@ package com.mumfrey.liteloader.client.mixin;
 
 import java.util.List;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -18,7 +19,7 @@ import net.minecraft.client.resources.SimpleReloadableResourceManager;
 @Mixin(SimpleReloadableResourceManager.class)
 public abstract class MixinSimpleReloadableResourceManager implements IReloadable
 {
-    @Shadow private List<IResourceManagerReloadListener> reloadListeners;
+    @Shadow @Final private List<IResourceManagerReloadListener> reloadListeners;
     
     @Override
     public List<IResourceManagerReloadListener> getReloadListeners()

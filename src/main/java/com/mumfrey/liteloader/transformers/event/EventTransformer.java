@@ -31,7 +31,6 @@ import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
-import com.mumfrey.liteloader.transformers.access.AccessorTransformer;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**

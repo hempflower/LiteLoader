@@ -7,6 +7,7 @@ package com.mumfrey.liteloader.client.mixin;
 
 import java.util.Map;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -22,7 +23,7 @@ import net.minecraft.entity.Entity;
 @Mixin(RenderManager.class)
 public abstract class MixinRenderManager implements IRenderManager
 {
-    @Shadow private Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap;
+    @Shadow @Final private Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap;
     
     @Override
     public Map<Class<? extends Entity>, Render<? extends Entity>> getRenderMap()
