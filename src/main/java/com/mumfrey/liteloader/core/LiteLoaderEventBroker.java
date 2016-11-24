@@ -450,10 +450,10 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
 
     public boolean onBlockClicked(BlockPos pos, EnumFacing side, PlayerInteractionManager manager)
     {
-        EntityPlayerMP player = manager.thisPlayerMP;
+        EntityPlayerMP player = manager.player;
         if (!this.onPlayerInteract(InteractType.LEFT_CLICK_BLOCK, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, side))
         {
-            SPacketBlockChange cancellation = new SPacketBlockChange(manager.theWorld, pos);
+            SPacketBlockChange cancellation = new SPacketBlockChange(manager.world, pos);
             player.connection.sendPacket(cancellation);
             return false;
         }

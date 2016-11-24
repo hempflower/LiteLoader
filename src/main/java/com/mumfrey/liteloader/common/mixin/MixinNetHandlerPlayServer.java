@@ -32,7 +32,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     @Shadow private Vec3d targetPos;
     
     @Inject(
-        method = "processPlayerBlockPlacement(Lnet/minecraft/network/play/client/CPacketPlayerTryUseItem;)V",
+        method = "processTryUseItem(Lnet/minecraft/network/play/client/CPacketPlayerTryUseItem;)V",
         cancellable = true,
         at = @At(
             value = "INVOKE",

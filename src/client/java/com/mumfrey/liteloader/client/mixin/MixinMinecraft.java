@@ -40,7 +40,7 @@ public abstract class MixinMinecraft implements IMinecraft
     @Shadow private void rightClickMouse() {}
     @Shadow private void middleClickMouse() {}
     
-    @Inject(method = "startGame()V", at = @At("RETURN"))
+    @Inject(method = "init()V", at = @At("RETURN"))
     private void onStartupComplete(CallbackInfo ci)
     {
         ClientProxy.onStartupComplete();
