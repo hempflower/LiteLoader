@@ -32,9 +32,9 @@ import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
 import com.mumfrey.liteloader.core.event.EventProxy;
 import com.mumfrey.liteloader.core.event.HandlerList;
-import com.mumfrey.liteloader.crashreport.CallableLaunchWrapper;
-import com.mumfrey.liteloader.crashreport.CallableLiteLoaderBrand;
-import com.mumfrey.liteloader.crashreport.CallableLiteLoaderMods;
+import com.mumfrey.liteloader.crashreport.CrashSectionLaunchWrapper;
+import com.mumfrey.liteloader.crashreport.CrashSectionLiteLoaderBrand;
+import com.mumfrey.liteloader.crashreport.CrashSectionLiteLoaderMods;
 import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
@@ -1022,9 +1022,9 @@ public final class LiteLoader
     private static void populateCrashReport(CrashReport crashReport)
     {
         CrashReportCategory category = crashReport.getCategory(); // crashReport.makeCategoryDepth("Mod System Details", 1);
-        category.addCrashSection("Mod Pack",        new CallableLiteLoaderBrand(crashReport));
-        category.addCrashSection("LiteLoader Mods", new CallableLiteLoaderMods(crashReport));
-        category.addCrashSection("LaunchWrapper",   new CallableLaunchWrapper(crashReport));
+        category.addCrashSection("LiteLoader Brand", new CrashSectionLiteLoaderBrand(crashReport));
+        category.addCrashSection("LiteLoader Mods", new CrashSectionLiteLoaderMods(crashReport));
+        category.addCrashSection("LaunchWrapper", new CrashSectionLaunchWrapper(crashReport));
     }
 
     static final void createInstance(LoaderEnvironment environment, LoaderProperties properties, LaunchClassLoader classLoader)

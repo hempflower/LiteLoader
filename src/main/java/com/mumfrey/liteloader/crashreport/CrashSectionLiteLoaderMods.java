@@ -5,36 +5,32 @@
  */
 package com.mumfrey.liteloader.crashreport;
 
-import java.util.concurrent.Callable;
-
 import com.mumfrey.liteloader.core.LiteLoader;
 
 import net.minecraft.crash.CrashReport;
 
-public class CallableLiteLoaderBrand implements Callable<String>
+public class CrashSectionLiteLoaderMods
 {
     final CrashReport crashReport;
 
-    public CallableLiteLoaderBrand(CrashReport report)
+    public CrashSectionLiteLoaderMods(CrashReport report)
     {
         this.crashReport = report;
     }
 
     /* (non-Javadoc)
-     * @see java.util.concurrent.Callable#call()
+     * @see java.lang.Object#toString()
      */
     @Override
-    public String call() throws Exception
+    public String toString()
     {
-        String brand = null;
         try
         {
-            brand = LiteLoader.getBranding();
+            return LiteLoader.getInstance().getLoadedModsList();
         }
         catch (Exception ex)
         {
-            brand = "LiteLoader startup failed";
+            return "LiteLoader startup failed";
         }
-        return brand == null ? "Unknown / None" : brand;
     }
 }

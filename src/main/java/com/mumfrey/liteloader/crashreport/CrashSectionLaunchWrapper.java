@@ -12,22 +12,22 @@ import net.minecraft.crash.CrashReport;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraft.launchwrapper.Launch;
 
-public class CallableLaunchWrapper implements Callable<String>
+public class CrashSectionLaunchWrapper
 {
     final CrashReport crashReport;
 
-    public CallableLaunchWrapper(CrashReport report)
+    public CrashSectionLaunchWrapper(CrashReport report)
     {
         this.crashReport = report;
     }
 
     /* (non-Javadoc)
-     * @see java.util.concurrent.Callable#call()
+     * @see java.lang.Object#toString()
      */
     @Override
-    public String call() throws Exception
+    public String toString()
     {
-        return CallableLaunchWrapper.generateTransformerList();
+        return CrashSectionLaunchWrapper.generateTransformerList();
     }
 
     /**
