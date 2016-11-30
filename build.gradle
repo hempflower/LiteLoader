@@ -301,9 +301,20 @@ uploadArchives {
                         url 'http://develop.liteloader.com/liteloader/LiteLoader/issues'
                     }
                 }
-                whenConfigured {
-                    dependencies = dependencies.findAll {
-                        !it.artifactId.contains('mixin')
+                if (!project.isReleaseBuild) {
+                    whenConfigured {
+                        dependencies = dependencies.findAll {
+                            !it.artifactId.contains('mixin')
+                        }
+                    }
+                } else {
+                    whenConfigured {
+                        withXml {
+                            def xmlDeps = asNode().get('dependencies').get(0).children().get(0)
+                            def exclusion = xmlDeps.appendNode('exclusions').appendNode('exclusion')
+                            exclusion.appendNode('groupId', 'net.minecraft')
+                            exclusion.appendNode('artifactId', 'launchwrapper')
+                        }   
                     }
                 }
             }
@@ -311,10 +322,24 @@ uploadArchives {
     }
 }
 
-install.repositories.mavenInstaller.pom {
-    whenConfigured {
-        dependencies = dependencies.findAll {
-            !it.artifactId.contains('mixin')
+if (!project.isReleaseBuild) {
+    install.repositories.mavenInstaller.pom {
+        whenConfigured {
+            dependencies = dependencies.findAll {
+                !it.artifactId.contains('mixin')
+            }
+        }
+    }
+} else {
+    install.repositories.mavenInstaller.pom {
+        whenConfigured {
+            withXml {
+                def xmlDeps = asNode().get('dependencies').get(0).children().get(0)
+                def exclusion = xmlDeps.appendNode('exclusions').appendNode('exclusion')
+                exclusion.appendNode('groupId', 'net.minecraft')
+                exclusion.appendNode('artifactId', 'launchwrapper')
+            }
         }
     }
 }
+
