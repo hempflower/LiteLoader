@@ -43,10 +43,12 @@ public abstract class ModUtilities
     {
         try
         {
+            Display.setResizable(false);
             Minecraft mc = Minecraft.getMinecraft();
             Display.setDisplayMode(new DisplayMode(width, height));
             ((IMinecraft)mc).onResizeWindow(width, height);
             Display.setVSyncEnabled(mc.gameSettings.enableVsync);
+            Display.setResizable(true);
         }
         catch (LWJGLException ex)
         {
