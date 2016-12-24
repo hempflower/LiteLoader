@@ -123,11 +123,11 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
         ClientProxy.postRenderEntities(pass, partialTicks, timeSlice);
     }
     
-    @Inject(method = "renderCloudsCheck(Lnet/minecraft/client/renderer/RenderGlobal;FI)V", at = @At(
+    @Inject(method = "renderCloudsCheck(Lnet/minecraft/client/renderer/RenderGlobal;FIDDD)V", at = @At(
         value = "INVOKE",
         target = "Lnet/minecraft/profiler/Profiler;endStartSection(Ljava/lang/String;)V"
     ))
-    private void onRenderClouds(RenderGlobal renderGlobalIn, float partialTicks, int pass, CallbackInfo ci)
+    private void onRenderClouds(RenderGlobal renderGlobalIn, float partialTicks, int pass, double x, double y, double z, CallbackInfo ci)
     {
         ClientProxy.onRenderClouds(renderGlobalIn, partialTicks, pass);
     }

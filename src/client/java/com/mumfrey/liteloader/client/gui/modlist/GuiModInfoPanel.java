@@ -112,7 +112,7 @@ public class GuiModInfoPanel extends Gui
 
     private int drawText(int xPosition, int width, int yPos, String text, int colour)
     {
-        int totalHeight = this.fontRenderer.splitStringWidth(text, width);
+        int totalHeight = this.fontRenderer.getWordWrappedHeight(text, width);
         this.fontRenderer.drawSplitString(text, xPosition, yPos, width, colour);
         return totalHeight;
     }
