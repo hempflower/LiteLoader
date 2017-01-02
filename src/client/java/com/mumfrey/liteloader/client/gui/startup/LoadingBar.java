@@ -42,13 +42,14 @@ public class LoadingBar extends LoadingProgress
 {
     private static LoadingBar instance;
 
+    private static final int MAX_MINECRAFT_PROGRESS = 90;
+    private static final int LITELOADER_PROGRESS_SCALE = 2;
+
     private static final String LOADING_MESSAGE_1 = "Starting Game...";
     private static final String LOADING_MESSAGE_2 = "Initialising...";
 
     private int minecraftProgress = 0;
-    private int totalMinecraftProgress = 606;
-
-    private int liteLoaderProgressScale = 3;
+    private int totalMinecraftProgress = LoadingBar.MAX_MINECRAFT_PROGRESS;
 
     private int liteLoaderProgress = 0;
     private int totalLiteLoaderProgress = 0;
@@ -129,7 +130,7 @@ public class LoadingBar extends LoadingProgress
     @Override
     protected void _incLiteLoaderProgress()
     {
-        this.liteLoaderProgress += this.liteLoaderProgressScale;
+        this.liteLoaderProgress += LoadingBar.LITELOADER_PROGRESS_SCALE;
         this.render();
     }
 
@@ -144,14 +145,14 @@ public class LoadingBar extends LoadingProgress
     protected void _incLiteLoaderProgress(String message)
     {
         this.message = message;
-        this.liteLoaderProgress += this.liteLoaderProgressScale ;
+        this.liteLoaderProgress += LoadingBar.LITELOADER_PROGRESS_SCALE ;
         this.render();
     }
 
     @Override
     protected void _incTotalLiteLoaderProgress(int by)
     {
-        this.totalLiteLoaderProgress += (by * this.liteLoaderProgressScale);
+        this.totalLiteLoaderProgress += (by * LoadingBar.LITELOADER_PROGRESS_SCALE);
         this.render();
     }
 
@@ -198,7 +199,7 @@ public class LoadingBar extends LoadingProgress
     {
         if (this.totalMinecraftProgress == -1)
         {
-            this.totalMinecraftProgress = 606 - this.minecraftProgress;
+            this.totalMinecraftProgress = LoadingBar.MAX_MINECRAFT_PROGRESS - this.minecraftProgress;
             this.minecraftProgress = 0;
         }
 

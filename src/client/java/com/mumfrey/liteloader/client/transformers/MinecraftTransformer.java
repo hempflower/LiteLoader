@@ -48,12 +48,18 @@ public class MinecraftTransformer extends ClassTransformer
     {
         InsnList insns = new InsnList(); 
 
+        boolean loadingBarEnabled = LiteLoaderTweaker.loadingBarEnabled();
         boolean found = false;
 
         Iterator<AbstractInsnNode> iter = method.instructions.iterator();
         while (iter.hasNext())
         {
             AbstractInsnNode insn = iter.next();
+            if (loadingBarEnabled && insn instanceof MethodInsnNode)
+            {
+                insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "incrementProgress", "()V", false));
+            }
+            
             insns.add(insn);
 
             if (insn instanceof TypeInsnNode && insn.getOpcode() == Opcodes.NEW && insns.getLast() != null)
@@ -69,18 +75,13 @@ public class MinecraftTransformer extends ClassTransformer
                 }
             }
 
-            if (LiteLoaderTweaker.loadingBarEnabled())
+            if (loadingBarEnabled && insn instanceof LdcInsnNode)
             {
-                if (insn instanceof LdcInsnNode)
+                LdcInsnNode ldcInsn = (LdcInsnNode)insn;
+                if ("textures/blocks".equals(ldcInsn.cst))
                 {
-                    LdcInsnNode ldcInsn = (LdcInsnNode)insn;
-                    if ("textures/blocks".equals(ldcInsn.cst))
-                    {
-                        insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "initTextures", "()V", false));
-                    }
+                    insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "initTextures", "()V", false));
                 }
-
-                insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Obf.LoadingBar.ref, "incrementProgress", "()V", false));
             }
         }
 
