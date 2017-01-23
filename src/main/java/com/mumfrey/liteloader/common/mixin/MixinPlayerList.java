@@ -20,7 +20,7 @@ import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.server.management.PlayerList;
 
-@Mixin(PlayerList.class)
+@Mixin(value = PlayerList.class, priority = 2000)
 public abstract class MixinPlayerList
 {
     @Inject(

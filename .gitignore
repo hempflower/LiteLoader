@@ -75,4 +75,6 @@ nb-configuration.xml
 *.ipr
 *.iws
 *.launch
+.factorypath
 
+/.apt_generated/
