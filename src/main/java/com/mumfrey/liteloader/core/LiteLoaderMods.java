@@ -296,7 +296,8 @@ public class LiteLoaderMods
      */
     public String getModMetaData(String modNameOrId, String metaDataKey, String defaultValue) throws IllegalArgumentException
     {
-        return this.getModMetaData(this.getMod(modNameOrId), metaDataKey, defaultValue);
+        String mod = this.getMod(modNameOrId);
+        return this.getModMetaData(mod, metaDataKey, defaultValue);
     }
 
     /**

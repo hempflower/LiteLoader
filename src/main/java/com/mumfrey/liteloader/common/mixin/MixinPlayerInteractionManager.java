@@ -22,7 +22,7 @@ import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-@Mixin(PlayerInteractionManager.class)
+@Mixin(value = PlayerInteractionManager.class, priority = 2000)
 public abstract class MixinPlayerInteractionManager
 {
     @Inject(
