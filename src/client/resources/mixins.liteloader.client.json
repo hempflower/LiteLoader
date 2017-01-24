@@ -1,6 +1,6 @@
 {
     "required": true,
-    "minVersion": "0.5.10",
+    "minVersion": "0.6",
     "target": "@env(DEFAULT)",
     "package": "com.mumfrey.liteloader.client.mixin",
     "refmap": "mixins.liteloader.client.refmap.json",
@@ -22,7 +22,8 @@
         "MixinSoundHandler",
         "MixinGuiTextField",
         "MixinIntIdentityHashBiMap",
-        "MixinGuiOverlayDebug"
+        "MixinGuiOverlayDebug",
+        "IGuiButton"
     ],
     "injectors": {
         "defaultRequire": 1
