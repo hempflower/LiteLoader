@@ -23,8 +23,9 @@ public abstract class MixinSession
 
     @Inject(method = "getProfile()Lcom/mojang/authlib/GameProfile;", cancellable = true, at = @At(
         value = "NEW",
-        args = "class=com/mojang/authlib/GameProfile",
-        ordinal = 1
+        target = "com/mojang/authlib/GameProfile",
+        ordinal = 1,
+        remap = false
     ))
     private void generateGameProfile(CallbackInfoReturnable<GameProfile> ci)
     {

@@ -17,8 +17,8 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.0'
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.2-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.3'
         classpath 'org.spongepowered:mixingradle:0.4-SNAPSHOT'
     }
 }
@@ -72,7 +72,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.5.17-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.6.8-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
@@ -148,7 +148,7 @@ processResources {
 
 // manifest entries for all jars
 def jarManifest = {
-    mainAttributes (
+    attributes (
         'Built-By': System.properties['user.name'],
         'Created-By': System.properties['java.vm.version'] + " (" + System.properties['java.vm.vendor'] + ")",
         'Implementation-Title': name,
