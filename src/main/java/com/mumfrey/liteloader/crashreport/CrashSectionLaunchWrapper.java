@@ -6,7 +6,6 @@
 package com.mumfrey.liteloader.crashreport;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 
 import net.minecraft.crash.CrashReport;
 import net.minecraft.launchwrapper.IClassTransformer;

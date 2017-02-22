@@ -636,6 +636,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void addMixinsFrom(MixinContainer<File> container)
     {
         try

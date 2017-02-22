@@ -11,9 +11,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.mumfrey.liteloader.core.Proxy;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.InteractType;
 
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.management.PlayerInteractionManager;
 import net.minecraft.util.EnumActionResult;
@@ -25,6 +27,8 @@ import net.minecraft.world.World;
 @Mixin(value = PlayerInteractionManager.class, priority = 2000)
 public abstract class MixinPlayerInteractionManager
 {
+    LiteLoaderEventBroker<?, ?> broker = LiteLoaderEventBroker.getCommonBroker();
+
     @Inject(
         method = "onBlockClicked(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/util/EnumFacing;)V",
         cancellable = true,
@@ -32,7 +36,10 @@ public abstract class MixinPlayerInteractionManager
     )
     private void onBlockClicked(BlockPos pos, EnumFacing side, CallbackInfo ci)
     {
-        Proxy.onBlockClicked(ci, (PlayerInteractionManager)(Object)this, pos, side);
+        if (!this.broker.onBlockClicked(pos, side, (PlayerInteractionManager)(Object)this))
+        {
+            ci.cancel();
+        }
     }
     
     @Inject(
@@ -45,7 +52,15 @@ public abstract class MixinPlayerInteractionManager
     private void onRightClickBlock(EntityPlayer player, World worldIn, ItemStack stack, EnumHand hand, BlockPos pos, EnumFacing side,
             float offsetX, float offsetY, float offsetZ, CallbackInfoReturnable<EnumActionResult> cir)
     {
-        Proxy.onRightClickBlock(cir, player, worldIn, stack, hand, pos, side, offsetX, offsetY, offsetZ);
+        if (!(player instanceof EntityPlayerMP))
+        {
+            return;
+        }
+
+        if (!this.broker.onUseItem((EntityPlayerMP)player, hand, stack, pos, side))
+        {
+            cir.setReturnValue(EnumActionResult.FAIL);
+        }
     }
     
 //    @Inject(
@@ -58,7 +73,12 @@ public abstract class MixinPlayerInteractionManager
 //    private void postRightClickBlock(EntityPlayer player, World worldIn, ItemStack stack, EnumHand hand, BlockPos pos, EnumFacing side,
 //            float offsetX, float offsetY, float offsetZ, CallbackInfoReturnable<EnumActionResult> cir)
 //    {
-//        Proxy.postRightClickBlock(cir, player, worldIn, stack, hand, pos, side, offsetX, offsetY, offsetZ);
+//        if (!(player instanceof EntityPlayerMP))
+//        {
+//            return;
+//        }
+//        
+//        System.err.printf("@@ postRightClickBlock: %s\n", cir.getReturnValue());
 //    }
     
     @Inject(
@@ -69,6 +89,14 @@ public abstract class MixinPlayerInteractionManager
             )
     private void onRightClick(EntityPlayer player, World worldIn, ItemStack stack, EnumHand hand, CallbackInfoReturnable<EnumActionResult> cir)
     {
-        Proxy.onRightClick(cir, player, worldIn, stack, hand);
+        if (!(player instanceof EntityPlayerMP))
+        {
+            return;
+        }
+
+        if (!this.broker.onClickedAir(InteractType.RIGHT_CLICK, (EntityPlayerMP)player, hand))
+        {
+            cir.setReturnValue(EnumActionResult.FAIL);
+        }
     }
 }

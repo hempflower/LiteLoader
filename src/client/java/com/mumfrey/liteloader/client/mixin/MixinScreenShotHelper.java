@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 
 import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.util.ScreenShotHelper;
@@ -34,6 +34,6 @@ public abstract class MixinScreenShotHelper
     )
     private static void onSaveScreenshot(File gameDir, String name, int width, int height, Framebuffer fbo, CallbackInfoReturnable<ITextComponent> ci)
     {
-        ClientProxy.onSaveScreenshot(ci, gameDir, name, width, height, fbo);
+        LiteLoaderEventBrokerClient.getInstance().onScreenshot(ci, name, width, height, fbo);
     }
 }

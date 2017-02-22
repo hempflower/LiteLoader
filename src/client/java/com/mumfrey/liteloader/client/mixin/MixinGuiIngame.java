@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiIngame;
@@ -24,13 +24,15 @@ public abstract class MixinGuiIngame extends Gui
 {
     @Shadow @Final private GuiNewChat persistantChatGUI;
     
+    private LiteLoaderEventBrokerClient broker = LiteLoaderEventBrokerClient.getInstance();
+    
     @Inject(method = "renderGameOverlay(F)V", at = @At(
         value = "INVOKE",
         target = "Lnet/minecraft/client/gui/GuiNewChat;drawChat(I)V"
     ))
     private void onRenderChat(float partialTicks, CallbackInfo ci)
     {
-        ClientProxy.onRenderChat(this.persistantChatGUI, partialTicks);
+        this.broker.onRenderChat(this.persistantChatGUI, partialTicks);
     }
 
     @Inject(method = "renderGameOverlay(F)V", at = @At(
@@ -40,6 +42,6 @@ public abstract class MixinGuiIngame extends Gui
     ))
     private void postRenderChat(float partialTicks, CallbackInfo ci)
     {
-        ClientProxy.postRenderChat(this.persistantChatGUI, partialTicks);
+        this.broker.postRenderChat(this.persistantChatGUI, partialTicks);
     }
 }

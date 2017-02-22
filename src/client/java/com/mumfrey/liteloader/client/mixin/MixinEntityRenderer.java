@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
 
 import net.minecraft.client.renderer.EntityRenderer;
@@ -33,6 +33,8 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     @Shadow abstract float getFOVModifier(float partialTicks, boolean useFOVSetting);
     @Shadow abstract void setupCameraTransform(float partialTicks, int pass);
     
+    private LiteLoaderEventBrokerClient broker = LiteLoaderEventBrokerClient.getInstance();
+    
     @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
         value = "INVOKE",
         shift = Shift.AFTER,
@@ -40,7 +42,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onPreRenderGUI(float partialTicks, long nanoTime, CallbackInfo ci)
     {
-        ClientProxy.preRenderGUI(partialTicks);
+        this.broker.preRenderGUI(partialTicks);
     }
 
     @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
@@ -49,7 +51,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onRenderHUD(float partialTicks, long nanoTime, CallbackInfo ci)
     {
-        ClientProxy.onRenderHUD(partialTicks);
+        this.broker.onRenderHUD(partialTicks);
     }
     
     @Inject(method = "updateCameraAndRender(FJ)V", at = @At(
@@ -59,7 +61,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onPostRenderHUD(float partialTicks, long nanoTime, CallbackInfo ci)
     {
-        ClientProxy.postRenderHUD(partialTicks);
+        this.broker.postRenderHUD(partialTicks);
     }
     
     @Inject(method = "renderWorld(FJ)V", at = @At(
@@ -69,7 +71,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onRenderWorld(float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.onRenderWorld(partialTicks, timeSlice);
+        this.broker.onRenderWorld(partialTicks, timeSlice);
     }
     
     @Inject(method = "renderWorld(FJ)V", at = @At(
@@ -79,7 +81,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onPostRender(float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.postRender(partialTicks, timeSlice);
+        this.broker.postRender(partialTicks, timeSlice);
     }
     
     @Inject(method = "renderWorldPass(IFJ)V", at = @At(
@@ -89,7 +91,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onSetupCameraTransform(int pass, float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.onSetupCameraTransform(pass, partialTicks, timeSlice);
+        this.broker.onSetupCameraTransform(pass, partialTicks, timeSlice);
     }
     
     @Inject(method = "renderWorldPass(IFJ)V", at = @At(
@@ -99,7 +101,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onRenderSky(int pass, float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.onRenderSky(pass, partialTicks, timeSlice);
+        this.broker.onRenderSky(partialTicks, pass, timeSlice);
     }
     
     @Inject(method = "renderWorldPass(IFJ)V", at = @At(
@@ -109,8 +111,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onRenderTerrain(int pass, float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.onRenderTerrain(pass, partialTicks, timeSlice);
-        
+        this.broker.onRenderTerrain(partialTicks, pass, timeSlice);
     }
     
     @Inject(method = "renderWorldPass(IFJ)V", at = @At(
@@ -120,7 +121,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onPostRenderEntities(int pass, float partialTicks, long timeSlice, CallbackInfo ci)
     {
-        ClientProxy.postRenderEntities(pass, partialTicks, timeSlice);
+        this.broker.postRenderEntities(partialTicks, timeSlice);
     }
     
     @Inject(method = "renderCloudsCheck(Lnet/minecraft/client/renderer/RenderGlobal;FIDDD)V", at = @At(
@@ -129,7 +130,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     ))
     private void onRenderClouds(RenderGlobal renderGlobalIn, float partialTicks, int pass, double x, double y, double z, CallbackInfo ci)
     {
-        ClientProxy.onRenderClouds(renderGlobalIn, partialTicks, pass);
+        this.broker.onRenderClouds(partialTicks, pass, renderGlobalIn);
     }
     
     @Override

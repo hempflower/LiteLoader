@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mojang.authlib.GameProfile;
-import com.mumfrey.liteloader.core.Proxy;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
@@ -29,26 +29,26 @@ public abstract class MixinPlayerList
     )
     private void onInitializePlayerConnection(NetworkManager netManager, EntityPlayerMP player, CallbackInfo ci)
     {
-        Proxy.onInitializePlayerConnection((PlayerList)(Object)this, netManager, player);
+        LiteLoaderEventBroker.getCommonBroker().onInitializePlayerConnection((PlayerList)(Object)this, netManager, player);
     }
 
     // Because, forge
     @Surrogate
     private void onInitializePlayerConnection(NetworkManager netManager, EntityPlayerMP player, NetHandlerPlayServer nhps, CallbackInfo ci)
     {
-        Proxy.onInitializePlayerConnection((PlayerList)(Object)this, netManager, player);
+        LiteLoaderEventBroker.getCommonBroker().onInitializePlayerConnection((PlayerList)(Object)this, netManager, player);
     }
     
     @Inject(method = "playerLoggedIn(Lnet/minecraft/entity/player/EntityPlayerMP;)V", at = @At("RETURN"))
     private void onPlayerLogin(EntityPlayerMP player, CallbackInfo ci)
     {
-        Proxy.onPlayerLogin((PlayerList)(Object)this, player);
+        LiteLoaderEventBroker.getCommonBroker().onPlayerLogin((PlayerList)(Object)this, player);
     }
     
     @Inject(method = "playerLoggedOut(Lnet/minecraft/entity/player/EntityPlayerMP;)V", at = @At("RETURN"))
     private void onPlayerLogout(EntityPlayerMP player, CallbackInfo ci)
     {
-        Proxy.onPlayerLogout((PlayerList)(Object)this, player);
+        LiteLoaderEventBroker.getCommonBroker().onPlayerLogout((PlayerList)(Object)this, player);
     }
     
     @Inject(
@@ -58,7 +58,7 @@ public abstract class MixinPlayerList
     )
     private void onSpawnPlayer(GameProfile profile, CallbackInfoReturnable<EntityPlayerMP> cir)
     {
-        Proxy.onSpawnPlayer(cir, (PlayerList)(Object)this, profile);
+        LiteLoaderEventBroker.getCommonBroker().onSpawnPlayer((PlayerList)(Object)this, cir.getReturnValue(), profile);
     }
     
     @Inject(
@@ -68,6 +68,6 @@ public abstract class MixinPlayerList
     )
     private void onRespawnPlayer(EntityPlayerMP player, int dimension, boolean conqueredEnd, CallbackInfoReturnable<EntityPlayerMP> cir)
     {
-        Proxy.onRespawnPlayer(cir, (PlayerList)(Object)this, player, dimension, conqueredEnd);
+        LiteLoaderEventBroker.getCommonBroker().onRespawnPlayer((PlayerList)(Object)this, cir.getReturnValue(), player, dimension, conqueredEnd);
     }
 }

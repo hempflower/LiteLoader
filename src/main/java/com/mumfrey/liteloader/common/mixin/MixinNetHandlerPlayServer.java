@@ -15,12 +15,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import com.mumfrey.liteloader.common.ducks.ITeleportHandler;
-import com.mumfrey.liteloader.core.Proxy;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker;
+import com.mumfrey.liteloader.core.LiteLoaderEventBroker.InteractType;
 
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.network.play.client.CPacketAnimation;
 import net.minecraft.network.play.client.CPacketPlayer;
 import net.minecraft.network.play.client.CPacketPlayerDigging;
+import net.minecraft.network.play.client.CPacketPlayerDigging.Action;
 import net.minecraft.network.play.client.CPacketPlayerTryUseItem;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.WorldServer;
@@ -30,6 +33,9 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
 {
     @Shadow private int teleportId;
     @Shadow private Vec3d targetPos;
+    @Shadow public EntityPlayerMP playerEntity;;
+    
+    LiteLoaderEventBroker<?, ?> broker = LiteLoaderEventBroker.getCommonBroker();
     
     @Inject(
         method = "processTryUseItem(Lnet/minecraft/network/play/client/CPacketPlayerTryUseItem;)V",
@@ -43,7 +49,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onPlaceBlock(CPacketPlayerTryUseItem packetIn, CallbackInfo ci)
     {
-        Proxy.onPlaceBlock(ci, (NetHandlerPlayServer)(Object)this, packetIn);
+//        this.onPlaceBlock(ci, (NetHandlerPlayServer)(Object)this, packetIn);
     }
     
     @Inject(
@@ -58,7 +64,10 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onClickedAir(CPacketAnimation packetIn, CallbackInfo ci)
     {
-        Proxy.onClickedAir(ci, (NetHandlerPlayServer)(Object)this, packetIn);
+        if (!this.broker.onClickedAir(InteractType.LEFT_CLICK, ((NetHandlerPlayServer)(Object)this).playerEntity, packetIn.getHand()))
+        {
+            ci.cancel();
+        }
     }
     
     @Inject(
@@ -73,7 +82,26 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onPlayerDigging(CPacketPlayerDigging packetIn, CallbackInfo ci)
     {
-        Proxy.onPlayerDigging(ci, (NetHandlerPlayServer)(Object)this, packetIn);
+        NetHandlerPlayServer netHandler = (NetHandlerPlayServer)(Object)this;
+        Action action = packetIn.getAction();
+        if (action == Action.START_DESTROY_BLOCK)
+        {
+            if (!this.broker.onPlayerDigging(InteractType.DIG_BLOCK_MAYBE, this.playerEntity, netHandler, packetIn.getPosition()))
+            {
+                ci.cancel();
+            }
+        }
+        else if (action == Action.ABORT_DESTROY_BLOCK || action == Action.STOP_DESTROY_BLOCK)
+        {
+            this.broker.onPlayerDigging(InteractType.DIG_BLOCK_END, this.playerEntity, netHandler, packetIn.getPosition());
+        }
+        else if (action == Action.SWAP_HELD_ITEMS)
+        {
+            if (!this.broker.onPlayerSwapItems(this.playerEntity))
+            {
+                ci.cancel();
+            }
+        }
     }
     
     @Inject(
@@ -89,7 +117,10 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onPlayerMoved(CPacketPlayer packetIn, CallbackInfo ci, WorldServer world)
     {
-        Proxy.onPlayerMoved(ci, (NetHandlerPlayServer)(Object)this, packetIn, world);
+        if (!this.broker.onPlayerMove((NetHandlerPlayServer)(Object)this, packetIn, this.playerEntity, world))
+        {
+            ci.cancel();
+        }
     }
     
     @Override

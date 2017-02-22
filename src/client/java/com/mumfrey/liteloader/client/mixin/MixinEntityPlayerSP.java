@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 
 import net.minecraft.client.entity.AbstractClientPlayer;
 import net.minecraft.client.entity.EntityPlayerSP;
@@ -26,6 +26,6 @@ public abstract class MixinEntityPlayerSP extends AbstractClientPlayer
     @Inject(method = "sendChatMessage(Ljava/lang/String;)V", at = { @At("HEAD") }, cancellable = true)
     public void onSendChatMessage(String message, CallbackInfo ci)
     {
-        ClientProxy.onOutboundChat(ci, message);
+        LiteLoaderEventBrokerClient.getInstance().onSendChatMessage(ci, message);
     }
 }

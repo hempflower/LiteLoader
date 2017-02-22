@@ -118,7 +118,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
     /**
      * Singleton
      */
-    static LiteLoaderEventBroker<?, ?> broker; 
+    protected static LiteLoaderEventBroker<?, ?> broker; 
 
     /**
      * Reference to the loader instance
@@ -190,6 +190,12 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         this.profiler = engine.getProfiler();
 
         LiteLoaderEventBroker.broker = this;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static <TClient, TServer extends MinecraftServer> LiteLoaderEventBroker<TClient, TServer> getCommonBroker()
+    {
+        return (LiteLoaderEventBroker<TClient, TServer>)LiteLoaderEventBroker.broker;
     }
 
     /**

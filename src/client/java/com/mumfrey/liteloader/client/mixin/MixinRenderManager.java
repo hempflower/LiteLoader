@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
-import com.mumfrey.liteloader.client.ClientProxy;
+import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.ducks.IRenderManager;
 
 import net.minecraft.client.renderer.entity.Render;
@@ -24,6 +24,8 @@ import net.minecraft.entity.Entity;
 public abstract class MixinRenderManager implements IRenderManager
 {
     @Shadow @Final private Map<Class<? extends Entity>, Render<? extends Entity>> entityRenderMap;
+    
+    private LiteLoaderEventBrokerClient broker;
     
     @Override
     public Map<Class<? extends Entity>, Render<? extends Entity>> getRenderMap()
@@ -37,9 +39,13 @@ public abstract class MixinRenderManager implements IRenderManager
     ))
     private <T extends Entity> void onRenderEntity(Render<T> render, T entity, double x, double y, double z, float entityYaw, float partialTicks)
     {
-        RenderManager source = (RenderManager)(Object)this;
-        ClientProxy.onRenderEntity(source, render, entity, x, y, z, entityYaw, partialTicks);
+        if (this.broker == null)
+        {
+            this.broker = LiteLoaderEventBrokerClient.getInstance();
+        }
+
+        this.broker.onRenderEntity((RenderManager)(Object)this, entity, x, y, z, entityYaw, partialTicks, render);
         render.doRender(entity, x, y, z, entityYaw, partialTicks);
-        ClientProxy.onPostRenderEntity(source, render, entity, x, y, z, entityYaw, partialTicks);
+        this.broker.onPostRenderEntity((RenderManager)(Object)this, entity, x, y, z, entityYaw, partialTicks, render);
     }
 }

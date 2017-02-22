@@ -286,7 +286,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * Late initialisation callback
      */
     @Override
-    protected void onStartupComplete()
+    public void onStartupComplete()
     {
         this.engine.getResources().refreshResources(false);
 
@@ -328,7 +328,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback from the tick hook, pre render
      */
-    void onRender()
+    public void onRender()
     {
         this.renderListeners.all().onRender();
     }
@@ -339,7 +339,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param timeSlice 
      */
-    void postRenderEntities(float partialTicks, long timeSlice)
+    public void postRenderEntities(float partialTicks, long timeSlice)
     {
         this.postRenderListeners.all().onPostRenderEntities(partialTicks);
     }
@@ -350,7 +350,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks 
      * @param timeSlice 
      */
-    void postRender(float partialTicks, long timeSlice)
+    public void postRender(float partialTicks, long timeSlice)
     {
         ((IEntityRenderer)this.engineClient.getClient().entityRenderer).setupCamera(partialTicks, 0);
         this.postRenderListeners.all().onPostRender(partialTicks);
@@ -359,7 +359,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Called immediately before the current GUI is rendered
      */
-    void preRenderGUI(float partialTicks)
+    public void preRenderGUI(float partialTicks)
     {
         this.renderListeners.all().onRenderGui(this.engineClient.getCurrentScreen());
     }
@@ -371,7 +371,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param timeSlice 
      * @param partialTicks 
      */
-    void onSetupCameraTransform(int pass, float partialTicks, long timeSlice)
+    public void onSetupCameraTransform(int pass, float partialTicks, long timeSlice)
     {
         this.renderListeners.all().onSetupCameraTransform();
         this.preRenderListeners.all().onSetupCameraTransform(partialTicks, pass, timeSlice);
@@ -383,7 +383,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param chatGui 
      * @param partialTicks 
      */
-    void onRenderChat(GuiNewChat chatGui, float partialTicks)
+    public void onRenderChat(GuiNewChat chatGui, float partialTicks)
     {
         this.chatRenderListeners.all().onPreRenderChat(this.screenWidth, this.screenHeight, chatGui);
     }
@@ -394,7 +394,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param chatGui 
      * @param partialTicks 
      */
-    void postRenderChat(GuiNewChat chatGui, float partialTicks)
+    public void postRenderChat(GuiNewChat chatGui, float partialTicks)
     {
         this.chatRenderListeners.all().onPostRenderChat(this.screenWidth, this.screenHeight, chatGui);
     }
@@ -402,7 +402,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback when about to render the HUD
      */
-    void onRenderHUD(float partialTicks)
+    public void onRenderHUD(float partialTicks)
     {
         this.hudRenderListeners.all().onPreRenderHUD(this.screenWidth, this.screenHeight);
     }
@@ -410,7 +410,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback when the HUD has just been rendered
      */
-    void postRenderHUD(float partialTicks)
+    public void postRenderHUD(float partialTicks)
     {
         this.hudRenderListeners.all().onPostRenderHUD(this.screenWidth, this.screenHeight);
     }
@@ -418,7 +418,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback from the tick hook, called every frame when the timer is updated
      */
-    void onTimerUpdate()
+    public void onTimerUpdate()
     {
         Minecraft minecraft = this.engine.getClient();
         this.loopListeners.all().onRunGameLoop(minecraft);
@@ -427,7 +427,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback from the tick hook, ticks all tickable mods
      */
-    void onTick()
+    public void onTick()
     {
         this.profiler.endStartSection("litemods");
 
@@ -474,7 +474,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * @param message
      */
-    void onSendChatMessage(CallbackInfo e, String message)
+    public void onSendChatMessage(CallbackInfo e, String message)
     {
         if (!this.outboundChatFilters.all().onSendChatMessage(message))
         {
@@ -485,7 +485,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * @param framebuffer
      */
-    void preRenderFBO(Framebuffer framebuffer)
+    public void preRenderFBO(Framebuffer framebuffer)
     {
         this.frameBufferListeners.all().preRenderFBO(framebuffer);
     }
@@ -495,7 +495,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param width
      * @param height
      */
-    void onRenderFBO(Framebuffer framebuffer, int width, int height)
+    public void onRenderFBO(Framebuffer framebuffer, int width, int height)
     {
         this.frameBufferListeners.all().onRenderFBO(framebuffer, width, height);
     }
@@ -503,7 +503,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * @param framebuffer
      */
-    void postRenderFBO(Framebuffer framebuffer)
+    public void postRenderFBO(Framebuffer framebuffer)
     {
         this.frameBufferListeners.all().postRenderFBO(framebuffer);
     }
@@ -512,7 +512,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param partialTicks
      * @param timeSlice
      */
-    void onRenderWorld(float partialTicks, long timeSlice)
+    public void onRenderWorld(float partialTicks, long timeSlice)
     {
         this.preRenderListeners.all().onRenderWorld(partialTicks);
     }
@@ -522,7 +522,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param pass
      * @param timeSlice
      */
-    void onRenderSky(float partialTicks, int pass, long timeSlice)
+    public void onRenderSky(float partialTicks, int pass, long timeSlice)
     {
         this.preRenderListeners.all().onRenderSky(partialTicks, pass);
     }
@@ -532,7 +532,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param pass
      * @param renderGlobal
      */
-    void onRenderClouds(float partialTicks, int pass, RenderGlobal renderGlobal)
+    public void onRenderClouds(float partialTicks, int pass, RenderGlobal renderGlobal)
     {
         this.preRenderListeners.all().onRenderClouds(partialTicks, pass, renderGlobal);
     }
@@ -542,7 +542,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param pass
      * @param timeSlice
      */
-    void onRenderTerrain(float partialTicks, int pass, long timeSlice)
+    public void onRenderTerrain(float partialTicks, int pass, long timeSlice)
     {
         this.preRenderListeners.all().onRenderTerrain(partialTicks, pass);
     }
@@ -554,7 +554,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
      * @param height
      * @param fbo
      */
-    void onScreenshot(CallbackInfoReturnable<ITextComponent> ci, String name, int width, int height, Framebuffer fbo)
+    public void onScreenshot(CallbackInfoReturnable<ITextComponent> ci, String name, int width, int height, Framebuffer fbo)
     {
         ReturnValue<ITextComponent> ret = new ReturnValue<ITextComponent>(ci.getReturnValue());
 
