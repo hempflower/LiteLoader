@@ -14,7 +14,7 @@ import java.util.Map;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.11.2
+ * TODO Obfuscation 1.12
  */
 public class Obf
 {
@@ -40,18 +40,18 @@ public class Obf
 
     // Classes
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bes" );
-    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "bqe" );
-    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "alv" );
+    public static final Obf                    Minecraft = new Obf("net.minecraft.client.Minecraft",                             "bhz" );
+    public static final Obf               EntityRenderer = new Obf("net.minecraft.client.renderer.EntityRenderer",               "buo" );
+    public static final Obf                       Blocks = new Obf("net.minecraft.init.Blocks",                                  "aov" );
     public static final Obf                CrashReport$6 = new Obf("net.minecraft.crash.CrashReport$6",                          "b$6" );
-    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "ew"  );
-    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "afl" );
-    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "ou"  );
-    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "asc" );
+    public static final Obf                  INetHandler = new Obf("net.minecraft.network.INetHandler",                          "hb"  );
+    public static final Obf                        Items = new Obf("net.minecraft.init.Items",                                   "aip" );
+    public static final Obf                     Profiler = new Obf("net.minecraft.profiler.Profiler",                            "rj"  );
+    public static final Obf                   TileEntity = new Obf("net.minecraft.tileentity.TileEntity",                        "avh" );
 
     // Methods
     // -----------------------------------------------------------------------------------------
-    public static final Obf                    startGame = new Obf(Obf.Minecraft,                   "func_71384_a",              "an"  );
+    public static final Obf                    startGame = new Obf(Obf.Minecraft,                   "func_71384_a",              "aq"  );
     public static final Obf                 startSection = new Obf(Obf.Profiler,                    "func_76320_a",              "a"   );
     public static final Obf                   endSection = new Obf(Obf.Profiler,                    "func_76319_b",              "b"   );
     public static final Obf              endStartSection = new Obf(Obf.Profiler,                    "func_76318_c",              "c"   );

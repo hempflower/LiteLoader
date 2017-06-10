@@ -5,7 +5,6 @@
  */
 package com.mumfrey.liteloader.core.event;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -21,7 +20,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.core.helpers.Booleans;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -268,14 +266,11 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
     {
         HandlerListClassLoader<T> classLoader = new HandlerListClassLoader<T>(this.type, this.logicOp, this.getDecorator());
         this.bakedHandler = classLoader.newHandler(this);
-        if (classLoader instanceof Closeable)
+        try
         {
-            try
-            {
-                ((Closeable)classLoader).close();
-            }
-            catch (IOException ex) {}
+            classLoader.close();
         }
+        catch (IOException ex) {}
     }
 
     protected IHandlerListDecorator<T> getDecorator()
@@ -604,9 +599,9 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
     {
         private static final String HANDLER_VAR_PREFIX = "handler$";
 
-        public static final boolean DUMP = Booleans.parseBoolean(System.getProperty("liteloader.debug.dump"), false);
+        public static final boolean DUMP = Boolean.parseBoolean(System.getProperty("liteloader.debug.dump", "false"));
 
-        public static final boolean VALIDATE = Booleans.parseBoolean(System.getProperty("liteloader.debug.validate"), false);
+        public static final boolean VALIDATE = Boolean.parseBoolean(System.getProperty("liteloader.debug.validate", "false"));
 
         /**
          * Unique index number, just to ensure no name clashes

@@ -24,7 +24,6 @@ import org.spongepowered.asm.mixin.MixinEnvironment;
 import org.spongepowered.asm.mixin.MixinEnvironment.Phase;
 import org.spongepowered.asm.mixin.Mixins;
 
-import com.google.common.base.Throwables;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ContainerRegistry;
 import com.mumfrey.liteloader.api.ContainerRegistry.DisabledReason;
@@ -441,7 +440,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         }
         catch (IllegalStateException ex) // wut?
         {
-            Throwables.propagate(ex);
+            throw ex;
         }
         catch (Throwable th)
         {

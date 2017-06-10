@@ -27,7 +27,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     @Shadow @Final private static ResourceLocation[] SHADERS_TEXTURES;
     @Shadow private boolean useShader;
     @Shadow private int shaderIndex;
-    @Shadow private ShaderGroup theShaderGroup;
+    @Shadow private ShaderGroup shaderGroup;
     
     @Shadow abstract void loadShader(ResourceLocation resourceLocationIn);
     @Shadow abstract float getFOVModifier(float partialTicks, boolean useFOVSetting);
@@ -168,7 +168,7 @@ public abstract class MixinEntityRenderer implements IEntityRenderer
     {
         if (shader == null)
         {
-            this.theShaderGroup = null;
+            this.shaderGroup = null;
             this.useShader = false;
         }
         else 

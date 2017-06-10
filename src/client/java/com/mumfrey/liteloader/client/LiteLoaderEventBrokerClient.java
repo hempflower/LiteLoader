@@ -432,7 +432,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
         this.profiler.endStartSection("litemods");
 
         Timer minecraftTimer = ((IMinecraft)this.engine.getClient()).getTimer();
-        float partialTicks = minecraftTimer.renderPartialTicks;
+        float partialTicks = minecraftTimer.field_194147_b; // TODO propagate
         boolean clock = minecraftTimer.elapsedTicks > 0;
 
         Minecraft minecraft = this.engine.getClient();
@@ -548,7 +548,7 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     }
 
     /**
-     * @param e
+     * @param ci
      * @param name
      * @param width
      * @param height

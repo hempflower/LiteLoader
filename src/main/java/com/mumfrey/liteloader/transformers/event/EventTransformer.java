@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.core.helpers.Booleans;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -73,9 +72,9 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
  */
 public final class EventTransformer extends ClassTransformer
 {
-    public static final boolean DUMP = Booleans.parseBoolean(System.getProperty("liteloader.debug.dump"), false);
+    public static final boolean DUMP = Boolean.parseBoolean(System.getProperty("liteloader.debug.dump", "false"));
 
-    public static final boolean VALIDATE = Booleans.parseBoolean(System.getProperty("liteloader.debug.validate"), false);
+    public static final boolean VALIDATE = Boolean.parseBoolean(System.getProperty("liteloader.debug.validate", "false"));
 
     /**
      * Multidimensional map of class names -> target method signatures -> events

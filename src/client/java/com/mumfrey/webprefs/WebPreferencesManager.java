@@ -203,8 +203,6 @@ public final class WebPreferencesManager
      * operations is returned instead.
      * 
      * @param player Player to fetch preferences for
-     * @param privatePrefs True to fetch the player's private preferences, false
-     *      to fetch the public preferences
      * @return Preference collection or <tt>null</tt> if the player's profile
      *      cannot be retrieved
      */

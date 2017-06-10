@@ -75,7 +75,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
             
             if (this.control != null)
             {
-                this.control.drawButton(minecraft, mouseX, mouseY);
+                this.control.func_191745_a(minecraft, mouseX, mouseY, partialTicks); // drawButton
             }
         }
 
@@ -164,7 +164,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
             return;
         }
         
-        GuiLabel label = new GuiLabel(this.mc.fontRendererObj, id, x, y, width, height, colour);
+        GuiLabel label = new GuiLabel(this.mc.fontRenderer, id, x, y, width, height, colour);
         for (String line : lines)
         {
             label.addLine(line);
@@ -184,7 +184,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
     {
         if (control != null)
         {
-            this.contentHeight = Math.max(control.yPosition + ((IGuiButton)control).getButtonHeight(), this.contentHeight);
+            this.contentHeight = Math.max(control.y + ((IGuiButton)control).getButtonHeight(), this.contentHeight);
             this.options.add(new ConfigOption<T>(control, listener));
         }
     

@@ -23,7 +23,7 @@ event callbacks, this makes its event handlers blazing fast
 
 ### License and Permissions
 
-LiteLoader is Copyright 2012-2016 Adam Mummery-Smith  All Rights Reserved
+LiteLoader is Copyright 2012-2017 Adam Mummery-Smith  All Rights Reserved
 You are free to use the source code for personal reference.
 You may not redistribute modified versions of the loader.
 You may not redistribute the source code in any form without written permission.

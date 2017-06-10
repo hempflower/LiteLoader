@@ -24,7 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.ITextureObject;
 import net.minecraft.client.renderer.texture.TextureManager;
@@ -260,7 +260,7 @@ public class LoadingBar extends LoadingProgress
 
         this.textureManager.bindTexture(this.textureLocation);
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer vertexBuffer = tessellator.getBuffer();
+        BufferBuilder vertexBuffer = tessellator.getBuffer();
         vertexBuffer.begin(GL_QUADS, VF_POSITION_TEX_COLOR);
         glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         vertexBuffer.pos(0.0D,        scaledHeight, 0.0D).tex(0.0D, 0.0D).color(255, 255, 255, 255).endVertex();

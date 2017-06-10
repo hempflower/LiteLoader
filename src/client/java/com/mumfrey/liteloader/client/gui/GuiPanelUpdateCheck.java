@@ -86,7 +86,7 @@ class GuiPanelUpdateCheck extends GuiPanel
     @Override
     void draw(int mouseX, int mouseY, float partialTicks)
     {
-        FontRenderer fontRenderer = this.mc.fontRendererObj;
+        FontRenderer fontRenderer = this.mc.fontRenderer;
 
         // Draw panel title
         fontRenderer.drawString(this.panelTitle, MARGIN, TOP - 14, GuiPanelUpdateCheck.WHITE);

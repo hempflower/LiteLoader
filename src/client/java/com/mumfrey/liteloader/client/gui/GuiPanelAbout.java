@@ -58,7 +58,7 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
 
         this.sortBrandingProviders();
 
-        this.scrollPane.addControl(new GuiHoverLabel(-2, 38, 22 + this.brandings.size() * GuiPanelAbout.ROW_HEIGHT, this.mc.fontRendererObj,
+        this.scrollPane.addControl(new GuiHoverLabel(-2, 38, 22 + this.brandings.size() * GuiPanelAbout.ROW_HEIGHT, this.mc.fontRenderer,
                 "\247n" + MCP_URI.toString(), this.parent.getBrandColour()));
     }
 
@@ -90,7 +90,7 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
             if (homepage != null)
             {
                 this.scrollPane.addControl(new GuiHoverLabel(brandingIndex, 38, 22 + brandingIndex * GuiPanelAbout.ROW_HEIGHT,
-                        this.mc.fontRendererObj, "\247n" + homepage, this.parent.getBrandColour()));
+                        this.mc.fontRenderer, "\247n" + homepage, this.parent.getBrandColour()));
             }
 
             brandingIndex++;
@@ -126,7 +126,7 @@ class GuiPanelAbout extends GuiPanel implements ScrollPanelContent
     @Override
     public void drawScrollPanelContent(GuiScrollPanel source, int mouseX, int mouseY, float partialTicks, int scrollAmount, int visibleHeight)
     {
-        FontRenderer fontRenderer = this.mc.fontRendererObj;
+        FontRenderer fontRenderer = this.mc.fontRenderer;
         int textColour = 0xFFAAAAAA;
 
         int yPos = 0;

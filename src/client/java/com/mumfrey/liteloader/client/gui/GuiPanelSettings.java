@@ -88,7 +88,7 @@ class GuiPanelSettings extends GuiPanel
     {
         this.parentScreen.drawInfoPanel(mouseX, mouseY, partialTicks, 0, 38);
 
-        FontRenderer fontRenderer = this.mc.fontRendererObj;
+        FontRenderer fontRenderer = this.mc.fontRenderer;
         int brandColour = this.parentScreen.getBrandColour();
 
         fontRenderer.drawString(this.helpText[0], 50, 104, brandColour);

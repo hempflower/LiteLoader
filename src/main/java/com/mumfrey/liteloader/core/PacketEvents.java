@@ -264,7 +264,7 @@ public abstract class PacketEvents implements InterfaceProvider
      */
     protected void handlePacket(PacketEventInfo<Packet<?>> e, INetHandler netHandler, CPacketChatMessage packet)
     {
-        EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).playerEntity : null;
+        EntityPlayerMP player = netHandler instanceof NetHandlerPlayServer ? ((NetHandlerPlayServer)netHandler).player : null;
 
         if (!this.serverChatFilters.all().onChat(player, packet, packet.getMessage()))
         {
@@ -316,7 +316,7 @@ public abstract class PacketEvents implements InterfaceProvider
     {
         if (netHandler instanceof NetHandlerPlayServer)
         {
-            LiteLoaderEventBroker.broker.onPlayerSettingsReceived(((NetHandlerPlayServer)netHandler).playerEntity, packet);
+            LiteLoaderEventBroker.broker.onPlayerSettingsReceived(((NetHandlerPlayServer)netHandler).player, packet);
         }
     }
 }

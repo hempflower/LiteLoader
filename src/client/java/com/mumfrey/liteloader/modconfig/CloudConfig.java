@@ -615,7 +615,7 @@ public abstract class CloudConfig
      * Stub for subclasses, used to provide a prefix for all field names in this
      * class.
      * 
-     * @return
+     * @return field prefix
      */
     protected String getPrefix()
     {

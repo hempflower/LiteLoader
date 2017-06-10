@@ -48,9 +48,9 @@ public class Position extends Vec3d
 
     public void applyTo(Entity entity)
     {
-        entity.posX = this.xCoord;
-        entity.posY = this.yCoord;
-        entity.posZ = this.zCoord;
+        entity.posX = this.x;
+        entity.posY = this.y;
+        entity.posZ = this.z;
         entity.rotationYaw = this.yaw;
         entity.rotationPitch = this.pitch;
     }
@@ -58,6 +58,6 @@ public class Position extends Vec3d
     @Override
     public String toString()
     {
-        return "(" + this.xCoord + ", " + this.yCoord + ", " + this.zCoord + ", " + this.yaw + ", " + this.pitch + ")";
+        return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.yaw + ", " + this.pitch + ")";
     }
 }

@@ -417,7 +417,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(InteractType.PLACE_BLOCK_MAYBE, player, hand, player.getHeldItem(hand), pos, facing))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(player.world, pos.offset(facing));
-            netHandler.playerEntity.connection.sendPacket(cancellation);
+            netHandler.player.connection.sendPacket(cancellation);
             player.sendContainerToPlayer(player.inventoryContainer);
             return false;
         }
@@ -435,7 +435,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.onPlayerInteract(action, player, EnumHand.MAIN_HAND, player.getHeldItemMainhand(), pos, EnumFacing.SOUTH))
         {
             SPacketBlockChange cancellation = new SPacketBlockChange(player.world, pos);
-            netHandler.playerEntity.connection.sendPacket(cancellation);
+            netHandler.player.connection.sendPacket(cancellation);
             return false;
         }
 
@@ -498,8 +498,8 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (!this.playerMoveListeners.all().onPlayerMove(player, from, to, pos))
         {
             int teleportId = ((ITeleportHandler)player.connection).beginTeleport(from);
-            player.setPositionAndRotation(from.xCoord, from.yCoord, from.zCoord, player.prevRotationYaw, player.prevRotationPitch);
-            player.connection.sendPacket(new SPacketPlayerPosLook(from.xCoord, from.yCoord, from.zCoord,
+            player.setPositionAndRotation(from.x, from.y, from.z, player.prevRotationYaw, player.prevRotationPitch);
+            player.connection.sendPacket(new SPacketPlayerPosLook(from.x, from.y, from.z,
                     player.prevRotationYaw, player.prevRotationPitch, Collections.<EnumFlags>emptySet(), teleportId));
             return false;
         }
@@ -507,7 +507,7 @@ public abstract class LiteLoaderEventBroker<TClient, TServer extends MinecraftSe
         if (pos.isSet())
         {
             Position newPos = pos.get();
-            netHandler.setPlayerLocation(newPos.xCoord, newPos.yCoord, newPos.zCoord, newPos.yaw, newPos.pitch);
+            netHandler.setPlayerLocation(newPos.x, newPos.y, newPos.z, newPos.yaw, newPos.pitch);
             return false;
         }
 

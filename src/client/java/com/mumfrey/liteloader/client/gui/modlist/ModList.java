@@ -68,14 +68,14 @@ public class ModList
         // Active mods
         for (ModInfo<LoadableMod<?>> mod : mods.getLoadedMods())
         {
-            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, mod);
+            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRenderer, brandColour, decorators, mod);
             sortedMods.put(modListEntry.getKey(), modListEntry);
         }
 
         // Disabled mods
         for (ModInfo<?> disabledMod : mods.getDisabledMods())
         {
-            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, disabledMod);
+            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRenderer, brandColour, decorators, disabledMod);
             sortedMods.put(modListEntry.getKey(), modListEntry);
         }
 
@@ -84,7 +84,7 @@ public class ModList
         {
             for (ModInfo<?> badMod : mods.getBadContainers())
             {
-                ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, badMod);
+                ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRenderer, brandColour, decorators, badMod);
                 sortedMods.put(modListEntry.getKey(), modListEntry);
             }
         }
@@ -92,7 +92,7 @@ public class ModList
         // Injected tweaks
         for (ModInfo<Loadable<?>> injectedTweak : mods.getInjectedTweaks())
         {
-            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, injectedTweak);
+            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRenderer, brandColour, decorators, injectedTweak);
             sortedMods.put(modListEntry.getKey(), modListEntry);
         }
 

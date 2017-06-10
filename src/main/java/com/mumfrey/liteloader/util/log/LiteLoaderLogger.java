@@ -20,7 +20,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
-import org.apache.logging.log4j.core.helpers.Booleans;
 
 /**
  * Gateway class for the log4j logger
@@ -29,7 +28,7 @@ import org.apache.logging.log4j.core.helpers.Booleans;
  */
 public class LiteLoaderLogger extends AbstractAppender
 {
-    public static final boolean DEBUG = Booleans.parseBoolean(System.getProperty("liteloader.debug"), false);
+    public static final boolean DEBUG = Boolean.parseBoolean(System.getProperty("liteloader.debug", "false"));
 
     private static final int LOG_TAIL_SIZE = 500;
 
@@ -84,11 +83,11 @@ public class LiteLoaderLogger extends AbstractAppender
         synchronized (LiteLoaderLogger.logTail)
         {
             LiteLoaderLogger.logIndex++;
-            this.append(event.getMillis(), event.getMessage().getFormattedMessage());
+            this.append(event.getTimeMillis(), event.getMessage().getFormattedMessage());
             Throwable thrown = event.getThrown();
             if (thrown != null)
             {
-                this.append(event.getMillis(), String.format("\2474%s: \2476%s", thrown.getClass().getSimpleName(), thrown.getMessage()));
+                this.append(event.getTimeMillis(), String.format("\2474%s: \2476%s", thrown.getClass().getSimpleName(), thrown.getMessage()));
             }
         }
     }

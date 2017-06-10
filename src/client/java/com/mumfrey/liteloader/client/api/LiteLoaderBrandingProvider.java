@@ -59,7 +59,7 @@ public class LiteLoaderBrandingProvider implements BrandingProvider
     @Override
     public String getCopyrightText()
     {
-        return "Copyright (c) 2012-2016 Adam Mummery-Smith";
+        return "Copyright (c) 2012-2017 Adam Mummery-Smith";
     }
 
     /* (non-Javadoc)

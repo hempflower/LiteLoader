@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.FileAppender;
@@ -426,10 +427,24 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         LiteLoaderLogger.info("Setting up logger...");
 
         Logger logger = LiteLoaderLogger.getLogger();
-        Layout<? extends Serializable> layout = PatternLayout.createLayout("[%d{HH:mm:ss}] [%t/%level]: %msg%n",
-                logger.getContext().getConfiguration(), null, "UTF-8", "True");
-        FileAppender fileAppender = FileAppender.createAppender(this.logFile.getAbsolutePath(), "False", "False",
-                "LiteLoader", "True", "True", "True", layout, null, "False", "", logger.getContext().getConfiguration());
+        Layout<? extends Serializable> layout = PatternLayout.newBuilder()
+            .withPattern("[%d{HH:mm:ss}] [%t/%level]: %msg%n")
+            .withConfiguration(logger.getContext().getConfiguration())
+            .withCharset(Charsets.UTF_8)
+            .withAlwaysWriteExceptions(true)
+            .build();
+        FileAppender fileAppender = FileAppender.newBuilder()
+            .withFileName(this.logFile.getAbsolutePath())
+            .withAppend(false)
+            .withLocking(false)
+            .withName("LiteLoader")
+            .withImmediateFlush(true)
+            .withIgnoreExceptions(true)
+            .withBufferedIo(true)
+            .withLayout(layout)
+            .withAdvertise(false)
+            .setConfiguration(logger.getContext().getConfiguration())
+            .build();
         fileAppender.start();
         logger.addAppender(fileAppender);
     }

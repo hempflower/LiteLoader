@@ -19,8 +19,8 @@ public abstract class MixinGuiTextField implements IGuiTextField
 {
     @Shadow @Final @Mutable private int width;
     @Shadow @Final @Mutable private int height;
-    @Shadow public int xPosition;
-    @Shadow public int yPosition;
+    @Shadow public int x;
+    @Shadow public int y;
     @Shadow private int lineScrollOffset;
     @Shadow private int enabledColor;
     @Shadow private int disabledColor;
@@ -29,25 +29,25 @@ public abstract class MixinGuiTextField implements IGuiTextField
     @Override
     public int getXPosition()
     {
-        return this.xPosition;
+        return this.x;
     }
     
     @Override
     public void setXPosition(int xPosition)
     {
-        this.xPosition = xPosition;
+        this.x = xPosition;
     }
     
     @Override
     public int getYPosition()
     {
-        return this.yPosition;
+        return this.y;
     }
     
     @Override
     public void setYPosition(int yPosition)
     {
-        this.yPosition = yPosition;
+        this.y = yPosition;
     }
     
     @Override
@@ -98,5 +98,4 @@ public abstract class MixinGuiTextField implements IGuiTextField
     {
         return this.disabledColor;
     }
-    
 }

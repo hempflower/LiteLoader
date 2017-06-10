@@ -74,10 +74,10 @@ public abstract class EntityUtilities
         
         for (final Entity entity : EntityUtilities.getTraceEntities(source, traceDistance, lookDir, EntityUtilities.TRACEABLE)) 
         {
-            AxisAlignedBB entityBB = entity.getEntityBoundingBox().expandXyz(entity.getCollisionBorderSize());
+            AxisAlignedBB entityBB = entity.getEntityBoundingBox().grow(entity.getCollisionBorderSize());
             RayTraceResult entityRay = entityBB.calculateIntercept(traceStart, traceEnd);
 
-            if (entityBB.isVecInside(traceStart))
+            if (entityBB.contains(traceStart))
             {
                 if (trace.distance >= 0.0D)
                 {
@@ -120,7 +120,7 @@ public abstract class EntityUtilities
     private static List<Entity> getTraceEntities(Entity source, double traceDistance, Vec3d dir, Predicate<Entity> filter)
     {
         AxisAlignedBB boundingBox = source.getEntityBoundingBox();
-        AxisAlignedBB traceBox = boundingBox.addCoord(dir.xCoord, dir.yCoord, dir.zCoord);
+        AxisAlignedBB traceBox = boundingBox.expand(dir.x, dir.y, dir.z);
         List<Entity> entities = source.world.getEntitiesInAABBexcluding(source, traceBox.expand(1.0F, 1.0F, 1.0F), filter);
         return entities;
     }

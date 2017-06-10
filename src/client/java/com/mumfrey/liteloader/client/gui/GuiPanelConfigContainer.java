@@ -165,7 +165,7 @@ class GuiPanelConfigContainer extends GuiPanel implements ConfigPanelHost
         this.innerTop = TOP - this.scrollBar.getValue();
 
         // Draw panel title
-        this.mc.fontRendererObj.drawString(this.getPanelTitle(), MARGIN, TOP - 14, 0xFFFFFFFF);
+        this.mc.fontRenderer.drawString(this.getPanelTitle(), MARGIN, TOP - 14, 0xFFFFFFFF);
 
         // Draw top and bottom horizontal bars
         drawRect(MARGIN, TOP - 4, this.width - MARGIN, TOP - 3, 0xFF999999);

@@ -33,7 +33,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
 {
     @Shadow private int teleportId;
     @Shadow private Vec3d targetPos;
-    @Shadow public EntityPlayerMP playerEntity;;
+    @Shadow public EntityPlayerMP player;
     
     LiteLoaderEventBroker<?, ?> broker = LiteLoaderEventBroker.getCommonBroker();
     
@@ -64,7 +64,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onClickedAir(CPacketAnimation packetIn, CallbackInfo ci)
     {
-        if (!this.broker.onClickedAir(InteractType.LEFT_CLICK, ((NetHandlerPlayServer)(Object)this).playerEntity, packetIn.getHand()))
+        if (!this.broker.onClickedAir(InteractType.LEFT_CLICK, ((NetHandlerPlayServer)(Object)this).player, packetIn.getHand()))
         {
             ci.cancel();
         }
@@ -86,18 +86,18 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
         Action action = packetIn.getAction();
         if (action == Action.START_DESTROY_BLOCK)
         {
-            if (!this.broker.onPlayerDigging(InteractType.DIG_BLOCK_MAYBE, this.playerEntity, netHandler, packetIn.getPosition()))
+            if (!this.broker.onPlayerDigging(InteractType.DIG_BLOCK_MAYBE, this.player, netHandler, packetIn.getPosition()))
             {
                 ci.cancel();
             }
         }
         else if (action == Action.ABORT_DESTROY_BLOCK || action == Action.STOP_DESTROY_BLOCK)
         {
-            this.broker.onPlayerDigging(InteractType.DIG_BLOCK_END, this.playerEntity, netHandler, packetIn.getPosition());
+            this.broker.onPlayerDigging(InteractType.DIG_BLOCK_END, this.player, netHandler, packetIn.getPosition());
         }
         else if (action == Action.SWAP_HELD_ITEMS)
         {
-            if (!this.broker.onPlayerSwapItems(this.playerEntity))
+            if (!this.broker.onPlayerSwapItems(this.player))
             {
                 ci.cancel();
             }
@@ -117,7 +117,7 @@ public abstract class MixinNetHandlerPlayServer implements ITeleportHandler
     )
     private void onPlayerMoved(CPacketPlayer packetIn, CallbackInfo ci, WorldServer world)
     {
-        if (!this.broker.onPlayerMove((NetHandlerPlayServer)(Object)this, packetIn, this.playerEntity, world))
+        if (!this.broker.onPlayerMove((NetHandlerPlayServer)(Object)this, packetIn, this.player, world))
         {
             ci.cancel();
         }

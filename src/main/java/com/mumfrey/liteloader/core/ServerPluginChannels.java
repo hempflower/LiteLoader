@@ -111,7 +111,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
             String channel = customPayload.getChannelName();
             PacketBuffer data = customPayload.getBufferData();
 
-            EntityPlayerMP sender = ((NetHandlerPlayServer)netHandler).playerEntity;
+            EntityPlayerMP sender = ((NetHandlerPlayServer)netHandler).player;
             this.onPluginChannelMessage(sender, channel, data);
         }
     }

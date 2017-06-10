@@ -76,7 +76,7 @@ public class GuiPanelError extends GuiPanel implements ScrollPanelContent
                 boolean indented = line.startsWith("   ");
                 line = line.replaceAll("\\((.+?\\.java:[0-9]+)\\)", "(\247f$1\247r)");
                 line = line.replaceAll("at ([^\\(]+)\\(", "at \2476$1\247r(");
-                this.mc.fontRendererObj.drawString(line, 2, yPos += 10, indented ? 0xFF999999 : 0xFFFF5555);
+                this.mc.fontRenderer.drawString(line, 2, yPos += 10, indented ? 0xFF999999 : 0xFFFF5555);
             }
         }
     }
@@ -103,7 +103,7 @@ public class GuiPanelError extends GuiPanel implements ScrollPanelContent
     @Override
     void draw(int mouseX, int mouseY, float partialTicks)
     {
-        this.mc.fontRendererObj.drawString(I18n.format("gui.error.title", this.mod.getDisplayName()), MARGIN, TOP - 14, 0xFFFFFFFF);
+        this.mc.fontRenderer.drawString(I18n.format("gui.error.title", this.mod.getDisplayName()), MARGIN, TOP - 14, 0xFFFFFFFF);
 
         drawRect(MARGIN, TOP - 4, this.width - MARGIN, TOP - 3, 0xFF999999);
         drawRect(MARGIN, this.height - BOTTOM + 2, this.width - MARGIN, this.height - BOTTOM + 3, 0xFF999999);

@@ -2,6 +2,8 @@ package com.mumfrey.webprefs.interfaces;
 
 import java.util.Set;
 
+import com.mumfrey.webprefs.exceptions.InvalidValueException;
+
 /**
  * Web-based preferences, objects implementing this interface represent a remote
  * asychronous Key/Value store which fetches and commits values on a best-effort
@@ -111,7 +113,7 @@ public interface IWebPreferences
     public abstract void poll();
 
     /**
-     * Similar to {@link poll} except for property writes instead of property
+     * Similar to {@link #poll} except for property writes instead of property
      * reads. Under normal circumstances it should not be necessary to call this
      * method, since commits are handled asychronously by the update loop.
      * However it can be used to forcibly commit even "clean" values to the
@@ -129,7 +131,7 @@ public interface IWebPreferences
      * triggers asnchronous retrieval if not
      *
      * @param key Key to check for
-     * @return
+     * @return true if collection has specified key
      */
     public abstract boolean has(String key);
 
@@ -140,7 +142,7 @@ public interface IWebPreferences
      * value is returned and the collection remains unchanged.
      *
      * @param key
-     * @return
+     * @return value or null
      */
     public abstract String get(String key);
     
@@ -152,7 +154,7 @@ public interface IWebPreferences
      *
      * @param key
      * @param defaultValue
-     * @return
+     * @return value or default
      */
     public abstract String get(String key, String defaultValue);
 

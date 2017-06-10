@@ -149,8 +149,8 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
             if (this.logURL.startsWith("http:"))
             {
                 LiteLoaderLogger.info("Log file upload succeeded, url is %s", this.logURL);
-                int urlWidth = this.mc.fontRendererObj.getStringWidth(this.logURL);
-                this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRendererObj, "\247n" + this.logURL,
+                int urlWidth = this.mc.fontRenderer.getStringWidth(this.logURL);
+                this.controls.add(new GuiHoverLabel(3, xMid - (urlWidth / 2), this.height / 2, this.mc.fontRenderer, "\247n" + this.logURL,
                         this.parent.getBrandColour()));
             }
             else
@@ -193,7 +193,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
     void draw(int mouseX, int mouseY, float partialTicks)
     {
         // Draw panel title
-        this.mc.fontRendererObj.drawString(I18n.format("gui.log.title"), MARGIN, TOP - 14, 0xFFFFFFFF);
+        this.mc.fontRenderer.drawString(I18n.format("gui.log.title"), MARGIN, TOP - 14, 0xFFFFFFFF);
 
         // Draw top and bottom horizontal bars
         drawRect(MARGIN, TOP - 4, this.width - MARGIN, TOP - 3, 0xFF999999);
@@ -210,18 +210,18 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
 
             if (this.logUpload != null)
             {
-                this.drawCenteredString(this.mc.fontRendererObj, I18n.format("gui.log.uploading"), xMid, yMid - 10, 0xFFFFFFFF);
+                this.drawCenteredString(this.mc.fontRenderer, I18n.format("gui.log.uploading"), xMid, yMid - 10, 0xFFFFFFFF);
                 this.drawThrobber(xMid - 90, yMid - 14, this.throb);
             }
             else
             {
                 if (this.logURL.startsWith("http:"))
                 {
-                    this.drawCenteredString(this.mc.fontRendererObj, I18n.format("gui.log.uploadsuccess"), xMid, yMid - 14, 0xFF55FF55);
+                    this.drawCenteredString(this.mc.fontRenderer, I18n.format("gui.log.uploadsuccess"), xMid, yMid - 14, 0xFF55FF55);
                 }
                 else
                 {
-                    this.drawCenteredString(this.mc.fontRendererObj, I18n.format("gui.log.uploadfailed"), xMid, yMid - 10, 0xFFFF5555);
+                    this.drawCenteredString(this.mc.fontRenderer, I18n.format("gui.log.uploadfailed"), xMid, yMid - 10, 0xFFFF5555);
                 }
             }
         }
@@ -249,7 +249,7 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
         {
             if (yPos > scrollAmount - 10 && yPos <= scrollAmount + height)
             {
-                this.mc.fontRendererObj.drawString(logLine, 0, yPos, this.getMessageColour(logLine.toLowerCase().substring(11)));
+                this.mc.fontRenderer.drawString(logLine, 0, yPos, this.getMessageColour(logLine.toLowerCase().substring(11)));
             }
             yPos += 10;
         }

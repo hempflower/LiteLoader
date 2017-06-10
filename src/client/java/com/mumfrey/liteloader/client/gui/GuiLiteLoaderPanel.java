@@ -36,7 +36,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.VertexBuffer;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
@@ -156,7 +156,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
             LoaderProperties properties, ConfigManager configManager, boolean showTab)
     {
         this.mc              = minecraft;
-        this.fontRendererObj = minecraft.fontRendererObj;
+        this.fontRenderer    = minecraft.fontRenderer;
         this.parentScreen    = parentScreen;
         this.showTab         = showTab;
 
@@ -293,13 +293,13 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
         this.currentPanel.setSize(this.width - LEFT_EDGE, this.height);
 
-        this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRendererObj,
+        this.buttonList.add(new GuiHoverLabel(2, LEFT_EDGE + MARGIN, this.height - PANEL_BOTTOM + 9, this.fontRenderer,
                 I18n.format("gui.about.taboptions"), this.brandColour));
 
         if (LiteLoaderVersion.getUpdateSite().canCheckForUpdate() && this.mc.world == null && !this.isSnapshot)
         {
-            this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRendererObj.getStringWidth(this.versionText) + 6, 50,
-                    this.fontRendererObj, I18n.format("gui.about.checkupdates"), this.brandColour));
+            this.buttonList.add(new GuiHoverLabel(3, LEFT_EDGE + MARGIN + 38 + this.fontRenderer.getStringWidth(this.versionText) + 6, 50,
+                    this.fontRenderer, I18n.format("gui.about.checkupdates"), this.brandColour));
         }
 
         Keyboard.enableRepeatEvents(true);
@@ -499,8 +499,8 @@ public class GuiLiteLoaderPanel extends GuiScreen
         glDrawTexturedRect(right - this.iconCoords.getIconWidth(), MARGIN, this.iconCoords, 1.0F);
 
         // Draw header text
-        this.fontRendererObj.drawString(this.versionText, left + 38, 50, GuiLiteLoaderPanel.HEADER_TEXT_COLOUR);
-        this.fontRendererObj.drawString(this.activeModText, left + 38, 60, GuiLiteLoaderPanel.HEADER_TEXT_COLOUR_SUB);
+        this.fontRenderer.drawString(this.versionText, left + 38, 50, GuiLiteLoaderPanel.HEADER_TEXT_COLOUR);
+        this.fontRenderer.drawString(this.activeModText, left + 38, 60, GuiLiteLoaderPanel.HEADER_TEXT_COLOUR_SUB);
 
         // Draw top and bottom horizontal rules
         drawRect(left, 80, right, 81, GuiLiteLoaderPanel.HEADER_HR_COLOUR);
@@ -517,9 +517,9 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
         if (mouseOverTab && this.tweenAmount < 0.01)
         {
-            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height,
+            GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, LiteLoader.getVersionDisplayString(), mouseX, mouseY, this.width, this.height,
                     GuiLiteLoaderPanel.TOOLTIP_FOREGROUND, GuiLiteLoaderPanel.TOOLTIP_BACKGROUND);
-            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.activeModText, mouseX, mouseY + 13, this.width, this.height,
+            GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, this.activeModText, mouseX, mouseY + 13, this.width, this.height,
                     GuiLiteLoaderPanel.TOOLTIP_FOREGROUND_SUB, GuiLiteLoaderPanel.TOOLTIP_BACKGROUND);
 
             if (annoyingTip)
@@ -537,12 +537,12 @@ public class GuiLiteLoaderPanel extends GuiScreen
     {
         if (this.startupErrorCount > 0)
         {
-            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, I18n.format("gui.error.tooltip", this.startupErrorCount, this.criticalErrorCount),
+            GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, I18n.format("gui.error.tooltip", this.startupErrorCount, this.criticalErrorCount),
                     left, top, this.width, this.height, GuiLiteLoaderPanel.ERROR_TOOLTIP_FOREGROUND, GuiLiteLoaderPanel.ERROR_TOOLTIP_BACKGROUND);
         }
         else if (this.notification != null)
         {
-            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.notification, left, top, this.width, this.height,
+            GuiLiteLoaderPanel.drawTooltip(this.fontRenderer, this.notification, left, top, this.width, this.height,
                     GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_FOREGROUND, GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_BACKGROUND);
         }
     }
@@ -794,7 +794,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
         glColor4f(1.0F, 1.0F, 1.0F, alpha);
 
         Tessellator tessellator = Tessellator.getInstance();
-        VertexBuffer buf = tessellator.getBuffer();
+        BufferBuilder buf = tessellator.getBuffer();
         buf.begin(GL_QUADS, VF_POSITION_TEX);
         buf.pos(x + 0,     y + height, 0).tex(u , v2).endVertex();
         buf.pos(x + width, y + height, 0).tex(u2, v2).endVertex();
