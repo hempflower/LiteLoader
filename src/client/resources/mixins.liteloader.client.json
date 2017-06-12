@@ -24,7 +24,8 @@
         "MixinGuiTextField",
         "MixinIntIdentityHashBiMap",
         "MixinGuiOverlayDebug",
-        "IGuiButton"
+        "IGuiButton",
+        "IKeyBinding"
     ],
     "injectors": {
         "defaultRequire": 1

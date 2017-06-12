@@ -8,7 +8,9 @@ package com.mumfrey.liteloader.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
+import com.mumfrey.liteloader.client.mixin.IKeyBinding;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.GameEngine;
 import com.mumfrey.liteloader.common.Resources;
@@ -29,6 +31,11 @@ import net.minecraft.server.integrated.IntegratedServer;
  */
 public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
 {
+    /**
+     * Base index for custom keybind categories added by mods
+     */
+    private static final int CATEGORY_SORT_INDEX_START = 1000;
+    
     private final Minecraft engine = Minecraft.getMinecraft();
 
     private final Resources<?, ?> resources = new ResourcesClient();
@@ -159,6 +166,49 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
     @Override
     public void setKeyBindings(List<KeyBinding> keyBindings)
     {
+        this.addMissingCategories(keyBindings);
         this.engine.gameSettings.keyBindings = keyBindings.toArray(new KeyBinding[0]);
+    }
+
+    /**
+     * Add categories specified in the supplied keybindings list to the list of
+     * category sort orders in {@link KeyBinding}.
+     * 
+     * @param keyBindings keybinding list
+     */
+    private void addMissingCategories(List<KeyBinding> keyBindings)
+    {
+        Map<String, Integer> categorySort = IKeyBinding.getCategorySort();
+        
+        for (KeyBinding binding : keyBindings)
+        {
+            String category = binding.getKeyCategory();
+            if (!categorySort.containsKey(category))
+            {
+                categorySort.put(category, this.getAvailableSortIndex(categorySort));
+            }
+        }
+    }
+
+    /**
+     * Finds an available sorting index (starting at CATEGORY_SORT_INDEX_START)
+     * which exists at the end of the sorting space. This ensures that mod
+     * categories are always sorted after vanilla and other preexisting
+     * categories.
+     * 
+     * @param categorySort sorting map
+     * @return next available sorting index
+     */
+    private Integer getAvailableSortIndex(Map<String, Integer> categorySort)
+    {
+        int index = GameEngineClient.CATEGORY_SORT_INDEX_START;
+        for (Integer value : categorySort.values())
+        {
+            if (value.intValue() >= index) {
+                index = value.intValue() + 1;
+            }
+        }
+        
+        return Integer.valueOf(index);
     }
 }
