@@ -35,6 +35,8 @@ public abstract class MixinMinecraft implements IMinecraft
     @Shadow @Final private List<IResourcePack> defaultResourcePacks;
     @Shadow private String serverName;
     @Shadow private int serverPort;
+    @Shadow private boolean isGamePaused;
+    @Shadow private float field_193996_ah;
     
     @Shadow abstract void resize(int width, int height);
     @Shadow private void clickMouse() {}
@@ -79,7 +81,9 @@ public abstract class MixinMinecraft implements IMinecraft
     ))
     private void onTick(CallbackInfo ci)
     {
-        this.broker.onTick();
+        boolean clock = this.timer.elapsedTicks > 0;
+        float partialTicks = this.isGamePaused ? this.field_193996_ah : this.timer.field_194147_b;
+        this.broker.onTick(clock, partialTicks);
     }
     
     @Redirect(method = "runGameLoop()V", at = @At(

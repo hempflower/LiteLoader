@@ -9,24 +9,9 @@ import org.lwjgl.input.Mouse;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-import com.mumfrey.liteloader.ChatRenderListener;
-import com.mumfrey.liteloader.EntityRenderListener;
-import com.mumfrey.liteloader.FrameBufferListener;
-import com.mumfrey.liteloader.GameLoopListener;
-import com.mumfrey.liteloader.HUDRenderListener;
-import com.mumfrey.liteloader.InitCompleteListener;
-import com.mumfrey.liteloader.OutboundChatFilter;
-import com.mumfrey.liteloader.OutboundChatListener;
-import com.mumfrey.liteloader.PlayerClickListener;
+import com.mumfrey.liteloader.*;
 import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
-import com.mumfrey.liteloader.PostRenderListener;
-import com.mumfrey.liteloader.PreRenderListener;
-import com.mumfrey.liteloader.RenderListener;
-import com.mumfrey.liteloader.ScreenshotListener;
-import com.mumfrey.liteloader.Tickable;
-import com.mumfrey.liteloader.ViewportListener;
 import com.mumfrey.liteloader.client.overlays.IEntityRenderer;
-import com.mumfrey.liteloader.client.overlays.IMinecraft;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.InterfaceRegistrationDelegate;
 import com.mumfrey.liteloader.core.LiteLoader;
@@ -51,7 +36,6 @@ import net.minecraft.client.shader.Framebuffer;
 import net.minecraft.entity.Entity;
 import net.minecraft.network.play.client.CPacketChatMessage;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.util.Timer;
 import net.minecraft.util.text.ITextComponent;
 
 public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft, IntegratedServer> implements IResourceManagerReloadListener
@@ -427,14 +411,9 @@ public class LiteLoaderEventBrokerClient extends LiteLoaderEventBroker<Minecraft
     /**
      * Callback from the tick hook, ticks all tickable mods
      */
-    public void onTick()
+    public void onTick(boolean clock, float partialTicks)
     {
         this.profiler.endStartSection("litemods");
-
-        Timer minecraftTimer = ((IMinecraft)this.engine.getClient()).getTimer();
-        float partialTicks = minecraftTimer.field_194147_b; // TODO propagate
-        boolean clock = minecraftTimer.elapsedTicks > 0;
-
         Minecraft minecraft = this.engine.getClient();
 
         // Flag indicates whether we are in game at the moment
