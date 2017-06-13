@@ -88,4 +88,14 @@ public interface PanelManager<TParentScreen> extends TickObserver, PostRenderObs
      * Get whether "force update" is enabled
      */
     public abstract boolean isForceUpdateEnabled();
+
+    /**
+     * Set whether "check for new snapshots" is enabled
+     */
+    public abstract void setCheckForSnapshotsEnabled(boolean checkForSnapshots);
+
+    /**
+     * Get whether "check for new snapshots" is enabled
+     */
+    public abstract boolean isCheckForSnapshotsEnabled();
 }

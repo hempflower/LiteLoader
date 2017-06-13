@@ -177,11 +177,10 @@ public class GuiLiteLoaderPanel extends GuiScreen
         this.startupErrorCount = mods.getStartupErrorCount();
         this.criticalErrorCount = mods.getCriticalErrorCount();
 
-        String branding = LiteLoader.getBranding();
-        if (branding != null && branding.contains("SNAPSHOT"))
+        this.isSnapshot = LiteLoader.isSnapshot();
+        if (this.isSnapshot)
         {
-            this.isSnapshot = true;
-            this.versionText = "\247c" + branding;
+            this.versionText = "\247c" + LiteLoader.getBranding();
         }
     }
 
@@ -524,6 +523,7 @@ public class GuiLiteLoaderPanel extends GuiScreen
 
             if (annoyingTip)
             {
+                GuiLiteLoaderPanel.displayErrorToolTip = false;
                 this.drawNotificationTooltip(mouseX, mouseY - 13);
             }
         }
@@ -542,8 +542,11 @@ public class GuiLiteLoaderPanel extends GuiScreen
         }
         else if (this.notification != null)
         {
-            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, this.notification, left, top, this.width, this.height,
-                    GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_FOREGROUND, GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_BACKGROUND);
+            boolean isCritical = this.notification.startsWith("!!");
+            String text = isCritical ? this.notification.substring(2) : this.notification;
+            int bgColour = isCritical ? GuiLiteLoaderPanel.ERROR_TOOLTIP_BACKGROUND : GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_BACKGROUND;
+            GuiLiteLoaderPanel.drawTooltip(this.fontRendererObj, text, left, top, this.width, this.height,
+                    GuiLiteLoaderPanel.NOTIFICATION_TOOLTIP_FOREGROUND, bgColour);
         }
     }
 
@@ -739,21 +742,32 @@ public class GuiLiteLoaderPanel extends GuiScreen
      * 
      * @param fontRenderer
      * @param tooltipText
-     * @param mouseX
-     * @param mouseY
+     * @param left
+     * @param top
      * @param screenWidth
      * @param screenHeight
      * @param colour
      * @param backgroundColour
      */
-    public static void drawTooltip(FontRenderer fontRenderer, String tooltipText, int mouseX, int mouseY, int screenWidth, int screenHeight,
+    public static void drawTooltip(FontRenderer fontRenderer, String text, int left, int top, int screenWidth, int screenHeight,
             int colour, int backgroundColour)
     {
-        int textSize = fontRenderer.getStringWidth(tooltipText);
-        mouseX = Math.max(0, Math.min(screenWidth - 4, mouseX - 4));
-        mouseY = Math.max(0, Math.min(screenHeight - 16, mouseY));
-        drawRect(mouseX - textSize - 2, mouseY, mouseX + 2, mouseY + 12, backgroundColour);
-        fontRenderer.drawStringWithShadow(tooltipText, mouseX - textSize, mouseY + 2, colour);
+        String[] lines = text.trim().split("\\r?\\n");
+        int textWidth = 0;
+        int textHeight = 9 * lines.length;
+        for (String line : lines)
+        {
+            textWidth = Math.max(textWidth, fontRenderer.getStringWidth(line));
+            top -= 9;
+        }
+        
+        left = Math.max(0, Math.min(screenWidth - 4, left - 4));
+        top = Math.max(0, Math.min(screenHeight - 16, top + 9));
+        drawRect(left - textWidth - 2, top, left + 2, top + textHeight + 2, backgroundColour);
+        for (String line : lines)
+        {
+            fontRenderer.drawStringWithShadow(line, left - textWidth, (top += 9) - 7, colour);
+        }
     }
 
 

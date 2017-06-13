@@ -532,6 +532,15 @@ public final class LiteLoader
     {
         return "true".equals(System.getProperty("mcpenv"));
     }
+    
+    /**
+     * Get whether the current running version is a snapshot build
+     */
+    public static boolean isSnapshot()
+    {
+        String branding = LiteLoader.getBranding();
+        return branding != null && branding.contains("SNAPSHOT"); 
+    }
 
     /**
      * Dump debugging information to the console
