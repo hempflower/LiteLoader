@@ -160,6 +160,11 @@ public class UpdateSite implements Comparator<Long>
             }
         }
     }
+    
+    public boolean isSnapshot()
+    {
+        return false;
+    }
 
     /**
      * Gets whether a check is in progress
@@ -319,7 +324,7 @@ public class UpdateSite implements Comparator<Long>
      */
     private void handleVersionData(Object key, Map<?, ?> value)
     {
-        if ("artefacts".equals(key))
+        if ((this.isSnapshot() && "snapshots".equals(key)) || (!this.isSnapshot() && "artefacts".equals(key)))
         {
             if (value.containsKey(this.artefact))
             {
@@ -387,12 +392,17 @@ public class UpdateSite implements Comparator<Long>
             this.availableVersion = artefact.get("version").toString();
             this.availableVersionDate = DateFormat.getDateTimeInstance().format(new Date(remoteTimeStamp * 1000L));
             this.availableVersionURL = this.createArtefactURL(artefact.get("file").toString());
-            this.updateAvailable = this.compareTimeStamps(bestTimeStamp, remoteTimeStamp);
+            this.updateAvailable = this.compareArtefact(artefact, bestTimeStamp, remoteTimeStamp);
 
             return true;
         }
 
         return false;
+    }
+
+    protected boolean compareArtefact(Map<?, ?> artefact, long bestTimeStamp, Long remoteTimeStamp)
+    {
+        return this.compareTimeStamps(bestTimeStamp, remoteTimeStamp);
     }
 
     /**

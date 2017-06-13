@@ -16,6 +16,9 @@ gui.settings.notabhide.help1=Only applies if the above option is also checked
 gui.settings.forceupdate.label=Periodically Check For Updates
 gui.settings.forceupdate.help1=This option is §cexperimental§r and may not work properly 
 gui.settings.forceupdate.help2=yet, it also enables the "force update" capability. 
+gui.settings.checkforsnapshots.label=Check For New Snapshots
+gui.settings.checkforsnapshots.help1=If this option is enabled, LiteLoader will check
+gui.settings.checkforsnapshots.help2=for new SNAPSHOT releases each time it it launched
 
 gui.about.taboptions=§nLiteLoader Panel Options
 
@@ -87,3 +90,4 @@ gui.error.title=Startup errors for %s
 gui.error.tooltip=%d mod startup error(s) detected (%d critical)
 
 gui.notifications.updateavailable=LiteLoader Update Available!
+gui.notifications.newsnapshotavailable=!!New Snapshot Available:%nBuild #%s (%s)

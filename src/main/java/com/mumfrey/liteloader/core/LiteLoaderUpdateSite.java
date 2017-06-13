@@ -8,6 +8,10 @@ package com.mumfrey.liteloader.core;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Date;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.google.common.io.ByteSink;
 import com.google.common.io.Files;
@@ -21,6 +25,8 @@ public class LiteLoaderUpdateSite extends UpdateSite
     private static final String UPDATE_SITE_URL = "http://dl.liteloader.com/versions/";
     private static final String UPDATE_SITE_VERSIONS_JSON = "versions.json";
     private static final String UPDATE_SITE_ARTEFACT_NAME = "com.mumfrey:liteloader";
+    
+    private static final Pattern SNAPSHOT_REGEX = Pattern.compile("^([0-9\\._]+)-SNAPSHOT-(r[0-9a-z]+)-(b([0-9]+))-(.*)$", Pattern.CASE_INSENSITIVE);
 
     private String mcVersion;
 
@@ -28,6 +34,10 @@ public class LiteLoaderUpdateSite extends UpdateSite
     private File jarFile = null;
 
     private boolean updateForced = false;
+    private boolean isSnapshot = false;
+    
+    private int currentBuild, availableBuild;
+    private String snapshotDate = null;
 
     public LiteLoaderUpdateSite(String targetVersion, long currentTimeStamp)
     {
@@ -35,6 +45,64 @@ public class LiteLoaderUpdateSite extends UpdateSite
                 LiteLoaderUpdateSite.UPDATE_SITE_ARTEFACT_NAME, currentTimeStamp);
 
         this.mcVersion = targetVersion; 
+    }
+    
+    @Override
+    public void beginUpdateCheck()
+    {
+        this.isSnapshot = LiteLoader.isSnapshot();
+        super.beginUpdateCheck();
+    }
+    
+    @Override
+    public boolean isSnapshot()
+    {
+        return this.isSnapshot;
+    }
+    
+    @Override
+    public String getAvailableVersion()
+    {
+        if (this.isSnapshot() && this.availableBuild > 0)
+        {
+            return String.valueOf(this.availableBuild);
+        }
+        
+        return super.getAvailableVersion();
+    }
+    
+    @Override
+    public String getAvailableVersionDate()
+    {
+        if (this.snapshotDate != null)
+        {
+            return this.snapshotDate;
+        }
+        
+        return super.getAvailableVersionDate();
+    }
+    
+    @Override
+    protected boolean compareArtefact(Map<?, ?> artefact, long bestTimeStamp, Long remoteTimeStamp)
+    {
+        if (this.isSnapshot())
+        {
+            String remoteBuild = artefact.get("build").toString();
+            String myBuild = LiteLoader.getBranding();
+            
+            Matcher remoteMatcher = LiteLoaderUpdateSite.SNAPSHOT_REGEX.matcher(remoteBuild);
+            Matcher myMatcher = LiteLoaderUpdateSite.SNAPSHOT_REGEX.matcher(myBuild);
+            
+            if (remoteMatcher.matches() && myMatcher.matches())
+            {
+                this.currentBuild = Integer.parseInt(myMatcher.group(4));
+                this.availableBuild = Integer.parseInt(remoteMatcher.group(4));
+                this.snapshotDate = String.format("%1$tY-%1$tm-%1$td %1$tH:%1$tM", new Date(remoteTimeStamp * 1000L));
+                return this.availableBuild > this.currentBuild;
+            }
+        }
+        
+        return super.compareArtefact(artefact, bestTimeStamp, remoteTimeStamp);
     }
 
     public boolean canForceUpdate(LoaderProperties properties)

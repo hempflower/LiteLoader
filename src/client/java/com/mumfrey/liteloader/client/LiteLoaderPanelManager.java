@@ -9,6 +9,7 @@ import org.lwjgl.input.Keyboard;
 
 import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
 import com.mumfrey.liteloader.common.GameEngine;
+import com.mumfrey.liteloader.core.LiteLoader;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.core.LiteLoaderUpdateSite;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
@@ -32,6 +33,13 @@ import net.minecraft.client.resources.I18n;
  */
 public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
 {
+    /**
+     * Number of launches required before an update check is forced when the
+     * "force update check" option is enabled. For snapshot versions this is
+     * ignored and an update check is always performed.
+     */
+    private static final int UPDATE_CHECK_INTERVAL = 10;
+
     private final LoaderEnvironment environment;
 
     /**
@@ -87,14 +95,14 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
         this.displayModInfoScreenTab = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_MOD_INFO_SCREEN, true);
         this.tabAlwaysExpanded = this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_NO_HIDE_TAB, false);
 
-        if (this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE, false))
+        if (this.shouldCheckForUpdates())
         {
             int updateCheckInterval = this.properties.getIntegerProperty(LoaderProperties.OPTION_UPDATE_CHECK_INTR) + 1;
-            LiteLoaderLogger.debug("Force update is TRUE, updateCheckInterval = %d", updateCheckInterval);
+            LiteLoaderLogger.debug("Regular update check enabled, updateCheckInterval = %d", updateCheckInterval);
 
-            if (updateCheckInterval > 10)
+            if (LiteLoader.isSnapshot() || updateCheckInterval > LiteLoaderPanelManager.UPDATE_CHECK_INTERVAL)
             {
-                LiteLoaderLogger.debug("Forcing update check!");
+                LiteLoaderLogger.debug("Checking for updates...");
                 this.checkForUpdate = true;
                 updateCheckInterval = 0;
             }
@@ -102,6 +110,16 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
             this.properties.setIntegerProperty(LoaderProperties.OPTION_UPDATE_CHECK_INTR, updateCheckInterval);
             this.properties.writeProperties();
         }
+    }
+
+    private boolean shouldCheckForUpdates()
+    {
+        if (LiteLoader.isSnapshot() && this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_CHECK_SNAPSHOTS, true))
+        {
+            return true;
+        }
+        
+        return this.properties.getAndStoreBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE, false);
     }
 
     @Override
@@ -141,7 +159,8 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
                 this.checkForUpdate = false;
                 if (updateSite.isCheckSucceess() && updateSite.isUpdateAvailable())
                 {
-                    this.setNotification(I18n.format("gui.notifications.updateavailable"));
+                    this.setNotification(I18n.format("gui.notifications." + (LiteLoader.isSnapshot() ? "newsnapshotavailable" : "updateavailable"), 
+                        updateSite.getAvailableVersion(), updateSite.getAvailableVersionDate()));
                 }
             }
         }
@@ -250,6 +269,19 @@ public class LiteLoaderPanelManager implements PanelManager<GuiScreen>
     public boolean isForceUpdateEnabled()
     {
         return this.properties.getBooleanProperty(LoaderProperties.OPTION_FORCE_UPDATE);
+    }
+    
+    @Override
+    public void setCheckForSnapshotsEnabled(boolean checkForSnapshots)
+    {
+        this.properties.setBooleanProperty(LoaderProperties.OPTION_CHECK_SNAPSHOTS, checkForSnapshots);
+        this.properties.writeProperties();
+    }
+    
+    @Override
+    public boolean isCheckForSnapshotsEnabled()
+    {
+        return this.properties.getBooleanProperty(LoaderProperties.OPTION_CHECK_SNAPSHOTS);
     }
 
     /**
