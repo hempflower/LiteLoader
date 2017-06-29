@@ -5,6 +5,7 @@
  */
 package com.mumfrey.liteloader.core.runtime;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -157,125 +158,7 @@ public final class Packets extends Obf
 
     // CHECKSTYLE:ON
 
-    public static final Packets[] packets = new Packets[] {
-            CPacketEncryptionResponse,
-            CPacketLoginStart,
-            SPacketDisconnectLogin,
-            SPacketEnableCompression,
-            SPacketEncryptionRequest,
-            SPacketLoginSuccess,
-            CPacketAnimation,
-            CPacketChatMessage,
-            CPacketClickWindow,
-            CPacketClientSettings,
-            CPacketClientStatus,
-            CPacketCloseWindow,
-            CPacketConfirmTeleport,
-            CPacketConfirmTransaction,
-            CPacketCreativeInventoryAction,
-            CPacketCustomPayload,
-            CPacketEnchantItem,
-            CPacketEntityAction,
-            CPacketHeldItemChange,
-            CPacketInput,
-            C00Handshake,
-            CPacketKeepAlive,
-            CPacketPlayer,
-            CPacketPlayerPosition,
-            CPacketPlayerPositionRotation,
-            CPacketPlayerRotation,
-            CPacketPlayerAbilities,
-            CPacketPlayerDigging,
-            CPacketPlayerTryUseItem,
-            CPacketPlayerTryUseItemOnBlock,
-            CPacketResourcePackStatus,
-            CPacketSpectate,
-            CPacketSteerBoat,
-            CPacketTabComplete,
-            CPacketUpdateSign,
-            CPacketUseEntity,
-            CPacketVehicleMove,
-            SPacketAnimation,
-            SPacketBlockAction,
-            SPacketBlockBreakAnim,
-            SPacketBlockChange,
-            SPacketCamera,
-            SPacketChangeGameState,
-            SPacketChat,
-            SPacketChunkData,
-            SPacketCloseWindow,
-            SPacketCollectItem,
-            SPacketCombatEvent,
-            SPacketConfirmTransaction,
-            SPacketCooldown,
-            SPacketCustomPayload,
-            SPacketCustomSound,
-            SPacketDestroyEntities,
-            SPacketDisconnect,
-            SPacketDisplayObjective,
-            SPacketEffect,
-            SPacketEntity,
-            S15PacketEntityRelMove,
-            S16PacketEntityLook,
-            S17PacketEntityLookMove,
-            SPacketEntityAttach,
-            SPacketEntityEffect,
-            SPacketEntityEquipment,
-            SPacketEntityHeadLook,
-            SPacketEntityMetadata,
-            SPacketEntityProperties,
-            SPacketEntityStatus,
-            SPacketEntityTeleport,
-            SPacketEntityVelocity,
-            SPacketExplosion,
-            SPacketHeldItemChange,
-            SPacketJoinGame,
-            SPacketKeepAlive,
-            SPacketMaps,
-            SPacketMoveVehicle,
-            SPacketMultiBlockChange,
-            SPacketOpenWindow,
-            SPacketParticles,
-            SPacketPlayerAbilities,
-            SPacketPlayerListHeaderFooter,
-            SPacketPlayerListItem,
-            SPacketPlayerPosLook,
-            SPacketRemoveEntityEffect,
-            SPacketResourcePackSend,
-            SPacketRespawn,
-            SPacketScoreboardObjective,
-            SPacketServerDifficulty,
-            SPacketSetExperience,
-            SPacketSetPassengers,
-            SPacketSetSlot,
-            SPacketSignEditorOpen,
-            SPacketSoundEffect,
-            SPacketSpawnExperienceOrb,
-            SPacketSpawnGlobalEntity,
-            SPacketSpawnMob,
-            SPacketSpawnObject,
-            SPacketSpawnPainting,
-            SPacketSpawnPlayer,
-            SPacketSpawnPosition,
-            SPacketStatistics,
-            SPacketTabComplete,
-            SPacketTeams,
-            SPacketTimeUpdate,
-            SPacketTitle,
-            SPacketUnloadChunk,
-            SPacketUpdateBossInfo,
-            SPacketUpdateHealth,
-            SPacketUpdateScore,
-            SPacketUpdateTileEntity,
-            SPacketUseBed,
-            SPacketWindowItems,
-            SPacketWindowProperty,
-            SPacketWorldBorder,
-            CPacketPing,
-            CPacketServerQuery,
-            SPacketPong,
-            SPacketServerInfo
-    };
+    public static final Packets[] packets = Packets.toArray();
 
     private static int nextPacketIndex;
 
@@ -293,6 +176,24 @@ public final class Packets extends Obf
         this.index = Packets.nextPacketIndex++;
         Packets.packetMap.put(this.shortName, this);
         this.context = context;
+    }
+
+    private static Packets[] toArray()
+    {
+        Field[] fields = Packets.class.getFields();
+        Packets[] packets = new Packets[Packets.nextPacketIndex];
+        for (int index = 0; index < Packets.nextPacketIndex; index++)
+        {
+            try
+            {
+                packets[index] = (Packets)fields[index].get(null);
+            }
+            catch (Exception ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        return packets;
     }
 
     public int getIndex()

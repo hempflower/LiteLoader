@@ -36,7 +36,7 @@ public abstract class MixinMinecraft implements IMinecraft
     @Shadow private String serverName;
     @Shadow private int serverPort;
     @Shadow private boolean isGamePaused;
-    @Shadow private float field_193996_ah;
+    @Shadow private float renderPartialTicksPaused;
     
     @Shadow abstract void resize(int width, int height);
     @Shadow private void clickMouse() {}
@@ -82,7 +82,7 @@ public abstract class MixinMinecraft implements IMinecraft
     private void onTick(CallbackInfo ci)
     {
         boolean clock = this.timer.elapsedTicks > 0;
-        float partialTicks = this.isGamePaused ? this.field_193996_ah : this.timer.field_194147_b;
+        float partialTicks = this.isGamePaused ? this.renderPartialTicksPaused : this.timer.renderPartialTicks;
         this.broker.onTick(clock, partialTicks);
     }
     
