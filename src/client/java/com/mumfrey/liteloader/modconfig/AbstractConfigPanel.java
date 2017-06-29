@@ -75,7 +75,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
             
             if (this.control != null)
             {
-                this.control.func_191745_a(minecraft, mouseX, mouseY, partialTicks); // drawButton
+                this.control.drawButton(minecraft, mouseX, mouseY, partialTicks);
             }
         }
 

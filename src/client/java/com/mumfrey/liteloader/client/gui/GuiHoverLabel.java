@@ -37,7 +37,7 @@ public class GuiHoverLabel extends GuiButton
     }
 
     @Override
-    public void func_191745_a(Minecraft minecraft, int mouseX, int mouseY, float partialTicks) // drawButton
+    public void drawButton(Minecraft minecraft, int mouseX, int mouseY, float partialTicks)
     {
         if (this.visible)
         {

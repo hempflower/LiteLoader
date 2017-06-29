@@ -106,7 +106,7 @@ public abstract class GuiPanel extends Gui
     {
         for (GuiButton control : this.controls)
         {
-            control.func_191745_a(this.mc, mouseX, mouseY, partialTicks); // drawButton
+            control.drawButton(this.mc, mouseX, mouseY, partialTicks);
         }
     }
 

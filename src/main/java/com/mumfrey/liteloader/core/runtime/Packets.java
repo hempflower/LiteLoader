@@ -5,6 +5,7 @@
  */
 package com.mumfrey.liteloader.core.runtime;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -163,131 +164,7 @@ public final class Packets extends Obf
 
     // CHECKSTYLE:ON
 
-    public static final Packets[] packets = new Packets[] {
-        Packets.CPacketEncryptionResponse,
-        Packets.CPacketLoginStart,
-        Packets.SPacketDisconnectLogin,
-        Packets.SPacketEnableCompression,
-        Packets.SPacketEncryptionRequest,
-        Packets.SPacketLoginSuccess,
-        Packets.CPacketAnimation,
-        Packets.CPacketChatMessage,
-        Packets.CPacketClickWindow,
-        Packets.CPacketClientSettings,
-        Packets.CPacketClientStatus,
-        Packets.CPacketCloseWindow,
-        Packets.CPacketConfirmTeleport,
-        Packets.CPacketConfirmTransaction,
-        Packets.CPacketCreativeInventoryAction,
-        Packets.CPacketCustomPayload,
-        Packets.CPacketEnchantItem,
-        Packets.CPacketEntityAction,
-        Packets.CPacketHeldItemChange,
-        Packets.CPacketInput,
-        Packets.C00Handshake,
-        Packets.CPacketKeepAlive,
-        Packets.CPacketPlayer,
-        Packets.CPacketPlayerPosition,
-        Packets.CPacketPlayerPositionRotation,
-        Packets.CPacketPlayerRotation,
-        Packets.CPacketPlayerAbilities,
-        Packets.CPacketPlayerDigging,
-        Packets.CPacketPlayerTryUseItem,
-        Packets.CPacketPlayerTryUseItemOnBlock,
-        Packets.CPacketResourcePackStatus,
-        Packets.CPacketSpectate,
-        Packets.CPacketSteerBoat,
-        Packets.CPacketTabComplete,
-        Packets.CPacketUpdateSign,
-        Packets.CPacketUseEntity,
-        Packets.CPacketVehicleMove,
-        Packets.SPacketAnimation,
-        Packets.SPacketBlockAction,
-        Packets.SPacketBlockBreakAnim,
-        Packets.SPacketBlockChange,
-        Packets.SPacketCamera,
-        Packets.SPacketChangeGameState,
-        Packets.SPacketChat,
-        Packets.SPacketChunkData,
-        Packets.SPacketCloseWindow,
-        Packets.SPacketCollectItem,
-        Packets.SPacketCombatEvent,
-        Packets.SPacketConfirmTransaction,
-        Packets.SPacketCooldown,
-        Packets.SPacketCustomPayload,
-        Packets.SPacketCustomSound,
-        Packets.SPacketDestroyEntities,
-        Packets.SPacketDisconnect,
-        Packets.SPacketDisplayObjective,
-        Packets.SPacketEffect,
-        Packets.SPacketEntity,
-        Packets.S15PacketEntityRelMove,
-        Packets.S16PacketEntityLook,
-        Packets.S17PacketEntityLookMove,
-        Packets.SPacketEntityAttach,
-        Packets.SPacketEntityEffect,
-        Packets.SPacketEntityEquipment,
-        Packets.SPacketEntityHeadLook,
-        Packets.SPacketEntityMetadata,
-        Packets.SPacketEntityProperties,
-        Packets.SPacketEntityStatus,
-        Packets.SPacketEntityTeleport,
-        Packets.SPacketEntityVelocity,
-        Packets.SPacketExplosion,
-        Packets.SPacketHeldItemChange,
-        Packets.SPacketJoinGame,
-        Packets.SPacketKeepAlive,
-        Packets.SPacketMaps,
-        Packets.SPacketMoveVehicle,
-        Packets.SPacketMultiBlockChange,
-        Packets.SPacketOpenWindow,
-        Packets.SPacketParticles,
-        Packets.SPacketPlayerAbilities,
-        Packets.SPacketPlayerListHeaderFooter,
-        Packets.SPacketPlayerListItem,
-        Packets.SPacketPlayerPosLook,
-        Packets.SPacketRemoveEntityEffect,
-        Packets.SPacketResourcePackSend,
-        Packets.SPacketRespawn,
-        Packets.SPacketScoreboardObjective,
-        Packets.SPacketServerDifficulty,
-        Packets.SPacketSetExperience,
-        Packets.SPacketSetPassengers,
-        Packets.SPacketSetSlot,
-        Packets.SPacketSignEditorOpen,
-        Packets.SPacketSoundEffect,
-        Packets.SPacketSpawnExperienceOrb,
-        Packets.SPacketSpawnGlobalEntity,
-        Packets.SPacketSpawnMob,
-        Packets.SPacketSpawnObject,
-        Packets.SPacketSpawnPainting,
-        Packets.SPacketSpawnPlayer,
-        Packets.SPacketSpawnPosition,
-        Packets.SPacketStatistics,
-        Packets.SPacketTabComplete,
-        Packets.SPacketTeams,
-        Packets.SPacketTimeUpdate,
-        Packets.SPacketTitle,
-        Packets.SPacketUnloadChunk,
-        Packets.SPacketUpdateBossInfo,
-        Packets.SPacketUpdateHealth,
-        Packets.SPacketUpdateScore,
-        Packets.SPacketUpdateTileEntity,
-        Packets.SPacketUseBed,
-        Packets.SPacketWindowItems,
-        Packets.SPacketWindowProperty,
-        Packets.SPacketWorldBorder,
-        Packets.CPacketPing,
-        Packets.CPacketServerQuery,
-        Packets.SPacketPong,
-        Packets.SPacketServerInfo,
-        Packets.CPacketRecipeInfo,
-        Packets.CPacketRecipePlacement,
-        Packets.CPacketSeenAdvancements,
-        Packets.SPacketAdvancementInfo,
-        Packets.SPacketRecipeBook,
-        Packets.SPacketSelectAdvancementsTab
-    };
+    public static final Packets[] packets = Packets.toArray();
 
     private static int nextPacketIndex;
 
@@ -305,6 +182,24 @@ public final class Packets extends Obf
         this.index = Packets.nextPacketIndex++;
         Packets.packetMap.put(this.shortName, this);
         this.context = context;
+    }
+
+    private static Packets[] toArray()
+    {
+        Field[] fields = Packets.class.getFields();
+        Packets[] packets = new Packets[Packets.nextPacketIndex];
+        for (int index = 0; index < Packets.nextPacketIndex; index++)
+        {
+            try
+            {
+                packets[index] = (Packets)fields[index].get(null);
+            }
+            catch (Exception ex)
+            {
+                throw new RuntimeException(ex);
+            }
+        }
+        return packets;
     }
 
     public int getIndex()
