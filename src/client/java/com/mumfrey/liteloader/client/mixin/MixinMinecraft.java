@@ -19,7 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import com.mumfrey.liteloader.PlayerInteractionListener.MouseButton;
 import com.mumfrey.liteloader.client.LiteLoaderEventBrokerClient;
 import com.mumfrey.liteloader.client.ducks.IFramebuffer;
+import com.mumfrey.liteloader.client.gui.startup.LoadingBar;
 import com.mumfrey.liteloader.client.overlays.IMinecraft;
+import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -44,6 +46,25 @@ public abstract class MixinMinecraft implements IMinecraft
     @Shadow private void middleClickMouse() {}
     
     private LiteLoaderEventBrokerClient broker;
+    
+    @Inject(method = "init()V", at = @At(value = "NEW", target = "net/minecraft/client/renderer/EntityRenderer"))
+    private void init(CallbackInfo ci)
+    {
+        LiteLoaderTweaker.init();
+        LiteLoaderTweaker.postInit();
+    }
+    
+    @Inject(method = "init()V", at = @At(value = "NEW", target = "net/minecraft/client/renderer/texture/TextureMap"))
+    private void initTextures(CallbackInfo ci)
+    {
+        LoadingBar.initTextures();
+    }
+    
+    @Inject(method = "init()V", at = @At("INVOKE"))
+    private void progress(CallbackInfo ci)
+    {
+        LoadingBar.incrementProgress();
+    }
     
     @Inject(method = "init()V", at = @At("RETURN"))
     private void onStartupComplete(CallbackInfo ci)
