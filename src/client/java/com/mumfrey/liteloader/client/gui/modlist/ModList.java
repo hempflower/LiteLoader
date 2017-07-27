@@ -76,7 +76,7 @@ public class ModList
         // Disabled mods
         for (ModInfo<?> disabledMod : mods.getDisabledMods())
         {
-            if (environment.getEnabledModsList().getEnabled(environment.getProfile(), disabledMod.getIdentifier()) == Enabled.DISABLED)
+            if (environment.getEnabledModsList().getEnabled(environment.getProfile(), disabledMod.getIdentifier()) != Enabled.FILTERED)
             {
                 ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, disabledMod);
             sortedMods.put(modListEntry.getKey(), modListEntry);

@@ -17,6 +17,7 @@ import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.mumfrey.liteloader.Configurable;
 import com.mumfrey.liteloader.LiteMod;
+import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
  * Registry where we keep the mod config panel classes and config file writers
@@ -165,6 +166,10 @@ public class ConfigManager
             }
             catch (InstantiationException ex) {}
             catch (IllegalAccessException ex) {}
+            catch (Exception ex)
+            {
+                LiteLoaderLogger.severe("Error creating mod configuration panel <%s> for mod %s", this.configPanels.get(modClass), modClass);
+            }
 
             // If instantiation fails, remove the panel
             this.configPanels.remove(modClass);

@@ -86,6 +86,7 @@ gui.log.uploadsuccess=Upload succeeded, log available at
 gui.log.closedialog=Close
 
 gui.error.title=Startup errors for %s
+gui.error.copytoclipboard=Copy error to clipboard
 
 gui.error.tooltip=%d mod startup error(s) detected (%d critical)
 
