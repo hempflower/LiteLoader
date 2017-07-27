@@ -1,6 +1,6 @@
 {
     "required": true,
-    "minVersion": "0.6.8",
+    "minVersion": "0.7",
     "compatibilityLevel": "JAVA_8",
     "target": "@env(DEFAULT)",
     "package": "com.mumfrey.liteloader.common.mixin",
