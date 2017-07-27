@@ -12,10 +12,12 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
+import com.google.common.base.Joiner;
 import com.mumfrey.liteloader.core.ModInfo;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
 public class GuiPanelError extends GuiPanel implements ScrollPanelContent
@@ -98,6 +100,7 @@ public class GuiPanelError extends GuiPanel implements ScrollPanelContent
 
         this.scrollPane.setSizeAndPosition(MARGIN, TOP, this.width - (MARGIN * 2), this.height - TOP - BOTTOM);
         this.controls.add(new GuiButton(0, this.width - 59 - MARGIN, this.height - BOTTOM + 9, 60, 20, I18n.format("gui.done")));
+        this.controls.add(new GuiButton(1, this.width - 204 - MARGIN, this.height - BOTTOM + 9, 140, 20, I18n.format("gui.error.copytoclipboard")));
     }
 
     @Override
@@ -131,7 +134,10 @@ public class GuiPanelError extends GuiPanel implements ScrollPanelContent
     @Override
     void keyPressed(char keyChar, int keyCode)
     {
-        if (keyCode == Keyboard.KEY_ESCAPE) this.close();
+        if (keyCode == Keyboard.KEY_ESCAPE)
+        {
+            this.close();
+        }
     }
 
     @Override
@@ -161,6 +167,14 @@ public class GuiPanelError extends GuiPanel implements ScrollPanelContent
     @Override
     void actionPerformed(GuiButton control)
     {
-        if (control.id == 0) this.close();
+        if (control.id == 0)
+        {
+            this.close();
+        }
+        
+        if (control.id == 1)
+        {
+            GuiScreen.setClipboardString(Joiner.on('\n').join(this.scrollPaneContent));
+        }
     }
 }
