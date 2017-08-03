@@ -92,3 +92,5 @@ gui.error.tooltip=%d mod startup error(s) detected (%d critical)
 
 gui.notifications.updateavailable=LiteLoader Update Available!
 gui.notifications.newsnapshotavailable=!!New Snapshot Available:%nBuild #%s (%s)
+
+gui.invalidvalue=§cInvalid value!
