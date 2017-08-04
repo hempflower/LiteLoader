@@ -51,12 +51,13 @@ public enum LiteLoaderVersion
     MC_1_10_2_R0(38, 1479473570, "1.10.2", "1.10.2",    "1.10.2", "1.10.r1"),
     MC_1_11_0_R0(39, 0,          "1.11",   "1.11",      "1.11", "1.11.0", "1.11.r1"),
     MC_1_11_2_R0(40, 0,          "1.11.2", "1.11.2",    "1.11.2", "1.11.r2"),
-    MC_1_12_0_R0(41, 0,          "1.12",   "1.12",      "1.12", "1.12.0", "1.12.r1");
+    MC_1_12_0_R0(41, 0,          "1.12",   "1.12",      "1.12", "1.12.0", "1.12.r1"),
+    MC_1_12_1_R0(41, 0,          "1.12.1", "1.12.1",    "1.12.1", "1.12.r2");
 
     /**
      * Current loader version
      */
-    public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_12_0_R0;
+    public static final LiteLoaderVersion CURRENT = LiteLoaderVersion.MC_1_12_1_R0;
 
     private static final LiteLoaderUpdateSite updateSite = new LiteLoaderUpdateSite(LiteLoaderVersion.CURRENT.getMinecraftVersion(),
                                                                                     LiteLoaderVersion.CURRENT.getReleaseTimestamp());
