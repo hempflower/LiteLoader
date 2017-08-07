@@ -15,6 +15,7 @@ import org.lwjgl.input.Keyboard;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.api.ModInfoDecorator;
 import com.mumfrey.liteloader.client.gui.GuiLiteLoaderPanel;
+import com.mumfrey.liteloader.core.EnabledModsList.Enabled;
 import com.mumfrey.liteloader.core.LiteLoaderMods;
 import com.mumfrey.liteloader.core.ModInfo;
 import com.mumfrey.liteloader.interfaces.Loadable;
@@ -75,8 +76,11 @@ public class ModList
         // Disabled mods
         for (ModInfo<?> disabledMod : mods.getDisabledMods())
         {
-            ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, disabledMod);
+            if (environment.getEnabledModsList().getEnabled(environment.getProfile(), disabledMod.getIdentifier()) != Enabled.FILTERED)
+            {
+                ModListEntry modListEntry = new ModListEntry(this, mods, environment, minecraft.fontRendererObj, brandColour, decorators, disabledMod);
             sortedMods.put(modListEntry.getKey(), modListEntry);
+        }
         }
 
         // Show bad containers if no other containers are found, should help users realise they have the wrong mod version!

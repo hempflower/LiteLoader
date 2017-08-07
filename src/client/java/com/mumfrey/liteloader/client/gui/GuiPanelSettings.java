@@ -17,25 +17,29 @@ import net.minecraft.client.resources.I18n;
 
 class GuiPanelSettings extends GuiPanel
 {
-    private GuiLiteLoaderPanel parentScreen;
+    private final GuiLiteLoaderPanel parentScreen;
+    
+    private final boolean isSnapshot;
 
-    private GuiCheckbox chkShowTab, chkNoHide, chkForceUpdate;
+    private GuiCheckbox chkShowTab, chkNoHide, chkForceUpdate, chkCheckForSnapshots;
 
     private boolean hide;
 
     private String[] helpText = new String[5];
-
+    
     GuiPanelSettings(GuiLiteLoaderPanel parentScreen, Minecraft minecraft)
     {
         super(minecraft);
 
         this.parentScreen = parentScreen;
+        this.isSnapshot = LiteLoader.isSnapshot();
 
+        String helpKey = this.isSnapshot ? "checkforsnapshots" : "forceupdate"; 
         this.helpText[0] = I18n.format("gui.settings.showtab.help1");
         this.helpText[1] = I18n.format("gui.settings.showtab.help2");
         this.helpText[2] = I18n.format("gui.settings.notabhide.help1");
-        this.helpText[3] = I18n.format("gui.settings.forceupdate.help1");
-        this.helpText[4] = I18n.format("gui.settings.forceupdate.help2");
+        this.helpText[3] = I18n.format("gui.settings." + helpKey + ".help1");
+        this.helpText[4] = I18n.format("gui.settings." + helpKey + ".help2");
     }
 
     @Override
@@ -61,6 +65,10 @@ class GuiPanelSettings extends GuiPanel
         this.controls.add(this.chkShowTab = new GuiCheckbox(0, 34, 90, I18n.format("gui.settings.showtab.label")));
         this.controls.add(this.chkNoHide = new GuiCheckbox(1, 34, 128, I18n.format("gui.settings.notabhide.label")));
         this.controls.add(this.chkForceUpdate = new GuiCheckbox(2, 34, 158, I18n.format("gui.settings.forceupdate.label")));
+        this.controls.add(this.chkCheckForSnapshots = new GuiCheckbox(2, 34, 158, I18n.format("gui.settings.checkforsnapshots.label")));
+        
+        this.chkForceUpdate.visible = !this.isSnapshot;
+        this.chkCheckForSnapshots.visible = this.isSnapshot;
 
         this.updateCheckBoxes();
     }
@@ -72,6 +80,7 @@ class GuiPanelSettings extends GuiPanel
         this.chkShowTab.checked = panelManager.isTabVisible();
         this.chkNoHide.checked = panelManager.isTabAlwaysExpanded();
         this.chkForceUpdate.checked = panelManager.isForceUpdateEnabled();
+        this.chkCheckForSnapshots.checked = panelManager.isCheckForSnapshotsEnabled();
     }
 
     private void updateSettings()
@@ -81,6 +90,7 @@ class GuiPanelSettings extends GuiPanel
         panelManager.setTabVisible(this.chkShowTab.checked);
         panelManager.setTabAlwaysExpanded(this.chkNoHide.checked);
         panelManager.setForceUpdateEnabled(this.chkForceUpdate.checked);
+        panelManager.setCheckForSnapshotsEnabled(this.chkCheckForSnapshots.checked);
     }
 
     @Override

@@ -1,6 +1,7 @@
 {
     "required": true,
-    "minVersion": "0.5.3",
+    "minVersion": "0.7",
+    "compatibilityLevel": "JAVA_8",
     "target": "@env(DEFAULT)",
     "package": "com.mumfrey.liteloader.common.mixin",
     "refmap": "mixins.liteloader.core.refmap.json",

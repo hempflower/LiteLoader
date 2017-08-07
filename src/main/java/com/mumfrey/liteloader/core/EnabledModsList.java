@@ -24,6 +24,34 @@ import com.google.gson.GsonBuilder;
  */
 public final class EnabledModsList
 {
+    /**
+     * Tristate for enablement which allows us to determine whether mod is
+     * forcibly disabled by user or passively disabled by mod name filter
+     */
+    public enum Enabled
+    {
+        ENABLED(true),
+        DISABLED(false),
+        FILTERED(false);
+        
+        private final boolean value;
+
+        private Enabled(boolean value)
+        {
+            this.value = value;
+        }
+        
+        public boolean booleanValue()
+        {
+            return this.value;
+        }
+        
+        public static Enabled of(Boolean value)
+        {
+            return value == null ? Enabled.FILTERED : (value ? Enabled.ENABLED : Enabled.DISABLED);
+        }
+    }
+    
     @SuppressWarnings("unused")
     private static final transient long serialVersionUID = -6449451105617763769L;
 
@@ -45,7 +73,7 @@ public final class EnabledModsList
      * the mods list because the command line is supposed to be an override
      * rather than a new mask. These two values provide this behaviour. 
      */
-    private transient Boolean defaultEnabledValue = Boolean.TRUE;
+    private transient Enabled defaultEnabledValue = Enabled.ENABLED;
     private transient boolean allowSave = true;
 
     /**
@@ -59,22 +87,27 @@ public final class EnabledModsList
     }
 
     /**
-     * Check whether a particular mod is enabled
+     * Check whether a particular container is enabled
      * 
      * @param profileName
      * @param identifier
      */
     public boolean isEnabled(String profileName, String identifier)
     {
+        return this.getEnabled(profileName, identifier).booleanValue();
+    }
+    
+    public Enabled getEnabled(String profileName, String identifier)
+    {
         Map<String, Boolean> profile = this.getProfile(profileName);
         identifier = identifier.toLowerCase().trim();
 
-        if (!profile.containsKey(identifier))
+        if (!profile.containsKey(identifier) && this.defaultEnabledValue != Enabled.FILTERED)
         {
-            profile.put(identifier, this.defaultEnabledValue);
+            profile.put(identifier, this.defaultEnabledValue.booleanValue());
         }
 
-        return profile.get(identifier);
+        return Enabled.of(profile.get(identifier));
     }
 
     /**
@@ -87,7 +120,7 @@ public final class EnabledModsList
     public void setEnabled(String profileName, String identifier, boolean enabled)
     {
         Map<String, Boolean> profile = this.getProfile(profileName);
-        profile.put(identifier.toLowerCase().trim(), Boolean.valueOf(enabled));
+        profile.put(identifier.toLowerCase().trim(), enabled ? Boolean.TRUE : Boolean.FALSE);
 
         this.allowSave = true;
     }
@@ -106,12 +139,9 @@ public final class EnabledModsList
         {
             if (modNameFilter != null)
             {
-                for (String modName : profile.keySet())
-                {
-                    profile.put(modName, Boolean.FALSE);
-                }
+                profile.clear();
 
-                this.defaultEnabledValue = Boolean.FALSE;
+                this.defaultEnabledValue = Enabled.FILTERED;
                 this.allowSave = false;
 
                 for (String filterEntry : modNameFilter)
@@ -122,8 +152,8 @@ public final class EnabledModsList
         }
         catch (Exception ex)
         {
-            this.defaultEnabledValue = Boolean.TRUE;
-            this.allowSave = true;
+            this.defaultEnabledValue = Enabled.ENABLED;
+//            this.allowSave = true;
         }
     }
 
@@ -135,7 +165,7 @@ public final class EnabledModsList
     private Map<String, Boolean> getProfile(String profileName)
     {
         if (profileName == null) profileName = "default";
-        if (this.mods == null) this.mods = new TreeMap<String, TreeMap<String,Boolean>>();
+        if (this.mods == null) this.mods = new TreeMap<String, TreeMap<String, Boolean>>();
 
         if (!this.mods.containsKey(profileName))
         {

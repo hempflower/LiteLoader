@@ -60,8 +60,8 @@ archivesBaseName = "liteloader"
 version = buildVersion + (project.isReleaseBuild ? '' : '-' + project.classifier)
 
 // Minimum version of Java required
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
 repositories {
     mavenLocal()
@@ -72,7 +72,7 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.6.8-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.7.1-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
@@ -89,11 +89,11 @@ minecraft {
 
 sourceSets {
     main {
-        refMap = "mixins.liteloader.core.refmap.json"
+        ext.refMap = "mixins.liteloader.core.refmap.json"
     }
     client {
         compileClasspath += main.compileClasspath + main.output
-        refMap = "mixins.liteloader.client.refmap.json"
+        ext.refMap = "mixins.liteloader.client.refmap.json"
     }
     debug {
         compileClasspath += client.compileClasspath + client.output
@@ -123,7 +123,7 @@ javadoc {
 afterEvaluate {
     logger.lifecycle '================================================='
     logger.lifecycle '  LiteLoader'
-    logger.lifecycle '  Copyright (C) 2011-2016 Adam Mummery-Smith'
+    logger.lifecycle '  Copyright (C) 2011-2017 Adam Mummery-Smith'
     logger.lifecycle '  Running in {} mode', (project.isReleaseBuild ? "RELEASE" : "SNAPSHOT")
     logger.lifecycle '================================================='
     

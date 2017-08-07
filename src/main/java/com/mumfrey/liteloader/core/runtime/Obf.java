@@ -26,14 +26,11 @@ public class Obf
     public static final Obf    BakedProfilingHandlerList = new Obf("com.mumfrey.liteloader.core.event.ProfilingHandlerList$BakedList"  );
     public static final Obf                 PacketEvents = new Obf("com.mumfrey.liteloader.core.PacketEvents"                          );
     public static final Obf           PacketEventsClient = new Obf("com.mumfrey.liteloader.client.PacketEventsClient"                  );
-    public static final Obf                   LoadingBar = new Obf("com.mumfrey.liteloader.client.gui.startup.LoadingBar"              );
     public static final Obf                  GameProfile = new Obf("com.mojang.authlib.GameProfile"                                    );
     public static final Obf                MinecraftMain = new Obf("net.minecraft.client.main.Main"                                    );
     public static final Obf              MinecraftServer = new Obf("net.minecraft.server.MinecraftServer"                              );
     public static final Obf                         GL11 = new Obf("org.lwjgl.opengl.GL11"                                             );
     public static final Obf             RealmsMainScreen = new Obf("com.mojang.realmsclient.RealmsMainScreen"                          );
-    public static final Obf                         init = new Obf("init"                                                              );
-    public static final Obf                     postInit = new Obf("postInit"                                                          );
     public static final Obf                  constructor = new Obf("<init>"                                                            );
 
     // CHECKSTYLE:OFF
