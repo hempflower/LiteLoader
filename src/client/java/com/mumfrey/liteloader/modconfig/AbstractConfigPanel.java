@@ -105,7 +105,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
     /**
      * Base for config option handle structs
      */
-    static abstract class ConfigOption
+    abstract static class ConfigOption
     {
         void onTick()
         {
@@ -302,7 +302,7 @@ public abstract class AbstractConfigPanel implements ConfigPanel
         @Override
         public ConfigTextField setRegex(String regex, boolean force)
         {
-            this.textField.setRegex(Pattern.compile(regex), force);;
+            this.textField.setRegex(Pattern.compile(regex), force);
             return this;
         }
 
@@ -342,7 +342,8 @@ public abstract class AbstractConfigPanel implements ConfigPanel
             }
             else
             {
-                this.setValidator((text) -> {
+                this.setValidator((text) ->
+                {
                     this.validate(text);
                     return true;
                 });
