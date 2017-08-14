@@ -47,7 +47,7 @@ public final class PermissionsManagerClient implements PermissionsManager, Plugi
      * Permissions permissible which is a proxy for permissions that are common
      * to all mods.
      */
-    private final static Permissible allMods = new PermissibleAllMods();
+    private static final Permissible allMods = new PermissibleAllMods();
 
     /**
      * List of registered client mods supporting permissions

@@ -69,7 +69,9 @@ public class IsolatedClassWriter extends ClassWriter
         do
         {
             c = c.getSuperclass();
-        } while (!c.isAssignableFrom(d));
+        }
+        while (!c.isAssignableFrom(d));
+        
         return c.getName().replace('.', '/');
     }
 }
