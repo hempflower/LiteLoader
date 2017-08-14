@@ -7,6 +7,7 @@ package com.mumfrey.liteloader.client;
 
 import com.mumfrey.liteloader.client.ducks.IClientNetLoginHandler;
 import com.mumfrey.liteloader.core.ClientPluginChannels;
+import com.mumfrey.liteloader.core.PluginChannels;
 import com.mumfrey.liteloader.core.exceptions.UnregisteredChannelException;
 
 import net.minecraft.client.Minecraft;
@@ -89,7 +90,7 @@ public class ClientPluginChannelsClient extends ClientPluginChannels
     @Override
     protected boolean send(String channel, PacketBuffer data, ChannelPolicy policy)
     {
-        if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
+        if (!PluginChannels.isValidChannelName(channel))
         {
             throw new RuntimeException("Invalid channel name specified"); 
         }

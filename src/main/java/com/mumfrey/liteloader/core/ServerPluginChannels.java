@@ -230,7 +230,7 @@ public class ServerPluginChannels extends PluginChannels<ServerPluginChannelList
     {
         if (recipient == null) return false;
 
-        if (channel == null || channel.length() > 16 || CHANNEL_REGISTER.equals(channel) || CHANNEL_UNREGISTER.equals(channel))
+        if (!PluginChannels.isValidChannelName(channel))
         {
             throw new RuntimeException("Invalid channel name specified"); 
         }
