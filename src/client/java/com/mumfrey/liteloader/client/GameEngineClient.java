@@ -204,7 +204,8 @@ public class GameEngineClient implements GameEngine<Minecraft, IntegratedServer>
         int index = GameEngineClient.CATEGORY_SORT_INDEX_START;
         for (Integer value : categorySort.values())
         {
-            if (value.intValue() >= index) {
+            if (value.intValue() >= index)
+            {
                 index = value.intValue() + 1;
             }
         }
