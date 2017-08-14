@@ -32,6 +32,12 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
     // reserved channel consts
     protected static final String CHANNEL_REGISTER = "REGISTER";
     protected static final String CHANNEL_UNREGISTER = "UNREGISTER";
+    
+    /**
+     * Maximum allowable length of a channel name, previously 16 but increased
+     * to 20 at some point. 
+     */
+    private static final int MAX_CHANNEL_NAME_LENGTH = 20;
 
     /**
      * Number of faults for a specific listener before a warning is generated
@@ -180,7 +186,7 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
         {
             for (String channel : channels)
             {
-                if (channel.length() > 16 || channel.toUpperCase().equals(CHANNEL_REGISTER) || channel.toUpperCase().equals(CHANNEL_UNREGISTER))
+                if (!PluginChannels.isValidChannelName(channel))
                 {
                     continue;
                 }
@@ -193,6 +199,23 @@ public abstract class PluginChannels<L extends CommonPluginChannelListener> impl
                 this.pluginChannels.get(channel).add(pluginChannelListener);
             }
         }
+    }
+    
+    /**
+     * Check whether the supplied channel name is valid. Valid channel names
+     * must be between 1 and 20 characters long, and must not use the reserved
+     * channel names <tt>REGISTER</tt> and <tt>UNREGISTER</tt> 
+     * 
+     * @param channel channel name to validate
+     * @return true if the channel name is valid
+     */
+    public static boolean isValidChannelName(String channel)
+    {
+        return channel != null
+                && channel.length() > 0
+                && channel.length() <= PluginChannels.MAX_CHANNEL_NAME_LENGTH
+                && !channel.toUpperCase().equals(PluginChannels.CHANNEL_REGISTER)
+                && !channel.toUpperCase().equals(PluginChannels.CHANNEL_UNREGISTER);
     }
 
     /**
