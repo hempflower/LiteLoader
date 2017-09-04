@@ -41,7 +41,8 @@ public class LiteLoaderTweaker implements ITweaker
     // TODO Version - 1.12
     public static final String VERSION = "1.12.0";
 
-    protected static final String bootstrapClassName = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
+    protected static final String BOOTSTRAP_CLASS = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
+    private static final String CLIENT_API = "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient";
 
     /**
      * Loader startup state
@@ -323,7 +324,7 @@ public class LiteLoaderTweaker implements ITweaker
         {
             this.initEnvironment(args, gameDirectory, assetsDirectory, profile);
 
-            this.bootstrap = this.spawnBootstrap(LiteLoaderTweaker.bootstrapClassName, Launch.classLoader);
+            this.bootstrap = this.spawnBootstrap(LiteLoaderTweaker.BOOTSTRAP_CLASS, Launch.classLoader);
 
             this.transformerManager = new ClassTransformerManager(this.bootstrap.getRequiredTransformers());
 
@@ -347,7 +348,7 @@ public class LiteLoaderTweaker implements ITweaker
         {
             MixinBootstrap.init();
             
-            this.bootstrap.preInit(Launch.classLoader, true, this.env.getModFilterList());
+            this.bootstrap.preInit(Launch.classLoader, true);
 
             this.injectDiscoveredTweakClasses();
             StartupState.PREINIT.completed();
@@ -567,7 +568,7 @@ public class LiteLoaderTweaker implements ITweaker
             @Override
             public void registerCoreAPIs(List<String> apisToLoad)
             {
-                apisToLoad.add(0, "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient");
+                apisToLoad.add(0, LiteLoaderTweaker.CLIENT_API);
             }
 
             @Override
