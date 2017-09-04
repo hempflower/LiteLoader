@@ -31,6 +31,7 @@ public abstract class StartupEnvironment implements GameEnvironment
 
     private ArgumentAcceptingOptionSpec<String> modsDirOption;
     private ArgumentAcceptingOptionSpec<String> modsOption;
+    private ArgumentAcceptingOptionSpec<String> modsRepoOption;
     private ArgumentAcceptingOptionSpec<String> apisOption;
     private NonOptionArgumentSpec<String> unparsedOptions;
     private OptionSet parsedOptions;
@@ -84,6 +85,8 @@ public abstract class StartupEnvironment implements GameEnvironment
 
         this.modsOption = optionParser.accepts("mods", "Comma-separated list of mods to load")
                 .withRequiredArg().ofType(String.class).withValuesSeparatedBy(',');
+        this.modsRepoOption = optionParser.accepts("modRepo", "Path to a JSON file which defines a mod repository")
+                .withRequiredArg().ofType(String.class);
         this.apisOption = optionParser.accepts("api", "Additional API classes to load")
                 .withRequiredArg().ofType(String.class);
         this.modsDirOption = optionParser.accepts("modsDir", "Path to 'mods' folder to use instead of default")
@@ -238,5 +241,14 @@ public abstract class StartupEnvironment implements GameEnvironment
     public File getModsFolder()
     {
         return this.getOptionalDirectory(this.gameDirectory, this.modsDirOption, "mods");
+    }
+    
+    /**
+     * Get the mods repo json path
+     */
+    @Override
+    public String getModsRepoFile()
+    {
+        return (this.parsedOptions.has(this.modsRepoOption)) ? this.modsRepoOption.value(this.parsedOptions) : null;
     }
 }

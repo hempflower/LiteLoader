@@ -14,6 +14,7 @@ import com.mumfrey.liteloader.api.EnumeratorModule;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.MixinConfigProvider;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
+import com.mumfrey.liteloader.core.api.EnumeratorModuleFiles.ContainerEnvironment;
 import com.mumfrey.liteloader.interfaces.ObjectFactory;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
 import com.mumfrey.liteloader.launch.LoaderProperties;
@@ -133,17 +134,26 @@ public abstract class LiteLoaderCoreAPI implements LiteAPI, MixinConfigProvider
         {
             enumeratorModules.add(new EnumeratorModuleClassPath());
         }
+        
+        ContainerEnvironment containers = new ContainerEnvironment();
 
         if (this.searchModsFolder)
         {
             File modsFolder = this.environment.getModsFolder();
-            enumeratorModules.add(new EnumeratorModuleFolder(this, modsFolder, false));
+            enumeratorModules.add(new EnumeratorModuleFolder(this, containers, modsFolder, false));
 
             File versionedModsFolder = this.environment.getVersionedModsFolder();
-            enumeratorModules.add(new EnumeratorModuleFolder(this, versionedModsFolder, true));
+            enumeratorModules.add(new EnumeratorModuleFolder(this, containers, versionedModsFolder, true));
+        }
+        
+        String modsRepoFile = this.environment.getModsRepoFile();
+        if (modsRepoFile != null)
+        {
+            File modList = new File(modsRepoFile);
+            enumeratorModules.add(new EnumeratorModuleRepository(this, containers, this.environment.getModRepository(), modList));
         }
 
-        return Collections.unmodifiableList(enumeratorModules);
+        return Collections.<EnumeratorModule>unmodifiableList(enumeratorModules);
     }
 
     /**

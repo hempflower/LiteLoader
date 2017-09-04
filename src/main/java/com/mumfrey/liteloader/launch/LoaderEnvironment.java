@@ -11,6 +11,7 @@ import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
 import com.mumfrey.liteloader.core.EnabledModsList;
 import com.mumfrey.liteloader.core.LiteLoaderVersion;
+import com.mumfrey.liteloader.core.api.repository.Repository;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 
 /**
@@ -49,6 +50,12 @@ public interface LoaderEnvironment extends GameEnvironment
      * about which mods are enabled/disabled.
      */
     public abstract EnabledModsList getEnabledModsList();
+    
+    /**
+     * The mod repository defined by command-line option which specifies a JSON
+     * file defining a mod repository
+     */
+    public abstract Repository getModRepository();
 
     /**
      * The enumerator manages mod container and class discovery

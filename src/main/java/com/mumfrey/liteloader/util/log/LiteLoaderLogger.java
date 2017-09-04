@@ -65,7 +65,7 @@ public class LiteLoaderLogger extends AbstractAppender
         }
     }
 
-    public static Verbosity verbosity = LiteLoaderLogger.DEBUG ? Verbosity.VERBOSE : Verbosity.NORMAL;
+    private static Verbosity verbosity = LiteLoaderLogger.DEBUG ? Verbosity.VERBOSE : Verbosity.NORMAL;
 
     static
     {
@@ -76,6 +76,11 @@ public class LiteLoaderLogger extends AbstractAppender
     {
         super("Internal Log Appender", null, null);
         this.start();
+    }
+    
+    public static void setVerbosity(Verbosity verbosity)
+    {
+        LiteLoaderLogger.verbosity = verbosity;
     }
 
     @Override
