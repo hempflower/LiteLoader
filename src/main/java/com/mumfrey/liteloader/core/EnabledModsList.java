@@ -8,7 +8,6 @@ package com.mumfrey.liteloader.core;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -186,32 +185,15 @@ public final class EnabledModsList
     {
         if (file.exists())
         {
-            FileReader reader = null;
-
-            try
+            try (FileReader reader = new FileReader(file))
             {
-                reader = new FileReader(file);
-                EnabledModsList instance = gson.fromJson(reader, EnabledModsList.class);
+                EnabledModsList instance = EnabledModsList.gson.fromJson(reader, EnabledModsList.class);
                 instance.setEnabledModsFile(file);
                 return instance;
             }
             catch (Exception ex)
             {
                 ex.printStackTrace();
-            }
-            finally
-            {
-                try
-                {
-                    if (reader != null)
-                    {
-                        reader.close();
-                    }
-                }
-                catch (IOException ex)
-                {
-                    ex.printStackTrace();
-                }
             }
         }
 
@@ -229,30 +211,13 @@ public final class EnabledModsList
     {
         if (!this.allowSave) return;
 
-        FileWriter writer = null;
-
-        try
+        try (FileWriter writer = new FileWriter(file))
         {
-            writer = new FileWriter(file);
-            gson.toJson(this, writer);
+            EnabledModsList.gson.toJson(this, writer);
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
-        }
-        finally
-        {
-            try
-            {
-                if (writer != null)
-                {
-                    writer.close();
-                }
-            }
-            catch (IOException ex)
-            {
-                ex.printStackTrace();
-            }
         }
     }
 

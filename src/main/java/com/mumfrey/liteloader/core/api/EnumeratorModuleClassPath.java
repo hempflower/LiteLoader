@@ -82,37 +82,43 @@ public class EnumeratorModuleClassPath implements EnumeratorModule
     @Override
     public void enumerate(ModularEnumerator enumerator, String profile)
     {
-        if (this.loadTweaks)
+    }
+    
+    @Override
+    public void register(ModularEnumerator enumerator, String profile)
+    {
+        if (!this.loadTweaks)
         {
-            LiteLoaderLogger.info("Discovering tweaks on class path...");
-
-            for (String classPathPart : this.classPathEntries)
+            return;
+        }
+        
+        LiteLoaderLogger.info("Discovering tweaks on class path...");
+        for (String classPathPart : this.classPathEntries)
+        {
+            try
             {
-                try
+                File packagePath = new File(classPathPart);
+                if (packagePath.exists())
                 {
-                    File packagePath = new File(classPathPart);
-                    if (packagePath.exists())
+                    LoadableModClassPath classPathMod = new LoadableModClassPath(packagePath);
+                    if (enumerator.registerModContainer(classPathMod))
                     {
-                        LoadableModClassPath classPathMod = new LoadableModClassPath(packagePath);
-                        if (enumerator.registerModContainer(classPathMod))
+                        this.loadableMods.add(classPathMod);
+                        if (classPathMod.requiresPreInitInjection())
                         {
-                            this.loadableMods.add(classPathMod);
-                            if (classPathMod.requiresPreInitInjection())
-                            {
-                                enumerator.registerTweakContainer(classPathMod);
-                            }
-                        }
-                        else
-                        {
-                            LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled or missing a required dependency, not injecting tranformers",
-                                    classPathMod.getIdentifier());
+                            enumerator.registerTweakContainer(classPathMod);
                         }
                     }
+                    else
+                    {
+                        LiteLoaderLogger.info(Verbosity.REDUCED, "Mod %s is disabled or missing a required dependency, not injecting tranformers",
+                                classPathMod.getIdentifier());
+                    }
                 }
-                catch (Throwable th)
-                {
-                    LiteLoaderLogger.warning(th, "Error encountered whilst inspecting %s", classPathPart);
-                }
+            }
+            catch (Throwable th)
+            {
+                LiteLoaderLogger.warning(th, "Error encountered whilst inspecting %s", classPathPart);
             }
         }
     }

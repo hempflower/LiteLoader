@@ -290,6 +290,9 @@ class GuiPanelLiteLoaderLog extends GuiPanel implements ScrollPanelContent
         if (logLine.startsWith("tweakClass '")) return 0x5555FF;
         if (logLine.startsWith("baking listener list")) return 0x00AAAA;
         if (logLine.startsWith("generating new event handler")) return 0xFFFF55;
+        if (logLine.startsWith("resolving mods")) return 0xFFAA00;
+        if (logLine.startsWith("resolved artefact")) return 0x00AA00;
+        if (logLine.startsWith("evicting")) return 0xFFAA00;
 
         return 0xCCCCCC;
     }

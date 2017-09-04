@@ -98,7 +98,8 @@ public class ComponentRegistry
                 components.add(component);
             }
 
-        } while (component != null && components.size() < 32);
+        }
+        while (component != null && components.size() < 32);
 
         return components;
     }
@@ -150,7 +151,8 @@ public class ComponentRegistry
                 controllers.add(controller);
             }
 
-        } while (controller != null && controllers.size() < 32);
+        }
+        while (controller != null && controllers.size() < 32);
 
         return controllers;
     }

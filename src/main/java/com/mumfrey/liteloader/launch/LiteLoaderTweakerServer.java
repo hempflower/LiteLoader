@@ -13,9 +13,11 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 public class LiteLoaderTweakerServer extends LiteLoaderTweaker
 {
+    private static final String SERVER_API = "com.mumfrey.liteloader.server.api.LiteLoaderCoreAPIServer";
+
     public LiteLoaderTweakerServer()
     {
-        LiteLoaderLogger.verbosity = Verbosity.REDUCED;
+        LiteLoaderLogger.setVerbosity(Verbosity.REDUCED);
     }
 
     @Override
@@ -26,7 +28,7 @@ public class LiteLoaderTweakerServer extends LiteLoaderTweaker
             @Override
             public void registerCoreAPIs(List<String> apisToLoad)
             {
-                apisToLoad.add(0, "com.mumfrey.liteloader.server.api.LiteLoaderCoreAPIServer");
+                apisToLoad.add(0, LiteLoaderTweakerServer.SERVER_API);
             }
 
             @Override
@@ -41,7 +43,6 @@ public class LiteLoaderTweakerServer extends LiteLoaderTweaker
     public String getLaunchTarget()
     {
         super.getLaunchTarget();
-
         return "net.minecraft.server.MinecraftServer";
     }
 }

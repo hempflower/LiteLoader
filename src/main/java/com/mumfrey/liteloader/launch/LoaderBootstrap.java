@@ -24,9 +24,8 @@ public interface LoaderBootstrap
      * 
      * @param classLoader
      * @param loadTweaks
-     * @param modsToLoad
      */
-    public abstract void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad);
+    public abstract void preInit(LaunchClassLoader classLoader, boolean loadTweaks);
 
     /**
      * 
