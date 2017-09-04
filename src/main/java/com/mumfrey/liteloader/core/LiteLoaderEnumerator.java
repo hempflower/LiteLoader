@@ -121,7 +121,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
     private final FastIterableDeque<EnumerationObserver> observers = new HandlerList<EnumerationObserver>(EnumerationObserver.class);
 
     protected EnumeratorState state = EnumeratorState.INIT;
-
+    
     /**
      * @param environment
      * @param properties
@@ -143,7 +143,7 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
         // Initialise the shared mod list if we haven't already
         this.getSharedModList();
     }
-
+    
     /**
      * @param environment
      */
@@ -664,7 +664,15 @@ public class LiteLoaderEnumerator implements LoaderEnumerator
                 if (config.endsWith(".json"))
                 {
                     LiteLoaderLogger.info(Verbosity.REDUCED, "Registering mixin config %s for %s", config, container.getName());
-                    Mixins.addConfiguration(config);
+                    try
+                    {
+                        Mixins.addConfiguration(config);
+                    }
+                    catch (Throwable th)
+                    {
+                        LiteLoaderLogger.severe(th, "Error registering mixin config %s for %s", config, container);
+                        container.registerMixinError(th);
+                    }
                 }
                 else if (config.contains(".json@"))
                 {

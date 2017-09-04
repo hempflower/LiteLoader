@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -97,6 +99,11 @@ public class LoadableFile extends File implements TweakContainer<File>
      * Mixin config resource names
      */
     protected Set<String> mixinConfigs = new HashSet<String>();
+    
+    /**
+     * Mixin errors 
+     */
+    protected List<Throwable> mixinErrors = new ArrayList<Throwable>();
 
     /**
      * Create a new tweak container wrapping the specified file
@@ -343,6 +350,18 @@ public class LoadableFile extends File implements TweakContainer<File>
     public Set<String> getMixinConfigs()
     {
         return this.mixinConfigs;
+    }
+    
+    @Override
+    public void registerMixinError(Throwable th)
+    {
+        this.mixinErrors.add(th);
+    }
+    
+    @Override
+    public Collection<Throwable> getMixinErrors()
+    {
+        return this.mixinErrors;
     }
 
     @Override
