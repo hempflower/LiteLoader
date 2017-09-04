@@ -24,6 +24,7 @@ import com.mumfrey.liteloader.interfaces.FastIterableDeque;
 import com.mumfrey.liteloader.interfaces.Loadable;
 import com.mumfrey.liteloader.interfaces.LoadableMod;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
+import com.mumfrey.liteloader.interfaces.MixinContainer;
 import com.mumfrey.liteloader.interfaces.TweakContainer;
 import com.mumfrey.liteloader.launch.ClassTransformerManager;
 import com.mumfrey.liteloader.launch.LoaderEnvironment;
@@ -444,6 +445,12 @@ public class LiteLoaderMods
                 String identifier = mod.getIdentifier();
                 if (identifier == null || this.environment.getEnabledModsList().isEnabled(this.environment.getProfile(), identifier))
                 {
+                    if (!this.validateMixins(mod, container))
+                    {
+                        this.onModLoadFailed(container, identifier, "mixins for the specified mod encountered a startup error", null);
+                        continue;
+                    }
+                    
                     if (!this.enumerator.checkDependencies(container))
                     {
                         this.onModLoadFailed(container, identifier, "the mod was missing a required dependency", null);
@@ -473,6 +480,23 @@ public class LiteLoaderMods
 
             this.observers.all().onPostModLoaded(mod);
         }
+    }
+    
+    private boolean validateMixins(ModInfo<?> mod, LoadableMod<?> container)
+    {
+        if (container instanceof MixinContainer)
+        {
+            @SuppressWarnings("unchecked")
+            Collection<Throwable> errors = ((MixinContainer<File>)container).getMixinErrors();
+            for (Throwable error : errors)
+            {
+                this.registerModStartupError(mod, error, true);
+            }
+            
+            return errors.size() == 0;
+        }
+        
+        return true;
     }
 
     /**
@@ -697,25 +721,27 @@ public class LiteLoaderMods
 
         for (Mod mod : this.loadedMods)
         {
-            if (mod.hasClassTransformers())
+            if (!mod.hasClassTransformers())
             {
-                List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
-                for (String modTransformer : modTransformers)
+                continue;
+            }
+            
+            List<String> modTransformers = ((TweakContainer<?>)mod.getContainer()).getClassTransformerClassNames();
+            for (String modTransformer : modTransformers)
+            {
+                if (!injectedTransformers.contains(modTransformer))
                 {
-                    if (!injectedTransformers.contains(modTransformer))
+                    List<Throwable> throwables = transformerManager.getTransformerStartupErrors(modTransformer);
+                    if (throwables != null)
                     {
-                        List<Throwable> throwables = transformerManager.getTransformerStartupErrors(modTransformer);
-                        if (throwables != null)
+                        for (Throwable th : throwables)
                         {
-                            for (Throwable th : throwables)
-                            {
-                                this.registerModStartupError(mod, th, true);
-                            }
+                            this.registerModStartupError(mod, th, true);
                         }
-                        else
-                        {
-                            this.registerModStartupError(mod, new RuntimeException("Missing class transformer " + modTransformer), true);
-                        }
+                    }
+                    else
+                    {
+                        this.registerModStartupError(mod, new RuntimeException("Missing class transformer " + modTransformer), true);
                     }
                 }
             }
@@ -765,7 +791,11 @@ public class LiteLoaderMods
     private void registerModStartupError(ModInfo<?> mod, Throwable th, boolean critical)
     {
         this.startupErrorCount++;
-        if (critical) this.criticalErrorCount++;
+        if (critical)
+        {
+            this.criticalErrorCount++;
+        }
+        
         mod.registerStartupError(th);
 
         if (!this.loadedMods.contains(mod) && !this.disabledMods.contains(mod))
