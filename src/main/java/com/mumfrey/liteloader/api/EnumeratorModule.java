@@ -36,10 +36,7 @@ public interface EnumeratorModule
     public abstract void writeSettings(LoaderEnvironment environment, LoaderProperties properties);
 
     /**
-     * Find loadable mods in this enumerator's domain, the enumerator module
-     * should call back against the enumerator itself to register containers it
-     * discovers using the registerModContainer() and registerTweakContainer()
-     * callbacks.
+     * Find loadable mods in this enumerator's domain.
      * 
      * <p>This method is called during loader PREINIT phase so <b>do not use any
      * game classes here</b>!</p>
@@ -48,6 +45,20 @@ public interface EnumeratorModule
      * @param profile
      */
     public abstract void enumerate(ModularEnumerator enumerator, String profile);
+    
+    /**
+     * Register loadable mods discovered in this enumerator's domain during the
+     * call to {@link #enumerate}, the enumerator module should call back
+     * against the enumerator itself to register containers it discovers using
+     * the registerModContainer() and registerTweakContainer() callbacks.
+     * 
+     * <p>This method is called during loader PREINIT phase so <b>do not use any
+     * game classes here</b>!</p>
+     * 
+     * @param enumerator
+     * @param profile
+     */
+    public abstract void register(ModularEnumerator enumerator, String profile);
 
     /**
      * The enumerator module should inject (as required) any discovered

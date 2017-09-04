@@ -30,4 +30,10 @@ public interface GameEnvironment
      * config for legacy mods.
      */
     public abstract File getModsFolder();
+
+    /**
+     * Get the path to a JSON file describing a mod repository layout, can be
+     * null if not defined
+     */
+    public abstract String getModsRepoFile();
 }

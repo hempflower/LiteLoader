@@ -30,6 +30,7 @@ import com.mumfrey.liteloader.api.manager.APIProvider;
 import com.mumfrey.liteloader.api.manager.APIRegistry;
 import com.mumfrey.liteloader.common.LoadingProgress;
 import com.mumfrey.liteloader.core.api.LiteLoaderCoreAPI;
+import com.mumfrey.liteloader.core.api.repository.Repository;
 import com.mumfrey.liteloader.interfaces.LoaderEnumerator;
 import com.mumfrey.liteloader.launch.ClassTransformerManager;
 import com.mumfrey.liteloader.launch.LiteLoaderTweaker;
@@ -103,6 +104,16 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
      * Folder containing version-specific configuration
      */
     private final File versionConfigFolder;
+    
+    /**
+     * Mods repo file
+     */
+    private final String repositoryFile;
+    
+    /**
+     * Mod repository defined in JSON
+     */
+    private final Repository repository;
 
     /**
      * File to write log entries to
@@ -139,6 +150,8 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 
     private LaunchClassLoader classLoader; 
 
+    private final StartupEnvironment env;
+
     private final ITweaker tweaker;
 
     private final APIRegistry apiRegistry;
@@ -158,7 +171,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
      * List of mods passed into the command line
      */
     private EnabledModsList enabledModsList;
-
+    
     /**
      * @param env
      * @param tweaker
@@ -166,6 +179,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     public LiteLoaderBootstrap(StartupEnvironment env, ITweaker tweaker)
     {
         this.environmentType     = EnvironmentType.values()[env.getEnvironmentTypeId()];
+        this.env                 = env;
         this.tweaker             = tweaker;
 
         this.apiRegistry         = new APIRegistry(this.getEnvironment(), this.getProperties());
@@ -174,6 +188,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         this.assetsDirectory     = env.getAssetsDirectory();
         this.profile             = env.getProfile();
         this.modsFolder          = env.getModsFolder();
+        this.repositoryFile      = env.getModsRepoFile();
 
         this.versionedModsFolder = new File(this.modsFolder,       LiteLoaderVersion.CURRENT.getMinecraftVersion());
         this.configBaseFolder    = new File(this.gameDirectory,    "liteconfig");
@@ -184,15 +199,25 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
         this.commonConfigFolder  = new File(this.configBaseFolder, "common");
         this.versionConfigFolder = this.inflectVersionedConfigPath(LiteLoaderVersion.CURRENT);
 
-        if (!this.modsFolder.exists()) this.modsFolder.mkdirs();
-        if (!this.versionedModsFolder.exists()) this.versionedModsFolder.mkdirs();
-        if (!this.configBaseFolder.exists()) this.configBaseFolder.mkdirs();
-        if (!this.commonConfigFolder.exists()) this.commonConfigFolder.mkdirs();
-        if (!this.versionConfigFolder.exists()) this.versionConfigFolder.mkdirs();
+        this.repository = new Repository(this.gameDirectory, this.versionedModsFolder);
+
+        this.mkdir(this.modsFolder);
+        this.mkdir(this.versionedModsFolder);
+        this.mkdir(this.configBaseFolder);
+        this.mkdir(this.commonConfigFolder);
+        this.mkdir(this.versionConfigFolder);
 
         this.initAPIs(env.getAPIsToLoad());
         this.apiProvider = this.apiRegistry.getProvider();
         this.apiAdapter = this.apiRegistry.getAdapter();
+    }
+
+    private void mkdir(File dir)
+    {
+        if (!dir.isDirectory())
+        {
+            dir.mkdirs();
+        }
     }
 
     /**
@@ -250,6 +275,12 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     {
         return this.enabledModsList;
     }
+    
+    @Override
+    public Repository getModRepository()
+    {
+        return this.repository;
+    }
 
     @Override
     public LoaderEnumerator getEnumerator()
@@ -302,15 +333,20 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
      *      #preInit(net.minecraft.launchwrapper.LaunchClassLoader, boolean)
      */
     @Override
-    public void preInit(LaunchClassLoader classLoader, boolean loadTweaks, List<String> modsToLoad)
+    public void preInit(LaunchClassLoader classLoader, boolean loadTweaks)
     {
+        List<String> modsToLoad = this.env.getModFilterList();
+
         this.classLoader = classLoader;
         this.loadTweaks = loadTweaks;
 
         LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader begin PREINIT...");
 
         // Set up the bootstrap
-        if (!this.prepare()) return;
+        if (!this.prepare())
+        {
+            return;
+        }
 
         LiteLoaderLogger.info(Verbosity.REDUCED, "LiteLoader %s starting up...", LiteLoaderVersion.CURRENT.getLoaderVersion());
 
@@ -324,7 +360,7 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
 
         this.enabledModsList = EnabledModsList.createFrom(this.enabledModsFile);
         this.enabledModsList.processModsList(this.profile, modsToLoad);
-
+        
         this.enumerator = this.spawnEnumerator(classLoader);
         this.enumerator.onPreInit();
         
@@ -613,6 +649,16 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     public File getVersionedConfigFolder()
     {
         return this.versionConfigFolder;
+    }
+    
+    /**
+     * Get the path to a JSON file describing a mod repository layout, can be
+     * null if not defined
+     */
+    @Override
+    public String getModsRepoFile()
+    {
+        return this.repositoryFile;
     }
 
     /**
