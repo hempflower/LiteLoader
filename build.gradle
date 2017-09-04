@@ -72,11 +72,12 @@ repositories {
 }
 
 dependencies {
-    compile('org.spongepowered:mixin:0.7.1-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.7.3-SNAPSHOT') {
         exclude module: 'asm-commons'
         exclude module: 'asm-tree'
         exclude module: 'launchwrapper'
         exclude module: 'guava'
+        exclude module: 'log4j-core'
     }
 }
 
