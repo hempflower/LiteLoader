@@ -5,11 +5,12 @@
  */
 package com.mumfrey.liteloader.transformers.event.json;
 
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
+
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.EventInjectionTransformer;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.json.ModEvents.ModEventDefinition;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;

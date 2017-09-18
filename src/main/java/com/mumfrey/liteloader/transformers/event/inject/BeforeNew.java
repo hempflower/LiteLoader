@@ -8,14 +8,13 @@ package com.mumfrey.liteloader.transformers.event.inject;
 import java.util.Collection;
 import java.util.ListIterator;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.TypeInsnNode;
+import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
+import org.spongepowered.asm.lib.tree.TypeInsnNode;
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
-import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 
 public class BeforeNew extends InjectionPoint
 {
@@ -50,7 +49,7 @@ public class BeforeNew extends InjectionPoint
     }
 
     @Override
-    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes)
     {
         boolean found = false;
         int ordinal = 0;

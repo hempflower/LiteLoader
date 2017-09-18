@@ -8,14 +8,13 @@ package com.mumfrey.liteloader.transformers.event.inject;
 import java.util.Collection;
 import java.util.ListIterator;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.MethodInsnNode;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.FieldInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
+import org.spongepowered.asm.lib.tree.MethodInsnNode;
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
 
 import com.mumfrey.liteloader.transformers.ClassTransformer;
-import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -281,15 +280,8 @@ public class BeforeInvoke extends InjectionPoint
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see com.mumfrey.liteloader.transformers.event.InjectionStrategy
-     *      #findInjectionPoint(java.lang.String,
-     *      org.objectweb.asm.tree.InsnList,
-     *      com.mumfrey.liteloader.transformers.event.Event,
-     *      java.util.Collection)
-     */
     @Override
-    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes)
     {
         int ordinal = 0;
         boolean found = false;

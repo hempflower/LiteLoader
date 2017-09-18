@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.spongepowered.asm.launch.MixinBootstrap;
+import org.spongepowered.asm.service.MixinService;
 
 import com.google.common.base.Preconditions;
 import com.mumfrey.liteloader.launch.LoaderEnvironment.EnvironmentType;
@@ -374,7 +375,7 @@ public class LiteLoaderTweaker implements ITweaker
         {
             this.transformerManager.injectDownstreamTransformers(Launch.classLoader);
             this.bootstrap.preBeginGame();
-            MixinBootstrap.addProxy();
+            MixinService.getService().beginPhase();
             StartupState.BEGINGAME.completed();
         }
         catch (Throwable th)

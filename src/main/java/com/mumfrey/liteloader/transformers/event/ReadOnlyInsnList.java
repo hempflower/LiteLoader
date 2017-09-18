@@ -7,8 +7,8 @@ package com.mumfrey.liteloader.transformers.event;
 
 import java.util.ListIterator;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
 
 /**
  * Read-only wrapper for InsnList

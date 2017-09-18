@@ -14,25 +14,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TryCatchBlockNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.spongepowered.asm.lib.Label;
+import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.*;
+import org.spongepowered.asm.util.Bytecode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
-import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
 /**
@@ -376,7 +364,7 @@ public class Event implements Comparable<Event>
         this.validate(injectionPoint, cancellable, globalEventID);
 
         Type[] arguments = Type.getArgumentTypes(this.method.desc);
-        int initialFrameSize = ByteCodeUtilities.getFirstNonArgLocalIndex(arguments, !this.methodIsStatic);
+        int initialFrameSize = Bytecode.getFirstNonArgLocalIndex(arguments, !this.methodIsStatic);
 
         boolean doCaptureLocals = captureLocals && locals != null && locals.length > initialFrameSize;
         String eventDescriptor = this.generateEventDescriptor(doCaptureLocals, locals, arguments, initialFrameSize);
@@ -413,10 +401,10 @@ public class Event implements Comparable<Event>
 
         // Call the event handler method in the proxy
         insns.add(new VarInsnNode(Opcodes.ALOAD, marshallVar));
-        ByteCodeUtilities.loadArgs(arguments, insns, this.methodIsStatic ? 0 : 1);
+        Bytecode.loadArgs(arguments, insns, this.methodIsStatic ? 0 : 1);
         if (doCaptureLocals)
         {
-            ByteCodeUtilities.loadLocals(locals, insns, initialFrameSize);
+            Bytecode.loadArgs(locals, insns, initialFrameSize);
         }
         insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, Event.getActiveProxyRef(), handler.name, handler.desc, false));
 
@@ -646,7 +634,7 @@ public class Event implements Comparable<Event>
                         insns.add(lineNumberLabel);
                         insns.add(new LineNumberNode(++lineNumber, lineNumberLabel));
 
-                        ByteCodeUtilities.loadArgs(args, insns, 0);
+                        Bytecode.loadArgs(args, insns, 0);
                         insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, listener.ownerRef, listener.getOrInflectName(event.name),
                                 handlerMethod.desc, false));
                     }

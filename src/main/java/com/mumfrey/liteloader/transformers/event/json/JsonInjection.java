@@ -8,8 +8,9 @@ package com.mumfrey.liteloader.transformers.event.json;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
+
 import com.google.gson.annotations.SerializedName;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeInvoke;
 import com.mumfrey.liteloader.transformers.event.inject.BeforeReturn;

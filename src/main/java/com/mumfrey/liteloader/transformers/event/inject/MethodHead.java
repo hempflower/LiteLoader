@@ -7,11 +7,9 @@ package com.mumfrey.liteloader.transformers.event.inject;
 
 import java.util.Collection;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-
-import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
 
 /**
  * An injection point which locates the first instruction in a method body
@@ -25,7 +23,7 @@ public class MethodHead extends InjectionPoint
     }
 
     @Override
-    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes)
     {
         nodes.add(insns.getFirst());
         return true;

@@ -5,8 +5,8 @@
  */
 package com.mumfrey.liteloader.transformers;
 
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
+import org.spongepowered.asm.lib.ClassReader;
+import org.spongepowered.asm.lib.ClassWriter;
 
 /**
  * ClassWriter isolated from ASM so that it exists in the LaunchClassLoader

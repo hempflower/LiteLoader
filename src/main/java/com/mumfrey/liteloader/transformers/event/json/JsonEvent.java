@@ -9,9 +9,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
+
 import com.google.gson.annotations.SerializedName;
 import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 
 /**

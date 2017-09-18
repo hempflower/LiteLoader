@@ -20,26 +20,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.IntInsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.LineNumberNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
-import org.objectweb.asm.util.CheckClassAdapter;
+import org.spongepowered.asm.lib.ClassReader;
+import org.spongepowered.asm.lib.ClassWriter;
+import org.spongepowered.asm.lib.Label;
+import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.*;
+import org.spongepowered.asm.lib.util.CheckClassAdapter;
+import org.spongepowered.asm.util.Bytecode;
 
 import com.mumfrey.liteloader.Priority;
 import com.mumfrey.liteloader.core.runtime.Obf;
@@ -1008,7 +996,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
 
             method.instructions.add(new InsnNode(returnType.getOpcode(Opcodes.IRETURN)));
 
-            int argsSize = ByteCodeUtilities.getArgsSize(args);
+            int argsSize = Bytecode.getFirstNonArgLocalIndex(args, false);
             method.maxLocals = argsSize + 1;
             method.maxStack = argsSize + 1;
         }
@@ -1023,7 +1011,7 @@ public class HandlerList<T> extends LinkedList<T> implements FastIterableDeque<T
             boolean isOrOperation = this.logicOp.isOr();
             boolean breakOnMatch = this.logicOp.breakOnMatch();
             int initialValue = isOrOperation && (!this.logicOp.assumeTrue() || this.size > 0) ? Opcodes.ICONST_0 : Opcodes.ICONST_1;
-            int localIndex = ByteCodeUtilities.getArgsSize(args) + 1;
+            int localIndex = Bytecode.getFirstNonArgLocalIndex(args, false) + 1;
 
             method.instructions.add(new InsnNode(initialValue));
             method.instructions.add(new VarInsnNode(Opcodes.ISTORE, localIndex));

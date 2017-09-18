@@ -5,7 +5,7 @@
  */
 package com.mumfrey.liteloader.transformers.event;
 
-import org.objectweb.asm.Type;
+import org.spongepowered.asm.lib.Type;
 
 import com.mumfrey.liteloader.core.event.EventCancellationException;
 

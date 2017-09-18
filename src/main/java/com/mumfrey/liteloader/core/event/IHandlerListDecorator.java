@@ -7,9 +7,9 @@ package com.mumfrey.liteloader.core.event;
 
 import java.util.List;
 
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.ClassNode;
+import org.spongepowered.asm.lib.tree.MethodNode;
 
 import com.mumfrey.liteloader.core.event.HandlerList.BakedHandlerList;
 import com.mumfrey.liteloader.core.runtime.Obf;

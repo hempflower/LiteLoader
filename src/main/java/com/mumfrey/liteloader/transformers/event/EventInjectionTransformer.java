@@ -5,6 +5,8 @@
  */
 package com.mumfrey.liteloader.transformers.event;
 
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
+
 import com.mumfrey.liteloader.transformers.ObfProvider;
 
 import net.minecraft.launchwrapper.IClassTransformer;

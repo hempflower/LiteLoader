@@ -7,11 +7,10 @@ package com.mumfrey.liteloader.transformers.event.inject;
 
 import java.util.Collection;
 
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.LdcInsnNode;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
+import org.spongepowered.asm.lib.tree.LdcInsnNode;
 
-import com.mumfrey.liteloader.transformers.event.Event;
 import com.mumfrey.liteloader.transformers.event.MethodInfo;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 
@@ -49,11 +48,11 @@ public class BeforeStringInvoke extends BeforeInvoke
     }
 
     @Override
-    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes)
     {
         this.foundLdc = false;
 
-        return super.find(desc, insns, nodes, event);
+        return super.find(desc, insns, nodes);
     }
 
     @Override

@@ -9,9 +9,9 @@ import java.util.concurrent.Callable;
 
 import javax.management.RuntimeErrorException;
 
-import org.objectweb.asm.Type;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.util.SignaturePrinter;
 
-import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.event.EventInfo;
 
 import net.minecraft.crash.CrashReport;
@@ -181,7 +181,7 @@ public final class EventProxy
                 }
                 return false;
             default:
-                tpl.append(ByteCodeUtilities.getTypeName(type));
+                tpl.append(SignaturePrinter.getTypeName(type, false));
                 return false;
         }
     }

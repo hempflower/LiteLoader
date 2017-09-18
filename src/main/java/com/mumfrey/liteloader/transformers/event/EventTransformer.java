@@ -17,17 +17,17 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.io.FileUtils;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.util.CheckClassAdapter;
+import org.spongepowered.asm.lib.ClassWriter;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.ClassNode;
+import org.spongepowered.asm.lib.tree.LocalVariableNode;
+import org.spongepowered.asm.lib.tree.MethodNode;
+import org.spongepowered.asm.lib.util.CheckClassAdapter;
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
 
 import com.google.common.collect.Maps;
 import com.mumfrey.liteloader.core.runtime.Obf;
-import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
 import com.mumfrey.liteloader.transformers.ClassTransformer;
 import com.mumfrey.liteloader.transformers.ObfProvider;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
@@ -149,16 +149,6 @@ public final class EventTransformer extends ClassTransformer
         public boolean captureLocals()
         {
             return this.captureLocals;
-        }
-
-        public void checkCaptureLocals(InjectionPoint injectionPoint)
-        {
-            if (injectionPoint.captureLocals != this.captureLocals)
-            {
-                throw new RuntimeException("Overlapping injection points defined with incompatible settings. Attempting to handle "
-                        + injectionPoint + " with capture locals [" + injectionPoint.captureLocals + "] but already defined injection point with ["
-                        + this.captureLocals + "]");
-            }
         }
 
         public void add(Event event)
@@ -328,42 +318,15 @@ public final class EventTransformer extends ClassTransformer
             event.attach(method);
             InjectionPoint injectionPoint = eventEntry.getValue();
             nodes.clear();
-            if (injectionPoint.find(method.desc, insns, nodes, event))
+            if (injectionPoint.find(method.desc, insns, nodes))
             {
                 for (AbstractInsnNode node : nodes)
                 {
                     Injection injection = injectionPoints.get(node);
                     if (injection == null)
                     {
-                        injection = new Injection(node, injectionPoint.captureLocals());
+                        injection = new Injection(node, false);
                         injectionPoints.put(node, injection);
-                    }
-                    else
-                    {
-                        injection.checkCaptureLocals(injectionPoint);
-                    }
-
-                    if (injectionPoint.captureLocals() && !injection.hasLocals())
-                    {
-                        LocalVariableNode[] locals = ByteCodeUtilities.getLocalsAt(classNode, method, node);
-                        injection.setLocals(locals);
-                        if (injectionPoint.logLocals())
-                        {
-                            int startPos = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
-
-                            LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-                            LiteLoaderLogger.debug("Logging local variables for " + injectionPoint);
-                            for (int i = startPos; i < locals.length; i++)
-                            {
-                                LocalVariableNode local = locals[i];
-                                if (local != null)
-                                {
-                                    LiteLoaderLogger.debug("    Local[%d] %s %s", i, ByteCodeUtilities.getTypeName(Type.getType(local.desc)),
-                                            local.name);
-                                }
-                            }
-                            LiteLoaderLogger.debug(ClassTransformer.HORIZONTAL_RULE);
-                        }
                     }
 
                     injection.add(event);

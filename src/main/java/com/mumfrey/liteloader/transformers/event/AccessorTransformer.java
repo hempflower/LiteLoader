@@ -12,19 +12,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldInsnNode;
-import org.objectweb.asm.tree.FieldNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.LdcInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TypeInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
+import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.*;
+import org.spongepowered.asm.util.Annotations;
+import org.spongepowered.asm.util.Bytecode;
 
 import com.mumfrey.liteloader.core.runtime.Obf;
 import com.mumfrey.liteloader.transformers.ByteCodeUtilities;
@@ -83,7 +75,7 @@ abstract class AccessorTransformer extends ClassTransformer
          * @throws IOException Thrown if an problem occurs when loading the
          *      interface bytecode
          */
-        protected AccessorInjection(String iface) throws IOException
+        protected AccessorInjection(String iface) throws IOException, ClassNotFoundException
         {
             this(iface, null);
         }
@@ -95,8 +87,9 @@ abstract class AccessorTransformer extends ClassTransformer
          * @param obfProvider Obfuscation provider for this context
          * @throws IOException Thrown if an problem occurs when loading the
          *      interface bytecode
+         * @throws ClassNotFoundException 
          */
-        protected AccessorInjection(String iface, ObfProvider obfProvider) throws IOException
+        protected AccessorInjection(String iface, ObfProvider obfProvider) throws IOException, ClassNotFoundException
         {
             ClassNode ifaceNode = ByteCodeUtilities.loadClass(iface, false);
 
@@ -173,12 +166,12 @@ abstract class AccessorTransformer extends ClassTransformer
         @SuppressWarnings("unchecked")
         private Class<? extends Obf> setupTable(ClassNode ifaceNode)
         {
-            AnnotationNode annotation = ByteCodeUtilities.getInvisibleAnnotation(ifaceNode, ObfTableClass.class);
+            AnnotationNode annotation = Annotations.getInvisible(ifaceNode, ObfTableClass.class);
             if (annotation != null)
             {
                 try
                 {
-                    Type obfTableType = ByteCodeUtilities.getAnnotationValue(annotation);
+                    Type obfTableType = Annotations.<Type>getValue(annotation);
                     return (Class<? extends Obf>)Class.forName(obfTableType.getClassName(), true, Launch.classLoader);
                 }
                 catch (ClassNotFoundException ex)
@@ -196,14 +189,14 @@ abstract class AccessorTransformer extends ClassTransformer
          */
         private Obf setupTarget(ClassNode ifaceNode)
         {
-            AnnotationNode annotation = ByteCodeUtilities.getInvisibleAnnotation(ifaceNode, Accessor.class);
+            AnnotationNode annotation = Annotations.getInvisible(ifaceNode, Accessor.class);
             if (annotation == null)
             {
                 throw new RuntimeException("Accessor interfaces must be annotated with an @Accessor annotation specifying the target class");
             }
 
-            List<String> targetClass = ByteCodeUtilities.<List<String>>getAnnotationValue(annotation);
-            if (targetClass == null || targetClass.isEmpty())
+            List<String> targetClass = Annotations.<String>getValue(annotation, "value", true);
+            if (targetClass.isEmpty())
             {
                 throw new RuntimeException("Invalid @Accessor annotation, the annotation must specify a target class");
             }
@@ -261,17 +254,17 @@ abstract class AccessorTransformer extends ClassTransformer
             LiteLoaderLogger.debug("[AccessorTransformer] Attempting to add %s to %s", method.name, classNode.name);
 
             List<String> targetId = null;
-            AnnotationNode accessor = ByteCodeUtilities.getInvisibleAnnotation(method, Accessor.class);
-            AnnotationNode invoker = ByteCodeUtilities.getInvisibleAnnotation(method, Invoker.class);
+            AnnotationNode accessor = Annotations.getInvisible(method, Accessor.class);
+            AnnotationNode invoker = Annotations.getInvisible(method, Invoker.class);
             if (accessor != null)
             {
-                targetId = ByteCodeUtilities.<List<String>>getAnnotationValue(accessor);
+                targetId = Annotations.<String>getValue(accessor, "value", true);
                 Obf target = this.getObf(targetId);
                 if (this.injectAccessor(classNode, method, target)) return;
             }
             else if (invoker != null)
             {
-                targetId = ByteCodeUtilities.<List<String>>getAnnotationValue(invoker);
+                targetId = Annotations.<String>getValue(invoker, "value", true);
                 Obf target = this.getObf(targetId);
                 if (this.injectInvoker(classNode, method, target)) return;
             }
@@ -355,7 +348,7 @@ abstract class AccessorTransformer extends ClassTransformer
             boolean isStatic = (field.access & Opcodes.ACC_STATIC) != 0;
 
             method.instructions.clear();
-            method.maxLocals = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
+            method.maxLocals = Bytecode.getFirstNonArgLocalIndex(method);
             method.maxStack = fieldType.getSize();
 
             if (isStatic)
@@ -394,7 +387,7 @@ abstract class AccessorTransformer extends ClassTransformer
             boolean isStatic = (field.access & Opcodes.ACC_STATIC) != 0;
 
             method.instructions.clear();
-            method.maxLocals = ByteCodeUtilities.getFirstNonArgLocalIndex(method);
+            method.maxLocals = Bytecode.getFirstNonArgLocalIndex(method);
             method.maxStack = fieldType.getSize();
 
             if (isStatic)
@@ -426,17 +419,17 @@ abstract class AccessorTransformer extends ClassTransformer
             boolean isStatic = (targetMethod.access & Opcodes.ACC_STATIC) != 0;
 
             method.instructions.clear();
-            method.maxStack = (method.maxLocals = ByteCodeUtilities.getFirstNonArgLocalIndex(method)) + 1;
+            method.maxStack = (method.maxLocals = Bytecode.getFirstNonArgLocalIndex(method)) + 1;
 
             if (isStatic)
             {
-                ByteCodeUtilities.loadArgs(args, method.instructions, 0);
+                Bytecode.loadArgs(args, method.instructions, 0);
                 method.instructions.add(new MethodInsnNode(Opcodes.INVOKESTATIC, classNode.name, targetMethod.name, targetMethod.desc, false));
             }
             else
             {
                 method.instructions.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                ByteCodeUtilities.loadArgs(args, method.instructions, 1);
+                Bytecode.loadArgs(args, method.instructions, 1);
                 method.instructions.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, classNode.name, targetMethod.name, targetMethod.desc, false));
             }
 

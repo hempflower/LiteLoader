@@ -5,13 +5,13 @@
  */
 //package com.mumfrey.liteloader.transformers.event;
 //
-//import org.objectweb.asm.Opcodes;
-//import org.objectweb.asm.tree.AbstractInsnNode;
-//import org.objectweb.asm.tree.InsnList;
-//import org.objectweb.asm.tree.InsnNode;
-//import org.objectweb.asm.tree.JumpInsnNode;
-//import org.objectweb.asm.tree.MethodInsnNode;
-//import org.objectweb.asm.tree.VarInsnNode;
+//import org.spongepowered.asm.lib.Opcodes;
+//import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+//import org.spongepowered.asm.lib.tree.InsnList;
+//import org.spongepowered.asm.lib.tree.InsnNode;
+//import org.spongepowered.asm.lib.tree.JumpInsnNode;
+//import org.spongepowered.asm.lib.tree.MethodInsnNode;
+//import org.spongepowered.asm.lib.tree.VarInsnNode;
 //
 //public class Jump extends Event
 //{

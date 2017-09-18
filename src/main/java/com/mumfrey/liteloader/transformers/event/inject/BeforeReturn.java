@@ -8,14 +8,12 @@ package com.mumfrey.liteloader.transformers.event.inject;
 import java.util.Collection;
 import java.util.ListIterator;
 
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.InsnList;
-import org.objectweb.asm.tree.InsnNode;
-
-import com.mumfrey.liteloader.transformers.event.Event;
-import com.mumfrey.liteloader.transformers.event.InjectionPoint;
+import org.spongepowered.asm.lib.Opcodes;
+import org.spongepowered.asm.lib.Type;
+import org.spongepowered.asm.lib.tree.AbstractInsnNode;
+import org.spongepowered.asm.lib.tree.InsnList;
+import org.spongepowered.asm.lib.tree.InsnNode;
+import org.spongepowered.asm.mixin.injection.InjectionPoint;
 
 /**
  * An injection point which searches for RETURN opcodes in the supplied method
@@ -38,7 +36,7 @@ public class BeforeReturn extends InjectionPoint
     }
 
     @Override
-    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes, Event event)
+    public boolean find(String desc, InsnList insns, Collection<AbstractInsnNode> nodes)
     {
         boolean found = false;
         int returnOpcode = Type.getReturnType(desc).getOpcode(Opcodes.IRETURN);
