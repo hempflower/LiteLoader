@@ -14,7 +14,7 @@ import java.util.Map;
  * Centralised obfuscation table for LiteLoader
  *
  * @author Adam Mummery-Smith
- * TODO Obfuscation 1.12.1
+ * TODO Obfuscation 1.12.2
  */
 public class Obf
 {
