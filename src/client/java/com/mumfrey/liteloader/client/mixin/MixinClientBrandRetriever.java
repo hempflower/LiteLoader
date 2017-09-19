@@ -16,7 +16,7 @@ import net.minecraft.client.ClientBrandRetriever;
 public abstract class MixinClientBrandRetriever
 {
     private static final String BRANDING_VANILLA = "vanilla";
-    private static final String BRANDING_LITELOADER = "liteloader";
+    private static final String BRANDING_LITELOADER = "LiteLoader";
 
     @Inject(method = "getClientModName", at = @At("RETURN"), cancellable = true)
     private static void appendLiteLoaderBranding(CallbackInfoReturnable<String> cir)
