@@ -896,6 +896,8 @@ public final class LiteLoader
      */
     void onStartupComplete()
     {
+        LiteLoaderBootstrap.onStartupComplete();
+        
         this.coreProviders.all().onStartupComplete();
 
         if (this.panelManager != null)

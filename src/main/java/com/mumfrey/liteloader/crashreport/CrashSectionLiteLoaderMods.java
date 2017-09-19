@@ -30,7 +30,7 @@ public class CrashSectionLiteLoaderMods
         }
         catch (Exception ex)
         {
-            return "LiteLoader startup failed";
+            return "LiteLoader startup incomplete";
         }
     }
 }

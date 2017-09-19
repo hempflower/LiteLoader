@@ -12,7 +12,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.Charsets;
@@ -22,6 +24,7 @@ import org.apache.logging.log4j.core.appender.FileAppender;
 import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
+import com.google.common.collect.ImmutableMap;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
@@ -40,6 +43,7 @@ import com.mumfrey.liteloader.util.ObfuscationUtilities;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
+import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.launchwrapper.ITweaker;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
@@ -767,6 +771,56 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     public String getBranding()
     {
         return this.branding;
+    }
+    
+    /**
+     * Check that the branding was applied and if not, attempt to set it in the
+     * fml branding directly using reflection
+     */
+    @SuppressWarnings("unchecked")
+    static void onStartupComplete()
+    {
+        try
+        {
+            // If this field exists, the mixin was successfully applied so we can stop
+            
+            try
+            {
+                ClientBrandRetriever.class.getDeclaredField("BRANDING_LITELOADER");
+                return;
+            }
+            catch (NoSuchFieldException ex)
+            {
+                // Field doesn't exist so the mixin was not applied
+            }
+            
+            // Get loader
+            Class<?> clLoader = Class.forName("net.minecraftforge.fml.common.Loader");
+            
+            // Get instance
+            Object instance = clLoader.getMethod("instance").invoke(null);
+            
+            // Get branding properties
+            Map<String, String> properties = (Map<String, String>)clLoader.getMethod("getFMLBrandingProperties").invoke(instance);
+            
+            // Retrieve the current snooper branding
+            String branding = properties.get("snooperbranding");
+            
+            // If it's blank, set ourself, if it's already set then append ourself
+            branding = branding == null ? "LiteLoader" : branding + ",LiteLoader";
+            
+            // Find the field in Loader
+            Field fdProperties = clLoader.getDeclaredField("fmlBrandingProperties");
+            fdProperties.setAccessible(true);
+            
+            // Set new properties into field
+            fdProperties.set(instance, ImmutableMap.<String, String>builder().putAll(properties).put("snooperbranding", branding).build());
+        }
+        catch (Exception ex)
+        {
+            // Oh well, we tried
+            ex.printStackTrace();
+        }
     }
 
     /* (non-Javadoc)

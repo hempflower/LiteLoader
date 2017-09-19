@@ -31,7 +31,7 @@ public class CrashSectionLiteLoaderBrand
         }
         catch (Exception ex)
         {
-            brand = "LiteLoader startup failed";
+            brand = "LiteLoader startup incomplete";
         }
         return brand == null ? "Unknown / None" : brand;
     }
