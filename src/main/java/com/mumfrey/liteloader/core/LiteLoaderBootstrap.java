@@ -12,8 +12,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Properties;
 
@@ -43,7 +41,6 @@ import com.mumfrey.liteloader.util.log.LiteLoaderLogger;
 import com.mumfrey.liteloader.util.log.LiteLoaderLogger.Verbosity;
 
 import net.minecraft.launchwrapper.ITweaker;
-import net.minecraft.launchwrapper.Launch;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 
 /**
@@ -770,52 +767,6 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
     public String getBranding()
     {
         return this.branding;
-    }
-
-    /**
-     * Set the brand in ClientBrandRetriever to the specified brand 
-     * 
-     * @param brand
-     */
-    static void setBranding(String brand)
-    {
-        try
-        {
-            Method mGetClientModName;
-
-            try
-            {
-                Class<?> cbrClass = Class.forName("net.minecraft.client.ClientBrandRetriever", false, Launch.classLoader);
-                mGetClientModName = cbrClass.getDeclaredMethod("getClientModName");
-            }
-            catch (ClassNotFoundException ex)
-            {
-                return;
-            }
-
-            String oldBrand = (String)mGetClientModName.invoke(null);
-
-            if ("vanilla".equals(oldBrand))
-            {
-                char[] newValue = brand.toCharArray();
-
-                Field stringValue = String.class.getDeclaredField("value");
-                stringValue.setAccessible(true);
-                stringValue.set(oldBrand, newValue);
-
-                try
-                {
-                    Field stringCount = String.class.getDeclaredField("count");
-                    stringCount.setAccessible(true);
-                    stringCount.set(oldBrand, newValue.length);
-                }
-                catch (NoSuchFieldException ex) {} // java 1.7 doesn't have this member
-            }
-        }
-        catch (Throwable th)
-        {
-            LiteLoaderLogger.warning(th, "Setting branding failed");
-        }
     }
 
     /* (non-Javadoc)

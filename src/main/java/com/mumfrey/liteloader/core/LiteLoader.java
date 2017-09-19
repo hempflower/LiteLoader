@@ -896,9 +896,6 @@ public final class LiteLoader
      */
     void onStartupComplete()
     {
-        // Set the loader branding in ClientBrandRetriever using reflection
-        LiteLoaderBootstrap.setBranding("LiteLoader");
-
         this.coreProviders.all().onStartupComplete();
 
         if (this.panelManager != null)
