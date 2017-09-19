@@ -47,6 +47,7 @@ public class LiteLoaderCoreAPIClient extends LiteLoaderCoreAPI
 
     private static final String[] clientMixinConfigs = new String[] {
             "mixins.liteloader.client.json",
+            "mixins.liteloader.client.preinit.json",
             "mixins.liteloader.client.optional.json",
     };
 

@@ -24,7 +24,6 @@
         "MixinGuiTextField",
         "MixinIntIdentityHashBiMap",
         "MixinGuiOverlayDebug",
-        "MixinClientBrandRetriever",
         "IGuiButton",
         "IKeyBinding"
     ],

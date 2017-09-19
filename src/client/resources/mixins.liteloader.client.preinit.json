@@ -1,0 +1,14 @@
+{
+    "required": true,
+    "minVersion": "0.7.4",
+    "compatibilityLevel": "JAVA_8",
+    "target": "@env(PREINIT)",
+    "package": "com.mumfrey.liteloader.client.mixin",
+    "refmap": "mixins.liteloader.client.refmap.json",
+    "mixins": [
+        "MixinClientBrandRetriever"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

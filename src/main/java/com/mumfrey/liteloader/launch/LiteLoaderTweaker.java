@@ -44,6 +44,37 @@ public class LiteLoaderTweaker implements ITweaker
 
     protected static final String BOOTSTRAP_CLASS = "com.mumfrey.liteloader.core.LiteLoaderBootstrap";
     private static final String CLIENT_API = "com.mumfrey.liteloader.client.api.LiteLoaderCoreAPIClient";
+    
+    public static class PreInitTweaker implements ITweaker
+    {
+        public PreInitTweaker()
+        {
+            MixinService.getService().beginPhase();
+        }
+        
+        @Override
+        public void acceptOptions(List<String> args, File gameDir, File assetsDir, String profile)
+        {
+        }
+
+        @Override
+        public void injectIntoClassLoader(LaunchClassLoader classLoader)
+        {
+        }
+
+        @Override
+        public String getLaunchTarget()
+        {
+            return "";
+        }
+
+        @Override
+        public String[] getLaunchArguments()
+        {
+            return new String[0];
+        }
+        
+    }
 
     /**
      * Loader startup state
@@ -272,6 +303,8 @@ public class LiteLoaderTweaker implements ITweaker
             LiteLoaderLogger.info("Queuing required class transformer '%s'", transformerClassName);
             this.transformerManager.injectTransformer(transformerClassName);
         }
+        
+        LiteLoaderTweaker.injectTweakClass("com.mumfrey.liteloader.launch.LiteLoaderTweaker$PreInitTweaker");
     }
 
     /* (non-Javadoc)
