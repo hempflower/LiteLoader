@@ -15,6 +15,7 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.io.Charsets;
@@ -25,6 +26,7 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.spongepowered.asm.mixin.MixinEnvironment;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.mumfrey.liteloader.api.LiteAPI;
 import com.mumfrey.liteloader.api.manager.APIAdapter;
 import com.mumfrey.liteloader.api.manager.APIProvider;
@@ -813,13 +815,27 @@ class LiteLoaderBootstrap implements LoaderBootstrap, LoaderEnvironment, LoaderP
             Field fdProperties = clLoader.getDeclaredField("fmlBrandingProperties");
             fdProperties.setAccessible(true);
             
+            // Build a new immutable property set, but remove any existing
+            // snooperbranding because the immutable map builder doesn't like
+            // duplicate keys!
+            Builder<String, String> newProperties = ImmutableMap.<String, String>builder();
+            for (Entry<String, String> property : properties.entrySet())
+            {
+                if (!"snooperbranding".equals(property.getKey()))
+                {
+                    newProperties.put(property);
+                }
+            }
+            
+            newProperties.put("snooperbranding", branding);
+            
             // Set new properties into field
-            fdProperties.set(instance, ImmutableMap.<String, String>builder().putAll(properties).put("snooperbranding", branding).build());
+            fdProperties.set(instance, newProperties.build());
         }
         catch (Exception ex)
         {
-            // Oh well, we tried
-            ex.printStackTrace();
+            LiteLoaderLogger.info("Unable to apply snooper branding, servers will not receive LiteLoader in branding packets from this client: %s %s",
+                    ex.getClass().getName(), ex.getMessage());
         }
     }
 
